@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:cl_datahub/src/utils/utils.dart';
+import 'package:cl_datahub/src/utils/utils.dart' as utils;
 
 import 'dto/transfer_object.dart';
 
@@ -38,6 +38,6 @@ abstract class ApiResource<TData extends TransferObject> extends ApiEndpoint {
   Future<List<TData>> getList(int offset, int limit);
 
   bool matchRoute(String route) {
-    return matchPlaceholders(path, route);
+    return utils.matchRoute(path, route);
   }
 }

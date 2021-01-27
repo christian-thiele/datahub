@@ -46,7 +46,7 @@ abstract class ApiBase {
             'Resource \"$path\" not found.'));
     final method = parseMethod(request.method);
 
-    final urlParams = decodePlaceholders(resource.path, request.uri.path);
+    final urlParams = decodeRoute(resource.path, request.uri.path);
     final queryParams = request.uri.queryParameters;
     final bodyBytes = Uint8List.fromList(
         (await request.toList()).expand((element) => element).toList());

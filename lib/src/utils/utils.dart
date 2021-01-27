@@ -158,7 +158,7 @@ String buildQueryString(Map<String, String> query) {
 
 final RegExp _plExp = RegExp('(?<!\\\\)\\{([\\w-]*)}');
 
-String encodePlaceholders(String pattern, Map<String, dynamic> values) {
+String encodeRoute(String pattern, Map<String, dynamic> values) {
 //TODO maybe add encode method for values, not just toString
   return pattern.replaceAllMapped(_plExp, (match) {
     final key = match.group(1);
@@ -175,13 +175,13 @@ String encodePlaceholders(String pattern, Map<String, dynamic> values) {
 }
 
 //TODO optimize!!!!
-Map<String, String> decodePlaceholders(String pattern, String source) {
-  final decodePattern = pattern.replaceAllMapped(source, (match) {
+Map<String, String> decodeRoute(String pattern, String source) {
+  final decodePattern = pattern.replaceAllMapped(_plExp, (match) {
     final key = match.group(1);
-    return '(?<$key>[\\w-]*)';
+    return '(?<$key>[\\w-]+)';
   });
 
-  final decodeRegex = RegExp(decodePattern);
+  final decodeRegex = RegExp(decodePattern, caseSensitive: false);
   final match = decodeRegex.firstMatch(source);
   if (match == null || match.group(0)!.length != source.length) {
     throw ApiException('Could not match pattern.');
@@ -192,12 +192,13 @@ Map<String, String> decodePlaceholders(String pattern, String source) {
 }
 
 //TODO optimize!!!!
-bool matchPlaceholders(String pattern, String source) {
-  final decodePattern = pattern.replaceAllMapped(source, (match) {
+bool matchRoute(String pattern, String source) {
+  final decodePattern =
+      pattern.replaceAll('/', '\\/').replaceAllMapped(_plExp, (match) {
     final key = match.group(1);
-    return '(?<$key>[\\w-]*)';
+    return '(?<$key>[\\w-]+)';
   });
 
-  final decodeRegex = RegExp(decodePattern);
+  final decodeRegex = RegExp(decodePattern, caseSensitive: false);
   return decodeRegex.hasMatch(source);
 }
