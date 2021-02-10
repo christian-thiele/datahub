@@ -1,27 +1,39 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/src/api/api_request_exception.dart';
 import 'package:cl_datahub/src/api/api_request_method.dart';
 import 'package:cl_datahub/src/utils/utils.dart';
 
 abstract class ApiBase {
-  final List<ApiResource> resources;
+  final List<ApiEndpoint> endpoints;
 
-  const ApiBase(this.resources);
+  const ApiBase(this.endpoints);
 
-  Future serve(String address, int port) async {
+  Future serve(String address, int port,
+      {CancellationToken? cancellationToken}) async {
     final server = await HttpServer.bind(address, port);
     _log('Serving on $address:$port');
-    server.listen(handleRequest, onError: _onError);
+    final _cancelKey = cancellationToken?.attach(() {
+      print('Shutting down...');
+      server.close();
+    });
+    final completer = Completer();
+    server.listen(_handleRequestGuarded, onError: _onError, onDone: () {
+      cancellationToken?.detach(_cancelKey!);
+      completer.complete();
+    });
+    await completer.future;
   }
 
   void _log(String message) => print(message);
 
-  Future handleRequest(HttpRequest request) async {
+  Future _handleRequestGuarded(HttpRequest request) async {
     try {
-      final result = await internalHandleRequest(request);
+      final result = await handleRequest(request);
       request.response.write(result);
     } on ApiRequestException catch (e) {
       request.response.statusCode = e.statusCode;
@@ -39,9 +51,9 @@ abstract class ApiBase {
     print(e);
   }
 
-  Future<dynamic> internalHandleRequest(HttpRequest request) async {
+  Future<dynamic> handleRequest(HttpRequest request) async {
     final path = request.requestedUri.path;
-    final resource = resources.firstWhere((element) => element.matchRoute(path),
+    final resource = endpoints.firstWhere((element) => element.matchRoute(path),
         orElse: () => throw ApiRequestException.notFound(
             'Resource \"$path\" not found.'));
     final method = parseMethod(request.method);

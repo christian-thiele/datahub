@@ -9,8 +9,8 @@ abstract class ApiEndpoint {
 
   ApiEndpoint(this.path);
 
-  Future<dynamic> get(Map<String, dynamic> urlParams,
-      Map<String, dynamic> queryParams);
+  Future<dynamic> get(
+      Map<String, dynamic> urlParams, Map<String, dynamic> queryParams);
 
   Future<dynamic> post(Map<String, dynamic> urlParams,
       Map<String, dynamic> queryParams, Uint8List bodyBytes);
@@ -21,8 +21,12 @@ abstract class ApiEndpoint {
   Future<dynamic> patch(Map<String, dynamic> urlParams,
       Map<String, dynamic> queryParams, Uint8List bodyBytes);
 
-  Future<dynamic> delete(Map<String, dynamic> urlParams,
-      Map<String, dynamic> queryParams);
+  Future<dynamic> delete(
+      Map<String, dynamic> urlParams, Map<String, dynamic> queryParams);
+
+  bool matchRoute(String route) {
+    return utils.matchRoute(path, route);
+  }
 }
 
 //TODO maybe as hubresource?
@@ -36,8 +40,4 @@ abstract class ApiResource<TData extends TransferObject> extends ApiEndpoint {
   Future<TData> getElement(int id);
 
   Future<List<TData>> getList(int offset, int limit);
-
-  bool matchRoute(String route) {
-    return utils.matchRoute(path, route);
-  }
 }

@@ -1,9 +1,7 @@
 import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/src/api/api_request_exception.dart';
 
-enum ApiRequestMethod {
-  GET, POST, PUT, PATCH, DELETE
-}
+enum ApiRequestMethod { GET, POST, PUT, PATCH, DELETE }
 
 ApiRequestMethod parseMethod(String source) {
   if (source.toLowerCase() == 'get') {
