@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
@@ -7,6 +8,8 @@ import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/src/api/api_request_exception.dart';
 import 'package:cl_datahub/src/api/api_request_method.dart';
 import 'package:cl_datahub/src/utils/utils.dart';
+
+import 'api_response.dart';
 
 abstract class ApiBase {
   final List<ApiEndpoint> endpoints;
@@ -33,8 +36,18 @@ abstract class ApiBase {
 
   Future _handleRequestGuarded(HttpRequest request) async {
     try {
-      final result = await handleRequest(request);
-      request.response.write(result);
+      var result = await handleRequest(request);
+
+      if (result is! ApiResponse) {
+        result = ApiResponse.dynamic(result);
+      }
+
+      result
+          .getHeaders()
+          .entries
+          .forEach((h) => request.response.headers.add(h.key, h.value));
+
+      request.response.add(result.getData());
     } on ApiRequestException catch (e) {
       request.response.statusCode = e.statusCode;
       request.response.write(

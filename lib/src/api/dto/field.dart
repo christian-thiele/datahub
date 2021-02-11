@@ -105,6 +105,7 @@ class ListField<T> extends Field<List<T>> {
     return null;
   }
 
+  @override
   MapEntry<String, dynamic> encode(List<T> value) {
     return MapEntry(key, value.map((e) => encodeTyped<T>(e)).toList());
   }
