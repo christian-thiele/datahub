@@ -5,7 +5,6 @@ import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/src/api/api_error.dart';
 
 class ApiRequest {
-  // TODO bundle route, params into class
   final ApiRequestMethod method;
   final Route route;
   final Map<String, dynamic> queryParams;
