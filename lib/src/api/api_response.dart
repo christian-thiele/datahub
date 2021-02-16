@@ -1,6 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cl_datahub/utils.dart';
+
 //TODO files, bytedata etc.
 
 /// Defines a response to a api request.
@@ -36,14 +38,12 @@ class JsonResponse extends ApiResponse {
       return [];
     }
 
-    return utf8.encode(JsonEncoder().convert(_data!));
+    return utf8.encode(JsonEncoder(customJsonEncode).convert(_data!));
   }
 
   @override
   Map<String, String> getHeaders() {
-    return {
-      HttpHeaders.contentTypeHeader: 'application/json;encoding=utf-8'
-    };
+    return {HttpHeaders.contentTypeHeader: 'application/json;encoding=utf-8'};
   }
 }
 
@@ -51,22 +51,17 @@ class TextResponse extends ApiResponse {
   final String _text;
   final String _contentType;
 
-  TextResponse.plain(this._text)
-      : _contentType = 'text/plain;charset=utf-8';
+  TextResponse.plain(this._text) : _contentType = 'text/plain;charset=utf-8';
 
-  TextResponse.html(this._text)
-      : _contentType = 'text/html;charset=utf-8';
+  TextResponse.html(this._text) : _contentType = 'text/html;charset=utf-8';
 
   @override
   List<int> getData() => utf8.encode(_text);
 
   @override
   Map<String, String> getHeaders() {
-    return {
-      HttpHeaders.contentTypeHeader: _contentType
-    };
+    return {HttpHeaders.contentTypeHeader: _contentType};
   }
-
 }
 
 class EmptyResponse extends ApiResponse {

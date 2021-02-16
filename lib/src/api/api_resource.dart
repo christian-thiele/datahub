@@ -1,39 +1,34 @@
-import 'dart:typed_data';
-
-import 'package:cl_datahub/src/utils/utils.dart' as utils;
+import 'package:cl_datahub/api.dart';
+import 'package:cl_datahub/utils.dart' as utils;
 
 import 'dto/transfer_object.dart';
 
 abstract class ApiEndpoint {
-  final String path;
+  final RoutePattern routePattern;
 
-  ApiEndpoint(this.path);
+  ApiEndpoint(this.routePattern);
 
-  Future<dynamic> get(
-      Map<String, dynamic> urlParams, Map<String, dynamic> queryParams);
+  Future<dynamic> get(ApiRequest request) =>
+      throw ApiRequestException.forbidden();
 
-  Future<dynamic> post(Map<String, dynamic> urlParams,
-      Map<String, dynamic> queryParams, Uint8List bodyBytes);
+  Future<dynamic> post(ApiRequest request) =>
+      throw ApiRequestException.forbidden();
 
-  Future<dynamic> put(Map<String, dynamic> urlParams,
-      Map<String, dynamic> queryParams, Uint8List bodyBytes);
+  Future<dynamic> put(ApiRequest request) =>
+      throw ApiRequestException.forbidden();
 
-  Future<dynamic> patch(Map<String, dynamic> urlParams,
-      Map<String, dynamic> queryParams, Uint8List bodyBytes);
+  Future<dynamic> patch(ApiRequest request) =>
+      throw ApiRequestException.forbidden();
 
-  Future<dynamic> delete(
-      Map<String, dynamic> urlParams, Map<String, dynamic> queryParams);
-
-  bool matchRoute(String route) {
-    return utils.matchRoute(path, route);
-  }
+  Future<dynamic> delete(ApiRequest request) =>
+      throw ApiRequestException.forbidden();
 }
 
 //TODO maybe as hubresource?
 abstract class ApiResource<TData extends TransferObject> extends ApiEndpoint {
   final DTOFactory? factory;
 
-  ApiResource(String path, this.factory) : super(path);
+  ApiResource(path, this.factory) : super(path);
 
   Future<dynamic> getMetaData(String name);
 

@@ -156,49 +156,10 @@ String buildQueryString(Map<String, String> query) {
           .join('&');
 }
 
-final RegExp _plExp = RegExp('(?<!\\\\)\\{([\\w-]*)}');
-
-String encodeRoute(String pattern, Map<String, dynamic> values) {
-//TODO maybe add encode method for values, not just toString
-  return pattern.replaceAllMapped(_plExp, (match) {
-    final key = match.group(1);
-    if (key == null) {
-      throw ApiException('Invalid placeholder-key: ${match.group(0)}');
-    }
-
-    if (values[key] == null) {
-      throw ApiException('Missing value in url params: $key');
-    }
-
-    return Uri.encodeComponent(values[key].toString());
-  });
-}
-
-//TODO optimize!!!!
-Map<String, String> decodeRoute(String pattern, String source) {
-  final decodePattern = pattern.replaceAllMapped(_plExp, (match) {
-    final key = match.group(1);
-    return '(?<$key>[\\w-]+)';
-  });
-
-  final decodeRegex = RegExp(decodePattern, caseSensitive: false);
-  final match = decodeRegex.firstMatch(source);
-  if (match == null || match.group(0)!.length != source.length) {
-    throw ApiException('Could not match pattern.');
+dynamic customJsonEncode(dynamic item) {
+  if (item is DateTime) {
+    return item.toIso8601String();
   }
 
-  return Map.fromEntries(
-      match.groupNames.map((e) => MapEntry(e, match.namedGroup(e)!)));
-}
-
-//TODO optimize!!!!
-bool matchRoute(String pattern, String source) {
-  final decodePattern =
-      pattern.replaceAll('/', '\\/').replaceAllMapped(_plExp, (match) {
-    final key = match.group(1);
-    return '(?<$key>[\\w-]+)';
-  });
-
-  final decodeRegex = RegExp(decodePattern, caseSensitive: false);
-  return decodeRegex.hasMatch(source);
+  return item;
 }

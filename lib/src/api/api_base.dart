@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/src/api/api_request_exception.dart';
-import 'package:cl_datahub/src/api/api_request_method.dart';
-import 'package:cl_datahub/src/utils/utils.dart';
+import 'package:cl_datahub/utils.dart';
 
 import 'api_response.dart';
 
@@ -64,29 +61,33 @@ abstract class ApiBase {
     print(e);
   }
 
-  Future<dynamic> handleRequest(HttpRequest request) async {
-    final path = request.requestedUri.path;
-    final resource = endpoints.firstWhere((element) => element.matchRoute(path),
+  Future<dynamic> handleRequest(HttpRequest httpRequest) async {
+    //TODO strip api base path (like /v1)
+    final path = httpRequest.requestedUri.path;
+    final resource = endpoints.firstWhere(
+        (element) => element.routePattern.match(path),
         orElse: () => throw ApiRequestException.notFound(
             'Resource \"$path\" not found.'));
-    final method = parseMethod(request.method);
+    final method = parseMethod(httpRequest.method);
 
-    final urlParams = decodeRoute(resource.path, request.uri.path);
-    final queryParams = request.uri.queryParameters;
+    final route = resource.routePattern.decode(httpRequest.uri.path);
+    final queryParams = httpRequest.uri.queryParameters;
     final bodyBytes = Uint8List.fromList(
-        (await request.toList()).expand((element) => element).toList());
+        (await httpRequest.toList()).expand((element) => element).toList());
+
+    final request = ApiRequest(method, route, queryParams, bodyBytes);
 
     switch (method) {
       case ApiRequestMethod.GET:
-        return resource.get(urlParams, queryParams);
+        return resource.get(request);
       case ApiRequestMethod.POST:
-        return resource.post(urlParams, queryParams, bodyBytes);
+        return resource.post(request);
       case ApiRequestMethod.PUT:
-        return resource.put(urlParams, queryParams, bodyBytes);
+        return resource.put(request);
       case ApiRequestMethod.PATCH:
-        return resource.patch(urlParams, queryParams, bodyBytes);
+        return resource.patch(request);
       case ApiRequestMethod.DELETE:
-        return resource.delete(urlParams, queryParams);
+        return resource.delete(request);
     }
   }
 }
