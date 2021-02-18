@@ -83,6 +83,8 @@ final tests = [
       {'stuff': 'required', 'optionalParam': 'optional'}),
   Triple(pattern9, '/path/to/required/and/optional/more123/test',
       {'stuff': 'required', 'optionalParam': 'optional'}),
+  Triple('/articles/{articleId?}', '/articles', {}),
+  Triple('/articles/{articleId?}', '/articles/5', {'articleId': '5'})
 ];
 
 final invalidRoutes = [invalid1, invalid2];

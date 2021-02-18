@@ -5,13 +5,15 @@ import 'package:cl_datahub/cl_datahub.dart';
 
 import '../utils.dart';
 
-final articles = List.generate(50, (index) => {
-  'title': 'Article about something!',
-  'author': Random().nextInt(50),
-  'published':
-  DateTime.now().subtract(Duration(days: Random().nextInt(300))),
-  'content': loremIpsum
-});
+final articles = List.generate(
+    50,
+    (index) => {
+          'title': 'Article about something!',
+          'author': Random().nextInt(50),
+          'published':
+              DateTime.now().subtract(Duration(days: Random().nextInt(300))),
+          'content': loremIpsum
+        });
 
 /// Test endpoint extending ApiEndpoint
 class ArticleEndpoint extends ApiEndpoint {
@@ -21,10 +23,14 @@ class ArticleEndpoint extends ApiEndpoint {
   Future get(ApiRequest request) async {
     if (request.route.routeParams.containsKey('article')) {
       final article = int.parse(request.route.routeParams['article']!);
-      return articles[article];
+      if (articles.length > article) {
+        return articles[article];
+      } else {
+        throw ApiRequestException.notFound();
+      }
     }
 
-    throw ApiRequestException.notFound();
+    return articles;
   }
 
   @override
@@ -39,5 +45,4 @@ class ArticleEndpoint extends ApiEndpoint {
     print('posting');
     return request.getJsonBody();
   }
-
 }
