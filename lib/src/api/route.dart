@@ -1,14 +1,19 @@
+import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/src/api/api_error.dart';
 
+const _wildcardGroup = '_route_wildcard';
+const _prefixGroup = '_prefix';
+const _keyGroup = '_key';
+const _optionalGroup = '_optional';
+
 // placeholder detector regex
-final RegExp _plExp = RegExp('(?<!\\\\){([\\w-]*)}');
+final RegExp _plExp = RegExp(
+    '^(?<$_prefixGroup>[\\w\\.-]*){((?<$_keyGroup>[\\w-]+)(?<$_optionalGroup>\\??))}\$');
 
 // route pattern validation regex
-final RegExp _vrExp =
-    RegExp('^(\\/([\\w\\.-]*((?<!\\\\){([a-zA-Z0-9]*)})?))*(\\/\\*?)?\$');
-
-const _wildcardGroup = 'route_wildcard';
+final RegExp _vrExp = RegExp(
+    '^(\\/([\\w\\\\.-]+|[\\w\\\\.-]*((?<!\\\\){([\\w-]+)\\??})))*(\\/\\*?)?\/?\$');
 
 /// Represents a route pattern against which request paths will be matched.
 ///
@@ -32,6 +37,8 @@ const _wildcardGroup = 'route_wildcard';
 ///
 /// *The placeholder `{name}` will allow anything as long as it is a single
 /// path segment.*
+/// Placeholder keys can only contain the characters `a-z, 0-9, _, -`. No white
+/// space, slashes or other special characters allowed.
 ///
 /// For the route pattern
 /// `/users/{name}/pictures`
@@ -51,6 +58,11 @@ const _wildcardGroup = 'route_wildcard';
 /// while the following will not:
 /// `/category/article_2354`
 /// `/category/science/article_`
+///
+/// For more flexible matching, placeholders can also be defined as optional
+/// by appending a question mark to the name:
+///
+/// `/articles/{articleId?}`
 ///
 /// __Wildcard-Suffix__
 ///
@@ -78,58 +90,54 @@ const _wildcardGroup = 'route_wildcard';
 /// object. See [Route.wildcard]
 class RoutePattern {
   final String pattern;
+  final List<_Segment> _segments;
   final RegExp routeMatchExp;
   final bool isWildcardPattern;
 
-  RoutePattern._(this.pattern, this.routeMatchExp, this.isWildcardPattern);
+  RoutePattern._(
+      this.pattern, this._segments, this.routeMatchExp, this.isWildcardPattern);
 
   factory RoutePattern(String pattern) {
-    const wildcardSuffix = '(?<$_wildcardGroup>(\\/([\\w\\.-]*))*)';
-
-    if (pattern.endsWith('/')) {
-      pattern = pattern.substring(0, pattern.length - 1);
-    }
-
     if (!_vrExp.hasMatch(pattern)) {
       throw ApiError('Invalid route pattern: $pattern');
     }
 
-    final isWildcard = pattern.endsWith('/*') || pattern.endsWith('/*/');
+    final patternSegments = pattern.split('/').where((s) => !nullOrEmpty(s));
+    final segments = <_Segment>[];
+    var hasWildcard = false;
+    for (final segment in patternSegments) {
+      final plMatch = _plExp.firstMatch(segment);
+      if (plMatch != null) {
+        segments.add(_PLSegment(
+            segment,
+            plMatch.namedGroup(_prefixGroup)!,
+            plMatch.namedGroup(_keyGroup)!,
+            plMatch.namedGroup(_optionalGroup)!.isNotEmpty));
+        continue;
+      }
 
-    final buffer = StringBuffer('^');
-    buffer.write(pattern
-        .replaceAll('/', '\\/')
-        .replaceAll('.', '\\.')
-        .replaceAllMapped(_plExp, (match) {
-      final key = match.group(1);
-      return '(?<$key>[\\w\\-\\.]+)';
-    }));
+      if (segment == '*') {
+        segments.add(_WildcardSegment());
+        hasWildcard = true;
+        break;
+      }
 
-    if (isWildcard) {
-      buffer.write(wildcardSuffix);
+      segments.add(_Segment(segment));
     }
 
-    buffer.write('\\/?\$');
+    final matchExp = RegExp(
+        '^' + segments.map((s) => s.toMatchExp()).join() + '\\/?\$',
+        caseSensitive: false);
 
-    final regex = RegExp(buffer.toString(), caseSensitive: false);
-    return RoutePattern._(pattern, regex, isWildcard);
+    return RoutePattern._(pattern, segments, matchExp, hasWildcard);
   }
 
   /// Encodes url params into a path.
   String encode(Map<String, dynamic> values) {
     //TODO add encode method for values, not just toString
-    return pattern.replaceAllMapped(_plExp, (match) {
-      final key = match.group(1);
-      if (key == null) {
-        throw ApiException('Invalid placeholder-key: ${match.group(0)}');
-      }
-
-      if (values[key] == null) {
-        throw ApiException('Missing value in url params: $key');
-      }
-
-      return Uri.encodeComponent(values[key].toString());
-    });
+    final stringValues =
+        values.map((key, value) => MapEntry(key, value.toString()));
+    return _segments.map((s) => s.encode(stringValues)).join();
   }
 
   /// Decodes a path using the route pattern.
@@ -143,7 +151,11 @@ class RoutePattern {
 
     final pathParams = Map.fromEntries(match.groupNames
         .where((e) => e != _wildcardGroup)
-        .map((e) => MapEntry(e, match.namedGroup(e)!)));
+        .map((e) =>
+            (match.groupNames.contains(e) && match.namedGroup(e) != null)
+                ? MapEntry(e, match.namedGroup(e)!)
+                : null)
+        .whereNotNull);
 
     final wildcard = match.groupNames.contains(_wildcardGroup)
         ? match.namedGroup(_wildcardGroup)
@@ -153,6 +165,63 @@ class RoutePattern {
   }
 
   bool match(String path) => routeMatchExp.hasMatch(path);
+}
+
+class _Segment {
+  final String source;
+
+  _Segment(this.source);
+
+  String toMatchExp() => '\\/${_regexEscape(source)}';
+
+  String encode(Map<String, String> params) => '/$source';
+}
+
+class _PLSegment extends _Segment {
+  final String prefix;
+  final String key;
+  final bool optional;
+
+  _PLSegment(String source, this.prefix, this.key, this.optional)
+      : super(source);
+
+  @override
+  String toMatchExp() {
+    if (optional) {
+      if (prefix.isEmpty) {
+        return '(\\/(?<$key>[\\w\\-\\.]+))?';
+      } else {
+        return '(\\/${_regexEscape(prefix)}(?<$key>[\\w\\-\\.]+)?';
+      }
+    } else {
+      return '\\/${_regexEscape(prefix)}(?<$key>[\\w\\-\\.]+)';
+    }
+  }
+
+  @override
+  String encode(Map<String, String> params) {
+    if (params.containsKey(key)) {
+      return '/$prefix${params[key]}';
+    } else if (optional) {
+      return '';
+    } else {
+      throw ApiException('Missing value in url params: $key');
+    }
+  }
+}
+
+class _WildcardSegment extends _Segment {
+  _WildcardSegment() : super('*');
+
+  @override
+  String toMatchExp() => '(?<$_wildcardGroup>(\\/([\\w\\.-]*))*)';
+
+  @override
+  String encode(Map<String, String> params) => '';
+}
+
+String _regexEscape(String source) {
+  return source.replaceAll('\\', '\\\\').replaceAll('.', '\\.');
 }
 
 /// Represents a path which has been matched with a [RoutePattern].

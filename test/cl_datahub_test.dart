@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
@@ -17,8 +16,7 @@ void main() {
 
     setUp(() {
       api = Api([
-        ArticleEndpoint(),
-        ArticleListEndpoint()
+        ArticleEndpoint()
       ]);
     });
 

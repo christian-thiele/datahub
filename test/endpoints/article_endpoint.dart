@@ -14,22 +14,8 @@ final articles = List.generate(50, (index) => {
 });
 
 /// Test endpoint extending ApiEndpoint
-class ArticleListEndpoint extends ApiEndpoint {
-  ArticleListEndpoint() : super(RoutePattern('articles'));
-
-  @override
-  Future get(ApiRequest request) async => articles;
-
-  @override
-  Future post(ApiRequest request) async {
-    print('posting');
-    return request.getJsonBody();
-  }
-}
-
-/// Test endpoint extending ApiEndpoint
 class ArticleEndpoint extends ApiEndpoint {
-  ArticleEndpoint() : super(RoutePattern('articles/{article}'));
+  ArticleEndpoint() : super(RoutePattern('/articles/{article?}'));
 
   @override
   Future get(ApiRequest request) async {
@@ -47,4 +33,11 @@ class ArticleEndpoint extends ApiEndpoint {
     print('patched.');
     return data;
   }
+
+  @override
+  Future post(ApiRequest request) async {
+    print('posting');
+    return request.getJsonBody();
+  }
+
 }

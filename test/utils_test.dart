@@ -17,6 +17,10 @@ final pattern2 = '/path/to/{stuff}/article';
 final pattern3 = '/articles/test';
 final pattern4 = '/path/to/{stuff}/and/*';
 final pattern5 = '/path/to/{stuff}/and/*/';
+final pattern6 = '/path/to/{stuff}/and/{optionalParam?}';
+final pattern7 = '/path/to/{stuff}/and/{optionalParam?}/';
+final pattern8 = '/path/to/{stuff}/and/{optionalParam?}/more';
+final pattern9 = '/path/to/{stuff}/and/{optionalParam?}/*';
 final invalid1 = '/invalid/path/{stuff}/and/*/no';
 final invalid2 = '/*invalid/path/{stuff}/and/*/no';
 
@@ -48,21 +52,68 @@ final tests = [
   Triple(pattern5, '/path/to/some/and', {'stuff': 'some'}),
   Triple(pattern5, '/path/to/some/and/more/of/that', {'stuff': 'some'}),
   Triple(pattern5, '/path/to/some/other/stuff/', null),
+  Triple(pattern6, '/path/to/required/and/optional',
+      {'stuff': 'required', 'optionalParam': 'optional'}),
+  Triple(pattern6, '/path/to/required/and/optional/',
+      {'stuff': 'required', 'optionalParam': 'optional'}),
+  Triple(pattern6, '/path/to/required/and', {'stuff': 'required'}),
+  Triple(pattern6, '/path/to/required/and/', {'stuff': 'required'}),
+  Triple(pattern6, '/path/to/required/and/optional/more', null),
+  Triple(pattern6, '/path/to/required/and/optional/more/', null),
+  Triple(pattern6, '/path/to/and/optional', null),
+  Triple(pattern7, '/path/to/required/and/optional',
+      {'stuff': 'required', 'optionalParam': 'optional'}),
+  Triple(pattern7, '/path/to/required/and/optional/',
+      {'stuff': 'required', 'optionalParam': 'optional'}),
+  Triple(pattern7, '/path/to/required/and', {'stuff': 'required'}),
+  Triple(pattern7, '/path/to/required/and/', {'stuff': 'required'}),
+  Triple(pattern7, '/path/to/required/and/optional/more', null),
+  Triple(pattern7, '/path/to/required/and/optional/more/', null),
+  Triple(pattern7, '/path/to/and/optional', null),
+  Triple(pattern8, '/path/to/required/and/optional', null),
+  Triple(pattern8, '/path/to/required/and/optional/', null),
+  Triple(pattern8, '/path/to/required/and', null),
+  Triple(pattern8, '/path/to/required/and/', null),
+  Triple(pattern8, '/path/to/required/and/optional/smth', null),
+  Triple(pattern8, '/path/to/required/and/optional/smth/', null),
+  Triple(pattern8, '/path/to/and/optional', null),
+  Triple(pattern8, '/path/to/required/and/optional/more',
+      {'stuff': 'required', 'optionalParam': 'optional'}),
+  Triple(pattern9, '/path/to/required/and/optional/more',
+      {'stuff': 'required', 'optionalParam': 'optional'}),
+  Triple(pattern9, '/path/to/required/and/optional/more123/test',
+      {'stuff': 'required', 'optionalParam': 'optional'}),
 ];
 
 final invalidRoutes = [invalid1, invalid2];
 
 void _testRouteEncode() {
-  final pattern1 = RoutePattern('/path/to/{stuff}/articles/article_{articleId}');
+  final p1 = RoutePattern('/path/to/{stuff}/articles/article_{articleId}');
   final args1 = {'stuff': 'some', 'articleId': 328};
-  final route1 = pattern1.encode(args1);
-  expect(route1, equals('/path/to/some/articles/article_328'));
+  expect(p1.encode(args1), equals('/path/to/some/articles/article_328'));
+
+  final p2 = RoutePattern('/path/to/{stuff}/articles/{articleId?}');
+  final args21 = {'stuff': 'some', 'articleId': 328};
+  final args22 = {'stuff': 'some'};
+  expect(p2.encode(args21), equals('/path/to/some/articles/328'));
+  expect(p2.encode(args22), equals('/path/to/some/articles'));
+
+  final p3 = RoutePattern('/path/to/{stuff?}/articles/{articleId}');
+  final args31 = {'stuff': 'some', 'articleId': 328};
+  final args32 = {'articleId': 328};
+  expect(p3.encode(args31), equals('/path/to/some/articles/328'));
+  expect(p3.encode(args32), equals('/path/to/articles/328'));
+
+  expect(() => p3.encode({}), throwsA(isA<ApiException>()));
 }
 
 void _testRouteMatch() {
   for (final test in tests) {
     final pattern = RoutePattern(test.a);
-    expect(pattern.match(test.b), test.c != null ? isTrue : isFalse,
+    if (pattern.match(test.b) != (test.c != null)) {
+      print('here');
+    }
+    expect(pattern.match(test.b), equals(test.c != null),
         reason: 'Route:\n  ${test.b}\ndoes not match pattern:\n  ${test.a}');
   }
 }
@@ -76,8 +127,9 @@ void _testRouteDecode() {
       try {
         final result = pattern.decode(test.b);
         expect(result.routeParams, equals(test.c));
-      } catch (_) {
-        fail('Could not decode:\n  ${test.b}\nfor pattern:\n  ${test.a}');
+      } catch (e) {
+        fail(
+            'Could not decode:\n  ${test.b}\nfor pattern:\n  ${test.a}\n\nReason:\n${e.toString()}');
       }
     }
   }
@@ -90,9 +142,19 @@ void _testRouteInvalid() {
 }
 
 void _testIsWildcard() {
-  final wildcardTests = [Tuple(pattern3, false), Tuple(pattern4, true)];
+  final wildcardTests = [
+    Tuple(pattern1, false),
+    Tuple(pattern2, false),
+    Tuple(pattern3, false),
+    Tuple(pattern4, true),
+    Tuple(pattern5, true),
+    Tuple(pattern6, false),
+    Tuple(pattern7, false),
+    Tuple(pattern8, false),
+    Tuple(pattern9, true)
+  ];
   for (final test in wildcardTests) {
     final pattern = RoutePattern(test.a);
-    expect(pattern.isWildcardPattern, equals(test.b));
+    expect(pattern.isWildcardPattern, equals(test.b), reason: test.a);
   }
 }
