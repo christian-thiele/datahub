@@ -25,7 +25,7 @@ void main() {
       final task = api.serve(InternetAddress.loopbackIPv4.address, 8083,
           cancellationToken: token);
       await Future.delayed(Duration(seconds: 3));
-      //token.cancel();
+      token.cancel();
       await task;
     }, timeout: Timeout(Duration(minutes: 5)));
   });
