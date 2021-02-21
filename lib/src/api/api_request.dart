@@ -7,7 +7,7 @@ import 'package:cl_datahub/src/api/api_error.dart';
 class ApiRequest {
   final ApiRequestMethod method;
   final Route route;
-  final Map<String, dynamic> queryParams;
+  final Map<String, String> queryParams;
   final Uint8List? _bodyData;
 
   bool get hasBodyData => _bodyData != null;
@@ -20,4 +20,22 @@ class ApiRequest {
   String getTextBody() => utf8.decode(bodyData);
 
   dynamic getJsonBody() => JsonDecoder().convert(getTextBody());
+
+  //TODO doc -> throw behaviour etc
+  String getParam(String name, [String? fallback]) {
+    return queryParams[name]?.toString() ??
+        fallback ??
+        (throw ApiRequestException.badRequest('Missing route param: $name'));
+  }
+
+  //TODO doc -> throw behaviour etc
+  int getParamInt(String name, [int? fallback]) {
+    if (queryParams[name] != null) {
+      return int.tryParse(queryParams[name]!) ??
+          (throw ApiRequestException.badRequest('Invalid route param: $name'));
+    }
+
+    return fallback ??
+        (throw ApiRequestException.badRequest('Missing route param: $name'));
+  }
 }

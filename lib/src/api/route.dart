@@ -94,8 +94,8 @@ class RoutePattern {
   final RegExp routeMatchExp;
   final bool isWildcardPattern;
 
-  RoutePattern._(
-      this.pattern, this._segments, this.routeMatchExp, this.isWildcardPattern);
+  RoutePattern._(this.pattern, this._segments, this.routeMatchExp,
+      this.isWildcardPattern);
 
   factory RoutePattern(String pattern) {
     if (!_vrExp.hasMatch(pattern)) {
@@ -136,7 +136,7 @@ class RoutePattern {
   String encode(Map<String, dynamic> values) {
     //TODO add encode method for values, not just toString
     final stringValues =
-        values.map((key, value) => MapEntry(key, value.toString()));
+    values.map((key, value) => MapEntry(key, value.toString()));
     return _segments.map((s) => s.encode(stringValues)).join();
   }
 
@@ -152,9 +152,9 @@ class RoutePattern {
     final pathParams = Map.fromEntries(match.groupNames
         .where((e) => e != _wildcardGroup)
         .map((e) =>
-            (match.groupNames.contains(e) && match.namedGroup(e) != null)
-                ? MapEntry(e, match.namedGroup(e)!)
-                : null)
+    (match.groupNames.contains(e) && match.namedGroup(e) != null)
+        ? MapEntry(e, match.namedGroup(e)!)
+        : null)
         .whereNotNull);
 
     final wildcard = match.groupNames.contains(_wildcardGroup)
@@ -236,4 +236,13 @@ class Route {
   final String? wildcard;
 
   Route(this.pattern, this.routeParams, this.wildcard);
+
+  //TODO doc -> throw behaviour etc
+  int? getParamInt(String name) {
+    if (routeParams[name] != null) {
+      return int.tryParse(routeParams[name]!) ??
+          (throw ApiRequestException.badRequest('Invalid route param: $name'));
+    }
+    return null;
+  }
 }
