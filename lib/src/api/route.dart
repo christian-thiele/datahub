@@ -153,7 +153,7 @@ class RoutePattern {
         .where((e) => e != _wildcardGroup)
         .map((e) =>
     (match.groupNames.contains(e) && match.namedGroup(e) != null)
-        ? MapEntry(e, match.namedGroup(e)!)
+        ? MapEntry(e, Uri.decodeComponent(match.namedGroup(e)!))
         : null)
         .whereNotNull);
 
@@ -187,14 +187,15 @@ class _PLSegment extends _Segment {
 
   @override
   String toMatchExp() {
+    final keyRegex = '(?<$key>[\\w\\-\\.\\%]+)';
     if (optional) {
       if (prefix.isEmpty) {
-        return '(\\/(?<$key>[\\w\\-\\.]+))?';
+        return '(\\/$keyRegex)?';
       } else {
-        return '(\\/${_regexEscape(prefix)}(?<$key>[\\w\\-\\.]+)?';
+        return '(\\/${_regexEscape(prefix)}$keyRegex)?';
       }
     } else {
-      return '\\/${_regexEscape(prefix)}(?<$key>[\\w\\-\\.]+)';
+      return '\\/${_regexEscape(prefix)}$keyRegex';
     }
   }
 

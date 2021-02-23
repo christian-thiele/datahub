@@ -28,5 +28,7 @@ class StaticApiResource<TData extends TransferObject>
     if (name == 'count') {
       return data.length;
     }
+
+    throw ApiRequestException.notFound('Meta-Property $name not found.');
   }
 }

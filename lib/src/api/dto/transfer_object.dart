@@ -2,9 +2,9 @@ typedef DTOFactory<T extends TransferObject> = T Function(
     Map<String, dynamic> data);
 
 abstract class TransferObject {
-  final Map<String, dynamic> _data;
+  final Map<String, dynamic> data;
 
-  TransferObject(this._data);
+  TransferObject(this.data);
 
-  Map<String, dynamic> toJson() => _data;
+  Map<String, dynamic> toJson() => data;
 }

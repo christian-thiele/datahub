@@ -6,7 +6,7 @@ abstract class ApiResource<TData> extends ApiEndpoint {
   final TData Function(Map<String, dynamic>) factory;
   final bool allowPatch, allowPost, allowDelete;
 
-  ApiResource(path, this.factory,
+  ApiResource(RoutePattern path, this.factory,
       {this.allowPatch = true, this.allowPost = true, this.allowDelete = true})
       : super(path);
 

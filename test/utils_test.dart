@@ -42,7 +42,6 @@ final tests = [
   Triple(pattern3, 'articles/test', null),
   Triple(pattern3, 'articles/test/', null),
   Triple(pattern3, '/articles/test', {}),
-  Triple(pattern3, '/articles/test', {}),
   Triple(pattern3, '/articles/test/', {}),
   Triple(pattern4, '/path/to/some/articles', null),
   Triple(pattern4, '/path/to/some/and', {'stuff': 'some'}),
@@ -84,7 +83,9 @@ final tests = [
   Triple(pattern9, '/path/to/required/and/optional/more123/test',
       {'stuff': 'required', 'optionalParam': 'optional'}),
   Triple('/articles/{articleId?}', '/articles', {}),
-  Triple('/articles/{articleId?}', '/articles/5', {'articleId': '5'})
+  Triple('/articles/{articleId?}', '/articles/5', {'articleId': '5'}),
+  Triple(
+      '/articles/{articleId?}', '/articles/%24count', {'articleId': '\$count'})
 ];
 
 final invalidRoutes = [invalid1, invalid2];
@@ -131,7 +132,8 @@ void _testRouteDecode() {
         expect(result.routeParams, equals(test.c));
       } catch (e) {
         fail(
-            'Could not decode:\n  ${test.b}\nfor pattern:\n  ${test.a}\n\nReason:\n${e.toString()}');
+            'Could not decode:\n  ${test.b}\nfor pattern:\n  ${test
+                .a}\n\nReason:\n${e.toString()}');
       }
     }
   }
