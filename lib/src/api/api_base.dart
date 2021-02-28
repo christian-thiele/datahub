@@ -4,14 +4,16 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
+import 'package:cl_datahub/src/api/middleware/middleware.dart';
 import 'package:cl_datahub/utils.dart';
 
 import 'api_response.dart';
 
 abstract class ApiBase {
   final List<ApiEndpoint> endpoints;
+  final MiddlewareBuilder? middleware;
 
-  const ApiBase(this.endpoints);
+  const ApiBase(this.endpoints, {this.middleware});
 
   Future serve(String address, int port,
       {CancellationToken? cancellationToken}) async {
@@ -35,10 +37,6 @@ abstract class ApiBase {
     try {
       var result = await handleRequest(request);
 
-      if (result is! ApiResponse) {
-        result = ApiResponse.dynamic(result);
-      }
-
       result
           .getHeaders()
           .entries
@@ -46,10 +44,14 @@ abstract class ApiBase {
 
       request.response.add(result.getData());
     } on ApiRequestException catch (e) {
+      // exceptions are usually handled at the apiendpoint and converted
+      // to ApiResponses. this is just in case:
       request.response.statusCode = e.statusCode;
       request.response.write(
           '${e.statusCode} ${getHttpStatus(e.statusCode)}: ${e.message}');
     } catch (e) {
+      // exceptions are usually handled at the apiendpoint and converted
+      // to ApiResponses. this is just in case:
       request.response.statusCode = 500;
       request.response.writeln('500 - Internal Server Error');
     }
@@ -61,7 +63,7 @@ abstract class ApiBase {
     print(e);
   }
 
-  Future<dynamic> handleRequest(HttpRequest httpRequest) async {
+  Future<ApiResponse> handleRequest(HttpRequest httpRequest) async {
     //TODO strip api base path (like /v1)
     final path = httpRequest.requestedUri.path;
     final resource = endpoints.firstWhere(
@@ -77,17 +79,12 @@ abstract class ApiBase {
 
     final request = ApiRequest(method, route, queryParams, bodyBytes);
 
-    switch (method) {
-      case ApiRequestMethod.GET:
-        return resource.get(request);
-      case ApiRequestMethod.POST:
-        return resource.post(request);
-      case ApiRequestMethod.PUT:
-        return resource.put(request);
-      case ApiRequestMethod.PATCH:
-        return resource.patch(request);
-      case ApiRequestMethod.DELETE:
-        return resource.delete(request);
-    }
+    return await () async {
+      if (middleware != null) {
+        return await middleware!.call(resource).handleRequest(request);
+      } else {
+        return await resource.handleRequest(request);
+      }
+    }();
   }
 }

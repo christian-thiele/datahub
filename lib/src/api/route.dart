@@ -161,7 +161,7 @@ class RoutePattern {
         ? match.namedGroup(_wildcardGroup)
         : null;
 
-    return Route(this, pathParams, wildcard);
+    return Route(this, path, pathParams, wildcard);
   }
 
   bool match(String path) => routeMatchExp.hasMatch(path);
@@ -249,10 +249,11 @@ String _regexEscape(String source) {
 /// is stored in [Route.wildcard].
 class Route {
   final RoutePattern pattern;
+  final String url;
   final Map<String, String> routeParams;
   final String? wildcard;
 
-  Route(this.pattern, this.routeParams, this.wildcard);
+  Route(this.pattern, this.url, this.routeParams, this.wildcard);
 
   //TODO doc -> throw behaviour etc
   int? getParamInt(String name) {
@@ -262,4 +263,7 @@ class Route {
     }
     return null;
   }
+
+  @override
+  String toString() => url;
 }

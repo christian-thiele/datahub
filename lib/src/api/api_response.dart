@@ -21,6 +21,8 @@ abstract class ApiResponse {
   factory ApiResponse.dynamic(dynamic body, [int statusCode = 200]) {
     if (body == null) {
       return EmptyResponse(statusCode);
+    } else if (body is ApiResponse) {
+      return body;
     } else if (body is Map<String, dynamic> || body is List<dynamic>) {
       return JsonResponse(body, statusCode);
     } else {
