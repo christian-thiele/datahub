@@ -2,8 +2,7 @@ import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/src/api/dto/transfer_object.dart';
 import 'package:cl_datahub/src/api/hub/api_resource.dart';
 
-class StaticApiResource<TData extends TransferObject>
-    extends ApiResource<TData> {
+class StaticApiResource<TData> extends ApiResource<TData> {
   final Iterable<TData> data;
 
   StaticApiResource(path, DTOFactory<TData> factory, this.data)

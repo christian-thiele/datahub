@@ -1,4 +1,4 @@
-typedef DTOFactory<T extends TransferObject> = T Function(
+typedef DTOFactory<T> = T Function(
     Map<String, dynamic> data);
 
 abstract class TransferObject {

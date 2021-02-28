@@ -165,6 +165,22 @@ class RoutePattern {
   }
 
   bool match(String path) => routeMatchExp.hasMatch(path);
+
+  /// Checks if there is a placeholder param with the given key in the pattern.
+  bool containsParam(String key) {
+    return _segments
+        .any((element) => element is _PLSegment && element.key == key);
+  }
+
+  /// Checks whether the placeholder with the given key is optional.
+  ///
+  /// Throws ApiError when the key is not present in the pattern.
+  bool isOptionalParam(String key) {
+    final segment = _segments.firstWhere((element) =>
+    element is _PLSegment && element.key == key, orElse: () => throw ApiError(
+        'Placeholder param "$key" not present in pattern: $pattern')) as _PLSegment;
+    return segment.optional;
+  }
 }
 
 class _Segment {

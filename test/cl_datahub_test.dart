@@ -14,7 +14,7 @@ class Api extends ApiBase {
 void main() {
   group('ApiBase', ()
   {
-    test('serve and cancel', () async {
+    test('Serve and Cancel', () async {
       final api = Api([
         ArticleEndpoint()
       ]);
@@ -27,7 +27,7 @@ void main() {
       await task;
     }, timeout: Timeout(Duration(minutes: 5)));
 
-    test('serve and cancel 2', () async {
+    test('Hub Resource', () async {
       final api = Api([
         ArticleResource()
       ]);
@@ -35,8 +35,11 @@ void main() {
       final token = CancellationToken();
       final task = api.serve(InternetAddress.loopbackIPv4.address, 8083,
           cancellationToken: token);
-      await Future.delayed(Duration(seconds: 3));
-      //token.cancel();
+      await Future.delayed(Duration(seconds: 1));
+
+      ///TODO test requests
+
+      token.cancel();
       await task;
     }, timeout: Timeout(Duration(minutes: 5)));
   });

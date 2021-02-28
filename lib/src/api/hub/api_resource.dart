@@ -3,12 +3,21 @@ import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/src/api/api_error.dart';
 
 abstract class ApiResource<TData> extends ApiEndpoint {
-  final TData Function(Map<String, dynamic>) factory;
+  final DTOFactory<TData> factory;
   final bool allowPatch, allowPost, allowDelete;
+  final String idParam;
 
   ApiResource(RoutePattern path, this.factory,
-      {this.allowPatch = true, this.allowPost = true, this.allowDelete = true})
-      : super(path);
+      {this.idParam = 'id',
+      this.allowPatch = true,
+      this.allowPost = true,
+      this.allowDelete = true})
+      : super(path) {
+    if (!path.containsParam(idParam)) {
+      throw ApiError(
+          'ApiResource path does not contain the id placeholder: $idParam');
+    }
+  }
 
   Future<dynamic> getMetaData(String name);
 
@@ -32,15 +41,16 @@ abstract class ApiResource<TData> extends ApiEndpoint {
     if (request.queryParams.keys.any(isMeta)) {
       final vars = request.queryParams.keys
           .where(isMeta)
+          .map((e) => e.substring(1))
           .take(25); //TODO maybe setMetaParmLimit(...) or smth
-      final result = [];
+      final result = <String, dynamic>{};
       for (final name in vars) {
-        result.add(await getMetaData(name));
+        result[name] = await getMetaData(name);
       }
       return result;
     }
 
-    final id = request.route.getParamInt('id');
+    final id = request.route.getParamInt(idParam);
     if (id != null) {
       return await getElement(id);
     } else {
