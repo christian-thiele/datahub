@@ -8,6 +8,7 @@ environment:
 
 dependencies:
   boost: ^0.0.5-nullsafety
+  uuid: 2.2.2
 
 dev_dependencies:
   pedantic: ^1.10.0-nullsafety

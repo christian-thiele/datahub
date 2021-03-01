@@ -1,8 +1,9 @@
 // TODO RedisSessionProvider or others, bit more documentation i guess
 import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/src/sessions/session.dart';
 import 'package:boost/boost.dart';
+import 'package:cl_datahub/src/utils/token.dart';
 
+import 'session.dart';
 import 'session_provider.dart';
 
 /// [SessionProvider] implementation that stores all session data in memory.
@@ -18,16 +19,12 @@ class MemorySessionProvider implements SessionProvider {
 
   MemorySessionProvider({this.maxDuration = const Duration(minutes: 30)});
 
-  String _generateToken(String sessionid) {
-    return sessionid; //TODO!!!! generate uuid!!! this is security shit, don't fucking ditch on int
-  }
-
   @override
   Future<Session> createSession(int userId) async {
     final sessionId = (_currentId++).toString();
-    final sessionToken = _generateToken(sessionId);
+    final sessionToken = Token();
     final session =
-        Session(sessionId, userId, DateTime.now(), sessionToken, {});
+        Session(sessionId, userId, DateTime.now(), sessionToken.toString(), {});
     _sessions.add(session);
     return session;
   }
@@ -47,8 +44,8 @@ class MemorySessionProvider implements SessionProvider {
 
   @override
   Future<Session> redeemToken(String sessionToken) async {
-    final current =
-    _sessions.firstOrNullWhere((element) => element.sessionToken == sessionToken);
+    final current = _sessions
+        .firstOrNullWhere((element) => element.sessionToken == sessionToken);
 
     if (current != null && current.duration > maxDuration) {
       _sessions.remove(current);
@@ -68,7 +65,7 @@ class MemorySessionProvider implements SessionProvider {
   Future<List<Session>> getUserSession(int userId) async {
     final userSessions = _sessions.where((s) => s.userId == userId).toList();
     for (final session in userSessions) {
-      if(session.duration > maxDuration) {
+      if (session.duration > maxDuration) {
         _sessions.remove(session);
       }
     }

@@ -6,7 +6,7 @@ abstract class SessionProvider {
   Future<Session> createSession(int userId);
 
   /// Finds and returns the session associated with the token and resets
-  /// timeout.Throws if timed out or token invalid.
+  /// timeout. Throws if timed out or token invalid.
   Future<Session> redeemToken(String sessionToken);
 
   Future<Session?> findSessionById(String id);

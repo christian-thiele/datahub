@@ -2,11 +2,14 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cl_datahub/api.dart';
+import 'package:cl_datahub/src/api/request_context.dart';
 import 'package:cl_datahub/src/api/api_error.dart';
 
 class ApiRequest {
+  final RequestContext context;
   final ApiRequestMethod method;
   final Route route;
+  final Map<String, List<String>> headers;
   final Map<String, String> queryParams;
   final Uint8List? _bodyData;
 
@@ -15,7 +18,8 @@ class ApiRequest {
   Uint8List get bodyData =>
       _bodyData ?? (throw ApiError('Request does not contain body data.'));
 
-  ApiRequest(this.method, this.route, this.queryParams, this._bodyData);
+  ApiRequest(this.context, this.method, this.route, this.headers, this.queryParams,
+      this._bodyData);
 
   String getTextBody() => utf8.decode(bodyData);
 
