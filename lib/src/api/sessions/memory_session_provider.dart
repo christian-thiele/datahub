@@ -12,15 +12,15 @@ import 'session_provider.dart';
 /// Session data will not be persisted and is gone after restarting the service.
 /// [maxDuration] determines how long a session can live between requests.
 /// If set to [Duration.zero], sessions will never time out.
-class MemorySessionProvider implements SessionProvider {
+class MemorySessionProvider<TId> implements SessionProvider<TId> {
   int _currentId = 1;
   final Duration maxDuration;
-  final List<Session> _sessions = [];
+  final List<Session<TId>> _sessions = [];
 
   MemorySessionProvider({this.maxDuration = const Duration(minutes: 30)});
 
   @override
-  Future<Session> createSession(int userId) async {
+  Future<Session<TId>> createSession(TId userId) async {
     final sessionId = (_currentId++).toString();
     final sessionToken = Token();
     final session =
@@ -30,7 +30,7 @@ class MemorySessionProvider implements SessionProvider {
   }
 
   @override
-  Future<Session?> findSessionById(String id) async {
+  Future<Session<TId>?> findSessionById(String id) async {
     final current =
         _sessions.firstOrNullWhere((element) => element.sessionId == id);
 
@@ -43,7 +43,7 @@ class MemorySessionProvider implements SessionProvider {
   }
 
   @override
-  Future<Session> redeemToken(String sessionToken) async {
+  Future<Session<TId>> redeemToken(String sessionToken) async {
     final current = _sessions
         .firstOrNullWhere((element) => element.sessionToken == sessionToken);
 
@@ -56,13 +56,13 @@ class MemorySessionProvider implements SessionProvider {
   }
 
   @override
-  Future<List<Session>> getActiveSessions() async {
+  Future<List<Session<TId>>> getActiveSessions() async {
     _sessions.removeWhere((s) => s.duration > maxDuration);
     return List.unmodifiable(_sessions);
   }
 
   @override
-  Future<List<Session>> getUserSession(int userId) async {
+  Future<List<Session<TId>>> getUserSession(TId userId) async {
     final userSessions = _sessions.where((s) => s.userId == userId).toList();
     for (final session in userSessions) {
       if (session.duration > maxDuration) {

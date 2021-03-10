@@ -1,6 +1,6 @@
 import 'package:cl_datahub/api.dart';
 
-abstract class AuthProvider {
+abstract class AuthProvider<TId> {
   /// Authenticates user with given authData from json request.
   ///
   /// Returns userId if authentication was successful, should throw
@@ -10,5 +10,5 @@ abstract class AuthProvider {
   /// invalid credential data, [ApiRequestException.badRequest] on missing
   /// credential data and [ApiRequestException.internalError] on internal
   /// errors.
-  Future<int> authenticate(Map<String, dynamic> authData);
+  Future<TId> authenticate(Map<String, dynamic> authData);
 }

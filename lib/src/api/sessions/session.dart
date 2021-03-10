@@ -1,8 +1,8 @@
-class Session {
+class Session<TId> {
   final String sessionId;
   final String sessionToken;
 
-  final int userId;
+  final TId userId;
   final DateTime startDate;
   final Map<String, String> data;
 
