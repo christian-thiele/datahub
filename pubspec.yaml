@@ -8,7 +8,9 @@ environment:
 
 dependencies:
   boost: ^0.0.5-nullsafety
+  postgres: ^2.2.0
   uuid: 2.2.2
+
 
 dev_dependencies:
   pedantic: ^1.10.0-nullsafety
