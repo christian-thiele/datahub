@@ -1,8 +1,6 @@
-import 'package:cl_datahub/src/api/api_error.dart';
+import 'package:cl_datahub/cl_datahub.dart';
 import 'package:test/test.dart';
 import 'package:boost/boost.dart';
-
-import 'package:cl_datahub/api.dart';
 
 void main() {
   group('RoutePattern', () {

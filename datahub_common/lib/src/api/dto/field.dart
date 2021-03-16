@@ -1,30 +1,15 @@
 import 'dart:typed_data';
-
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/utils.dart';
+
+import 'encoding.dart';
 import 'transfer_object.dart';
-
-/*
-/// Interface for DTO Fields
-abstract class Field<T> {
-  String get name;
-
-  String get key;
-
-  T? decode(Map<String, dynamic> map);
-
-  MapEntry<String, dynamic> encode(T value);
-}*/
 
 /// Represents a DTO-Field
 /// supported types are
 /// String, int, double, bool, DateTime, UInt8List, TransferObject
 /// Uint8List is expected to be encoded as Base64
-class Field<T> /*implements Field<T>*/ {
-  @override
+class Field<T> {
   final String name;
-
-  @override
   final String key;
 
   final T? defaultValue;
@@ -33,6 +18,7 @@ class Field<T> /*implements Field<T>*/ {
   const Field(this.name, {String? key, this.defaultValue, this.factory})
       : key = key ?? name;
 
+  //TODO this is api specific, should be somewhere in api classes to avoid confusion with persistence usage
   T? decode(Map<String, dynamic> map) {
     if (map[key] == null) {
       return defaultValue;
@@ -41,6 +27,7 @@ class Field<T> /*implements Field<T>*/ {
     return decodeTyped<T>(map[key], factory: factory);
   }
 
+  //TODO this is api specific, should be somewhere in api classes to avoid confusion with persistence usage
   MapEntry<String, dynamic> encode(T value) {
     return MapEntry(key, value != null ? encodeTyped<T>(value) : defaultValue);
   }

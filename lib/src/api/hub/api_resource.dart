@@ -1,6 +1,7 @@
 import 'package:boost/boost.dart';
+
 import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/src/api/api_error.dart';
+import 'package:cl_datahub_common/common.dart';
 
 abstract class ApiResource<TData> extends ApiEndpoint {
   final DTOFactory<TData> factory;

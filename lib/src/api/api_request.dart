@@ -3,7 +3,7 @@ import 'dart:typed_data';
 
 import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/src/api/request_context.dart';
-import 'package:cl_datahub/src/api/api_error.dart';
+import 'file:///home/christian/IdeaProjects/corelight_datahub/datahub_common/lib/src/utils/api_error.dart';
 
 class ApiRequest {
   final RequestContext context;

@@ -1,10 +1,3 @@
-import 'dart:convert';
-import 'dart:math';
-import 'dart:typed_data';
-
-import 'package:cl_datahub/api.dart';
-import '../api/api_error.dart';
-
 const Map<int, String> _statusCodes = {
   // Informative
   100: 'Continue',
@@ -75,75 +68,6 @@ const Map<int, String> _statusCodes = {
 
 String getHttpStatus(int statusCode) =>
     _statusCodes[statusCode] ?? 'Unknown Status';
-
-T? decodeTyped<T>(dynamic raw, {DTOFactory? factory}) {
-  if (raw == null) {
-    return null;
-  }
-
-  if (factory != null) {
-    final result = factory(raw);
-    if (result is! T) {
-      throw ApiError('Factory returned wrong type: $result (should be $T)');
-    }
-
-    return result as T;
-  }
-
-  if (raw is T) {
-    return raw;
-  }
-
-  if (T == String) {
-    return raw.toString() as T;
-  }
-
-  if (T == int) {
-    return int.tryParse(raw.toString()) as T;
-  }
-
-  if (T == double) {
-    return double.tryParse(raw.toString()) as T;
-  }
-
-  if (T == bool) {
-    if (raw is num) {
-      return raw > 0 as T;
-    }
-
-    return (raw.toString().toLowerCase() == 'true') as T;
-  }
-
-  if (T == DateTime) {
-    return DateTime.tryParse(raw.toString()) as T;
-  }
-
-  if (T == Uint8List) {
-    return Base64Decoder().convert(raw.toString()) as T;
-  }
-
-  throw ApiError.invalidType(T);
-}
-
-dynamic encodeTyped<T>(T value) {
-  if (value == null) {
-    return null;
-  }
-
-  if (T == DateTime) {
-    return (value as DateTime).toIso8601String();
-  }
-
-  if (T == Uint8List) {
-    return Base64Encoder().convert(value as Uint8List);
-  }
-
-  if (T == String || T == int || T == double || T == bool) {
-    return value;
-  }
-
-  throw ApiError.invalidType(T);
-}
 
 String buildQueryString(Map<String, String> query) {
   if (query.isEmpty) {

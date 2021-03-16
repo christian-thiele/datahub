@@ -20,4 +20,6 @@ abstract class DatabaseConnection {
   /// The connection is invalid after calling close and cannot
   /// be used anymore.
   Future close();
+
+
 }

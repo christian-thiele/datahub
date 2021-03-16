@@ -1,7 +1,7 @@
 // TODO RedisSessionProvider or others, bit more documentation i guess
-import 'package:cl_datahub/api.dart';
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/src/utils/token.dart';
+import 'package:cl_datahub/utils.dart';
+import 'package:cl_datahub_common/common.dart';
 
 import 'session.dart';
 import 'session_provider.dart';

@@ -1,6 +1,7 @@
 import 'package:cl_datahub/src/persistence/database_adapter.dart';
 import 'package:cl_datahub/src/persistence/database_connection.dart';
 import 'package:cl_datahub/src/persistence/postgresql/postgresql_database_connection.dart';
+// ignore: import_of_legacy_library_into_null_safe
 import 'package:postgres/postgres.dart' as postgres;
 
 //TODO factor out postgresql related code to separate package

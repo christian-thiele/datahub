@@ -1,6 +1,6 @@
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/src/api/api_error.dart';
+import 'package:cl_datahub_common/common.dart';
 
 const _wildcardGroup = '_route_wildcard';
 const _prefixGroup = '_prefix';

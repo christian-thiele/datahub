@@ -5,6 +5,4 @@ export 'src/api/api_request_exception.dart';
 export 'src/api/api_response.dart';
 export 'src/api/api_endpoint.dart';
 export 'src/api/api_request_method.dart';
-export 'src/api/api_exception.dart';
-export 'src/api/dto/transfer_object.dart';
 export 'src/api/route.dart';
