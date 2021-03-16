@@ -5,11 +5,18 @@ import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
 
 void main() {
-  test('Invalid pattern', _testRouteInvalid);
-  test('isWildcardPattern', _testIsWildcard);
-  test('Route encode', _testRouteEncode);
-  test('Route match', _testRouteMatch);
-  test('Route decode', _testRouteDecode);
+  group('RoutePattern', () {
+    test('pattern validity', _testRouteInvalid);
+    test('isWildcardPattern', _testIsWildcard);
+    test('containsParam', _testContainsParam);
+    test('isOptionalParam', _testIsOptionalParam);
+  });
+
+  group('Route', () {
+    test('Route encode', _testRouteEncode);
+    test('Route match', _testRouteMatch);
+    test('Route decode', _testRouteDecode);
+  });
 }
 
 final pattern1 = '/path/to/{stuff}/articles/article_{articleId}';
@@ -132,8 +139,7 @@ void _testRouteDecode() {
         expect(result.routeParams, equals(test.c));
       } catch (e) {
         fail(
-            'Could not decode:\n  ${test.b}\nfor pattern:\n  ${test
-                .a}\n\nReason:\n${e.toString()}');
+            'Could not decode:\n  ${test.b}\nfor pattern:\n  ${test.a}\n\nReason:\n${e.toString()}');
       }
     }
   }
@@ -160,5 +166,33 @@ void _testIsWildcard() {
   for (final test in wildcardTests) {
     final pattern = RoutePattern(test.a);
     expect(pattern.isWildcardPattern, equals(test.b), reason: test.a);
+  }
+}
+
+void _testContainsParam() {
+  for (final test in [pattern1, pattern2, pattern4, pattern5, pattern6]) {
+    final pattern = RoutePattern(test);
+    expect(pattern.containsParam('stuff'), isTrue);
+  }
+
+  final rp3 = RoutePattern(pattern3);
+  expect(rp3.containsParam('stuff'), isFalse);
+
+  for (final test in [pattern6, pattern7, pattern8, pattern9]) {
+    final pattern = RoutePattern(test);
+    expect(pattern.containsParam('optionalParam'), isTrue);
+  }
+
+  for (final test in [pattern1, pattern2, pattern4, pattern5]) {
+    final pattern = RoutePattern(test);
+    expect(pattern.containsParam('optionalParam'), isFalse);
+  }
+}
+
+void _testIsOptionalParam() {
+  for (final test in [pattern6, pattern7, pattern8, pattern9]) {
+    final pattern = RoutePattern(test);
+    expect(pattern.isOptionalParam('optionalParam'), isTrue);
+    expect(pattern.isOptionalParam('stuff'), isFalse);
   }
 }

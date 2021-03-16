@@ -3,7 +3,7 @@ import 'dart:math';
 import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 
-import '../utils.dart';
+import '../../loremipsum.dart';
 
 final articles = List.generate(
     50,
