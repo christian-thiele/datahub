@@ -33,7 +33,7 @@ abstract class TransferObject {
 }
 
 abstract class IdTransferObject extends TransferObject {
-  static const idField = const IntField('id');
+  static const idField = IntField('id');
 
   IdTransferObject(List<Field> dataFields, Map<String, dynamic> data)
       : super((<Field>[idField]).followedBy(dataFields).toList(), data);

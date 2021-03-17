@@ -1,5 +1,6 @@
 import '../query/filter.dart';
 
+//TODO this is old, check impl and docs
 /// Simplifies querying a data object via foreign key.
 ///
 /// For 1 to 1 relationships a [ParentProxy] can be used to simplify

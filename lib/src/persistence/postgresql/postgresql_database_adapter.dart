@@ -1,3 +1,4 @@
+import 'package:cl_datahub/src/persistence/dao/data_layout.dart';
 import 'package:cl_datahub/src/persistence/database_adapter.dart';
 import 'package:cl_datahub/src/persistence/database_connection.dart';
 import 'package:cl_datahub/src/persistence/postgresql/postgresql_database_connection.dart';
@@ -47,5 +48,11 @@ class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
     await connection.open();
 
     return PostgreSQLDatabaseConnection(this, connection);
+  }
+
+  @override
+  Future initializeSchema(int version, List<DataLayout> layouts) {
+    // TODO: implement initializeSchema
+    throw UnimplementedError();
   }
 }
