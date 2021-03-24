@@ -12,8 +12,7 @@ class AuthEndpoint extends ApiEndpoint {
   @override
   Future post(ApiRequest request) async {
     if (request.context.sessionProvider == null) {
-      throw ApiError(
-          'Cannot use AuthEndpoint without SessionProvider!');
+      throw ApiError('Cannot use AuthEndpoint without SessionProvider!');
     }
 
     final body = request.getJsonBody();

@@ -5,7 +5,6 @@ import 'package:cl_datahub/src/api/hub/api_resource.dart';
 
 import '../../loremipsum.dart';
 
-
 final articles = List.generate(
     50,
     (index) => {

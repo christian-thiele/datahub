@@ -21,7 +21,7 @@ abstract class Filter {
   /// See implementation of [_optimizedGroup] for details;
   static Filter and(List<Filter> filters) =>
       _optimizedGroup(filters, FilterGroupType.And);
-  
+
   /// Returns the smallest representation of the "Or" group of [filters].
   ///
   /// See implementation of [_optimizedGroup] for details;
@@ -65,7 +65,7 @@ class FilterGroup implements Filter {
   @override
   Filter reduce() {
     final reduced =
-      filters.map((f) => f.reduce()).where((element) => !element.isEmpty);
+        filters.map((f) => f.reduce()).where((element) => !element.isEmpty);
 
     if (reduced.isEmpty) {
       return Filter.empty;
@@ -87,7 +87,8 @@ enum PropertyCompareType {
 
 class PropertyCompare implements Filter {
   final PropertyCompareType type;
-  final String propertyName; //TODO maybe field object or something like that (string is sketchy)
+  final String
+      propertyName; //TODO maybe field object or something like that (string is sketchy)
   final dynamic value; //TODO dynamic? check if this holds up
 
   const PropertyCompare(this.type, this.propertyName, this.value);

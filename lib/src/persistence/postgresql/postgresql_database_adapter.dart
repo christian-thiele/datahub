@@ -33,18 +33,14 @@ class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
 
   @override
   Future<DatabaseConnection> openConnection() async {
-    final connection = postgres.PostgreSQLConnection(
-        host,
-        port,
-        databaseName,
+    final connection = postgres.PostgreSQLConnection(host, port, databaseName,
         username: username,
         password: password,
         timeoutInSeconds: timeoutInSeconds,
         queryTimeoutInSeconds: queryTimeoutInSeconds,
         timeZone: timeZone,
         useSSL: useSSL,
-        isUnixSocket: isUnixSocket
-    );
+        isUnixSocket: isUnixSocket);
     await connection.open();
 
     return PostgreSQLDatabaseConnection(this, connection);

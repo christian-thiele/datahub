@@ -2,7 +2,6 @@ import 'session.dart';
 
 /// Interface for session persistence.
 abstract class SessionProvider<TId> {
-
   Future<Session> createSession(TId userId);
 
   /// Finds and returns the session associated with the token and resets

@@ -9,8 +9,7 @@ class Token {
   Token() : bytes = _generate();
 
   /// Instantiates a token object with given data.
-  Token.withBytes(this.bytes)
-    : assert(bytes.length == 16);
+  Token.withBytes(this.bytes) : assert(bytes.length == 16);
 
   @override
   bool operator ==(Object other) {
@@ -31,8 +30,8 @@ class Token {
     final random = Random.secure();
 
     data.setInt64(0, DateTime.now().microsecondsSinceEpoch);
-    for(var i=0; i<8; i++) {
-      data.setInt8(8+i, random.nextInt(256));
+    for (var i = 0; i < 8; i++) {
+      data.setInt8(8 + i, random.nextInt(256));
     }
 
     return data.buffer.asUint8List();

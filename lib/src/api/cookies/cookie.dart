@@ -5,5 +5,4 @@ class Cookie {
   final bool secure;
 
   Cookie(this.name, this.value, this.ttl, this.secure);
-
 }

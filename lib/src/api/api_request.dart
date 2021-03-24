@@ -18,8 +18,8 @@ class ApiRequest {
   Uint8List get bodyData =>
       _bodyData ?? (throw ApiError('Request does not contain body data.'));
 
-  ApiRequest(this.context, this.method, this.route, this.headers, this.queryParams,
-      this._bodyData);
+  ApiRequest(this.context, this.method, this.route, this.headers,
+      this.queryParams, this._bodyData);
 
   String getTextBody() => utf8.decode(bodyData);
 

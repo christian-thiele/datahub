@@ -108,15 +108,12 @@ abstract class ApiBase {
     }
 
     //TODO rethink RequestContext. not very sexy
-    final context = RequestContext(
-      sessionProvider,
-      session
-    );
+    final context = RequestContext(sessionProvider, session);
 
     //TODO cookies
 
-    final request = ApiRequest(
-        context, method, route, headers, queryParams, bodyBytes);
+    final request =
+        ApiRequest(context, method, route, headers, queryParams, bodyBytes);
 
     return await () async {
       if (middleware != null) {

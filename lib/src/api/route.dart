@@ -94,8 +94,8 @@ class RoutePattern {
   final RegExp routeMatchExp;
   final bool isWildcardPattern;
 
-  RoutePattern._(this.pattern, this._segments, this.routeMatchExp,
-      this.isWildcardPattern);
+  RoutePattern._(
+      this.pattern, this._segments, this.routeMatchExp, this.isWildcardPattern);
 
   factory RoutePattern(String pattern) {
     if (!_vrExp.hasMatch(pattern)) {
@@ -136,7 +136,7 @@ class RoutePattern {
   String encode(Map<String, dynamic> values) {
     //TODO add encode method for values, not just toString
     final stringValues =
-    values.map((key, value) => MapEntry(key, value.toString()));
+        values.map((key, value) => MapEntry(key, value.toString()));
     return _segments.map((s) => s.encode(stringValues)).join();
   }
 
@@ -152,9 +152,9 @@ class RoutePattern {
     final pathParams = Map.fromEntries(match.groupNames
         .where((e) => e != _wildcardGroup)
         .map((e) =>
-    (match.groupNames.contains(e) && match.namedGroup(e) != null)
-        ? MapEntry(e, Uri.decodeComponent(match.namedGroup(e)!))
-        : null)
+            (match.groupNames.contains(e) && match.namedGroup(e) != null)
+                ? MapEntry(e, Uri.decodeComponent(match.namedGroup(e)!))
+                : null)
         .whereNotNull);
 
     final wildcard = match.groupNames.contains(_wildcardGroup)
@@ -176,9 +176,11 @@ class RoutePattern {
   ///
   /// Throws ApiError when the key is not present in the pattern.
   bool isOptionalParam(String key) {
-    final segment = _segments.firstWhere((element) =>
-    element is _PLSegment && element.key == key, orElse: () => throw ApiError(
-        'Placeholder param "$key" not present in pattern: $pattern')) as _PLSegment;
+    final segment = _segments.firstWhere(
+            (element) => element is _PLSegment && element.key == key,
+            orElse: () => throw ApiError(
+                'Placeholder param "$key" not present in pattern: $pattern'))
+        as _PLSegment;
     return segment.optional;
   }
 }

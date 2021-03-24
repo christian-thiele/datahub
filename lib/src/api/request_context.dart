@@ -6,5 +6,4 @@ class RequestContext {
   final Session? session;
 
   RequestContext(this.sessionProvider, this.session);
-
 }

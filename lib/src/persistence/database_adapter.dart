@@ -3,7 +3,6 @@ import 'package:cl_datahub/persistence.dart';
 /// Abstract interface for connecting to a database.
 /// TODO more docs
 abstract class DatabaseAdapter<TConnection extends DatabaseConnection> {
-
   Future initializeSchema(int version, List<DataLayout> layouts);
 
   /// Opens a new connection to the database.

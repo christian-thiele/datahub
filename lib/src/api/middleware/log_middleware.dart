@@ -18,5 +18,4 @@ class LogMiddleware extends Middleware {
 
     return result;
   }
-
 }
