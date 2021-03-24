@@ -1,11 +1,8 @@
 import 'dart:mirrors';
+import 'dart:typed_data';
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/persistence/dao/data_field.dart';
-
-import 'package:cl_datahub/src/persistence/dao/data_layout.dart';
-import 'package:cl_datahub/src/persistence/dao/mirror/dao_field.dart';
-import 'package:cl_datahub/src/persistence/dao/mirror/dao_type.dart';
+import 'package:cl_datahub/persistence.dart';
+import 'package:cl_datahub_common/common.dart';
 
 //TODO more docs about this whole thing
 
@@ -36,24 +33,25 @@ class LayoutMirror {
 
     if (_isPrimaryKeyAnnotation(fieldAnnotation)) {
       if (fieldType == FieldType.Int || fieldType == FieldType.String) {
-        return PrimaryKeyField(fieldType, fieldName, length: fieldLength);
+        return PrimaryKey(fieldType, fieldName, length: fieldLength);
       } else {
-        throw Exception('Invalid field type for primary key field: $fieldType');
+        throw MirrorException(
+            'Invalid field type for primary key field: $fieldType');
       }
     } else if (_isForeignKeyAnnotation(fieldAnnotation)) {
       final foreignPrimary = _getForeignPrimaryKey(fieldAnnotation!);
       final foreignPrimaryType = _reflectFieldType(foreignPrimary);
       if (fieldType != foreignPrimaryType) {
-        throw Exception(
+        throw MirrorException(
             'Foreign key field "$fieldName" does not match type of foreign primary key.');
       }
 
       //TODO prevent endless loop
       final foreignPrimaryDataField =
-          _dataFieldFromField(foreignPrimary) as PrimaryKeyField;
+          _dataFieldFromField(foreignPrimary) as PrimaryKey;
 
       //TODO nullable property?
-      return ForeignKeyField(foreignPrimaryDataField, fieldName);
+      return ForeignKey(foreignPrimaryDataField, fieldName);
     } else {
       //TODO nullable property?
       return DataField(fieldType, fieldName, length: fieldLength);
@@ -80,8 +78,7 @@ class LayoutMirror {
 
   static VariableMirror _getForeignPrimaryKey(InstanceMirror fieldAnnotation) {
     if (!_isForeignKeyAnnotation(fieldAnnotation)) {
-      //TODO maybe add MirrorException or PersistenceException or something
-      throw Exception('not a foreign key');
+      throw MirrorException('not a foreign key');
     }
 
     final foreignType =
@@ -106,7 +103,7 @@ class LayoutMirror {
                 .any((annotation) => _isPrimaryKeyAnnotation(annotation)));
 
     if (primaryKeyAnnotations.length > 1) {
-      throw Exception('DAO has multiple primary key fields!');
+      throw MirrorException('DAO has multiple primary key fields.');
     }
 
     return primaryKeyAnnotations.firstOrNull;
@@ -119,14 +116,15 @@ class LayoutMirror {
     } else if (fieldType == int) {
       return FieldType.Int;
     } else if (fieldType == double) {
-      return FieldType.Double;
+      return FieldType.Float;
     } else if (fieldType == bool) {
       return FieldType.Bool;
     } else if (fieldType == DateTime) {
       return FieldType.DateTime;
+    } else if (fieldType == Uint8List) {
+      return FieldType.Bytes;
     } else {
-      //TODO maybe add MirrorException or PersistenceException or something
-      throw ApiError.invalidType(fieldType);
+      throw MirrorException.invalidType(fieldType);
     }
   }
 

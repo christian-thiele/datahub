@@ -2,7 +2,7 @@ import 'package:cl_datahub/cl_datahub.dart';
 
 /// Annotation for dao fields.
 ///
-/// Valid types are String, int, double, bool and DateTime.
+/// Valid types are String, int, double, bool, Uint8List and DateTime.
 ///
 /// If [name] is not set, the name of the class is used.
 ///
@@ -16,8 +16,8 @@ import 'package:cl_datahub/cl_datahub.dart';
 ///
 /// If [length] is not set, the default of the given type is used:
 /// String: 255
-/// int: 32
-/// double: 64
+/// int: 32 (bit)
+/// double: 64 (bit)
 class DaoField {
   final String? name;
   final int? length;
@@ -48,7 +48,6 @@ class PrimaryKeyDaoField extends DaoField {
   const PrimaryKeyDaoField({String? name, int? length})
       : super(name: name, length: length);
 }
-
 
 /// Annotation for foreign key dao fields.
 ///

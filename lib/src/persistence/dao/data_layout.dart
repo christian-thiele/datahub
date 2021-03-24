@@ -3,7 +3,7 @@ import 'package:cl_datahub/src/persistence/dao/data_field.dart';
 /// Abstract class for defining the layout of a data table.
 ///
 /// Supported field types are:
-/// String, int, double, bool, DateTime
+/// String, int, double, bool, DateTime, Uint8List
 ///
 /// //TODO check docs from here on: (old)
 /// For 1 to n relationships a [ProxySet] can be used to simplify
