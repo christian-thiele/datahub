@@ -1,34 +1,38 @@
+import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/src/persistence/persistence_exception.dart';
 
 abstract class SqlBuilder {
-  String buildSql();
+  /// Returns the sql string together with it's substitution values
+  Tuple<String, Map<String, dynamic>> buildSql();
 }
 
 //TODO collations, constraints, ...
 //maybe even inheritance
 class CreateTableBuilder implements SqlBuilder {
   final bool ifNotExists;
+  final String schemaName;
   final String tableName;
   final List<DataField> fields = [];
 
-  CreateTableBuilder(this.tableName, {this.ifNotExists = false});
+  CreateTableBuilder(this.schemaName, this.tableName,
+      {this.ifNotExists = false});
 
   @override
-  String buildSql() {
+  Tuple<String, Map<String, dynamic>> buildSql() {
     final buffer = StringBuffer('CREATE TABLE ');
 
     if (ifNotExists) {
       buffer.write('IF NOT EXISTS ');
     }
 
-    buffer.write('${_escapeName(tableName)} (');
+    buffer.write('${_escapeName(schemaName)}.${_escapeName(tableName)} (');
 
     buffer.write(fields.map(_createFieldSql).join(','));
 
     buffer.write(')');
 
-    return buffer.toString();
+    return Tuple(buffer.toString(), {});
   }
 
   String _createFieldSql(DataField field) {
@@ -41,6 +45,17 @@ class CreateTableBuilder implements SqlBuilder {
     }
     //TODO foreign key?
     return buffer.toString();
+  }
+}
+
+class CreateSchemaBuilder implements SqlBuilder {
+  final String schemaName;
+
+  CreateSchemaBuilder(this.schemaName);
+
+  @override
+  Tuple<String, Map<String, dynamic>> buildSql() {
+    return Tuple('CREATE SCHEMA @name', {'name': schemaName});
   }
 }
 
@@ -71,7 +86,7 @@ String _typeSql(FieldType type, int length) {
       } else {
         throw PersistenceException(
             'PostgreSQL implementation does not support int length $length.'
-            'Only 16, 32 or 64 allowed.)');
+                'Only 16, 32 or 64 allowed.)');
       }
     case FieldType.Float:
       if (length == 32) {
@@ -81,7 +96,7 @@ String _typeSql(FieldType type, int length) {
       } else {
         throw PersistenceException(
             'PostgreSQL implementation does not support float length $length.'
-            'Only 32 or 64 allowed.)');
+                'Only 32 or 64 allowed.)');
       }
     case FieldType.Bool:
       return 'boolean';

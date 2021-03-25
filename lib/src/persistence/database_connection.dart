@@ -26,5 +26,5 @@ abstract class DatabaseConnection {
   ///
   /// TODO more docs? maybe on migration
   /// TODO migration
-  Future<void> initialize(DataScheme scheme);
+  Future<void> initializeSchema(DataSchema scheme);
 }
