@@ -1,7 +1,7 @@
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
-import 'file:///home/christian/IdeaProjects/corelight_datahub/datahub_common/lib/src/utils/api_error.dart';
 import 'package:cl_datahub/src/api/authentication/auth_provider.dart';
+import 'package:cl_datahub_common/common.dart';
 
 class AuthEndpoint extends ApiEndpoint {
   final Map<String, AuthProvider> _providers;
