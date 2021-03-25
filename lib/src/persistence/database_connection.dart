@@ -1,4 +1,4 @@
-import 'package:cl_datahub/src/persistence/dao/data_layout.dart';
+import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/src/persistence/database_adapter.dart';
 
 /// Represents a single connection to a database.
@@ -22,8 +22,9 @@ abstract class DatabaseConnection {
   /// be used anymore.
   Future<void> close();
 
-  /// Creates database tables according to the [layouts].
+  /// Checks and creates or migrates database tables according to the [scheme].
   ///
+  /// TODO more docs? maybe on migration
   /// TODO migration
-  Future<void> createScheme(List<DataLayout> layouts);
+  Future<void> initialize(DataScheme scheme);
 }

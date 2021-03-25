@@ -1,11 +1,9 @@
-import 'package:cl_datahub/src/persistence/dao/data_layout.dart';
-import 'package:cl_datahub/src/persistence/database_connection.dart';
-import 'package:cl_datahub/src/persistence/persistence_exception.dart';
-import 'package:cl_datahub/src/persistence/postgresql/postgresql_database_adapter.dart';
-import 'package:cl_datahub/src/persistence/postgresql/sql/sql_builder.dart';
-
+import 'package:cl_datahub/persistence.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:postgres/postgres.dart' as postgres;
+
+import 'postgresql_database_adapter.dart';
+import 'sql/sql_builder.dart';
 
 class PostgreSQLDatabaseConnection extends DatabaseConnection {
   final postgres.PostgreSQLConnection _connection;
@@ -21,9 +19,9 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   Future<void> close() async => await _connection.close();
 
   @override
-  Future<void> createScheme(List<DataLayout> layouts) async {
+  Future<void> initialize(DataScheme scheme) async {
     _throwClosed();
-    for (final layout in layouts) {
+    for (final layout in scheme.layouts) {
       await execute(CreateTableBuilder(layout.name, ifNotExists: true)
         ..fields.addAll(layout.fields));
     }

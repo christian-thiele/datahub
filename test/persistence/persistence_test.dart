@@ -38,5 +38,8 @@ Future _testScheme() async {
   final articleLayout = LayoutMirror.reflect(ArticleDao);
   final userLayout = LayoutMirror.reflect(UserDao);
 
-  await connection.createScheme([blogLayout, articleLayout, userLayout]);
+  final scheme =
+      DataScheme('blogsystem', 1, [blogLayout, articleLayout, userLayout]);
+
+  await connection.initialize(scheme);
 }
