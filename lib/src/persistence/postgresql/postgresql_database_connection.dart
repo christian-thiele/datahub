@@ -13,7 +13,8 @@ const metaTable = '_datahub_meta';
 class PostgreSQLDatabaseConnection extends DatabaseConnection {
   final postgres.PostgreSQLConnection _connection;
 
-  PostgreSQLDatabaseConnection(PostgreSQLDatabaseAdapter adapter, this._connection)
+  PostgreSQLDatabaseConnection(
+      PostgreSQLDatabaseAdapter adapter, this._connection)
       : super(adapter);
 
   @override
@@ -36,15 +37,20 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
       final version = int.parse(versionString);
       if (version != schema.version) {
         await schema.migrate(this, version);
+        await setMetaValue(
+            schema.name, schemaVersionKey, schema.version.toString());
       }
     } else {
       await _connection.execute('CREATE SCHEMA ${schema.name}');
 
       await execute(CreateTableBuilder(schema.name, metaTable)
         ..fields.addAll([
-          DataField(FieldType.String, 'key'),
+          PrimaryKey(FieldType.String, 'key'),
           DataField(FieldType.String, 'value')
         ]));
+
+      await setMetaValue(
+          schema.name, schemaVersionKey, schema.version.toString());
 
       // create scheme
       for (final layout in schema.layouts) {
@@ -72,6 +78,20 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
       return result.firstOrNull?.firstOrNull as String?;
     } else {
       return null;
+    }
+  }
+
+  Future<String?> setMetaValue(String schemaName, String key,
+      String value) async {
+    final currentValue = await getMetaValue(schemaName, key);
+    if (currentValue == null) {
+      await _connection.execute(
+          'INSERT INTO $schemaName.$metaTable ("key", "value") VALUES (@key, @value)',
+          substitutionValues: {'key': key, 'value': value});
+    } else {
+      await _connection.execute(
+          'UPDATE ONLY $schemaName.$metaTable SET "value" = @value WHERE "key" = @key',
+          substitutionValues: {'key': key, 'value': value});
     }
   }
 
