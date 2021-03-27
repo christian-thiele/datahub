@@ -1,13 +1,13 @@
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/persistence.dart';
+
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:postgres/postgres.dart' as postgres;
 
 import 'postgresql_database_adapter.dart';
 import 'sql/sql_builder.dart';
 
-const schemaVersionKey = 'schema_version';
 const metaTable = '_datahub_meta';
 
 class PostgreSQLDatabaseConnection extends DatabaseConnection {
@@ -23,55 +23,10 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   @override
   Future<void> close() async => await _connection.close();
 
-  @override
-  Future<void> initializeSchema(DataSchema schema) async {
+  Future<String?> getMetaValue(String key) async {
     _throwClosed();
-
-    if (await schemaExists(schema.name)) {
-      final versionString = await getMetaValue(schema.name, schemaVersionKey);
-      if (versionString == null) {
-        throw PersistenceException(
-            'Schema "${schema.name}" does not provide version.');
-      }
-
-      final version = int.parse(versionString);
-      if (version != schema.version) {
-        await schema.migrate(this, version);
-        await setMetaValue(
-            schema.name, schemaVersionKey, schema.version.toString());
-      }
-    } else {
-      await _connection.execute('CREATE SCHEMA ${schema.name}');
-
-      await execute(CreateTableBuilder(schema.name, metaTable)
-        ..fields.addAll([
-          PrimaryKey(FieldType.String, 'key'),
-          DataField(FieldType.String, 'value')
-        ]));
-
-      await setMetaValue(
-          schema.name, schemaVersionKey, schema.version.toString());
-
-      // create scheme
-      for (final layout in schema.layouts) {
-        await execute(
-            CreateTableBuilder(schema.name, layout.name, ifNotExists: true)
-              ..fields.addAll(layout.fields));
-      }
-    }
-  }
-
-  Future<bool> schemaExists(String schemaName) async {
     final result = await _connection.query(
-        'SELECT schema_name FROM information_schema.schemata '
-        'WHERE schema_name = @name;',
-        substitutionValues: {'name': schemaName});
-    return result.isNotEmpty;
-  }
-
-  Future<String?> getMetaValue(String schemaName, String key) async {
-    final result = await _connection.query(
-        'SELECT "value" FROM $schemaName.$metaTable WHERE "key" = @key',
+        'SELECT "value" FROM ${adapter.schema.name}.$metaTable WHERE "key" = @key',
         substitutionValues: {'key': key});
 
     if (result.isNotEmpty) {
@@ -81,27 +36,28 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     }
   }
 
-  Future<String?> setMetaValue(String schemaName, String key,
-      String value) async {
-    final currentValue = await getMetaValue(schemaName, key);
+  Future<String?> setMetaValue(String key, String value) async {
+    _throwClosed();
+    final currentValue = await getMetaValue(key);
     if (currentValue == null) {
       await _connection.execute(
-          'INSERT INTO $schemaName.$metaTable ("key", "value") VALUES (@key, @value)',
+          'INSERT INTO ${adapter.schema.name}.$metaTable ("key", "value") VALUES (@key, @value)',
           substitutionValues: {'key': key, 'value': value});
     } else {
       await _connection.execute(
-          'UPDATE ONLY $schemaName.$metaTable SET "value" = @value WHERE "key" = @key',
+          'UPDATE ONLY ${adapter.schema.name}.$metaTable SET "value" = @value WHERE "key" = @key',
           substitutionValues: {'key': key, 'value': value});
     }
   }
 
   Future<int> execute(SqlBuilder builder) async {
+    _throwClosed();
     final result = builder.buildSql();
     return await _connection.execute(result.a, substitutionValues: result.b);
   }
 
   //TODO return type?
-  Future query(SqlBuilder builder) async {
+  Future querySql(SqlBuilder builder) async {
     final result = builder.buildSql();
     return await _connection.query(result.a, substitutionValues: result.b);
   }
@@ -110,5 +66,11 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     if (!isOpen) {
       throw PersistenceException.closed(this);
     }
+  }
+
+  @override
+  Future query(String tableName, {Filter? filter}) async {
+    return await querySql(
+        SelectBuilder(adapter.schema.name, tableName)..where(filter));
   }
 }

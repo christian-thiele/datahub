@@ -7,6 +7,94 @@ abstract class SqlBuilder {
   Tuple<String, Map<String, dynamic>> buildSql();
 }
 
+class RawSql implements SqlBuilder {
+  final String rawSql;
+  final Map<String, dynamic> substitutionValues;
+
+  RawSql(this.rawSql, [this.substitutionValues = const {}]);
+
+  @override
+  Tuple<String, Map<String, dynamic>> buildSql() =>
+      Tuple(rawSql, substitutionValues);
+}
+
+//TODO complete select
+class SelectBuilder implements SqlBuilder {
+  final String schemaName;
+  final String tableName;
+  Filter? _filter;
+
+  SelectBuilder(this.schemaName, this.tableName);
+
+  void where(Filter? filter) {
+    _filter = filter;
+  }
+
+  @override
+  Tuple<String, Map<String, dynamic>> buildSql() {
+    final buffer = StringBuffer('SELECT ');
+    final values = <String, dynamic>{};
+
+    //TODO columns
+    buffer.write('* ');
+
+    buffer.write('FROM $schemaName.$tableName');
+
+    if (_filter != null) {
+      buffer.write(' WHERE ');
+
+      final filterResult = _filterSql(_filter!);
+      buffer.write(filterResult.a);
+      values.addAll(filterResult.b);
+    }
+
+    return Tuple(buffer.toString(), values);
+  }
+
+  Tuple<String, Map<String, dynamic>> _filterSql(Filter filter) {
+    final buffer = StringBuffer();
+    final values = <String, dynamic>{};
+
+    if (filter is FilterGroup) {
+      final results = filter.filters.map((e) => _filterSql(e));
+      //TODO think about how to make substitution values unique
+      values.addEntries(results.expand((e) => e.b.entries));
+
+      switch(filter.type) {
+        case FilterGroupType.And:
+          buffer.write(results.map((e) => '(${e.a})').join(' AND '));
+          break;
+        case FilterGroupType.Or:
+          buffer.write(results.map((e) => '(${e.a})').join(' OR '));
+          break;
+      }
+    } else if (filter is PropertyCompare) {
+      buffer.write(filter.propertyName);
+      switch(filter.type) {
+        case PropertyCompareType.Equals:
+          buffer.write(' = ');
+          break;
+        case PropertyCompareType.GreaterThan:
+          buffer.write(' > ');
+          break;
+        case PropertyCompareType.LessThan:
+          buffer.write(' < ');
+          break;
+        case PropertyCompareType.GreaterOrEqual:
+          buffer.write(' >= ');
+          break;
+        case PropertyCompareType.LessOrEqual:
+          buffer.write(' <= ');
+          break;
+      }
+      // TODO while we escape values, we don't need to worry about substitution values
+      buffer.write(_escapeValue(filter.value));
+    }
+
+    return Tuple(buffer.toString(), values);
+  }
+}
+
 //TODO collations, constraints, ...
 //maybe even inheritance
 class CreateTableBuilder implements SqlBuilder {
@@ -17,6 +105,11 @@ class CreateTableBuilder implements SqlBuilder {
 
   CreateTableBuilder(this.schemaName, this.tableName,
       {this.ifNotExists = false});
+
+  factory CreateTableBuilder.fromLayout(DataSchema schema, DataLayout layout) {
+    return CreateTableBuilder(schema.name, layout.name, ifNotExists: true)
+      ..fields.addAll(layout.fields);
+  }
 
   @override
   Tuple<String, Map<String, dynamic>> buildSql() {
@@ -72,6 +165,27 @@ String _escapeName(String name) {
   return '"$name"';
 }
 
+
+String _escapeValue(dynamic value) {
+  if (value == null) {
+    return 'NULL';
+  }
+
+  if (value is num) {
+    return value.toString();
+  }
+
+  if (value is bool) {
+    return value ? 'true' : 'false';
+  }
+
+  if (value is DateTime) {
+    return '\'${value.toIso8601String()}\'';
+  }
+
+  return '\'${value.toString().replaceAll('\'', '\'\'')}\''; //TODO other escape things
+}
+
 String _typeSql(FieldType type, int length) {
   switch (type) {
     case FieldType.String:
@@ -86,7 +200,7 @@ String _typeSql(FieldType type, int length) {
       } else {
         throw PersistenceException(
             'PostgreSQL implementation does not support int length $length.'
-                'Only 16, 32 or 64 allowed.)');
+            'Only 16, 32 or 64 allowed.)');
       }
     case FieldType.Float:
       if (length == 32) {
@@ -96,7 +210,7 @@ String _typeSql(FieldType type, int length) {
       } else {
         throw PersistenceException(
             'PostgreSQL implementation does not support float length $length.'
-                'Only 32 or 64 allowed.)');
+            'Only 32 or 64 allowed.)');
       }
     case FieldType.Bool:
       return 'boolean';

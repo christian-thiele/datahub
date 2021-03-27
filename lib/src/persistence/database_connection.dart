@@ -7,6 +7,7 @@ import 'package:cl_datahub/src/persistence/database_adapter.dart';
 /// TODO more docs
 abstract class DatabaseConnection {
   final DatabaseAdapter adapter;
+
   DatabaseConnection(this.adapter);
 
   /// True if this connection is still open and can be used.
@@ -22,9 +23,6 @@ abstract class DatabaseConnection {
   /// be used anymore.
   Future<void> close();
 
-  /// Checks and creates or migrates database tables according to the [scheme].
-  ///
-  /// TODO more docs? maybe on migration
-  /// TODO migration
-  Future<void> initializeSchema(DataSchema scheme);
+  /// TODO docs, return type, parameters, this whole thing here basically
+  Future<dynamic> query(String tableName, {Filter? filter});
 }

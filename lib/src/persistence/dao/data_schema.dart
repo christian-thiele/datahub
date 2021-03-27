@@ -10,5 +10,6 @@ class DataSchema {
 
   Future<void> migrate(DatabaseConnection connection, int fromVersion) async {
     //TODO migration shit!
+    print('Migrating $name from $fromVersion to $version.');
   }
 }
