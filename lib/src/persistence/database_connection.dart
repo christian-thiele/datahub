@@ -23,6 +23,11 @@ abstract class DatabaseConnection {
   /// be used anymore.
   Future<void> close();
 
-  /// TODO docs, return type, parameters, this whole thing here basically
-  Future<dynamic> query(String tableName, {Filter? filter});
+  // TODO docs, return type, parameters, this whole thing here basically
+  Future<List<Map<String, dynamic>>> query(String tableName, {Filter? filter});
+
+  // TODO insert, update, delete
+
+  // TODO docs, return type, parameters, this whole thing here basically
+  Future<dynamic> insert(String tableName, Map<String, dynamic> object);
 }

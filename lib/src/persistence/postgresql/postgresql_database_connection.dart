@@ -12,9 +12,11 @@ const metaTable = '_datahub_meta';
 
 class PostgreSQLDatabaseConnection extends DatabaseConnection {
   final postgres.PostgreSQLConnection _connection;
+  static const _metaKeyColumn = 'key';
+  static const _metaValueColumn = 'value';
 
-  PostgreSQLDatabaseConnection(
-      PostgreSQLDatabaseAdapter adapter, this._connection)
+  PostgreSQLDatabaseConnection(PostgreSQLDatabaseAdapter adapter,
+      this._connection)
       : super(adapter);
 
   @override
@@ -26,7 +28,8 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   Future<String?> getMetaValue(String key) async {
     _throwClosed();
     final result = await _connection.query(
-        'SELECT "value" FROM ${adapter.schema.name}.$metaTable WHERE "key" = @key',
+        'SELECT "value" FROM ${adapter.schema
+            .name}.$metaTable WHERE "key" = @key',
         substitutionValues: {'key': key});
 
     if (result.isNotEmpty) {
@@ -41,11 +44,13 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     final currentValue = await getMetaValue(key);
     if (currentValue == null) {
       await _connection.execute(
-          'INSERT INTO ${adapter.schema.name}.$metaTable ("key", "value") VALUES (@key, @value)',
+          'INSERT INTO ${adapter.schema
+              .name}.$metaTable ("$_metaKeyColumn", "$_metaValueColumn") VALUES (@key, @value)',
           substitutionValues: {'key': key, 'value': value});
     } else {
       await _connection.execute(
-          'UPDATE ONLY ${adapter.schema.name}.$metaTable SET "value" = @value WHERE "key" = @key',
+          'UPDATE ONLY ${adapter.schema
+              .name}.$metaTable SET "$_metaValueColumn" = @value WHERE "$_metaKeyColumn" = @key',
           substitutionValues: {'key': key, 'value': value});
     }
   }
@@ -56,11 +61,14 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     return await _connection.execute(result.a, substitutionValues: result.b);
   }
 
-  //TODO return type?
-  Future querySql(SqlBuilder builder) async {
-    final result = builder.buildSql();
-    return await _connection.query(result.a, substitutionValues: result.b);
+  Future<List<Map<String, dynamic>>> querySql(SqlBuilder builder) async {
+    _throwClosed();
+    final builderResult = builder.buildSql();
+    final result = await _connection.query(builderResult.a,
+        substitutionValues: builderResult.b);
+    return result.map((row) => row.toColumnMap()).toList();
   }
+
 
   void _throwClosed() {
     if (!isOpen) {
@@ -69,8 +77,15 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   }
 
   @override
-  Future query(String tableName, {Filter? filter}) async {
+  Future<List<Map<String, dynamic>>> query(String tableName, {Filter? filter}) async {
     return await querySql(
-        SelectBuilder(adapter.schema.name, tableName)..where(filter));
+        SelectBuilder(adapter.schema.name, tableName)
+          ..where(filter));
+  }
+
+  //TODO tableName, Map or maybe rather use dao object? i dunno
+  @override
+  Future<dynamic> insert(String tableName, Map<String, dynamic> entry) async {
+    return await execute(InsertBuilder(adapter.schema.name, tableName)..values(entry));
   }
 }

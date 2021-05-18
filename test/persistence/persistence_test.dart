@@ -15,6 +15,7 @@ const String password = 'mysecretpassword';
 
 void main() {
   group('PostgreSQL', () {
+    
     test('connect / initialize', _testScheme);
   });
 }
@@ -37,7 +38,5 @@ Future _testScheme() async {
 
   final connection = await adapter.openConnection();
   expect(connection.isOpen, isTrue);
-
-
 
 }

@@ -87,12 +87,38 @@ class SelectBuilder implements SqlBuilder {
           buffer.write(' <= ');
           break;
       }
+      
       // TODO while we escape values, we don't need to worry about substitution values
+      // TODO but thats probably not the best way, lets think of some sort of system that
+      // TODO let's us use substitutions without clashing names
       buffer.write(_escapeValue(filter.value));
     }
 
     return Tuple(buffer.toString(), values);
   }
+}
+
+class InsertBuilder implements SqlBuilder {
+  final String schemaName;
+  final String tableName;
+  final Map<String, dynamic> _values = {};
+  
+  InsertBuilder(this.schemaName, this.tableName);
+  
+  void values(Map<String, dynamic> entryValues) {
+    _values.addAll(entryValues);
+  }
+  
+  @override
+  Tuple<String, Map<String, dynamic>> buildSql() {
+    final buffer = StringBuffer();
+    final values = <String, dynamic>{};
+    
+    buffer.write('INSERT INTO $tableName () VALUES ()'); //TODO
+    
+    return Tuple(buffer.toString(), values);
+  }
+  
 }
 
 //TODO collations, constraints, ...

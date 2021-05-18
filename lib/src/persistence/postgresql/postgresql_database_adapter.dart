@@ -8,7 +8,7 @@ import 'package:postgres/postgres.dart' as postgres;
 
 import 'sql/sql_builder.dart';
 
-//TODO factor out postgresql related code to separate package
+//TODO factor out postgreSQL related code to separate package
 
 /// [DatabaseAdapter] implementation for PostgreSQL databases.
 class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
