@@ -15,7 +15,6 @@ const String password = 'mysecretpassword';
 
 void main() {
   group('PostgreSQL', () {
-    
     test('connect / initialize', _testScheme);
   });
 }
@@ -39,4 +38,18 @@ Future _testScheme() async {
   final connection = await adapter.openConnection();
   expect(connection.isOpen, isTrue);
 
+  // insert some data
+  final blogUser = UserDao(name: 'testUser');
+  final userId = await connection.insert(userLayout, blogUser);
+  print('Inserted with pk: $userId');
+
+  // query some data
+  final blogUsers = await connection.query<UserDao>(userLayout);
+  expect(blogUsers.any((element) => element.id == userId), isTrue);
+
+  // delete some data
+  await connection.delete(userLayout, blogUser);
+
+  final blogUsers2 = await connection.query<UserDao>(userLayout);
+  expect(blogUsers2.any((element) => element.id == userId), isFalse);
 }

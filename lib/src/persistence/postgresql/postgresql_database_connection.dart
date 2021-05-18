@@ -6,7 +6,7 @@ import 'package:cl_datahub/persistence.dart';
 import 'package:postgres/postgres.dart' as postgres;
 
 import 'postgresql_database_adapter.dart';
-import 'sql/sql_builder.dart';
+import 'sql/sql.dart';
 
 const metaTable = '_datahub_meta';
 
@@ -15,8 +15,8 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   static const _metaKeyColumn = 'key';
   static const _metaValueColumn = 'value';
 
-  PostgreSQLDatabaseConnection(PostgreSQLDatabaseAdapter adapter,
-      this._connection)
+  PostgreSQLDatabaseConnection(
+      PostgreSQLDatabaseAdapter adapter, this._connection)
       : super(adapter);
 
   @override
@@ -28,8 +28,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   Future<String?> getMetaValue(String key) async {
     _throwClosed();
     final result = await _connection.query(
-        'SELECT "value" FROM ${adapter.schema
-            .name}.$metaTable WHERE "key" = @key',
+        'SELECT "value" FROM ${adapter.schema.name}.$metaTable WHERE "key" = @key',
         substitutionValues: {'key': key});
 
     if (result.isNotEmpty) {
@@ -44,13 +43,11 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     final currentValue = await getMetaValue(key);
     if (currentValue == null) {
       await _connection.execute(
-          'INSERT INTO ${adapter.schema
-              .name}.$metaTable ("$_metaKeyColumn", "$_metaValueColumn") VALUES (@key, @value)',
+          'INSERT INTO ${adapter.schema.name}.$metaTable ("$_metaKeyColumn", "$_metaValueColumn") VALUES (@key, @value)',
           substitutionValues: {'key': key, 'value': value});
     } else {
       await _connection.execute(
-          'UPDATE ONLY ${adapter.schema
-              .name}.$metaTable SET "$_metaValueColumn" = @value WHERE "$_metaKeyColumn" = @key',
+          'UPDATE ONLY ${adapter.schema.name}.$metaTable SET "$_metaValueColumn" = @value WHERE "$_metaKeyColumn" = @key',
           substitutionValues: {'key': key, 'value': value});
     }
   }
@@ -69,7 +66,6 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     return result.map((row) => row.toColumnMap()).toList();
   }
 
-
   void _throwClosed() {
     if (!isOpen) {
       throw PersistenceException.closed(this);
@@ -77,15 +73,62 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> query(String tableName, {Filter? filter}) async {
-    return await querySql(
-        SelectBuilder(adapter.schema.name, tableName)
-          ..where(filter));
+  Future<List<TDao>> query<TDao>(DataLayout layout,
+      {Filter filter = Filter.empty}) async {
+    final result = await querySql(
+        SelectBuilder(adapter.schema.name, layout.name)..where(filter));
+    return result.map((e) => layout.map<TDao>(e)).toList();
   }
 
-  //TODO tableName, Map or maybe rather use dao object? i dunno
   @override
-  Future<dynamic> insert(String tableName, Map<String, dynamic> entry) async {
-    return await execute(InsertBuilder(adapter.schema.name, tableName)..values(entry));
+  Future<dynamic> insert<TDao>(DataLayout layout, TDao entry) async {
+    final data = layout.unmap(entry);
+    final primaryKey = layout.fields.firstOrNullWhere((f) => f is PrimaryKey);
+    final returning =
+        primaryKey != null ? SqlBuilder.escapeName(primaryKey.name) : null;
+
+    final result =
+        await querySql(InsertBuilder(adapter.schema.name, layout.name)
+          ..values(data)
+          ..returning(returning));
+
+    return result.firstOrNull?.values.firstOrNull;
+  }
+
+  @override
+  Future<int> update<TDao>(DataLayout layout, TDao object) async {
+    final data = layout.unmap(object);
+
+    final primaryKey = layout.getPrimaryKeyField() ??
+        (throw PersistenceException('No primary key found in layout.'));
+
+    return await execute(UpdateBuilder(adapter.schema.name, layout.name)
+      ..values(data)
+      ..where(Filter.equals(
+          primaryKey.name, layout.unmapField(object, primaryKey))));
+  }
+
+  @override
+  Future<int> updateWhere(
+      DataLayout layout, Map<String, dynamic> values, Filter filter) async {
+    return await execute(UpdateBuilder(adapter.schema.name, layout.name)
+      ..values(values)
+      ..where(filter));
+  }
+
+  @override
+  Future<int> delete<TDao>(DataLayout layout, TDao object) async {
+    final primaryKey = layout.getPrimaryKeyField() ??
+        (throw PersistenceException('No primary key found in layout.'));
+
+    return await execute(DeleteBuilder(adapter.schema.name, layout.name)
+      ..where(Filter.equals(
+          primaryKey.name, layout.unmapField(object, primaryKey))));
+  }
+
+  @override
+  Future<int> deleteWhere(DataLayout layout, Filter filter) async {
+    return await execute(
+        DeleteBuilder(adapter.schema.name, layout.name)..where(filter));
   }
 }

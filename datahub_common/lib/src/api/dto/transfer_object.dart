@@ -10,7 +10,7 @@ abstract class TransferObject {
 
   TransferObject.create(Map<Field, dynamic> fieldData)
       : this(fieldData.keys.toList(),
-      fieldData.map((key, value) => MapEntry(key.key, value)));
+            fieldData.map((key, value) => MapEntry(key.key, value)));
 
   T? get<T>(Field<T> field) {
     if (!dataFields.contains(field)) {

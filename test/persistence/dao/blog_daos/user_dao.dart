@@ -7,5 +7,8 @@ class UserDao {
 
   final String name;
 
-  UserDao(this.id, this.name);
+  UserDao({this.id = 0, required this.name});
+
+  UserDao copyWith({int? id, String? name}) =>
+      UserDao(id: id ?? this.id, name: name ?? this.name);
 }

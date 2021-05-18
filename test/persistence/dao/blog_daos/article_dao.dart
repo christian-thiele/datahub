@@ -23,6 +23,13 @@ class ArticleDao {
   final DateTime createdTimestamp;
   final DateTime lastEditTimestamp;
 
-  ArticleDao(this.id, this.userId, this.blogKey, this.title, this.content,
-      this.image, this.createdTimestamp, this.lastEditTimestamp);
+  ArticleDao(
+      {this.id = 0,
+      required this.userId,
+      required this.blogKey,
+      required this.title,
+      required this.content,
+      required this.image,
+      required this.createdTimestamp,
+      required this.lastEditTimestamp});
 }

@@ -14,7 +14,7 @@ abstract class Filter {
   Filter reduce();
 
   /// Returns the representation of "no filter".
-  static Filter get empty => _EmptyFilter();
+  static const Filter empty = _EmptyFilter();
 
   /// Returns the smallest representation of the "And" group of [filters].
   ///

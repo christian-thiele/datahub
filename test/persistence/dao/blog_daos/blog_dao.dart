@@ -12,5 +12,6 @@ class BlogDao {
 
   final String displayName;
 
-  BlogDao(this.key, this.ownerId, this.displayName);
+  BlogDao(
+      {required this.key, required this.ownerId, required this.displayName});
 }

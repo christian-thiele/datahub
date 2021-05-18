@@ -23,11 +23,17 @@ abstract class DatabaseConnection {
   /// be used anymore.
   Future<void> close();
 
-  // TODO docs, return type, parameters, this whole thing here basically
-  Future<List<Map<String, dynamic>>> query(String tableName, {Filter? filter});
+  Future<List<TDao>> query<TDao>(DataLayout layout,
+      {Filter filter = Filter.empty});
 
-  // TODO insert, update, delete
+  Future<dynamic> insert<TDao>(DataLayout layout, TDao object);
 
-  // TODO docs, return type, parameters, this whole thing here basically
-  Future<dynamic> insert(String tableName, Map<String, dynamic> object);
+  Future<dynamic> update<TDao>(DataLayout layout, TDao object);
+
+  Future<dynamic> updateWhere(
+      DataLayout layout, Map<String, dynamic> values, Filter filter);
+
+  Future<dynamic> delete<TDao>(DataLayout layout, TDao object);
+
+  Future<dynamic> deleteWhere(DataLayout layout, Filter filter);
 }

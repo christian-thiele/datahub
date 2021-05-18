@@ -44,8 +44,13 @@ class DaoField {
 /// String: 255
 /// int: 32
 /// double: 64
+///
+/// [autoIncrement] only works for int fields and is enabled by default.
 class PrimaryKeyDaoField extends DaoField {
-  const PrimaryKeyDaoField({String? name, int? length})
+  final bool autoIncrement;
+
+  const PrimaryKeyDaoField(
+      {String? name, int? length, this.autoIncrement = true})
       : super(name: name, length: length);
 }
 

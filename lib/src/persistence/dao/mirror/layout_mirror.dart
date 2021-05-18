@@ -2,17 +2,18 @@ import 'dart:mirrors';
 import 'dart:typed_data';
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/persistence.dart';
-import 'package:cl_datahub_common/common.dart';
 
 //TODO more docs about this whole thing
 
 /// Creates [DataLayout] objects from dao classes using reflection.
 class LayoutMirror {
+  LayoutMirror._();
+
   static DataLayout reflect(Type daoClass) {
     final mirror = reflectClass(daoClass);
     final layoutName = _reflectLayoutName(mirror);
 
-    //checks and throws if multiple primary keys exist
+    // checks and throws if multiple primary keys exist
     _findPrimaryKeyField(mirror);
 
     final fieldMirrors = mirror.declarations.values
@@ -21,7 +22,24 @@ class LayoutMirror {
 
     final fields = fieldMirrors.map((f) => _dataFieldFromField(f)).toList();
 
-    return DataLayout(layoutName, fields);
+    // check if unnamed constructor with named params exists for all final fields
+    final constructor = mirror.declarations.values
+            .whereType<MethodMirror>()
+            .firstOrNullWhere((element) =>
+                element.isConstructor &&
+                MirrorSystem.getName(element.simpleName) ==
+                    MirrorSystem.getName(mirror.simpleName)) ??
+        (throw MirrorException('Type does not provide default constructor.'));
+
+    // this null dereference is valid, because reflected DataLayouts always
+    // contain daoField mirrors
+    if (!fields.every((f) => constructor.parameters
+        .any((p) => p.simpleName == f.daoField!.simpleName))) {
+      throw MirrorException(
+          'Default constructor does not provide named params for all final fields!');
+    }
+
+    return DataLayout(layoutName, fields, daoClass);
   }
 
   static DataField _dataFieldFromField(VariableMirror f) {
@@ -33,7 +51,11 @@ class LayoutMirror {
 
     if (_isPrimaryKeyAnnotation(fieldAnnotation)) {
       if (fieldType == FieldType.Int || fieldType == FieldType.String) {
-        return PrimaryKey(fieldType, fieldName, length: fieldLength);
+        return PrimaryKey(fieldType, fieldName,
+            length: fieldLength,
+            daoField: f,
+            autoIncrement: fieldType == FieldType.Int &&
+                _isAutoIncrementAnnotation(fieldAnnotation));
       } else {
         throw MirrorException(
             'Invalid field type for primary key field: $fieldType');
@@ -51,10 +73,10 @@ class LayoutMirror {
           _dataFieldFromField(foreignPrimary) as PrimaryKey;
 
       //TODO nullable property?
-      return ForeignKey(foreignPrimaryDataField, fieldName);
+      return ForeignKey(foreignPrimaryDataField, fieldName, daoField: f);
     } else {
       //TODO nullable property?
-      return DataField(fieldType, fieldName, length: fieldLength);
+      return DataField(fieldType, fieldName, length: fieldLength, daoField: f);
     }
   }
 
@@ -70,6 +92,14 @@ class LayoutMirror {
 
   static bool _isPrimaryKeyAnnotation(InstanceMirror? fieldAnnotation) {
     return fieldAnnotation?.type.reflectedType == PrimaryKeyDaoField;
+  }
+
+  static bool _isAutoIncrementAnnotation(InstanceMirror? fieldAnnotation) {
+    if (fieldAnnotation?.type.reflectedType != PrimaryKeyDaoField) {
+      return false;
+    }
+
+    return fieldAnnotation!.getField(Symbol('autoIncrement')).reflectee as bool;
   }
 
   static bool _isForeignKeyAnnotation(InstanceMirror? fieldAnnotation) {

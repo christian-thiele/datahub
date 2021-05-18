@@ -1,4 +1,6 @@
-import 'package:cl_datahub/src/persistence/dao/data_field.dart';
+import 'dart:mirrors';
+import 'package:boost/boost.dart';
+import 'package:cl_datahub/persistence.dart';
 
 /// Abstract class for defining the layout of a data table.
 ///
@@ -24,6 +26,72 @@ import 'package:cl_datahub/src/persistence/dao/data_field.dart';
 class DataLayout {
   final String name;
   final List<DataField> fields;
+  final Type? daoType;
 
-  DataLayout(this.name, this.fields);
+  DataLayout(this.name, this.fields, this.daoType);
+
+  Map<String, dynamic> unmap<TDao>(TDao dao, {bool includePrimaryKey = false}) {
+    if (daoType != TDao) {
+      throw MirrorException(
+          'Could not unmap: Dao type "$TDao" does not match layout.');
+    }
+
+    final objectMirror = reflect(dao);
+
+    final map = <String, dynamic>{};
+    for (final field in fields) {
+      if (field.daoField == null) {
+        continue;
+      }
+
+      if (!includePrimaryKey && field is PrimaryKey && field.autoIncrement) {
+        continue;
+      }
+
+      final value = objectMirror.getField(field.daoField!.simpleName).reflectee;
+      map[field.name] = value;
+    }
+
+    return map;
+  }
+
+  TDao map<TDao>(Map<String, dynamic> data) {
+    if (daoType != TDao) {
+      throw MirrorException(
+          'Could not map: Dao type "$TDao" does not match layout.');
+    }
+
+    final classMirror = reflectClass(TDao);
+    return classMirror
+        .newInstance(
+            Symbol.empty,
+            [],
+            Map.fromEntries(fields
+                .where((e) => e.daoField != null)
+                .map((e) => MapEntry(e.daoField!.simpleName, data[e.name]))))
+        .reflectee as TDao;
+  }
+
+  dynamic unmapField<TDao>(TDao dao, DataField field) {
+    if (field.daoField == null) {
+      throw MirrorException('Could not unmap field: No daoField provided.');
+    }
+
+    return reflect(dao).getField(field.daoField!.simpleName).reflectee;
+  }
+
+  DataField? getPrimaryKeyField() =>
+      fields.firstOrNullWhere((f) => f is PrimaryKey);
+
+  dynamic getPrimaryKey<TDao>(TDao entry) {
+    if (daoType != TDao) {
+      throw MirrorException(
+          'Could not map: Dao type "$TDao" does not match layout.');
+    }
+
+    final primaryKey = getPrimaryKeyField() ??
+        (throw PersistenceException('No primary key found in layout.'));
+
+    return unmapField(entry, primaryKey);
+  }
 }
