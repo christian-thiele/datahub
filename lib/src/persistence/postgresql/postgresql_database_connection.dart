@@ -74,10 +74,25 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
 
   @override
   Future<List<TDao>> query<TDao>(DataLayout layout,
-      {Filter filter = Filter.empty}) async {
-    final result = await querySql(
-        SelectBuilder(adapter.schema.name, layout.name)..where(filter));
+      {Filter filter = Filter.empty, int offset = 0, int limit = -1}) async {
+    final result =
+        await querySql(SelectBuilder(adapter.schema.name, layout.name)
+          ..where(filter)
+          ..offset(offset)
+          ..limit(limit));
     return result.map((e) => layout.map<TDao>(e)).toList();
+  }
+
+  @override
+  Future<TDao?> queryId<TDao>(DataLayout layout, dynamic id) async {
+    final primaryKey = layout.getPrimaryKeyField() ??
+        (throw PersistenceException('No primary key found in layout.'));
+
+    final result = await querySql(
+        SelectBuilder(adapter.schema.name, layout.name)
+          ..where(Filter.equals(primaryKey.name, id)));
+
+    return result.map((e) => layout.map<TDao>(e)).firstOrNull;
   }
 
   @override
@@ -96,13 +111,13 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   }
 
   @override
-  Future<int> update<TDao>(DataLayout layout, TDao object) async {
+  Future<void> update<TDao>(DataLayout layout, TDao object) async {
     final data = layout.unmap(object);
 
     final primaryKey = layout.getPrimaryKeyField() ??
         (throw PersistenceException('No primary key found in layout.'));
 
-    return await execute(UpdateBuilder(adapter.schema.name, layout.name)
+    await execute(UpdateBuilder(adapter.schema.name, layout.name)
       ..values(data)
       ..where(Filter.equals(
           primaryKey.name, layout.unmapField(object, primaryKey))));
@@ -117,11 +132,11 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   }
 
   @override
-  Future<int> delete<TDao>(DataLayout layout, TDao object) async {
+  Future<void> delete<TDao>(DataLayout layout, TDao object) async {
     final primaryKey = layout.getPrimaryKeyField() ??
         (throw PersistenceException('No primary key found in layout.'));
 
-    return await execute(DeleteBuilder(adapter.schema.name, layout.name)
+    await execute(DeleteBuilder(adapter.schema.name, layout.name)
       ..where(Filter.equals(
           primaryKey.name, layout.unmapField(object, primaryKey))));
   }

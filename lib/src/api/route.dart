@@ -266,6 +266,8 @@ class Route {
     return null;
   }
 
+  String? getParam(String name) => routeParams[name];
+
   @override
   String toString() => url;
 }

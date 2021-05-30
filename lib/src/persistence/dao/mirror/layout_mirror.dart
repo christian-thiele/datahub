@@ -48,6 +48,7 @@ class LayoutMirror {
     final fieldType = _reflectFieldType(f);
     final fieldName = _reflectFieldName(f, fieldAnnotation);
     final fieldLength = _reflectFieldLength(f, fieldAnnotation);
+    final fieldNullable = _reflectNullable(f, fieldAnnotation);
 
     if (_isPrimaryKeyAnnotation(fieldAnnotation)) {
       if (fieldType == FieldType.Int || fieldType == FieldType.String) {
@@ -68,15 +69,15 @@ class LayoutMirror {
             'Foreign key field "$fieldName" does not match type of foreign primary key.');
       }
 
-      //TODO prevent endless loop
+      //TODO loop prevention (possible stack overflow here)
       final foreignPrimaryDataField =
           _dataFieldFromField(foreignPrimary) as PrimaryKey;
 
-      //TODO nullable property?
-      return ForeignKey(foreignPrimaryDataField, fieldName, daoField: f);
+      return ForeignKey(foreignPrimaryDataField, fieldName,
+          nullable: fieldNullable, daoField: f);
     } else {
-      //TODO nullable property?
-      return DataField(fieldType, fieldName, length: fieldLength, daoField: f);
+      return DataField(fieldType, fieldName,
+          length: fieldLength, nullable: fieldNullable, daoField: f);
     }
   }
 
@@ -196,5 +197,20 @@ class LayoutMirror {
     }
 
     return MirrorSystem.getName(classMirror.simpleName);
+  }
+
+  static bool _reflectNullable(
+      VariableMirror fieldMirror, InstanceMirror? annotation) {
+    // dart:mirrors does not account for nullability... so for now we have
+    // to rely on the annotation info. As soon as they update the mirrors lib:
+    // TODO remove annotation property 'nullable' and check through reflection
+    if (annotation != null) {
+      final nameInstance = annotation.getField(Symbol('nullable'));
+      if (nameInstance.reflectee is bool) {
+        return nameInstance.reflectee;
+      }
+    }
+
+    return false;
   }
 }

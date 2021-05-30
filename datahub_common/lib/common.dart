@@ -1,4 +1,4 @@
-library cl_datahub_comon;
+library cl_datahub_common;
 
 export 'src/api/dto/encoding.dart';
 export 'src/api/dto/field.dart';

@@ -15,7 +15,7 @@ final articles = List.generate(
           'content': loremIpsum
         });
 
-class ArticleResource extends ApiResource<Map<String, dynamic>> {
+class ArticleResource extends ListApiResource<Map<String, dynamic>, int> {
   ArticleResource()
       : super(RoutePattern('/articles/{id?}'), (Map<String, dynamic> e) => e);
 

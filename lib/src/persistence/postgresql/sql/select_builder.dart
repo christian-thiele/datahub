@@ -8,8 +8,18 @@ class SelectBuilder implements SqlBuilder {
   final String schemaName;
   final String tableName;
   Filter _filter = Filter.empty;
+  int _limit = -1;
+  int _offset = 0;
 
   SelectBuilder(this.schemaName, this.tableName);
+
+  void offset(int value) {
+    _offset = value;
+  }
+
+  void limit(int value) {
+    _limit = value;
+  }
 
   void where(Filter filter) {
     _filter = filter;
@@ -31,6 +41,14 @@ class SelectBuilder implements SqlBuilder {
       final filterResult = SqlBuilder.filterSql(_filter);
       buffer.write(filterResult.a);
       values.addAll(filterResult.b);
+    }
+
+    if (_offset > 0) {
+      buffer.write(' OFFSET $_offset');
+    }
+
+    if (_limit > -1) {
+      buffer.write(' LIMIT $_limit');
     }
 
     return Tuple(buffer.toString(), values);

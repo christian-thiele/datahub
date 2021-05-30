@@ -1,18 +1,17 @@
-import 'session.dart';
+import 'package:cl_datahub/src/api/sessions/session.dart';
 
 /// Interface for session persistence.
-abstract class SessionProvider<TId> {
-  Future<Session> createSession(TId userId);
+abstract class SessionProvider<TAuthResult, TSession extends Session, TUserId> {
+  /// Creates a new session using the result data given by [AuthProvider].
+  Future<TSession> createSession(TAuthResult authResult);
 
   /// Finds and returns the session associated with the token and resets
   /// timeout. Throws if timed out or token invalid.
-  Future<Session> redeemToken(String sessionToken);
-
-  Future<Session?> findSessionById(String id);
+  Future<TSession> redeemToken(String sessionToken);
 
   /// Finds all active user sessions.
-  Future<List<Session>> getUserSession(TId userId);
+  Future<List<TSession>> getUserSession(TUserId userId);
 
   /// Returns all active sessions.
-  Future<List<Session>> getActiveSessions();
+  Future<List<TSession>> getActiveSessions();
 }

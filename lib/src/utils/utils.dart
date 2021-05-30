@@ -1,3 +1,5 @@
+import 'package:cl_datahub/cl_datahub.dart';
+
 const Map<int, String> _statusCodes = {
   // Informative
   100: 'Continue',
@@ -84,6 +86,10 @@ String buildQueryString(Map<String, String> query) {
 dynamic customJsonEncode(dynamic item) {
   if (item is DateTime) {
     return item.toIso8601String();
+  }
+
+  if (item is TransferObject) {
+    return item.toJson();
   }
 
   return item;

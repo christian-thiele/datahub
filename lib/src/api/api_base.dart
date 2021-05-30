@@ -10,6 +10,7 @@ import 'package:cl_datahub/src/api/sessions/session_provider.dart';
 import 'package:cl_datahub/utils.dart';
 
 import 'api_response.dart';
+import 'sessions/memory_session.dart';
 import 'sessions/session.dart';
 
 abstract class ApiBase {
@@ -19,7 +20,7 @@ abstract class ApiBase {
 
   const ApiBase(this.endpoints, {this.middleware, this.sessionProvider});
 
-  Future serve(String address, int port,
+  Future<void> serve(String address, int port,
       {CancellationToken? cancellationToken}) async {
     final server = await HttpServer.bind(address, port);
 
@@ -42,7 +43,7 @@ abstract class ApiBase {
 
   void _log(String message) => print(message);
 
-  Future _handleRequestGuarded(HttpRequest request) async {
+  Future<void> _handleRequestGuarded(HttpRequest request) async {
     try {
       var result = await handleRequest(request);
 
@@ -51,6 +52,7 @@ abstract class ApiBase {
           .entries
           .forEach((h) => request.response.headers.add(h.key, h.value));
 
+      request.response.statusCode = result.statusCode;
       request.response.add(result.getData());
 
       //TODO cookies

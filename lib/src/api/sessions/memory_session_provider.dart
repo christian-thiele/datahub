@@ -3,7 +3,7 @@ import 'package:boost/boost.dart';
 import 'package:cl_datahub/utils.dart';
 import 'package:cl_datahub_common/common.dart';
 
-import 'session.dart';
+import 'memory_session.dart';
 import 'session_provider.dart';
 
 /// [SessionProvider] implementation that stores all session data in memory.
@@ -12,38 +12,25 @@ import 'session_provider.dart';
 /// Session data will not be persisted and is gone after restarting the service.
 /// [maxDuration] determines how long a session can live between requests.
 /// If set to [Duration.zero], sessions will never time out.
-class MemorySessionProvider<TId> implements SessionProvider<TId> {
+class MemorySessionProvider<TUserId> implements SessionProvider<TUserId, MemorySession<TUserId>, TUserId> {
   int _currentId = 1;
   final Duration maxDuration;
-  final List<Session<TId>> _sessions = [];
+  final List<MemorySession<TUserId>> _sessions = [];
 
   MemorySessionProvider({this.maxDuration = const Duration(minutes: 30)});
 
   @override
-  Future<Session<TId>> createSession(TId userId) async {
+  Future<MemorySession<TUserId>> createSession(TUserId userId) async {
     final sessionId = (_currentId++).toString();
     final sessionToken = Token();
     final session =
-        Session(sessionId, userId, DateTime.now(), sessionToken.toString(), {});
+        MemorySession(sessionId, userId, DateTime.now(), sessionToken.toString(), {});
     _sessions.add(session);
     return session;
   }
 
   @override
-  Future<Session<TId>?> findSessionById(String id) async {
-    final current =
-        _sessions.firstOrNullWhere((element) => element.sessionId == id);
-
-    if (current != null && current.duration > maxDuration) {
-      _sessions.remove(current);
-      return null;
-    }
-
-    return current;
-  }
-
-  @override
-  Future<Session<TId>> redeemToken(String sessionToken) async {
+  Future<MemorySession<TUserId>> redeemToken(String sessionToken) async {
     final current = _sessions
         .firstOrNullWhere((element) => element.sessionToken == sessionToken);
 
@@ -56,13 +43,13 @@ class MemorySessionProvider<TId> implements SessionProvider<TId> {
   }
 
   @override
-  Future<List<Session<TId>>> getActiveSessions() async {
+  Future<List<MemorySession<TUserId>>> getActiveSessions() async {
     _sessions.removeWhere((s) => s.duration > maxDuration);
     return List.unmodifiable(_sessions);
   }
 
   @override
-  Future<List<Session<TId>>> getUserSession(TId userId) async {
+  Future<List<MemorySession<TUserId>>> getUserSession(TUserId userId) async {
     final userSessions = _sessions.where((s) => s.userId == userId).toList();
     for (final session in userSessions) {
       if (session.duration > maxDuration) {

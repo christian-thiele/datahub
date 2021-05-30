@@ -32,14 +32,26 @@ abstract class TransferObject {
   Map<String, dynamic> toJson() => _data;
 }
 
-abstract class IdTransferObject extends TransferObject {
+abstract class IntIdTransferObject extends TransferObject {
   static const idField = IntField('id');
 
-  IdTransferObject(List<Field> dataFields, Map<String, dynamic> data)
+  IntIdTransferObject(List<Field> dataFields, Map<String, dynamic> data)
       : super((<Field>[idField]).followedBy(dataFields).toList(), data);
 
-  IdTransferObject.create(Map<Field, dynamic> fieldData)
+  IntIdTransferObject.create(Map<Field, dynamic> fieldData)
       : super.create(fieldData);
 
   int? get id => get(idField);
+}
+
+abstract class StringIdTransferObject<TId> extends TransferObject {
+  static const idField = StrField('id');
+
+  StringIdTransferObject(List<Field> dataFields, Map<String, dynamic> data)
+      : super((<Field>[idField]).followedBy(dataFields).toList(), data);
+
+  StringIdTransferObject.create(Map<Field, dynamic> fieldData)
+      : super.create(fieldData);
+
+  String? get id => get(idField);
 }

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/utils.dart';
 
 //TODO files, bytedata etc.
@@ -23,7 +24,9 @@ abstract class ApiResponse {
       return EmptyResponse(statusCode);
     } else if (body is ApiResponse) {
       return body;
-    } else if (body is Map<String, dynamic> || body is List<dynamic>) {
+    } else if (body is Map<String, dynamic> ||
+        body is List<dynamic> ||
+        body is TransferObject) {
       return JsonResponse(body, statusCode);
     } else {
       return TextResponse.plain(body.toString(), statusCode);

@@ -3,10 +3,10 @@ import 'package:cl_datahub_common/common.dart';
 
 import 'api_resource.dart';
 
-class StaticApiResource<TData> extends ApiResource<TData> {
+class StaticListApiResource<TData> extends ListApiResource<TData, int> {
   final Iterable<TData> data;
 
-  StaticApiResource(path, DTOFactory<TData> factory, this.data)
+  StaticListApiResource(path, DTOFactory<TData> factory, this.data)
       : super(path, factory);
 
   @override

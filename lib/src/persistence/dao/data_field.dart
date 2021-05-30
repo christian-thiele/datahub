@@ -11,7 +11,7 @@ enum FieldType { String, Int, Float, Bool, DateTime, Bytes }
 class DataField {
   final FieldType type;
   final String name;
-  final bool nullable; // TODO check if nullable is a good idea
+  final bool nullable;
   final int length;
   final VariableMirror? daoField;
 
@@ -67,9 +67,10 @@ class PrimaryKey extends DataField {
 class ForeignKey extends DataField {
   PrimaryKey foreignPrimaryKey;
 
-  ForeignKey(this.foreignPrimaryKey, String name, {VariableMirror? daoField})
+  ForeignKey(this.foreignPrimaryKey, String name,
+      {bool nullable = false, VariableMirror? daoField})
       : super(foreignPrimaryKey.type, name,
-            nullable: false,
+            nullable: nullable,
             length: foreignPrimaryKey.length,
             daoField: daoField);
 

@@ -38,10 +38,10 @@ class AuthEndpoint extends ApiEndpoint {
     }
 
     //will throw when authentication not possible
-    final userId = await provider.value.authenticate(body['data']);
+    final authResult = await provider.value.authenticate(body['data']);
 
     final session =
-        await request.context.sessionProvider!.createSession(userId);
+        await request.context.sessionProvider!.createSession(authResult);
     //TODO set session as cookie if configured to do so
     return {'session-token': session.sessionToken};
   }
