@@ -20,7 +20,7 @@ class ArticleResource extends ListApiResource<Map<String, dynamic>, int> {
       : super(RoutePattern('/articles/{id?}'), (Map<String, dynamic> e) => e);
 
   @override
-  Future<Map<String, dynamic>> getElement(int id) async {
+  Future<Map<String, dynamic>> getElement(ApiRequest request, int id) async {
     if (id < articles.length) {
       return articles[id];
     } else {
@@ -29,7 +29,8 @@ class ArticleResource extends ListApiResource<Map<String, dynamic>, int> {
   }
 
   @override
-  Future<List<Map<String, dynamic>>> getList(int offset, int limit) async {
+  Future<List<Map<String, dynamic>>> getList(
+      ApiRequest request, int offset, int limit) async {
     return articles.skip(offset).take(limit).toList(growable: false);
   }
 

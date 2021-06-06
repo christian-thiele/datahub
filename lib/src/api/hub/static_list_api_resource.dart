@@ -10,7 +10,7 @@ class StaticListApiResource<TData> extends ListApiResource<TData, int> {
       : super(path, factory);
 
   @override
-  Future<TData> getElement(int id) async {
+  Future<TData> getElement(ApiRequest request, int id) async {
     if (data.length > id) {
       return data.elementAt(id);
     }
@@ -19,7 +19,7 @@ class StaticListApiResource<TData> extends ListApiResource<TData, int> {
   }
 
   @override
-  Future<List<TData>> getList(int offset, int limit) async {
+  Future<List<TData>> getList(ApiRequest request, int offset, int limit) async {
     return data.skip(offset).take(limit).toList();
   }
 

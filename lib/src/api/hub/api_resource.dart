@@ -58,18 +58,18 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
 
   //TODO implement getMetaData for length
 
-  Future<TData> getElement(TId id);
+  Future<TData> getElement(ApiRequest request, TId id);
 
-  Future<List<TData>> getList(int offset, int limit);
+  Future<List<TData>> getList(ApiRequest request, int offset, int limit);
 
   //TODO rethink return data structure
-  Future<Tuple<int, TData>> postElement(TData element) async =>
+  Future<Tuple<TId, TData>> postElement(ApiRequest request, TData element) async =>
       throw ApiError('postElement allowed but not implemented!');
 
-  Future<TData> patchElement(TId id, TData element) async =>
+  Future<TData> patchElement(ApiRequest request, TId id, TData element) async =>
       throw ApiError('patchElement allowed but not implemented!');
 
-  Future deleteElement(TId id) async =>
+  Future deleteElement(ApiRequest request, TId id) async =>
       throw ApiError('deleteElement allowed but not implemented!');
 
   @override
@@ -81,12 +81,12 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
     final id = _findId(request.route);
 
     if (id != null) {
-      return await getElement(id);
+      return await getElement(request, id);
     } else {
       final offset = request.getParamInt('offset', 0);
       final limit = request.getParamInt('limit', 25);
 
-      return await getList(offset, limit);
+      return await getList(request, offset, limit);
     }
   }
 
@@ -98,7 +98,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
 
     final json = request.getJsonBody();
     final data = factory.call(json);
-    final result = await postElement(data);
+    final result = await postElement(request, data);
     //TODO maybe don't reply with complete entry (performance?)
     return {'\$id': result.a, 'result': result.b};
   }
@@ -116,7 +116,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
 
     final json = request.getJsonBody();
     final data = factory.call(json);
-    final result = await patchElement(id, data);
+    final result = await patchElement(request, id, data);
     //TODO maybe don't reply with complete entry (performance?)
     return {'\$id': id, 'result': result};
   }
@@ -132,14 +132,14 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
       throw ApiRequestException.badRequest('Missing id');
     }
 
-    return await deleteElement(id);
+    return await deleteElement(request, id);
   }
 
   TId? _findId(Route route) {
     if (TId == int) {
-      return route.getParamInt(idParam) as TId;
+      return route.getParamInt(idParam) as TId?;
     } else if (TId == String) {
-      return route.getParam(idParam) as TId;
+      return route.getParam(idParam) as TId?;
     } else {
       return null;
     }

@@ -9,8 +9,10 @@ abstract class TransferObject {
   TransferObject(this.dataFields, this._data);
 
   TransferObject.create(Map<Field, dynamic> fieldData)
-      : this(fieldData.keys.toList(),
-            fieldData.map((key, value) => MapEntry(key.key, value)));
+      : dataFields = fieldData.keys.toList(),
+        _data = {} {
+    fieldData.forEach((key, value) => set(key, value));
+  }
 
   T? get<T>(Field<T> field) {
     if (!dataFields.contains(field)) {
@@ -42,9 +44,11 @@ abstract class IntIdTransferObject extends TransferObject {
       : super.create(fieldData);
 
   int? get id => get(idField);
+
+  set id(value) => set(idField, value);
 }
 
-abstract class StringIdTransferObject<TId> extends TransferObject {
+abstract class StringIdTransferObject extends TransferObject {
   static const idField = StrField('id');
 
   StringIdTransferObject(List<Field> dataFields, Map<String, dynamic> data)
@@ -54,4 +58,6 @@ abstract class StringIdTransferObject<TId> extends TransferObject {
       : super.create(fieldData);
 
   String? get id => get(idField);
+
+  set id(value) => set(idField, value);
 }
