@@ -23,7 +23,13 @@ class ApiRequest {
 
   String getTextBody() => utf8.decode(bodyData);
 
-  dynamic getJsonBody() => JsonDecoder().convert(getTextBody());
+  dynamic getJsonBody() {
+    try {
+      return JsonDecoder().convert(getTextBody());
+    } on FormatException catch (e) {
+      throw ApiRequestException.badRequest('Invalid body data.');
+    }
+  }
 
   //TODO doc -> throw behaviour etc
   String getParam(String name, [String? fallback]) {

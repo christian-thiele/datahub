@@ -1,10 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/utils.dart';
-
-//TODO files, bytedata etc.
 
 /// Defines a response to a api request.
 ///
@@ -24,6 +23,10 @@ abstract class ApiResponse {
       return EmptyResponse(statusCode);
     } else if (body is ApiResponse) {
       return body;
+    } else if (body is Uint8List) {
+      return RawResponse(body);
+    } else if (body is ByteData) {
+      return RawResponse(body.buffer.asUint8List());
     } else if (body is Map<String, dynamic> ||
         body is List<dynamic> ||
         body is TransferObject) {
@@ -31,6 +34,7 @@ abstract class ApiResponse {
     } else {
       return TextResponse.plain(body.toString(), statusCode);
     }
+    //TODO File would be cool here (automatic content-type and stuff)
   }
 }
 
@@ -73,6 +77,22 @@ class TextResponse extends ApiResponse {
   Map<String, String> getHeaders() {
     return {HttpHeaders.contentTypeHeader: _contentType};
   }
+}
+
+class RawResponse extends ApiResponse {
+  final String contentType;
+  final Uint8List _data;
+
+  RawResponse(this._data,
+      {int statusCode = 200, this.contentType = 'application/octet-stream'})
+      : super(statusCode);
+
+  @override
+  List<int> getData() => _data;
+
+  @override
+  Map<String, String> getHeaders() =>
+      {'content-length': _data.length.toString(), 'content-type': contentType};
 }
 
 class EmptyResponse extends ApiResponse {

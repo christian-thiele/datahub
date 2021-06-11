@@ -45,7 +45,11 @@ abstract class ApiBase {
 
   Future<void> _handleRequestGuarded(HttpRequest request) async {
     try {
+      final stopWatch = Stopwatch()..start();
       var result = await handleRequest(request);
+      stopWatch.stop();
+      print(
+          'Handled request to ${request.requestedUri} in ${stopWatch.elapsedMilliseconds}ms.');
 
       result
           .getHeaders()

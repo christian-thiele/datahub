@@ -100,7 +100,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
     final data = factory.call(json);
     final result = await postElement(request, data);
     //TODO maybe don't reply with complete entry (performance?)
-    return {'\$id': result.a, 'result': result.b};
+    return result.b;
   }
 
   @override
@@ -118,7 +118,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
     final data = factory.call(json);
     final result = await patchElement(request, id, data);
     //TODO maybe don't reply with complete entry (performance?)
-    return {'\$id': id, 'result': result};
+    return result;
   }
 
   @override
