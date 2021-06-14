@@ -8,7 +8,7 @@ environment:
   sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
-  boost: ^0.0.6-nullsafety
+  boost: ^0.0.9-nullsafety
   postgres: ^2.3.0-null-safety.2
   uuid: ^3.0.1
   cl_datahub_common:

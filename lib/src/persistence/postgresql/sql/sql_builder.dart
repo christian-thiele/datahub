@@ -46,10 +46,54 @@ abstract class SqlBuilder {
       // TODO while we escape values, we don't need to worry about substitution values
       // TODO but that's probably not the best way, lets think of some sort of system that
       // TODO let's us use substitutions without clashing names
+      // @CTH by CTH: maybe provide a "namespace" to methods like this to avoid
+      // clashing names?
       buffer.write(escapeValue(filter.value));
+    } else {
+      throw PersistenceException(
+          'PostgreSQL implementation does not '
+              'support filter type ${filter.runtimeType}.');
     }
 
     return Tuple(buffer.toString(), values);
+  }
+
+  static Tuple<String, Map<String, dynamic>> selectSql(QuerySelect select) {
+    if (select is WildcardSelect) {
+      return const Tuple('*', {});
+    } else if (select is FieldSelect) {
+      return Tuple(escapeName(select.field.name), const {});
+    } else if (select is AggregateSelect) {
+      if (select.type != AggregateType.count && select.select == null) {
+        throw PersistenceException(
+            'AggregateSelect of type ${select.type} requires an inner select.');
+      }
+
+      switch (select.type) {
+        case AggregateType.count:
+          return Tuple('COUNT(*)', const {});
+        case AggregateType.min:
+          // dereference safe because of exception above
+          final inner = selectSql(select.select!);
+          return Tuple('MIN(${inner.a})', inner.b);
+        case AggregateType.max:
+          // dereference safe because of exception above
+          final inner = selectSql(select.select!);
+          return Tuple('MAX(${inner.a})', inner.b);
+        case AggregateType.sum:
+          // dereference safe because of exception above
+          final inner = selectSql(select.select!);
+          return Tuple('SUM(${inner.a})', inner.b);
+        case AggregateType.avg:
+          // dereference safe because of exception above
+          final inner = selectSql(select.select!);
+          return Tuple('AVG(${inner.a})', inner.b);
+      }
+    } else {
+      throw PersistenceException(
+          'PostgreSQL implementation does not '
+              'support aggregate type ${select.runtimeType}.');
+    }
   }
 
   static String typeSql(DataField field) {
@@ -64,8 +108,9 @@ abstract class SqlBuilder {
             return 'bigserial';
           } else {
             throw PersistenceException(
-                'PostgreSQL implementation does not support serial length ${field.length}.'
-                'Only 16, 32 or 64 allowed.)');
+                'PostgreSQL implementation does not support serial length ${field
+                    .length}.'
+                    'Only 16, 32 or 64 allowed.)');
           }
         } else if (field.length == 16) {
           return 'int2';
@@ -75,8 +120,9 @@ abstract class SqlBuilder {
           return 'int8';
         } else {
           throw PersistenceException(
-              'PostgreSQL implementation does not support int length ${field.length}.'
-              'Only 16, 32 or 64 allowed.)');
+              'PostgreSQL implementation does not support int length ${field
+                  .length}.'
+                  'Only 16, 32 or 64 allowed.)');
         }
       case FieldType.Float:
         if (field.length == 32) {
@@ -85,8 +131,9 @@ abstract class SqlBuilder {
           return 'double precision';
         } else {
           throw PersistenceException(
-              'PostgreSQL implementation does not support float length ${field.length}.'
-              'Only 32 or 64 allowed.)');
+              'PostgreSQL implementation does not support float length ${field
+                  .length}.'
+                  'Only 32 or 64 allowed.)');
         }
       case FieldType.Bool:
         return 'boolean';
@@ -96,7 +143,8 @@ abstract class SqlBuilder {
         return 'bytea';
       default:
         throw PersistenceException(
-            'PostgreSQL implementation does not support data type ${field.type}.');
+            'PostgreSQL implementation does not support data type ${field
+                .type}.');
     }
   }
 
@@ -136,7 +184,8 @@ abstract class SqlBuilder {
       return '\'${value.toIso8601String()}\'';
     }
 
-    return '\'${value.toString().replaceAll('\'', '\'\'')}\''; //TODO other escape things
+    return '\'${value.toString().replaceAll(
+        '\'', '\'\'')}\''; //TODO other escape things
   }
 }
 

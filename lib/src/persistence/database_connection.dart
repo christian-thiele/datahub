@@ -28,14 +28,17 @@ abstract class DatabaseConnection {
 
   Future<TDao?> queryId<TDao>(DataLayout layout, dynamic id);
 
+  Future<List<dynamic>> select(DataLayout layout, List<QuerySelect> select,
+      {Filter filter = Filter.empty, int offset = 0, int limit = -1});
+
   /// Returns primary key of inserted object.
   Future<dynamic> insert<TDao>(DataLayout layout, TDao object);
 
   Future<void> update<TDao>(DataLayout layout, TDao object);
 
   /// Returns number of affected rows.
-  Future<int> updateWhere(
-      DataLayout layout, Map<String, dynamic> values, Filter filter);
+  Future<int> updateWhere(DataLayout layout, Map<String, dynamic> values,
+      Filter filter);
 
   Future<void> delete<TDao>(DataLayout layout, TDao object);
 

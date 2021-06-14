@@ -3,15 +3,19 @@ import 'package:cl_datahub/cl_datahub.dart';
 
 import 'sql_builder.dart';
 
-//TODO complete select
 class SelectBuilder implements SqlBuilder {
   final String schemaName;
   final String tableName;
   Filter _filter = Filter.empty;
+  List<QuerySelect>? _select;
   int _limit = -1;
   int _offset = 0;
 
   SelectBuilder(this.schemaName, this.tableName);
+
+  void select(List<QuerySelect> selections) {
+    _select = selections;
+  }
 
   void offset(int value) {
     _offset = value;
@@ -30,8 +34,14 @@ class SelectBuilder implements SqlBuilder {
     final buffer = StringBuffer('SELECT ');
     final values = <String, dynamic>{};
 
-    //TODO columns
-    buffer.write('* ');
+    if (_select?.isNotEmpty ?? false) {
+      final selectResults = _select!.map((s) => SqlBuilder.selectSql(s));
+      buffer.write(selectResults.map((e) => e.a).join(', '));
+      values.addEntries(selectResults.expand((s) => s.b.entries));
+      buffer.write(' ');
+    } else {
+      buffer.write('* ');
+    }
 
     buffer.write('FROM $schemaName.$tableName');
 
