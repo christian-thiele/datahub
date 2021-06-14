@@ -68,6 +68,28 @@ class ObjectField<T extends TransferObject> extends Field<T> {
       : super(name, key: key, factory: factory);
 }
 
+class EnumField<T> extends Field<T> {
+  final List<T> values;
+
+  const EnumField(String name, this.values, {String? key, T? defaultValue})
+      : super(name, key: key, defaultValue: defaultValue);
+
+  @override
+  T? decode(Map<String, dynamic> map) {
+    if (map[key] == null) {
+      return null;
+    }
+
+    return tryFindEnum(map[key].toString(), values);
+  }
+
+  @override
+  MapEntry<String, dynamic> encode(T value) {
+    final str = value.toString();
+    return MapEntry(key, str.substring(str.lastIndexOf('.') + 1));
+  }
+}
+
 /// Represents a list field where T defines the entry type
 /// i.e. ListField<String> provides a List<String> as decoded type
 class ListField<T> extends Field<List<T>> {
@@ -75,9 +97,9 @@ class ListField<T> extends Field<List<T>> {
       : super(name, key: key, factory: factory);
 
   @override
-  List<T>? decode(Map<String, dynamic> map) {
+  List<T> decode(Map<String, dynamic> map) {
     if (map[key] == null) {
-      return null;
+      return [];
     }
 
     final raw = map[key];
@@ -89,7 +111,7 @@ class ListField<T> extends Field<List<T>> {
           .toList();
     }
 
-    return null;
+    return [];
   }
 
   @override
