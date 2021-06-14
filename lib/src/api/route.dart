@@ -183,6 +183,25 @@ class RoutePattern {
         as _PLSegment;
     return segment.optional;
   }
+
+  /// Throws [ApiError] if [param] does not exist as route parameter in this
+  /// pattern.
+  ///
+  /// If [isOptional] is non-null, it is also asserted, that the route
+  /// parameter is optional or not.
+  void assertParam(String param, {bool? isOptional}) {
+    if (!containsParam(param) || (isOptional != isOptionalParam(param))) {
+      final buffer = StringBuffer('RoutePattern requires ');
+      if (isOptional != null) {
+        if (!isOptional) {
+          buffer.write('non-');
+        }
+        buffer.write('optional');
+      }
+      buffer.write(' parameter "$param".');
+      throw ApiError(buffer.toString());
+    }
+  }
 }
 
 class _Segment {

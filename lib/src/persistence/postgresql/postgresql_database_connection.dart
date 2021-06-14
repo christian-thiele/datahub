@@ -102,6 +102,19 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   }
 
   @override
+  Future<bool> idExists<TDao>(DataLayout layout, dynamic id) async {
+    final primaryKey = layout.getPrimaryKeyField() ??
+        (throw PersistenceException('No primary key found in layout.'));
+
+    final result = await querySql(
+        SelectBuilder(adapter.schema.name, layout.name)
+          ..select([FieldSelect(primaryKey)])
+          ..where(Filter.equals(primaryKey.name, id)));
+
+    return result.isNotEmpty;
+  }
+
+  @override
   Future<dynamic> insert<TDao>(DataLayout layout, TDao entry) async {
     final data = layout.unmap(entry);
     final primaryKey = layout.fields.firstOrNullWhere((f) => f is PrimaryKey);

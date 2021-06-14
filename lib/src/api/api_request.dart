@@ -23,10 +23,10 @@ class ApiRequest {
 
   String getTextBody() => utf8.decode(bodyData);
 
-  dynamic getJsonBody() {
+  Map<String, dynamic> getJsonBody() {
     try {
-      return JsonDecoder().convert(getTextBody());
-    } on FormatException catch (e) {
+      return JsonDecoder().convert(getTextBody()) as Map<String, dynamic>;
+    } catch (_) {
       throw ApiRequestException.badRequest('Invalid body data.');
     }
   }

@@ -28,6 +28,8 @@ abstract class DatabaseConnection {
 
   Future<TDao?> queryId<TDao>(DataLayout layout, dynamic id);
 
+  Future<bool> idExists<TDao>(DataLayout layout, dynamic id);
+
   Future<List<dynamic>> select(DataLayout layout, List<QuerySelect> select,
       {Filter filter = Filter.empty, int offset = 0, int limit = -1});
 
