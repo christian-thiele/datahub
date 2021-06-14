@@ -3,7 +3,6 @@ import 'dart:typed_data';
 
 import 'package:cl_datahub_common/common.dart';
 
-//TODO check if this todo is still valid later: this is api specific, should be somewhere in api classes to avoid confusion with persistence usage
 T? decodeTyped<T>(dynamic raw, {DTOFactory? factory}) {
   if (raw == null) {
     return null;
@@ -53,7 +52,6 @@ T? decodeTyped<T>(dynamic raw, {DTOFactory? factory}) {
   throw ApiError.invalidType(T);
 }
 
-//TODO check if this todo is still valid later: this is api specific, should be somewhere in api classes to avoid confusion with persistence usage
 dynamic encodeTyped<T>(T value) {
   if (value == null) {
     return null;
@@ -69,6 +67,10 @@ dynamic encodeTyped<T>(T value) {
 
   if (T == String || T == int || T == double || T == bool) {
     return value;
+  }
+
+  if (value is TransferObject) {
+    return value.toJson();
   }
 
   throw ApiError.invalidType(T);
