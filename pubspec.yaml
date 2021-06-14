@@ -8,7 +8,10 @@ environment:
   sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
-  boost: ^0.0.9-nullsafety
+  boost:
+    git:
+      url: https://github.com/christian-thiele/dart_boost
+      ref: dev
   postgres: ^2.3.0-null-safety.2
   uuid: ^3.0.1
   cl_datahub_common:
