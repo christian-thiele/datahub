@@ -50,9 +50,8 @@ abstract class SqlBuilder {
       // clashing names?
       buffer.write(escapeValue(filter.value));
     } else {
-      throw PersistenceException(
-          'PostgreSQL implementation does not '
-              'support filter type ${filter.runtimeType}.');
+      throw PersistenceException('PostgreSQL implementation does not '
+          'support filter type ${filter.runtimeType}.');
     }
 
     return Tuple(buffer.toString(), values);
@@ -90,9 +89,8 @@ abstract class SqlBuilder {
           return Tuple('AVG(${inner.a})', inner.b);
       }
     } else {
-      throw PersistenceException(
-          'PostgreSQL implementation does not '
-              'support aggregate type ${select.runtimeType}.');
+      throw PersistenceException('PostgreSQL implementation does not '
+          'support aggregate type ${select.runtimeType}.');
     }
   }
 
@@ -108,9 +106,8 @@ abstract class SqlBuilder {
             return 'bigserial';
           } else {
             throw PersistenceException(
-                'PostgreSQL implementation does not support serial length ${field
-                    .length}.'
-                    'Only 16, 32 or 64 allowed.)');
+                'PostgreSQL implementation does not support serial length ${field.length}.'
+                'Only 16, 32 or 64 allowed.)');
           }
         } else if (field.length == 16) {
           return 'int2';
@@ -120,9 +117,8 @@ abstract class SqlBuilder {
           return 'int8';
         } else {
           throw PersistenceException(
-              'PostgreSQL implementation does not support int length ${field
-                  .length}.'
-                  'Only 16, 32 or 64 allowed.)');
+              'PostgreSQL implementation does not support int length ${field.length}.'
+              'Only 16, 32 or 64 allowed.)');
         }
       case FieldType.Float:
         if (field.length == 32) {
@@ -131,9 +127,8 @@ abstract class SqlBuilder {
           return 'double precision';
         } else {
           throw PersistenceException(
-              'PostgreSQL implementation does not support float length ${field
-                  .length}.'
-                  'Only 32 or 64 allowed.)');
+              'PostgreSQL implementation does not support float length ${field.length}.'
+              'Only 32 or 64 allowed.)');
         }
       case FieldType.Bool:
         return 'boolean';
@@ -143,8 +138,7 @@ abstract class SqlBuilder {
         return 'bytea';
       default:
         throw PersistenceException(
-            'PostgreSQL implementation does not support data type ${field
-                .type}.');
+            'PostgreSQL implementation does not support data type ${field.type}.');
     }
   }
 
@@ -184,8 +178,7 @@ abstract class SqlBuilder {
       return '\'${value.toIso8601String()}\'';
     }
 
-    return '\'${value.toString().replaceAll(
-        '\'', '\'\'')}\''; //TODO other escape things
+    return '\'${value.toString().replaceAll('\'', '\'\'')}\''; //TODO other escape things
   }
 }
 

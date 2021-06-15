@@ -13,7 +13,8 @@ abstract class QuerySelect {
   const QuerySelect();
 
   /// Convenience getter for a count aggregation with alias 'count'.
-  static const AggregateSelect count = AggregateSelect(AggregateType.count, 'count');
+  static const AggregateSelect count =
+      AggregateSelect(AggregateType.count, 'count');
 }
 
 /// Select every available column / field.

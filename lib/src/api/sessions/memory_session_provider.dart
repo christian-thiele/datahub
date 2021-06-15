@@ -12,7 +12,8 @@ import 'session_provider.dart';
 /// Session data will not be persisted and is gone after restarting the service.
 /// [maxDuration] determines how long a session can live between requests.
 /// If set to [Duration.zero], sessions will never time out.
-class MemorySessionProvider<TUserId> implements SessionProvider<TUserId, MemorySession<TUserId>, TUserId> {
+class MemorySessionProvider<TUserId>
+    implements SessionProvider<TUserId, MemorySession<TUserId>, TUserId> {
   int _currentId = 1;
   final Duration maxDuration;
   final List<MemorySession<TUserId>> _sessions = [];
@@ -23,8 +24,8 @@ class MemorySessionProvider<TUserId> implements SessionProvider<TUserId, MemoryS
   Future<MemorySession<TUserId>> createSession(TUserId userId) async {
     final sessionId = (_currentId++).toString();
     final sessionToken = Token();
-    final session =
-        MemorySession(sessionId, userId, DateTime.now(), sessionToken.toString(), {});
+    final session = MemorySession(
+        sessionId, userId, DateTime.now(), sessionToken.toString(), {});
     _sessions.add(session);
     return session;
   }

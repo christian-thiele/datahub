@@ -63,7 +63,8 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
   Future<List<TData>> getList(ApiRequest request, int offset, int limit);
 
   //TODO rethink return data structure
-  Future<Tuple<TId, TData>> postElement(ApiRequest request, TData element) async =>
+  Future<Tuple<TId, TData>> postElement(
+          ApiRequest request, TData element) async =>
       throw ApiError('postElement allowed but not implemented!');
 
   Future<TData> patchElement(ApiRequest request, TId id, TData element) async =>

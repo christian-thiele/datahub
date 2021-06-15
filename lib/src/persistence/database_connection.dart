@@ -39,8 +39,8 @@ abstract class DatabaseConnection {
   Future<void> update<TDao>(DataLayout layout, TDao object);
 
   /// Returns number of affected rows.
-  Future<int> updateWhere(DataLayout layout, Map<String, dynamic> values,
-      Filter filter);
+  Future<int> updateWhere(
+      DataLayout layout, Map<String, dynamic> values, Filter filter);
 
   Future<void> delete<TDao>(DataLayout layout, TDao object);
 
