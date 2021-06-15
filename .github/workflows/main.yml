@@ -27,6 +27,10 @@ jobs:
       - name: Print Dart SDK version
         run: dart --version
 
+      - name: Install dependencies (cl_datahub_common)
+        run: dart pub get
+        working-directory: datahub_common
+
       - name: Prepare Pub Cache
         env:
           accessToken: ${{ secrets.accessToken }}
@@ -35,10 +39,6 @@ jobs:
           scopes: ${{ secrets.scopes }}
           expiration: ${{ secrets.expiration }}
         run: sh ./ci_publish.sh
-
-      - name: Install dependencies (cl_datahub_common)
-        run: dart pub get
-        working-directory: datahub_common
 
       - name: Verify formatting (cl_datahub_common)
         run: dart format --output=none --set-exit-if-changed .
