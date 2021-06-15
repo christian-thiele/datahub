@@ -54,7 +54,7 @@ jobs:
         working-directory: datahub_common
 
       - name: Install dependencies (cl_datahub)
-          run: dart pub get
+        run: dart pub get
 
       - name: Verify formatting (cl_datahub)
         run: dart format --output=none --set-exit-if-changed .
