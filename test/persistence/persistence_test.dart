@@ -1,5 +1,6 @@
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/src/persistence/postgresql/postgresql_database_adapter.dart';
+import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 
 import '../utils/message_matcher.dart';
@@ -13,10 +14,21 @@ const String database = 'postgres';
 const String user = 'postgres';
 const String password = 'mysecretpassword';
 
-void main() {
+void main() async {
+  String? skip;
+  try {
+    final connection = PostgreSQLConnection(host, port, database,
+        username: user,
+        password: password);
+    await connection.open();
+    await connection.close();
+  } catch (e) {
+    skip = 'No SQL Server running.';
+  }
+
   group('PostgreSQL', () {
     test('connect / initialize', _testScheme);
-  });
+  }, skip: skip);
 }
 
 Future _testScheme() async {
@@ -25,7 +37,7 @@ Future _testScheme() async {
   final userLayout = LayoutMirror.reflect(UserDao);
 
   final schema =
-      DataSchema('blogsystem', 1, [blogLayout, articleLayout, userLayout]);
+  DataSchema('blogsystem', 1, [blogLayout, articleLayout, userLayout]);
 
   final adapter = PostgreSQLDatabaseAdapter(schema, host, port, database,
       username: user, password: password);
@@ -48,7 +60,7 @@ Future _testScheme() async {
   expect(blogUsers.any((element) => element.id == userId), isTrue);
 
   // delete some data
-  await connection.delete(userLayout, blogUser);
+  await connection.delete(userLayout, blogUser.copyWith(id: userId));
 
   final blogUsers2 = await connection.query<UserDao>(userLayout);
   expect(blogUsers2.any((element) => element.id == userId), isFalse);

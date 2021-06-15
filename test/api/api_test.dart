@@ -32,11 +32,11 @@ void main() {
       final token = CancellationToken();
       final task = api.serve(InternetAddress.loopbackIPv4.address, 8083,
           cancellationToken: token);
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(Duration(seconds: 3));
 
       ///TODO test requests
 
-      //token.cancel();
+      token.cancel();
       await task;
     }, timeout: Timeout(Duration(minutes: 5)));
   });
