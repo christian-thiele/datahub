@@ -20,7 +20,7 @@ abstract class ApiBase {
 
   const ApiBase(this.endpoints, {this.middleware, this.sessionProvider});
 
-  Future<void> serve(String address, int port,
+  Future<void> serve(dynamic address, int port,
       {CancellationToken? cancellationToken}) async {
     final server = await HttpServer.bind(address, port);
 
