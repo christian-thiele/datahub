@@ -13,7 +13,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
- deploy_datahub_common:
+ deploy:
     # The type of runner that the job will run on
     runs-on: ubuntu-latest
 
@@ -27,23 +27,7 @@ jobs:
       - name: Print Dart SDK version
         run: dart --version
 
-      - name: Change directory
-        run: cd datahub_common
-
-      - name: Install dependencies
-        run: dart pub get
-
-      - name: Verify formatting
-        run: dart format --output=none --set-exit-if-changed .
-
-      # Consider passing '--fatal-infos' for slightly stricter analysis.
-      - name: Analyze project source
-        run: dart analyze
-
-      - name: Run tests
-        run: dart test
-        
-      - name: Publish
+      - name: Prepare Pub Cache
         env:
           accessToken: ${{ secrets.accessToken }}
           refreshToken: ${{ secrets.refreshToken }}
@@ -51,6 +35,39 @@ jobs:
           scopes: ${{ secrets.scopes }}
           expiration: ${{ secrets.expiration }}
         run: sh ./ci_publish.sh
+
+      - name: Install dependencies (cl_datahub_common)
+        run: dart pub get
+        working-directory: datahub_common
+
+      - name: Verify formatting (cl_datahub_common)
+        run: dart format --output=none --set-exit-if-changed .
+        working-directory: datahub_common
+
+      # Consider passing '--fatal-infos' for slightly stricter analysis.
+      - name: Analyze project source (cl_datahub_common)
+        run: dart analyze
+        working-directory: datahub_common
+        
+      - name: Publish (cl_datahub_common)
+        run: pub publish -f
+        working-directory: datahub_common
+
+      - name: Install dependencies (cl_datahub)
+          run: dart pub get
+
+      - name: Verify formatting (cl_datahub)
+        run: dart format --output=none --set-exit-if-changed .
+
+      # Consider passing '--fatal-infos' for slightly stricter analysis.
+      - name: Analyze project source (cl_datahub)
+        run: dart analyze
+
+      - name: Run tests (cl_datahub)
+        run: dart test
+
+      - name: Publish (cl_datahub)
+        run: pub publish -f
 
  deploy_datahub:
     # The type of runner that the job will run on
