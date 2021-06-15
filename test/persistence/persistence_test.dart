@@ -18,8 +18,7 @@ void main() async {
   String? skip;
   try {
     final connection = PostgreSQLConnection(host, port, database,
-        username: user,
-        password: password);
+        username: user, password: password);
     await connection.open();
     await connection.close();
   } catch (e) {
@@ -37,7 +36,7 @@ Future _testScheme() async {
   final userLayout = LayoutMirror.reflect(UserDao);
 
   final schema =
-  DataSchema('blogsystem', 1, [blogLayout, articleLayout, userLayout]);
+      DataSchema('blogsystem', 1, [blogLayout, articleLayout, userLayout]);
 
   final adapter = PostgreSQLDatabaseAdapter(schema, host, port, database,
       username: user, password: password);
