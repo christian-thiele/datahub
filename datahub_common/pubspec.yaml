@@ -1,6 +1,6 @@
 name: cl_datahub_common
-description: Shared code for datahub and appbase.
-version: 1.0.0
+description: Shared code for cl_datahub and cl_appbase.
+version: 0.0.1
 homepage: https://www.corelightservices.com
 publish_to: none
 
@@ -8,10 +8,7 @@ environment:
   sdk: '>=2.12.0-0 <3.0.0'
 
 dependencies:
-  boost:
-    git:
-      url: https://github.com/christian-thiele/dart_boost
-      ref: dev
+  boost: ^0.0.10-nullsafety
 
 dev_dependencies:
   pedantic: ^1.11.0
