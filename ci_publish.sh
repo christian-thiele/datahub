@@ -11,7 +11,4 @@ cat <<EOF > ~/.pub-cache/credentials.json
 }
 EOF
 
-cd datahub_common
-pub publish -f
-cd ..
 pub publish -f
