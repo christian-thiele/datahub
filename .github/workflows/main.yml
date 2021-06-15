@@ -65,6 +65,7 @@ jobs:
       - name: Publish (cl_datahub_common)
         run: pub publish -f
         working-directory: datahub_common
+        continue-on-error: true
 
       - name: Publish (cl_datahub)
         run: pub publish -f
