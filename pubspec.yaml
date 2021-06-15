@@ -1,8 +1,7 @@
 name: cl_datahub
-description: A starting point for Dart libraries or applications.
+description: A Framework for creating Web APIs.
 version: 0.0.1
 homepage: https://www.corelightservices.com
-publish_to: none
 
 environment:
   sdk: '>=2.12.0-0 <3.0.0'
