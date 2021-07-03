@@ -10,8 +10,8 @@ class DataSchema {
 
   DataSchema(this.name, this.version, this.layouts);
 
-  Future<void> migrate(DatabaseConnection connection, int fromVersion) async {
-    //TODO migration shit!
+  Future<void> migrate(Migrator migrator, int fromVersion) async {
+    //TODO automatic migration
     print('Migrating $name from $fromVersion to $version.');
   }
 }
