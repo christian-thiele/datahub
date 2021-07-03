@@ -1,5 +1,5 @@
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/persistence/postgresql/postgresql_database_adapter.dart';
+import 'package:cl_datahub/postgresql.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 

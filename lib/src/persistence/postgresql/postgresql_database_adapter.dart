@@ -1,11 +1,12 @@
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/src/persistence/database_adapter.dart';
 import 'package:cl_datahub/src/persistence/database_connection.dart';
-import 'package:cl_datahub/src/persistence/postgresql/postgresql_database_connection.dart';
+import 'postgresql_database_connection.dart';
 
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:postgres/postgres.dart' as postgres;
 
+import 'postgresql_database_migrator.dart';
 import 'sql/sql.dart';
 import 'sql/sql_builder.dart';
 
@@ -77,7 +78,9 @@ class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
 
       final version = int.parse(versionString);
       if (version != schema.version) {
-        await schema.migrate(connection, version);
+        final migrator = PostgreSQLDatabaseMigrator(schema, connection);
+
+        await schema.migrate(migrator, version);
         await connection.setMetaValue(
             schemaVersionKey, schema.version.toString());
       }
