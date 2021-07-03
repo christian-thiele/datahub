@@ -32,8 +32,8 @@ class AddFieldBuilder implements SqlBuilder {
     }
 
     if (initialValue != null) {
-      buffer.write('; UPDATE $tableRef SET $colName = @${colName}_init');
-      subs['${colName}_init'] = initialValue;
+      buffer.write('; UPDATE $tableRef SET $colName = @init');
+      subs['init'] = initialValue;
     }
 
     if (field is! PrimaryKey && !field.nullable) {
