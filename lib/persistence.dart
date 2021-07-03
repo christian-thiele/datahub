@@ -10,3 +10,4 @@ export 'src/persistence/database_connection.dart';
 export 'src/persistence/persistence_exception.dart';
 export 'src/persistence/query/filter.dart';
 export 'src/persistence/query/query_select.dart';
+export 'src/persistence/migration/migrator.dart';
