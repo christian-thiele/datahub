@@ -1,3 +1,5 @@
-## 1.0.0
+## 0.0.1
+- intial version
 
-- Initial version
+## 0.0.2
+- updated boost dependency
