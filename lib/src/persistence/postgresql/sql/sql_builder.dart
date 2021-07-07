@@ -24,11 +24,11 @@ abstract class SqlBuilder {
           break;
       }
     } else if (filter is PropertyCompare) {
-      if (filter.caseSensitive) {
+      // for case Contains, case insensitivity is solved by using ILIKE,
+      // no need for LOWER
+      if (filter.caseSensitive || filter.type == PropertyCompareType.Contains) {
         buffer.write(escapeName(filter.propertyName));
-      } else if (filter.type != PropertyCompareType.Contains) {
-        // for case Contains, case insensitivity is solved by using ILIKE,
-        // no need for LOWER
+      } else {
         buffer.write('LOWER(${escapeName(filter.propertyName)})');
       }
       switch (filter.type) {
