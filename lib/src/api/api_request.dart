@@ -31,21 +31,27 @@ class ApiRequest {
     }
   }
 
-  //TODO doc -> throw behaviour etc
+  /// Returns the named query parameter.
+  ///
+  /// Throws [ApiRequestException.badRequest] if value does not exist and
+  /// [fallback] is null.
   String getParam(String name, [String? fallback]) {
     return queryParams[name]?.toString() ??
         fallback ??
-        (throw ApiRequestException.badRequest('Missing route param: $name'));
+        (throw ApiRequestException.badRequest('Missing query param: $name'));
   }
 
-  //TODO doc -> throw behaviour etc
+  /// Returns the named query parameter of the request as int.
+  ///
+  /// Throws [ApiRequestException.badRequest] if value does not exist and
+  /// [fallback] is null or if value is not an integer.
   int getParamInt(String name, [int? fallback]) {
     if (queryParams[name] != null) {
       return int.tryParse(queryParams[name]!) ??
-          (throw ApiRequestException.badRequest('Invalid route param: $name'));
+          (throw ApiRequestException.badRequest('Invalid query param: $name'));
     }
 
     return fallback ??
-        (throw ApiRequestException.badRequest('Missing route param: $name'));
+        (throw ApiRequestException.badRequest('Missing query param: $name'));
   }
 }
