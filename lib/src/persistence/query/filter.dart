@@ -35,7 +35,8 @@ abstract class Filter {
   }
 
   /// Assembles the smallest representation of [filters] combined.
-  static Filter _optimizedGroup(Iterable<Filter> filters, FilterGroupType type) {
+  static Filter _optimizedGroup(
+      Iterable<Filter> filters, FilterGroupType type) {
     final notEmpty = filters.where((element) => !element.isEmpty);
     if (notEmpty.isEmpty) {
       return Filter.empty;
