@@ -92,8 +92,10 @@ class PropertyCompare implements Filter {
   final String
       propertyName; //TODO maybe field object or something like that (string is sketchy)
   final dynamic value; //TODO dynamic? check if this holds up
+  final bool caseSensitive;
 
-  const PropertyCompare(this.type, this.propertyName, this.value);
+  const PropertyCompare(this.type, this.propertyName, this.value,
+      {this.caseSensitive = true});
 
   @override
   bool get isEmpty => false;
