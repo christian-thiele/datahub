@@ -26,7 +26,7 @@ abstract class SqlBuilder {
     } else if (filter is PropertyCompare) {
       if (filter.caseSensitive) {
         buffer.write(escapeName(filter.propertyName));
-      }else if (filter.type != PropertyCompareType.Contains) {
+      } else if (filter.type != PropertyCompareType.Contains) {
         // for case Contains, case insensitivity is solved by using ILIKE,
         // no need for LOWER
         buffer.write('LOWER(${escapeName(filter.propertyName)})');
@@ -70,7 +70,7 @@ abstract class SqlBuilder {
           if (filter.caseSensitive) {
             buffer.write(escapeValue(filter.value));
           } else {
-            buffer.write(escapeValue(filter.value).toLowerCase())
+            buffer.write(escapeValue(filter.value).toLowerCase());
           }
           break;
       }
