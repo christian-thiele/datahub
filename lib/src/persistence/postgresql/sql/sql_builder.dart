@@ -26,6 +26,9 @@ abstract class SqlBuilder {
     } else if (filter is PropertyCompare) {
       buffer.write(escapeName(filter.propertyName));
       switch (filter.type) {
+        case PropertyCompareType.Contains:
+          buffer.write(' LIKE ');
+          break;
         case PropertyCompareType.Equals:
           buffer.write(' = ');
           break;
@@ -41,6 +44,9 @@ abstract class SqlBuilder {
         case PropertyCompareType.LessOrEqual:
           buffer.write(' <= ');
           break;
+        default:
+          throw PersistenceException(
+              'PropertyCompareType not implemented: ${filter.type}');
       }
 
       // TODO while we escape values, we don't need to worry about substitution values
@@ -48,7 +54,14 @@ abstract class SqlBuilder {
       // TODO let's us use substitutions without clashing names
       // @CTH by CTH: maybe provide a "namespace" to methods like this to avoid
       // clashing names?
-      buffer.write(escapeValue(filter.value));
+      switch (filter.type) {
+        case PropertyCompareType.Contains:
+          buffer.write(escapeValueLike(filter.value));
+          break;
+        default:
+          buffer.write(escapeValue(filter.value));
+          break;
+      }
     } else {
       throw PersistenceException('PostgreSQL implementation does not '
           'support filter type ${filter.runtimeType}.');
@@ -179,6 +192,16 @@ abstract class SqlBuilder {
     }
 
     return '\'${value.toString().replaceAll('\'', '\'\'')}\''; //TODO other escape things
+  }
+
+  static String escapeValueLike(dynamic value) {
+    if (value is DateTime) {
+      // weird but who knows what kind of use case this has
+      // i would expect it to work like that...
+      return '\'%${value.toIso8601String()}%\'';
+    }
+
+    return '\'%${value.toString().replaceAll('\'', '\'\'')}%\''; //TODO other escape things
   }
 }
 

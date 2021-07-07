@@ -79,6 +79,7 @@ class FilterGroup implements Filter {
 
 enum PropertyCompareType {
   Equals,
+  Contains,
   GreaterThan,
   LessThan,
   GreaterOrEqual,
