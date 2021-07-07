@@ -19,13 +19,13 @@ abstract class Filter {
   /// Returns the smallest representation of the "And" group of [filters].
   ///
   /// See implementation of [_optimizedGroup] for details;
-  static Filter and(List<Filter> filters) =>
+  static Filter and(Iterable<Filter> filters) =>
       _optimizedGroup(filters, FilterGroupType.And);
 
   /// Returns the smallest representation of the "Or" group of [filters].
   ///
   /// See implementation of [_optimizedGroup] for details;
-  static Filter or(List<Filter> filters) =>
+  static Filter or(Iterable<Filter> filters) =>
       _optimizedGroup(filters, FilterGroupType.Or);
 
   /// Convenience method for creating a [PropertyCompare] filter
@@ -35,7 +35,7 @@ abstract class Filter {
   }
 
   /// Assembles the smallest representation of [filters] combined.
-  static Filter _optimizedGroup(List<Filter> filters, FilterGroupType type) {
+  static Filter _optimizedGroup(Iterable<Filter> filters, FilterGroupType type) {
     final notEmpty = filters.where((element) => !element.isEmpty);
     if (notEmpty.isEmpty) {
       return Filter.empty;
