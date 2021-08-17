@@ -46,7 +46,8 @@ void _blogMirror() {
       userLayout.fields,
       unorderedEquals([
         PrimaryKey(FieldType.Int, 'id'),
-        DataField(FieldType.String, 'name')
+        DataField(FieldType.String, 'name'),
+        DataField(FieldType.Point, 'location'),
       ]));
 }
 
