@@ -1,6 +1,6 @@
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/persistence/persistence_exception.dart';
+import 'package:postgres/postgres.dart';
 
 abstract class SqlBuilder {
   /// Returns the sql string together with it's substitution values
@@ -161,6 +161,8 @@ abstract class SqlBuilder {
         return 'timestamp with time zone'; //TODO with time zone variable?
       case FieldType.Bytes:
         return 'bytea';
+      case FieldType.Point:
+        return 'point';
       default:
         throw PersistenceException(
             'PostgreSQL implementation does not support data type ${field.type}.');
@@ -214,6 +216,14 @@ abstract class SqlBuilder {
     }
 
     return '\'%${value.toString().replaceAll('\'', '\'\'')}%\''; //TODO other escape things
+  }
+
+  static dynamic toSqlData(dynamic value) {
+    if (value is Point) {
+      return PgPoint(value.x, value.y);
+    }
+
+    return value;
   }
 }
 

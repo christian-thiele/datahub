@@ -33,4 +33,9 @@ class PostgreSQLDatabaseMigrator extends Migrator {
   Future<void> removeLayout(String name) async {
     await _connection.execute(RemoveTableBuilder(_schema.name, name));
   }
+
+  @override
+  Future<void> customSql(String sql) async {
+    await _connection.execute(RawSql(sql));
+  }
 }

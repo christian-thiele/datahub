@@ -154,6 +154,8 @@ class LayoutMirror {
       return FieldType.DateTime;
     } else if (fieldType == Uint8List) {
       return FieldType.Bytes;
+    } else if (fieldType == Point) {
+      return FieldType.Point;
     } else {
       throw MirrorException.invalidType(fieldType);
     }

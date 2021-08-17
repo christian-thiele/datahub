@@ -7,8 +7,12 @@ class UserDao {
 
   final String name;
 
-  UserDao({this.id = 0, required this.name});
+  final Point location;
 
-  UserDao copyWith({int? id, String? name}) =>
-      UserDao(id: id ?? this.id, name: name ?? this.name);
+  UserDao({this.id = 0, required this.name, required this.location});
+
+  UserDao copyWith({int? id, String? name, Point? location}) => UserDao(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      location: location ?? this.location);
 }

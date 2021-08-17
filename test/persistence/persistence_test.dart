@@ -1,15 +1,15 @@
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/postgresql.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 
-import '../utils/message_matcher.dart';
 import 'dao/blog_daos/article_dao.dart';
 import 'dao/blog_daos/blog_dao.dart';
 import 'dao/blog_daos/user_dao.dart';
 
+import '../utils/message_matcher.dart';
+
 const String host = '127.0.0.1';
-const int port = 5432;
+const int port = 49154;
 const String database = 'postgres';
 const String user = 'postgres';
 const String password = 'mysecretpassword';
@@ -50,13 +50,15 @@ Future _testScheme() async {
   expect(connection.isOpen, isTrue);
 
   // insert some data
-  final blogUser = UserDao(name: 'testUser');
+  final blogUser = UserDao(name: 'testUser', location: Point(1.234, 2.345));
   final userId = await connection.insert(userLayout, blogUser);
   print('Inserted with pk: $userId');
 
   // query some data
   final blogUsers = await connection.query<UserDao>(userLayout);
   expect(blogUsers.any((element) => element.id == userId), isTrue);
+  expect(blogUsers.firstWhere((element) => element.id == userId).location,
+      equals(Point(1.234, 2.345)));
 
   // delete some data
   await connection.delete(userLayout, blogUser.copyWith(id: userId));

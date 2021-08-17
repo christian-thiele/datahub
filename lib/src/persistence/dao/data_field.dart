@@ -1,6 +1,7 @@
 import 'dart:mirrors';
 
-enum FieldType { String, Int, Float, Bool, DateTime, Bytes }
+//TODO should be lowercase
+enum FieldType { String, Int, Float, Bool, DateTime, Bytes, Point }
 
 /// Definition a data object field inside [DataLayout].
 ///

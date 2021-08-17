@@ -34,7 +34,9 @@ class InsertBuilder implements SqlBuilder {
       buffer.write(' RETURNING $_returning');
     }
 
-    return Tuple(buffer.toString(),
-        Map.fromEntries(values.map((e) => MapEntry(e.b, e.c))));
+    return Tuple(
+        buffer.toString(),
+        Map.fromEntries(
+            values.map((e) => MapEntry(e.b, SqlBuilder.toSqlData(e.c)))));
   }
 }

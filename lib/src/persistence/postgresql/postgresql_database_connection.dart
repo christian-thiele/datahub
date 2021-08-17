@@ -63,7 +63,11 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     final builderResult = builder.buildSql();
     final result = await _connection.query(builderResult.a,
         substitutionValues: builderResult.b);
-    return result.map((row) => row.toColumnMap()).toList();
+    return result
+        .map((row) => row
+            .toColumnMap()
+            .map((key, value) => MapEntry(key, _fromSqlData(value))))
+        .toList();
   }
 
   void _throwClosed() {
@@ -169,5 +173,13 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
       ..offset(offset)
       ..limit(limit)
       ..select(select));
+  }
+
+  dynamic _fromSqlData(dynamic value) {
+    if (value is postgres.PgPoint) {
+      return Point(value.latitude, value.longitude);
+    }
+
+    return value;
   }
 }
