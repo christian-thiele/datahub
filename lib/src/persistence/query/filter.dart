@@ -117,7 +117,6 @@ class CustomSqlCondition implements Filter {
 
   @override
   Filter reduce() => this;
-
 }
 
 class _EmptyFilter implements Filter {
