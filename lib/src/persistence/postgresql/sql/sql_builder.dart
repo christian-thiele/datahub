@@ -74,6 +74,8 @@ abstract class SqlBuilder {
           }
           break;
       }
+    } else if (filter is CustomSqlCondition) {
+      buffer.write(filter.sql);
     } else {
       throw PersistenceException('PostgreSQL implementation does not '
           'support filter type ${filter.runtimeType}.');
