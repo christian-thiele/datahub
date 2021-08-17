@@ -14,8 +14,8 @@ abstract class Migrator {
   Future<void> removeField(DataLayout layout, String fieldName);
 
   @Deprecated('This method assumes that the adapter supports SQL, '
-  'as well as the specific dialect you are using. Only use this method '
-  'when you know the adapter implementation you are using.')
+      'as well as the specific dialect you are using. Only use this method '
+      'when you know the adapter implementation you are using.')
   Future<void> customSql(String sql) => throw UnimplementedError();
 
   //TODO more migration functionality
