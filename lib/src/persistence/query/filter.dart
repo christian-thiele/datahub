@@ -104,6 +104,22 @@ class PropertyCompare implements Filter {
   Filter reduce() => this;
 }
 
+@Deprecated('This method assumes that the adapter supports SQL, '
+    'as well as the specific dialect you are using. Only use this method '
+    'when you know the adapter implementation you are using.')
+class CustomSqlCondition implements Filter {
+  final String sql;
+
+  CustomSqlCondition(this.sql);
+
+  @override
+  bool get isEmpty => false;
+
+  @override
+  Filter reduce() => this;
+
+}
+
 class _EmptyFilter implements Filter {
   const _EmptyFilter();
 
