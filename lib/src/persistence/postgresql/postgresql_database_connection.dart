@@ -132,13 +132,17 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   Future<void> update<TDao>(DataLayout layout, TDao object) async {
     final data = layout.unmap(object);
 
-    final primaryKey = layout.getPrimaryKeyField() ??
-        (throw PersistenceException('No primary key found in layout.'));
-
     await execute(UpdateBuilder(adapter.schema.name, layout.name)
       ..values(data)
-      ..where(Filter.equals(
-          primaryKey.name, layout.unmapField(object, primaryKey))));
+      ..where(_pkFilter(layout, layout.getPrimaryKey(object))));
+  }
+
+  @override
+  Future<void> updateId<TDao>(
+      DataLayout layout, dynamic id, Map<String, dynamic> values) async {
+    await execute(UpdateBuilder(adapter.schema.name, layout.name)
+      ..values(values)
+      ..where(_pkFilter(layout, id)));
   }
 
   @override
@@ -151,12 +155,8 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
 
   @override
   Future<void> delete<TDao>(DataLayout layout, TDao object) async {
-    final primaryKey = layout.getPrimaryKeyField() ??
-        (throw PersistenceException('No primary key found in layout.'));
-
     await execute(DeleteBuilder(adapter.schema.name, layout.name)
-      ..where(Filter.equals(
-          primaryKey.name, layout.unmapField(object, primaryKey))));
+      ..where(_pkFilter(layout, layout.getPrimaryKey(object))));
   }
 
   @override
@@ -181,5 +181,12 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     }
 
     return value;
+  }
+
+  Filter _pkFilter(DataLayout layout, dynamic id) {
+    final primaryKey = layout.getPrimaryKeyField() ??
+        (throw PersistenceException('No primary key found in layout.'));
+
+    return Filter.equals(primaryKey.name, id);
   }
 }

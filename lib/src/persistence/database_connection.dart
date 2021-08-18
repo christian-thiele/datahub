@@ -38,6 +38,9 @@ abstract class DatabaseConnection {
 
   Future<void> update<TDao>(DataLayout layout, TDao object);
 
+  Future<void> updateId<TDao>(
+      DataLayout layout, dynamic id, Map<String, dynamic> values);
+
   /// Returns number of affected rows.
   Future<int> updateWhere(
       DataLayout layout, Map<String, dynamic> values, Filter filter);
