@@ -54,7 +54,8 @@ Future _testScheme() async {
   expect(connection.isOpen, isTrue);
 
   // insert some data
-  final blogUser = UserDao(name: 'testUser', location: Point(1.234, 2.345), executionId: 0);
+  final blogUser =
+      UserDao(name: 'testUser', location: Point(1.234, 2.345), executionId: 0);
   final userId = await connection.insert(userLayout, blogUser);
   print('Inserted with pk: $userId');
 
@@ -97,7 +98,6 @@ Future _testScheme() async {
   expect(ascUsers, isNot(orderedEquals(descUsers)));
   expect(
       ascUsers, orderedEquals(ascUsers.toList()..sortBy((u) => u.name, true)));
-  expect(
-      descUsers,
+  expect(descUsers,
       orderedEquals(descUsers.toList()..sortBy((u) => u.name, false)));
 }
