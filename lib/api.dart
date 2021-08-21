@@ -17,3 +17,4 @@ export 'src/api/sessions/memory_session_provider.dart';
 
 export 'src/api/authentication/auth_endpoint.dart';
 export 'src/api/authentication/auth_provider.dart';
+export 'src/api/authentication/auth_result.dart';

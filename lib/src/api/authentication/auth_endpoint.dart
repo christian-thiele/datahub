@@ -43,6 +43,7 @@ class AuthEndpoint extends ApiEndpoint {
     final session =
         await request.context.sessionProvider!.createSession(authResult);
     //TODO set session as cookie if configured to do so
-    return {'session-token': session.sessionToken};
+    return <String, dynamic>{'session-token': session.sessionToken}
+      ..addAll(authResult.clientData);
   }
 }
