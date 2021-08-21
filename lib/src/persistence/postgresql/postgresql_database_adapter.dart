@@ -79,7 +79,7 @@ class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
       final version = int.parse(versionString);
       if (version != schema.version) {
         print(
-            'Migrating database schema from v$version to v${schema.version}.');
+            'Migrating database schema from v$version to v${schema.version}.'); //TODO logging
         final migrator = PostgreSQLDatabaseMigrator(schema, connection);
 
         await schema.migrate(migrator, version);

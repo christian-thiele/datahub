@@ -26,7 +26,7 @@ abstract class ApiBase {
     _log('Serving on $address:$port');
 
     final _cancelKey = cancellationToken?.attach(() {
-      print('Shutting down...');
+      print('Shutting down...'); //TODO logging
       server.close();
     });
 
@@ -48,7 +48,7 @@ abstract class ApiBase {
       var result = await handleRequest(request);
       stopWatch.stop();
       print(
-          'Handled request to ${request.requestedUri} in ${stopWatch.elapsedMilliseconds}ms.');
+          'Handled request to ${request.requestedUri} in ${stopWatch.elapsedMilliseconds}ms.');//TODO logging
 
       result
           .getHeaders()
@@ -70,14 +70,14 @@ abstract class ApiBase {
       // to ApiResponses. this is just in case:
       request.response.statusCode = 500;
       request.response.writeln('500 - Internal Server Error');
-      print(e); //TODO better logging
+      print(e); //TODO logging
     }
 
     await request.response.close();
   }
 
   void _onError(dynamic e) {
-    print(e);
+    print(e); //TODO logging
   }
 
   Future<ApiResponse> handleRequest(HttpRequest httpRequest) async {

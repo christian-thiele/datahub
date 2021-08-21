@@ -12,6 +12,6 @@ class DataSchema {
 
   Future<void> migrate(Migrator migrator, int fromVersion) async {
     //TODO automatic migration
-    print('Migrating $name from $fromVersion to $version.');
+    print('Migrating $name from $fromVersion to $version.'); //TODO logging
   }
 }

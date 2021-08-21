@@ -9,12 +9,12 @@ class LogMiddleware extends Middleware {
   @override
   Future<ApiResponse> handleRequest(ApiRequest request) async {
     // Pre-Handler
-    print('${request.method}: ${request.route}');
+    print('${request.method}: ${request.route}'); //TODO logging
 
     final result = await next(request);
 
     // Post-Handler
-    print('Result: ${result.statusCode}');
+    print('Result: ${result.statusCode}'); //TODO logging
 
     return result;
   }
