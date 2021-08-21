@@ -65,12 +65,13 @@ abstract class ApiBase {
       request.response.statusCode = e.statusCode;
       request.response.write(
           '${e.statusCode} ${getHttpStatus(e.statusCode)}: ${e.message}');
-    } catch (e) {
+    } catch (e, stack) {
       // exceptions are usually handled at the ApiEndpoint and converted
       // to ApiResponses. this is just in case:
       request.response.statusCode = 500;
       request.response.writeln('500 - Internal Server Error');
       print(e); //TODO logging
+      print(stack);
     }
 
     await request.response.close();
