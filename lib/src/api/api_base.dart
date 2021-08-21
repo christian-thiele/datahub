@@ -10,7 +10,6 @@ import 'package:cl_datahub/src/api/sessions/session_provider.dart';
 import 'package:cl_datahub/utils.dart';
 
 import 'api_response.dart';
-import 'sessions/memory_session.dart';
 import 'sessions/session.dart';
 
 abstract class ApiBase {
@@ -71,6 +70,7 @@ abstract class ApiBase {
       // to ApiResponses. this is just in case:
       request.response.statusCode = 500;
       request.response.writeln('500 - Internal Server Error');
+      print(e); //TODO better logging
     }
 
     await request.response.close();

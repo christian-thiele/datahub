@@ -1,15 +1,17 @@
 import 'package:cl_datahub/src/api/api_request_exception.dart';
 import 'package:cl_datahub/src/api/authentication/auth_provider.dart';
 
+import 'static_auth_result.dart';
+
 /// Basic [AuthProvider] implementation that authenticates using a given list
 /// of user models with username and password.
-class StaticAuthProvider extends AuthProvider<int> {
+class StaticAuthProvider extends AuthProvider<StaticAuthResult> {
   final List<StaticAuthUser> users;
 
   StaticAuthProvider(this.users);
 
   @override
-  Future<int> authenticate(Map<String, dynamic> authData) async {
+  Future<StaticAuthResult> authenticate(Map<String, dynamic> authData) async {
     final username = authData['username']?.toString() ??
         (throw ApiRequestException.badRequest(
             'Missing username in auth data.'));
@@ -26,7 +28,7 @@ class StaticAuthProvider extends AuthProvider<int> {
       throw ApiRequestException.unauthorized();
     }
 
-    return user.id;
+    return StaticAuthResult(user.id);
   }
 }
 
