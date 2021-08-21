@@ -166,6 +166,12 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   }
 
   @override
+  Future<void> deleteId(DataLayout layout, dynamic id) async {
+    await execute(DeleteBuilder(adapter.schema.name, layout.name)
+      ..where(_pkFilter(layout, id)));
+  }
+
+  @override
   Future<int> deleteWhere(DataLayout layout, Filter filter) async {
     return await execute(
         DeleteBuilder(adapter.schema.name, layout.name)..where(filter));

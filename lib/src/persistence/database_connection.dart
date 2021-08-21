@@ -58,7 +58,7 @@ abstract class DatabaseConnection {
 
   Future<void> delete<TDao>(DataLayout layout, TDao object);
 
-  //TODO deleteId()
+  Future<void> deleteId(DataLayout layout, dynamic id);
 
   /// Returns number of affected rows.
   Future<int> deleteWhere(DataLayout layout, Filter filter);
