@@ -1,4 +1,8 @@
+import 'dart:math';
+import 'package:boost/boost.dart';
+
 import 'package:cl_datahub/cl_datahub.dart';
+import 'package:cl_datahub/persistence.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 
@@ -50,7 +54,7 @@ Future _testScheme() async {
   expect(connection.isOpen, isTrue);
 
   // insert some data
-  final blogUser = UserDao(name: 'testUser', location: Point(1.234, 2.345));
+  final blogUser = UserDao(name: 'testUser', location: Point(1.234, 2.345), executionId: 0);
   final userId = await connection.insert(userLayout, blogUser);
   print('Inserted with pk: $userId');
 
@@ -65,4 +69,35 @@ Future _testScheme() async {
 
   final blogUsers2 = await connection.query<UserDao>(userLayout);
   expect(blogUsers2.any((element) => element.id == userId), isFalse);
+
+  // insert alotta:
+  final executionId = Random().nextInt(5000);
+  for (var i = 0; i < 50; i++) {
+    final blogUser = UserDao(
+        name: 'TestUser$i',
+        location: Point(Random().nextDouble(), Random().nextDouble()),
+        executionId: executionId);
+    final userId = await connection.insert(userLayout, blogUser);
+    print('Inserted with pk: $userId');
+  }
+
+  // query with sort:
+  final ascUsers = await connection.query<UserDao>(userLayout,
+      filter: Filter.equals('executionId', executionId),
+      sort: Sort.asc('name'),
+      limit: 50);
+  final descUsers = await connection.query<UserDao>(
+    userLayout,
+    filter: Filter.equals('executionId', executionId),
+    sort: Sort.desc('name'),
+    limit: 50,
+  );
+
+  expect(ascUsers, unorderedEquals(descUsers));
+  expect(ascUsers, isNot(orderedEquals(descUsers)));
+  expect(
+      ascUsers, orderedEquals(ascUsers.toList()..sortBy((u) => u.name, true)));
+  expect(
+      descUsers,
+      orderedEquals(descUsers.toList()..sortBy((u) => u.name, false)));
 }

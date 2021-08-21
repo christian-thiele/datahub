@@ -7,6 +7,7 @@ class SelectBuilder implements SqlBuilder {
   final String schemaName;
   final String tableName;
   Filter _filter = Filter.empty;
+  Sort _sort = Sort.empty;
   List<QuerySelect>? _select;
   int _limit = -1;
   int _offset = 0;
@@ -27,6 +28,10 @@ class SelectBuilder implements SqlBuilder {
 
   void where(Filter filter) {
     _filter = filter;
+  }
+
+  void orderBy(Sort sort) {
+    _sort = sort;
   }
 
   @override
@@ -51,6 +56,14 @@ class SelectBuilder implements SqlBuilder {
       final filterResult = SqlBuilder.filterSql(_filter);
       buffer.write(filterResult.a);
       values.addAll(filterResult.b);
+    }
+
+    if (!_sort.isEmpty) {
+      buffer.write(' ORDER BY ');
+
+      final sortResult = SqlBuilder.sortSql(_sort);
+      buffer.write(sortResult.a);
+      values.addAll(sortResult.b);
     }
 
     if (_offset > 0) {

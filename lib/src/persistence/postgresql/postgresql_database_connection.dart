@@ -77,12 +77,18 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   }
 
   @override
-  Future<List<TDao>> query<TDao>(DataLayout layout,
-      {Filter filter = Filter.empty, int offset = 0, int limit = -1}) async {
+  Future<List<TDao>> query<TDao>(
+    DataLayout layout, {
+    Filter filter = Filter.empty,
+    Sort sort = Sort.empty,
+    int offset = 0,
+    int limit = -1,
+  }) async {
     final result =
         await querySql(SelectBuilder(adapter.schema.name, layout.name)
           ..select([const WildcardSelect()]) //TODO maybe "only" dto fields?
           ..where(filter)
+          ..orderBy(sort)
           ..offset(offset)
           ..limit(limit));
     return result.map((e) => layout.map<TDao>(e)).toList();
@@ -166,10 +172,17 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   }
 
   @override
-  Future<List> select(DataLayout layout, List<QuerySelect> select,
-      {Filter filter = Filter.empty, int offset = 0, int limit = -1}) {
+  Future<List> select(
+    DataLayout layout,
+    List<QuerySelect> select, {
+    Filter filter = Filter.empty,
+    Sort sort = Sort.empty,
+    int offset = 0,
+    int limit = -1,
+  }) {
     return querySql(SelectBuilder(adapter.schema.name, layout.name)
       ..where(filter)
+      ..orderBy(sort)
       ..offset(offset)
       ..limit(limit)
       ..select(select));
