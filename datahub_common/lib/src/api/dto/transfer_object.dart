@@ -16,7 +16,8 @@ abstract class TransferObject {
 
   T? get<T>(Field<T> field) {
     if (!dataFields.contains(field)) {
-      throw ApiError('Field $field does not belong to transfer object!');
+      throw ApiError(
+          'Field "${field.name}" does not belong to transfer object!');
     }
 
     return field.decode(_data);
@@ -24,7 +25,8 @@ abstract class TransferObject {
 
   void set<T>(Field<T> field, T value) {
     if (!dataFields.contains(field)) {
-      throw ApiError('Field $field does not belong to transfer object!');
+      throw ApiError(
+          'Field "${field.name}" does not belong to transfer object!');
     }
 
     final mapEntry = field.encode(value);
