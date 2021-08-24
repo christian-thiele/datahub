@@ -55,7 +55,8 @@ class Config {
       if (await configFile.exists()) {
         await loadJsonFile(configFile);
       } else {
-        print('Could not load config file: ${configFile.absolute.path}'); //TODO logging
+        print(
+            'Could not load config file: ${configFile.absolute.path}'); //TODO logging
       }
     }
   }

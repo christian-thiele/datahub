@@ -48,7 +48,7 @@ abstract class ApiBase {
       var result = await handleRequest(request);
       stopWatch.stop();
       print(
-          'Handled request to ${request.requestedUri} in ${stopWatch.elapsedMilliseconds}ms.');//TODO logging
+          'Handled request to ${request.requestedUri} in ${stopWatch.elapsedMilliseconds}ms.'); //TODO logging
 
       result
           .getHeaders()
