@@ -69,9 +69,11 @@ class ObjectField<T extends TransferObject> extends Field<T> {
 }
 
 class EnumField<T> extends Field<T> {
+  final bool ignoreCase;
   final List<T> values;
 
-  const EnumField(String name, this.values, {String? key, T? defaultValue})
+  const EnumField(String name, this.values,
+      {String? key, T? defaultValue, this.ignoreCase = false})
       : super(name, key: key, defaultValue: defaultValue);
 
   @override
@@ -80,7 +82,7 @@ class EnumField<T> extends Field<T> {
       return null;
     }
 
-    return tryFindEnum(map[key].toString(), values);
+    return tryFindEnum(map[key].toString(), values, ignoreCase: ignoreCase);
   }
 
   @override
