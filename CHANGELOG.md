@@ -6,3 +6,6 @@
 
 ## 0.0.17
 - updated datahub_common
+
+## 0.0.18
+- ServiceHost
