@@ -9,3 +9,6 @@
 
 ## 0.0.18
 - ServiceHost
+
+## 0.0.19
+- fixed ServiceHost shutdown

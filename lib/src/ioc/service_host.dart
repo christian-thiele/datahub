@@ -64,6 +64,10 @@ class ServiceHost {
     cancel?.attach(_shutdown);
 
     await _runTimeCompleter.future;
+
+    if (catchSignal) {
+      exit(0);
+    }
   }
 
   TService resolveService<TService extends BaseService>() {
