@@ -12,3 +12,7 @@
 
 ## 0.0.19
 - fixed ServiceHost shutdown
+
+## 0.0.20
+- SchedulerService
+- default services in ServiceHost (SchedulerService as first)

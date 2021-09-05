@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:boost/boost.dart';
+import 'package:cl_datahub/cl_datahub.dart';
 
 import 'base_service.dart';
 
@@ -20,8 +21,10 @@ import 'base_service.dart';
 /// execution of the application itself, providing a framework for
 /// services to live in.
 class ServiceHost {
+  final _baseFactories = <BaseService Function()>[() => SchedulerService()];
+
   final _runTimeCompleter = Completer();
-  final List<BaseService Function()> _factories;
+  late final List<BaseService Function()> _factories;
   final List<BaseService> _services = [];
   bool _isInShutdown = false;
 
@@ -30,8 +33,11 @@ class ServiceHost {
 
   static ServiceHost? _applicationHost;
 
-  ServiceHost._(this._factories, {this.catchSignal = true})
-      : assert(_applicationHost == null);
+  ServiceHost._(List<BaseService Function()> factories,
+      {this.catchSignal = true})
+      : assert(_applicationHost == null) {
+    _factories = _baseFactories.followedBy(factories).toList(growable: false);
+  }
 
   factory ServiceHost(List<BaseService Function()> factories,
       {bool catchSignal = true}) {
