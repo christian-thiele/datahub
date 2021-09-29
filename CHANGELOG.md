@@ -19,3 +19,7 @@
 
 ## 0.0.21
 - fixed ServiceHost resolving uninitialized services 
+
+## 0.0.22
+- added request param in getMetaData in ListHubResource
+- added getSize to ListHubResource

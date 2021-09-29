@@ -1,6 +1,6 @@
 name: cl_datahub
 description: A Framework for creating Web APIs.
-version: 0.0.21
+version: 0.0.22
 homepage: https://www.corelightservices.com
 
 environment:

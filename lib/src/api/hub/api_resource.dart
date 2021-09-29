@@ -13,7 +13,7 @@ abstract class ApiResource<TData> extends ApiEndpoint {
       this.allowPost, this.allowDelete)
       : super(path);
 
-  Future<dynamic> getMetaData(String name);
+  Future<dynamic> getMetaData(ApiRequest request, String name);
 
   bool _isMetaRequest(ApiRequest request) {
     return request.queryParams.keys.any(isMeta);
@@ -23,10 +23,10 @@ abstract class ApiResource<TData> extends ApiEndpoint {
     final vars = request.queryParams.keys
         .where(isMeta)
         .map((e) => e.substring(1))
-        .take(25); //TODO maybe setMetaParmLimit(...) or smth
+        .take(25); //TODO maybe setMetaParamLimit(...) or smth
     final result = <String, dynamic>{};
     for (final name in vars) {
-      result[name] = await getMetaData(name);
+      result[name] = await getMetaData(request, name);
     }
     return JsonResponse(result);
   }
@@ -56,11 +56,20 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
     }
   }
 
-  //TODO implement getMetaData for length
+  @override
+  Future<dynamic> getMetaData(ApiRequest request, String name) async {
+    if (name.toLowerCase() == 'count') {
+      return getSize(request);
+    }
+
+    throw ApiRequestException.notFound('Meta-Property $name not found.');
+  }
 
   Future<TData> getElement(ApiRequest request, TId id);
 
   Future<List<TData>> getList(ApiRequest request, int offset, int limit);
+
+  Future<int> getSize(ApiRequest request);
 
   //TODO rethink return data structure
   Future<Tuple<TId, TData>> postElement(
@@ -206,5 +215,10 @@ abstract class SingleObjectApiResource<TData> extends ApiResource<TData> {
     }
 
     return await deleteElement();
+  }
+
+  @override
+  Future<dynamic> getMetaData(ApiRequest request, String name) async {
+    throw ApiRequestException.notFound('Meta-Property $name not found.');
   }
 }

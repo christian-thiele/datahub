@@ -35,11 +35,5 @@ class ArticleResource extends ListApiResource<Map<String, dynamic>, int> {
   }
 
   @override
-  Future getMetaData(String name) async {
-    if (name == 'count') {
-      return articles.length;
-    }
-
-    throw ApiRequestException.notFound();
-  }
+  Future<int> getSize(ApiRequest request) async => articles.length;
 }

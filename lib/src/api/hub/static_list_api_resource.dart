@@ -24,11 +24,5 @@ class StaticListApiResource<TData> extends ListApiResource<TData, int> {
   }
 
   @override
-  Future getMetaData(String name) async {
-    if (name == 'count') {
-      return data.length;
-    }
-
-    throw ApiRequestException.notFound('Meta-Property $name not found.');
-  }
+  Future<int> getSize(ApiRequest request) async => data.length;
 }
