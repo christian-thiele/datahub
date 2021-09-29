@@ -16,3 +16,6 @@
 ## 0.0.20
 - SchedulerService
 - default services in ServiceHost (SchedulerService as first)
+
+## 0.0.21
+- fixed ServiceHost resolving uninitialized services 

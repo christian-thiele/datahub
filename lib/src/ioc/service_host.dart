@@ -46,11 +46,10 @@ class ServiceHost {
   }
 
   Future<void> run([CancellationToken? cancel]) async {
-    _services.addAll(_factories.map((f) => f()));
-
-    for (final service in _services) {
+    for (final service in _factories.map((f) => f())) {
       try {
         await service.initialize();
+        _services.add(service);
       } catch (e) {
         print('Error while initializing service:');
         print(e);
