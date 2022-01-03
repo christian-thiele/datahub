@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:boost/boost.dart';
 
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/persistence.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 

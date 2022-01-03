@@ -1,10 +1,6 @@
 import 'dart:async';
 
 import 'package:cl_datahub/ioc.dart';
-import 'package:cl_datahub/src/ioc/scheduler/overlap_behaviour.dart';
-
-import 'schedule.dart';
-import 'scheduled_task.dart';
 
 /// Provides a pattern for creating scheduled execution of tasks.
 class SchedulerService extends BaseService {

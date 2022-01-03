@@ -1,6 +1,5 @@
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/src/api/authentication/auth_provider.dart';
 import 'package:cl_datahub_common/common.dart';
 
 class AuthEndpoint extends ApiEndpoint {
@@ -16,9 +15,6 @@ class AuthEndpoint extends ApiEndpoint {
     }
 
     final body = request.getJsonBody();
-    if (body is! Map<String, dynamic>) {
-      throw ApiRequestException.badRequest();
-    }
 
     if (!body.containsKey('method')) {
       throw ApiRequestException.badRequest(

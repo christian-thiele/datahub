@@ -6,11 +6,7 @@ import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/src/api/request_context.dart';
 import 'package:cl_datahub/src/api/middleware/middleware.dart';
-import 'package:cl_datahub/src/api/sessions/session_provider.dart';
 import 'package:cl_datahub/utils.dart';
-
-import 'api_response.dart';
-import 'sessions/session.dart';
 
 abstract class ApiBase {
   final List<ApiEndpoint> endpoints;

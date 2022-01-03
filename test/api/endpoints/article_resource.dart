@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/src/api/hub/api_resource.dart';
 
 import '../../loremipsum.dart';
 

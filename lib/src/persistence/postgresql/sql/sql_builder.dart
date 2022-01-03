@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:postgres/postgres.dart';
@@ -87,7 +85,6 @@ abstract class SqlBuilder {
   }
 
   static Tuple<String, Map<String, dynamic>> sortSql(Sort sort) {
-    final buffer = StringBuffer();
     final propertySorts = sort.linear();
     final sql = propertySorts
         .map((e) =>

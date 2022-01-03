@@ -1,12 +1,8 @@
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/persistence.dart';
 
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:postgres/postgres.dart' as postgres;
-
-import 'postgresql_database_adapter.dart';
-import 'sql/sql.dart';
 
 const metaTable = '_datahub_meta';
 

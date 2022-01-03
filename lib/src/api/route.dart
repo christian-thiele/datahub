@@ -224,7 +224,7 @@ class _PLSegment extends _Segment {
 
   @override
   String toMatchExp() {
-    final keyRegex = '(?<$key>[\\w\\-\\.\\%]+)';
+    final keyRegex = '(?<$key>\\\$?[\\w\\-\\.\\%]+)';
     if (optional) {
       if (prefix.isEmpty) {
         return '(\\/$keyRegex)?';
@@ -252,7 +252,7 @@ class _WildcardSegment extends _Segment {
   _WildcardSegment() : super('*');
 
   @override
-  String toMatchExp() => '(?<$_wildcardGroup>(\\/([\\w\\.-]*))*)';
+  String toMatchExp() => '(?<$_wildcardGroup>(\\/(\\\$?[\\w\\.-]*))*)';
 
   @override
   String encode(Map<String, String> params) => '';

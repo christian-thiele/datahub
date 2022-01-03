@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/utils.dart';
 
 /// Defines a response to a api request.
 ///

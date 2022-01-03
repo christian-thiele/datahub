@@ -90,7 +90,10 @@ final tests = [
   Triple('/articles/{articleId?}', '/articles', {}),
   Triple('/articles/{articleId?}', '/articles/5', {'articleId': '5'}),
   Triple(
-      '/articles/{articleId?}', '/articles/%24count', {'articleId': '\$count'})
+      '/articles/{articleId?}', '/articles/%24count', {'articleId': '\$count'}),
+  Triple(
+      '/profile/events/{id?}', '/profile/events/%24count', {'id': '\$count'}),
+  Triple('/profile/events/{id?}', '/profile/events/\$count', {'id': '\$count'}),
 ];
 
 final invalidRoutes = [invalid1, invalid2];

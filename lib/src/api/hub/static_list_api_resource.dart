@@ -1,8 +1,6 @@
 import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub_common/common.dart';
 
-import 'api_resource.dart';
-
 class StaticListApiResource<TData> extends ListApiResource<TData, int> {
   final Iterable<TData> data;
 

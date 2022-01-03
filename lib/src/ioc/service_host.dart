@@ -4,8 +4,6 @@ import 'dart:io';
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 
-import 'base_service.dart';
-
 /// Hosts services and provides dependency injection.
 ///
 /// There can only be one ServiceHost in an application.

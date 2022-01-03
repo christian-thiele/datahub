@@ -1,5 +1,4 @@
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/persistence/database_adapter.dart';
 
 /// Represents a single connection to a database.
 ///

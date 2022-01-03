@@ -1,8 +1,6 @@
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 
-import 'sql_builder.dart';
-
 class UpdateBuilder implements SqlBuilder {
   final String schemaName;
   final String tableName;

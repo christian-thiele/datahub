@@ -1,8 +1,4 @@
 import 'package:cl_datahub/cl_datahub.dart';
-import 'sql/add_field_builder.dart';
-import 'sql/create_table_builder.dart';
-import 'sql/remove_field_builder.dart';
-import 'sql/remove_table_builder.dart';
 
 //TODO test all of this!!!!!
 class PostgreSQLDatabaseMigrator extends Migrator {

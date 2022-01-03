@@ -1,5 +1,4 @@
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/persistence/dao/mirror/mirror_exception.dart';
 import 'package:test/test.dart';
 
 import 'blog_daos/article_dao.dart';

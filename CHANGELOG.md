@@ -23,3 +23,6 @@
 ## 0.0.22
 - added request param in getMetaData in ListHubResource
 - added getSize to ListHubResource
+
+## 0.0.23
+- fixed meta-data route matching
