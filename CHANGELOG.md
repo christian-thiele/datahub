@@ -26,3 +26,6 @@
 
 ## 0.0.23
 - fixed meta-data route matching
+
+## 0.0.24
+- EnumField defaultValue fix
