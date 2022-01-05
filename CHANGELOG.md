@@ -29,3 +29,6 @@
 
 ## 0.0.24
 - EnumField defaultValue fix
+
+## 0.0.25
+- fixed datahub_common dependency
