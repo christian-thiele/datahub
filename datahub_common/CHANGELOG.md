@@ -6,3 +6,6 @@
 
 ## 0.0.3
 - ignoreCase option for EnumField
+
+## 0.0.3
+- EnumField defaultValue fix
