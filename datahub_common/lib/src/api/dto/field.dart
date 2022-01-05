@@ -79,7 +79,7 @@ class EnumField<T> extends Field<T> {
   @override
   T? decode(Map<String, dynamic> map) {
     if (map[key] == null) {
-      return null;
+      return defaultValue;
     }
 
     return tryFindEnum(map[key].toString(), values, ignoreCase: ignoreCase);
