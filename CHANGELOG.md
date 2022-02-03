@@ -32,3 +32,7 @@
 
 ## 0.0.25
 - fixed datahub_common dependency
+
+## 0.1.0
+- first alpha release
+- ServiceHost failWithServices

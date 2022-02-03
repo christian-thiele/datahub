@@ -19,6 +19,7 @@ import 'package:cl_datahub/cl_datahub.dart';
 /// execution of the application itself, providing a framework for
 /// services to live in.
 class ServiceHost {
+  final bool failWithServices;
   final _baseFactories = <BaseService Function()>[() => SchedulerService()];
 
   final _runTimeCompleter = Completer();
@@ -32,15 +33,25 @@ class ServiceHost {
   static ServiceHost? _applicationHost;
 
   ServiceHost._(List<BaseService Function()> factories,
-      {this.catchSignal = true})
+      {this.catchSignal = true, this.failWithServices = true})
       : assert(_applicationHost == null) {
     _factories = _baseFactories.followedBy(factories).toList(growable: false);
   }
 
-  factory ServiceHost(List<BaseService Function()> factories,
-      {bool catchSignal = true}) {
-    return _applicationHost =
-        ServiceHost._(factories, catchSignal: catchSignal);
+  /// Creates a [ServiceHost] instance.
+  ///
+  /// [catchSignal] listens to CTRL+C in command line and shuts down services gracefully
+  /// [failWithServices] service hosts terminates the app if a single service fails to initialize
+  factory ServiceHost(
+    List<BaseService Function()> factories, {
+    bool catchSignal = true,
+    bool failWithServices = true,
+  }) {
+    return _applicationHost = ServiceHost._(
+      factories,
+      catchSignal: catchSignal,
+      failWithServices: failWithServices,
+    );
   }
 
   Future<void> run([CancellationToken? cancel]) async {
@@ -51,6 +62,9 @@ class ServiceHost {
       } catch (e) {
         print('Error while initializing service:');
         print(e);
+        if (failWithServices) {
+          rethrow;
+        }
       }
     }
 
