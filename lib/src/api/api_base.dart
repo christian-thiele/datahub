@@ -39,12 +39,9 @@ abstract class ApiBase {
   void _log(String message) => print(message);
 
   Future<void> _handleRequestGuarded(HttpRequest request) async {
+    final stopWatch = Stopwatch()..start();
     try {
-      final stopWatch = Stopwatch()..start();
       var result = await handleRequest(request);
-      stopWatch.stop();
-      print(
-          'Handled request to ${request.requestedUri} in ${stopWatch.elapsedMilliseconds}ms.'); //TODO logging
 
       result
           .getHeaders()
@@ -52,7 +49,7 @@ abstract class ApiBase {
           .forEach((h) => request.response.headers.add(h.key, h.value));
 
       request.response.statusCode = result.statusCode;
-      request.response.add(result.getData());
+      await request.response.addStream(result.getData());
 
       //TODO cookies
     } on ApiRequestException catch (e) {
@@ -69,6 +66,10 @@ abstract class ApiBase {
       print(e); //TODO logging
       print(stack);
     }
+
+    stopWatch.stop();
+    print(
+        'Handled request to ${request.requestedUri} in ${stopWatch.elapsedMilliseconds}ms.'); //TODO logging
 
     await request.response.close();
   }

@@ -2,7 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
+import 'package:path/path.dart' as p;
 
 /// Defines a response to a api request.
 ///
@@ -13,10 +15,16 @@ abstract class ApiResponse {
 
   Map<String, String> getHeaders();
 
-  List<int> getData();
+  Stream<List<int>> getData();
 
   ApiResponse(this.statusCode);
 
+  /// Automatically creates the corresponding ApiResponse implementation for
+  /// [body].
+  ///
+  /// Allowed types for [body] are:
+  /// null, [ApiResponse], [Uint8List], [ByteData], [File],
+  /// Map<String, dynamic>, List<dynamic> and [TransferObject]
   factory ApiResponse.dynamic(dynamic body, [int statusCode = 200]) {
     if (body == null) {
       return EmptyResponse(statusCode);
@@ -26,24 +34,43 @@ abstract class ApiResponse {
       return RawResponse(body);
     } else if (body is ByteData) {
       return RawResponse(body.buffer.asUint8List());
+    } else if (body is File) {
+      return FileResponse(body);
     } else if (body is Map<String, dynamic> ||
         body is List<dynamic> ||
         body is TransferObject) {
       return JsonResponse(body, statusCode);
+    } else if (body is Stream<List<int>>) {
+      throw ApiError(
+          'A data stream cannot be used as response type without a length argument.'
+          'Use ByteStreamResponse or FileResponse as return type instead to provide the length.');
     } else {
       return TextResponse.plain(body.toString(), statusCode);
     }
-    //TODO File would be cool here (automatic content-type and stuff)
   }
 }
 
-class JsonResponse extends ApiResponse {
+enum ContentDisposition { inline, attachment }
+
+abstract class _SynchronousResponse extends ApiResponse {
+  _SynchronousResponse(int statusCode) : super(statusCode);
+
+  @override
+  Stream<List<int>> getData() {
+    final bytes = getBytes();
+    return Stream<List<int>>.fromIterable([bytes]);
+  }
+
+  List<int> getBytes();
+}
+
+class JsonResponse extends _SynchronousResponse {
   final Object? _data;
 
   JsonResponse(this._data, [int statusCode = 200]) : super(statusCode);
 
   @override
-  List<int> getData() {
+  List<int> getBytes() {
     if (_data == null) {
       return [];
     }
@@ -57,7 +84,7 @@ class JsonResponse extends ApiResponse {
   }
 }
 
-class TextResponse extends ApiResponse {
+class TextResponse extends _SynchronousResponse {
   final String _text;
   final String _contentType;
 
@@ -70,7 +97,7 @@ class TextResponse extends ApiResponse {
         super(statusCode);
 
   @override
-  List<int> getData() => utf8.encode(_text);
+  List<int> getBytes() => utf8.encode(_text);
 
   @override
   Map<String, String> getHeaders() {
@@ -78,7 +105,7 @@ class TextResponse extends ApiResponse {
   }
 }
 
-class RawResponse extends ApiResponse {
+class RawResponse extends _SynchronousResponse {
   final String contentType;
   final Uint8List _data;
 
@@ -87,19 +114,63 @@ class RawResponse extends ApiResponse {
       : super(statusCode);
 
   @override
-  List<int> getData() => _data;
+  List<int> getBytes() => _data;
 
   @override
   Map<String, String> getHeaders() =>
-      {'content-length': _data.length.toString(), 'content-type': contentType};
+      {'Content-Length': _data.length.toString(), 'Content-Type': contentType};
 }
 
-class EmptyResponse extends ApiResponse {
+class EmptyResponse extends _SynchronousResponse {
   EmptyResponse([int statusCode = 200]) : super(statusCode);
 
   @override
-  List<int> getData() => [];
+  List<int> getBytes() => [];
 
   @override
   Map<String, String> getHeaders() => {};
+}
+
+class ByteStreamResponse extends ApiResponse {
+  final String contentType;
+  final ContentDisposition disposition;
+  final String? fileName;
+  final Stream<List<int>> _dataStream;
+  final int length;
+
+  ByteStreamResponse(
+    this._dataStream,
+    this.length, {
+    int statusCode = 200,
+    this.contentType = 'application/octet-stream',
+    this.fileName,
+    this.disposition = ContentDisposition.inline,
+  }) : super(statusCode);
+
+  @override
+  Stream<List<int>> getData() => _dataStream;
+
+  @override
+  Map<String, String> getHeaders() => {
+        'Content-Length': length.toString(),
+        'Content-Type': contentType,
+        if (!nullOrEmpty(fileName))
+          'Content-Disposition':
+              '${enumName(disposition)}; filename="$fileName"',
+      };
+}
+
+class FileResponse extends ByteStreamResponse {
+  final File file;
+
+  FileResponse(this.file,
+      {ContentDisposition disposition = ContentDisposition.inline,
+      String contentType = 'application/octet-stream'})
+      : super(
+          file.openRead(),
+          file.lengthSync(),
+          fileName: p.basename(file.path),
+          disposition: disposition,
+          contentType: contentType,
+        );
 }

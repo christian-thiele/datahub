@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:cl_datahub_common/common.dart';
 
 typedef DTOFactory<T> = T Function(Map<String, dynamic> data);
@@ -6,11 +7,17 @@ abstract class TransferObject {
   final List<Field> dataFields;
   final Map<String, dynamic> _data;
 
-  TransferObject(this.dataFields, this._data);
+  TransferObject(this.dataFields, Map<String, dynamic> data) : _data = {} {
+    for (final e in data.entries
+        .map((e) => Tuple(
+            dataFields.firstOrNullWhere((p0) => p0.key == e.key), e.value))
+        .where((element) => element.a != null)) {
+      set(e.a!, e.b);
+    }
+  }
 
-  TransferObject.create(Map<Field, dynamic> fieldData)
-      : dataFields = fieldData.keys.toList(),
-        _data = {} {
+  TransferObject.create(this.dataFields, Map<Field, dynamic> fieldData)
+      : _data = {} {
     fieldData.forEach((key, value) => set(key, value));
   }
 
@@ -42,8 +49,10 @@ abstract class IntIdTransferObject extends TransferObject {
   IntIdTransferObject(List<Field> dataFields, Map<String, dynamic> data)
       : super((<Field>[idField]).followedBy(dataFields).toList(), data);
 
-  IntIdTransferObject.create(Map<Field, dynamic> fieldData)
-      : super.create(fieldData);
+  IntIdTransferObject.create(
+      List<Field> dataFields, Map<Field, dynamic> fieldData)
+      : super.create(
+            (<Field>[idField]).followedBy(dataFields).toList(), fieldData);
 
   int? get id => get(idField);
 
@@ -56,8 +65,10 @@ abstract class StringIdTransferObject extends TransferObject {
   StringIdTransferObject(List<Field> dataFields, Map<String, dynamic> data)
       : super((<Field>[idField]).followedBy(dataFields).toList(), data);
 
-  StringIdTransferObject.create(Map<Field, dynamic> fieldData)
-      : super.create(fieldData);
+  StringIdTransferObject.create(
+      List<Field> dataFields, Map<Field, dynamic> fieldData)
+      : super.create(
+            (<Field>[idField]).followedBy(dataFields).toList(), fieldData);
 
   String? get id => get(idField);
 
