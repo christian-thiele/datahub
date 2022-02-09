@@ -48,6 +48,7 @@ void _blogMirror() {
         DataField(FieldType.Int, 'executionId'),
         DataField(FieldType.String, 'name'),
         DataField(FieldType.Point, 'location'),
+        DataField(FieldType.Bytes, 'image'),
       ]));
 }
 

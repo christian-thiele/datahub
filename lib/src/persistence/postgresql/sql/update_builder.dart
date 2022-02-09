@@ -26,7 +26,7 @@ class UpdateBuilder implements SqlBuilder {
         .toList();
 
     buffer.write('UPDATE $schemaName.$tableName SET '
-        '${values.map((e) => '${e.a} = @${e.b}').join(', ')}');
+        '${values.map((e) => '${e.a} = ${SqlBuilder.substitutionLiteral(e)}').join(', ')}');
 
     final substitutionValues =
         Map.fromEntries(values.map((e) => MapEntry(e.b, e.c)));

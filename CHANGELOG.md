@@ -54,5 +54,8 @@
   - added getByteData()
   - getTextBody and getJsonBody are now async
 
-## 0.2.1
+## 0.2.2
 - updated datahub_common dependency (now requires ^0.2.0)
+
+## 0.2.4
+- Uint8List support workaround for postgres lib

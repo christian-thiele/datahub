@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cl_datahub/cl_datahub.dart';
 
 @DaoType(name: 'user')
@@ -11,19 +13,29 @@ class UserDao {
 
   final Point location;
 
-  UserDao(
-      {this.id = 0,
-      required this.name,
-      required this.location,
-      required this.executionId});
+  final Uint8List image;
 
-  UserDao copyWith(
-          {int? id, String? name, Point? location, int? executionId}) =>
+  UserDao({
+    this.id = 0,
+    required this.name,
+    required this.location,
+    required this.executionId,
+    required this.image,
+  });
+
+  UserDao copyWith({
+    int? id,
+    String? name,
+    Point? location,
+    int? executionId,
+    Uint8List? image,
+  }) =>
       UserDao(
         id: id ?? this.id,
         name: name ?? this.name,
         location: location ?? this.location,
         executionId: executionId ?? this.executionId,
+        image: image ?? this.image,
       );
 
   @override

@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:typed_data';
 import 'package:boost/boost.dart';
 
 import 'package:cl_datahub/cl_datahub.dart';
@@ -12,7 +13,7 @@ import 'dao/blog_daos/user_dao.dart';
 import '../utils/message_matcher.dart';
 
 const String host = '127.0.0.1';
-const int port = 49154;
+const int port = 5432;
 const String database = 'postgres';
 const String user = 'postgres';
 const String password = 'mysecretpassword';
@@ -29,7 +30,7 @@ void main() async {
   }
 
   group('PostgreSQL', () {
-    test('connect / initialize', _testScheme);
+    test('basic orm features', _testScheme);
   }, skip: skip);
 }
 
@@ -37,6 +38,9 @@ Future _testScheme() async {
   final blogLayout = LayoutMirror.reflect(BlogDao);
   final articleLayout = LayoutMirror.reflect(ArticleDao);
   final userLayout = LayoutMirror.reflect(UserDao);
+
+  final imageData = Uint8List.fromList(
+      Iterable.generate(256, (i) => Random().nextInt(255)).toList());
 
   final schema =
       DataSchema('blogsystem', 1, [blogLayout, articleLayout, userLayout]);
@@ -53,8 +57,12 @@ Future _testScheme() async {
   expect(connection.isOpen, isTrue);
 
   // insert some data
-  final blogUser =
-      UserDao(name: 'testUser', location: Point(1.234, 2.345), executionId: 0);
+  final blogUser = UserDao(
+    name: 'testUser',
+    location: Point(1.234, 2.345),
+    executionId: 0,
+    image: imageData,
+  );
   final userId = await connection.insert(userLayout, blogUser);
   print('Inserted with pk: $userId');
 
@@ -63,6 +71,10 @@ Future _testScheme() async {
   expect(blogUsers.any((element) => element.id == userId), isTrue);
   expect(blogUsers.firstWhere((element) => element.id == userId).location,
       equals(Point(1.234, 2.345)));
+  expect(blogUsers.firstWhere((element) => element.id == userId).image.length,
+      imageData.length);
+  expect(blogUsers.firstWhere((element) => element.id == userId).image,
+      orderedEquals(imageData));
 
   // delete some data
   await connection.delete(userLayout, blogUser.copyWith(id: userId));
@@ -76,7 +88,8 @@ Future _testScheme() async {
     final blogUser = UserDao(
         name: 'TestUser$i',
         location: Point(Random().nextDouble(), Random().nextDouble()),
-        executionId: executionId);
+        executionId: executionId,
+        image: imageData);
     final userId = await connection.insert(userLayout, blogUser);
     print('Inserted with pk: $userId');
   }

@@ -21,9 +21,7 @@ class Token {
   }
 
   @override
-  String toString() {
-    return bytes.map((e) => e.toRadixString(16).padLeft(2, '0')).join();
-  }
+  String toString() => bytes.toHexString();
 
   static Uint8List _generate() {
     final data = ByteData(16);

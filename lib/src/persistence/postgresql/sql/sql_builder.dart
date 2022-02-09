@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:postgres/postgres.dart';
@@ -229,9 +231,30 @@ abstract class SqlBuilder {
     return '\'%${value.toString().replaceAll('\'', '\'\'')}%\''; //TODO other escape things
   }
 
+  /// Returns a substitution literal.
+  ///
+  /// Triple contains
+  /// a: field name
+  /// b: field substitution key
+  /// c: substituted value
+  static String substitutionLiteral(Triple<String, String, dynamic> e) {
+    if (e.c is Uint8List) {
+      // in SqlBuilder.toSqlData Uint8List objects are converted to hex strings
+      return "decode(@${e.b}, 'hex')";
+    }else{
+      return '@${e.b}';
+    }
+  }
+
   static dynamic toSqlData(dynamic value) {
     if (value is Point) {
       return PgPoint(value.x, value.y);
+    }
+
+    // Postges lib does not support Uint8List yet... :(
+    // in SqlBuilder.substitutionLiteral this is then decoded again
+    if (value is Uint8List) {
+      return value.toHexString();
     }
 
     return value;

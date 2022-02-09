@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:cl_datahub/cl_datahub.dart';
 
 class Simple {
@@ -8,6 +10,8 @@ class Simple {
   final DateTime timestamp;
   final double number;
   final bool yesOrNo;
+  final Uint8List someBytes;
 
-  Simple(this.id, this.text, this.timestamp, this.number, this.yesOrNo);
+  Simple(this.id, this.text, this.timestamp, this.number, this.yesOrNo,
+      this.someBytes);
 }

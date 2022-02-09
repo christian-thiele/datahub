@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:boost/boost.dart';
 
 import 'sql_builder.dart';
@@ -28,7 +30,7 @@ class InsertBuilder implements SqlBuilder {
 
     buffer.write('INSERT INTO $schemaName.$tableName '
         '(${values.map((e) => e.a).join(', ')}) '
-        'VALUES (${values.map((e) => '@${e.b}').join(', ')})');
+        'VALUES (${values.map(SqlBuilder.substitutionLiteral).join(', ')})');
 
     if (_returning != null) {
       buffer.write(' RETURNING $_returning');
