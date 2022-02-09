@@ -241,7 +241,7 @@ abstract class SqlBuilder {
     if (e.c is Uint8List) {
       // in SqlBuilder.toSqlData Uint8List objects are converted to hex strings
       return "decode(@${e.b}, 'hex')";
-    }else{
+    } else {
       return '@${e.b}';
     }
   }
