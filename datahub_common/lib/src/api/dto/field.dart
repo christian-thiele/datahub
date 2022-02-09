@@ -82,13 +82,19 @@ class EnumField<T> extends Field<T> {
       return defaultValue;
     }
 
+    if (map[key] is T) {
+      return map[key];
+    }
+
     return tryFindEnum(map[key].toString(), values, ignoreCase: ignoreCase);
   }
 
   @override
   MapEntry<String, dynamic> encode(T? value) {
-    final str = value.toString();
-    return MapEntry(key, str.substring(str.lastIndexOf('.') + 1));
+    if (value == null) {
+      return MapEntry(key, null);
+    }
+    return MapEntry(key, enumName(value));
   }
 }
 
