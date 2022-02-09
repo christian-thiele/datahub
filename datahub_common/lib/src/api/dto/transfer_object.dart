@@ -12,7 +12,7 @@ abstract class TransferObject {
         .map((e) => Tuple(
             dataFields.firstOrNullWhere((p0) => p0.key == e.key), e.value))
         .where((element) => element.a != null)) {
-      _setDecode(e.a!, decodeTyped(e.b));
+      _setDecode(e.a!, e.b);
     }
   }
 
@@ -41,7 +41,7 @@ abstract class TransferObject {
   }
 
   void _setDecode<T>(Field<T> field, dynamic value) {
-    set<T>(field, decodeTyped<T>(value) as T);
+    set<T>(field, field.decode({field.key: value}) as T);
   }
 
   Map<String, dynamic> toJson() => _data;
