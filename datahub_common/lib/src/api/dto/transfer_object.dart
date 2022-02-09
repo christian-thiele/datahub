@@ -12,7 +12,7 @@ abstract class TransferObject {
         .map((e) => Tuple(
             dataFields.firstOrNullWhere((p0) => p0.key == e.key), e.value))
         .where((element) => element.a != null)) {
-      set(e.a!, decodeTyped(e.b));
+      _setDecode(e.a!, decodeTyped(e.b));
     }
   }
 
