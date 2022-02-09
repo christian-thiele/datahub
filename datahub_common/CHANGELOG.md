@@ -16,3 +16,6 @@
     of generating it implicitly from the data map.
   - Default constructor now runs set() for all given fields to filter
     out invalid fields and convert field data into its valid type representation.
+
+## 0.2.1
+- fixed null value in TransferObject.set()

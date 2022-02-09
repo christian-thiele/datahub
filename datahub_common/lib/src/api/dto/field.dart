@@ -28,7 +28,7 @@ class Field<T> {
   }
 
   //TODO this is api specific, should be somewhere in api classes to avoid confusion with persistence usage
-  MapEntry<String, dynamic> encode(T value) {
+  MapEntry<String, dynamic> encode(T? value) {
     return MapEntry(key, value != null ? encodeTyped<T>(value) : defaultValue);
   }
 }
@@ -86,7 +86,7 @@ class EnumField<T> extends Field<T> {
   }
 
   @override
-  MapEntry<String, dynamic> encode(T value) {
+  MapEntry<String, dynamic> encode(T? value) {
     final str = value.toString();
     return MapEntry(key, str.substring(str.lastIndexOf('.') + 1));
   }
@@ -117,7 +117,8 @@ class ListField<T> extends Field<List<T>> {
   }
 
   @override
-  MapEntry<String, dynamic> encode(List<T> value) {
-    return MapEntry(key, value.map((e) => encodeTyped<T>(e)).toList());
+  MapEntry<String, dynamic> encode(List<T>? value) {
+    return MapEntry(
+        key, (value ?? <T>[]).map((e) => encodeTyped<T>(e)).toList());
   }
 }

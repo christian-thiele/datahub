@@ -52,7 +52,7 @@ T? decodeTyped<T>(dynamic raw, {DTOFactory? factory}) {
   throw ApiError.invalidType(T);
 }
 
-dynamic encodeTyped<T>(T value) {
+dynamic encodeTyped<T>(T? value) {
   if (value == null) {
     return null;
   }
