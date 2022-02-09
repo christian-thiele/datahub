@@ -59,3 +59,6 @@
 
 ## 0.2.4
 - Uint8List support workaround for postgres lib
+
+## 0.2.5
+- exported Middleware class

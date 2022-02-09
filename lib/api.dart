@@ -10,6 +10,9 @@ export 'src/api/route.dart';
 export 'src/api/hub/api_resource.dart';
 export 'src/api/hub/static_list_api_resource.dart';
 
+export 'src/api/middleware/log_middleware.dart';
+export 'src/api/middleware/middleware.dart';
+
 export 'src/api/sessions/session.dart';
 export 'src/api/sessions/memory_session.dart';
 export 'src/api/sessions/session_provider.dart';
