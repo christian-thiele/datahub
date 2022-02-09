@@ -53,3 +53,6 @@
   - Uses Stream<List<int>> for body data.
   - added getByteData()
   - getTextBody and getJsonBody are now async
+
+## 0.2.1
+- updated datahub_common dependency (now requires ^0.2.0)
