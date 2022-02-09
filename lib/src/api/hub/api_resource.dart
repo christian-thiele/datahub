@@ -106,7 +106,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
       throw ApiRequestException.methodNotAllowed();
     }
 
-    final json = request.getJsonBody();
+    final json = await request.getJsonBody();
     final data = factory.call(json);
     final result = await postElement(request, data);
     //TODO maybe don't reply with complete entry (performance?)
@@ -124,7 +124,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
       throw ApiRequestException.badRequest('Missing id');
     }
 
-    final json = request.getJsonBody();
+    final json = await request.getJsonBody();
     final data = factory.call(json);
     final result = await patchElement(request, id, data);
     //TODO maybe don't reply with complete entry (performance?)
@@ -188,7 +188,7 @@ abstract class SingleObjectApiResource<TData> extends ApiResource<TData> {
       throw ApiRequestException.methodNotAllowed();
     }
 
-    final json = request.getJsonBody();
+    final json = await request.getJsonBody();
     final data = factory.call(json);
     final result = await postElement(data);
     //TODO maybe don't reply with complete entry (performance?)
@@ -201,7 +201,7 @@ abstract class SingleObjectApiResource<TData> extends ApiResource<TData> {
       throw ApiRequestException.methodNotAllowed();
     }
 
-    final json = request.getJsonBody();
+    final json = await request.getJsonBody();
     final data = factory.call(json);
     final result = await patchElement(data);
     //TODO maybe don't reply with complete entry (performance?)

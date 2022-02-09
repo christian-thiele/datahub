@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/api.dart';
@@ -92,10 +91,6 @@ abstract class ApiBase {
     // get query params
     final queryParams = httpRequest.uri.queryParameters;
 
-    // get body data
-    final bodyBytes = Uint8List.fromList(
-        (await httpRequest.toList()).expand((element) => element).toList());
-
     // get headers
     final headers = <String, List<String>>{};
     httpRequest.headers.forEach((name, values) {
@@ -117,7 +112,7 @@ abstract class ApiBase {
     //TODO cookies
 
     final request =
-        ApiRequest(context, method, route, headers, queryParams, bodyBytes);
+        ApiRequest(context, method, route, headers, queryParams, httpRequest);
 
     return await () async {
       if (middleware != null) {

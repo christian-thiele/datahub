@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/src/api/request_context.dart';
-import 'package:cl_datahub_common/common.dart';
+
+import 'request_context.dart';
 
 class ApiRequest {
   final RequestContext context;
@@ -11,21 +11,31 @@ class ApiRequest {
   final Route route;
   final Map<String, List<String>> headers;
   final Map<String, String> queryParams;
-  final Uint8List? _bodyData;
-
-  bool get hasBodyData => _bodyData != null;
-
-  Uint8List get bodyData =>
-      _bodyData ?? (throw ApiError('Request does not contain body data.'));
+  final Stream<List<int>> bodyData;
 
   ApiRequest(this.context, this.method, this.route, this.headers,
-      this.queryParams, this._bodyData);
+      this.queryParams, this.bodyData);
 
-  String getTextBody() => utf8.decode(bodyData);
+  /// Returns a Uint8List of the body data.
+  ///
+  /// Useful for small size bodies. For large amounts of data use
+  /// [bodyData] stream instead.
+  Future<Uint8List> getByteBody() async =>
+      Uint8List.fromList(await bodyData.expand((element) => element).toList());
 
-  Map<String, dynamic> getJsonBody() {
+  /// Returns a String representation of the body data.
+  ///
+  /// Useful for small size bodies. For large amounts of data use
+  /// [bodyData] stream instead.
+  Future<String> getTextBody() async => utf8.decode(await getByteBody());
+
+  /// Returns a Map<String, dynamic> representation of json body data.
+  ///
+  /// Useful for small size bodies. For large amounts of data use
+  /// [bodyData] stream instead.
+  Future<Map<String, dynamic>> getJsonBody() async {
     try {
-      return JsonDecoder().convert(getTextBody()) as Map<String, dynamic>;
+      return JsonDecoder().convert(await getTextBody()) as Map<String, dynamic>;
     } catch (_) {
       throw ApiRequestException.badRequest('Invalid body data.');
     }

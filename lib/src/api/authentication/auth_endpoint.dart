@@ -14,7 +14,7 @@ class AuthEndpoint extends ApiEndpoint {
       throw ApiError('Cannot use AuthEndpoint without SessionProvider!');
     }
 
-    final body = request.getJsonBody();
+    final body = await request.getJsonBody();
 
     if (!body.containsKey('method')) {
       throw ApiRequestException.badRequest(

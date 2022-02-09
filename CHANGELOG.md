@@ -47,3 +47,9 @@
   - Body data is now provided as Stream<List<int>> instead of Uint8List.
   - added ByteStreamResponse
   - added FileResponse
+
+## 0.2.1
+- ApiRequest (API BREAKING):
+  - Uses Stream<List<int>> for body data.
+  - added getByteData()
+  - getTextBody and getJsonBody are now async
