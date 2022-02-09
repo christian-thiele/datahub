@@ -40,6 +40,10 @@ abstract class TransferObject {
     _data[mapEntry.key] = mapEntry.value;
   }
 
+  void _setDecode<T>(Field<T> field, dynamic value) {
+    set<T>(field, decodeTyped<T>(value) as T);
+  }
+
   Map<String, dynamic> toJson() => _data;
 }
 
