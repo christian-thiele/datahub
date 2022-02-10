@@ -16,11 +16,11 @@ class Api extends ApiBase {
 void main() {
   group('ApiBase', () {
     test('Serve and Cancel', () async {
-      final api = Api([ArticleEndpoint()]);
-
       final token = CancellationToken();
-      final task = api.serve(InternetAddress.loopbackIPv4.address, 8083,
-          cancellationToken: token);
+      final serviceHost = ServiceHost([
+        () => ApiService(Api([ArticleEndpoint()]), InternetAddress.loopbackIPv4.address, 8083)
+      ], catchSignal: false);
+      final task = serviceHost.run(token);
       await Future.delayed(Duration(seconds: 3));
       token.cancel();
       await task;

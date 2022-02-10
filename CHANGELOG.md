@@ -72,3 +72,4 @@
 - refactored SchedulerService to services
 - added LogService
 - removed old Config class (boost ConfigParser recommended instead)
+- added ApiService

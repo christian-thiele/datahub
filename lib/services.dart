@@ -1,3 +1,5 @@
+export 'src/services/api_service.dart';
+
 export 'src/services/log_service/console_log_backend.dart';
 export 'src/services/log_service/log_backend.dart';
 export 'src/services/log_service/log_message.dart';
