@@ -62,3 +62,12 @@
 
 ## 0.2.5
 - exported Middleware class
+
+## 0.2.6
+- fixed EnumField bug in DTO
+
+## 0.3.0
+- ServiceHost:
+  - added tryResolve (does not throw if service is not registered, returns null instead)
+- refactored SchedulerService to services
+- added LogService
