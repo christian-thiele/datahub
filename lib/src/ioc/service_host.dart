@@ -20,7 +20,6 @@ import 'package:cl_datahub/cl_datahub.dart';
 /// execution of the application itself, providing a framework for
 /// services to live in.
 class ServiceHost {
-
   final _runTimeCompleter = Completer();
   late final List<BaseService Function()> _factories;
   final List<BaseService> _services = [];
