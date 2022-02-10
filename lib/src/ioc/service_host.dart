@@ -88,8 +88,12 @@ class ServiceHost {
   }
 
   TService resolveService<TService extends BaseService>() {
-    return _services.whereIs<TService>().firstOrNull ??
+    return tryResolveService<TService>() ??
         (throw Exception('Could not find service of type $TService.'));
+  }
+
+  TService? tryResolveService<TService extends BaseService>() {
+    return _services.whereIs<TService>().firstOrNull;
   }
 
   static TService resolve<TService extends BaseService>() {
