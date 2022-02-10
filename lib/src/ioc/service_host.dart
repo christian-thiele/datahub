@@ -20,7 +20,6 @@ import 'package:cl_datahub/cl_datahub.dart';
 /// execution of the application itself, providing a framework for
 /// services to live in.
 class ServiceHost {
-  final bool failWithServices;
 
   final _runTimeCompleter = Completer();
   late final List<BaseService Function()> _factories;
@@ -29,6 +28,8 @@ class ServiceHost {
 
   // catches CTRL+C and shuts down gracefully
   final bool catchSignal;
+  final bool failWithServices;
+  final Function? onInitialized;
 
   static ServiceHost? _applicationHost;
 
@@ -37,6 +38,7 @@ class ServiceHost {
     this.catchSignal = true,
     this.failWithServices = true,
     LogBackend? logBackend,
+    this.onInitialized,
   }) : assert(_applicationHost == null) {
     _factories = <BaseService Function()>[
       () => LogService(logBackend ?? ConsoleLogBackend()),
@@ -48,20 +50,32 @@ class ServiceHost {
   ///
   /// [catchSignal] listens to CTRL+C in command line and shuts down services gracefully
   /// [failWithServices] service hosts terminates the app if a single service fails to initialize
+  /// [logBackend] initializes LogService with custom backend
+  /// [onInitialized] is called when service initialization is done
   factory ServiceHost(
     List<BaseService Function()> factories, {
     bool catchSignal = true,
     bool failWithServices = true,
     LogBackend? logBackend,
+    Function? onInitialized,
   }) {
     return _applicationHost = ServiceHost._(
       factories,
       catchSignal: catchSignal,
       failWithServices: failWithServices,
       logBackend: logBackend,
+      onInitialized: onInitialized,
     );
   }
 
+  /// Runs the application.
+  ///
+  /// All services will be initialized in the order they are
+  /// supplied.
+  ///
+  /// When [catchSignal] is true and termination is requested by CTRL+C or
+  /// as soon as [cancel] is triggered, all services will be shut down and
+  /// this future will complete.
   Future<void> run([CancellationToken? cancel]) async {
     for (final service in _factories.map((f) => f())) {
       try {
@@ -86,6 +100,8 @@ class ServiceHost {
     }
 
     cancel?.attach(_shutdown);
+
+    onInitialized?.call();
 
     await _runTimeCompleter.future;
 

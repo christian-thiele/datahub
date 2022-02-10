@@ -73,3 +73,6 @@
 - added LogService
 - removed old Config class (boost ConfigParser recommended instead)
 - added ApiService
+
+## 0.3.0
+- added onInitialized to ServiceHost
