@@ -71,3 +71,4 @@
   - added tryResolve (does not throw if service is not registered, returns null instead)
 - refactored SchedulerService to services
 - added LogService
+- removed old Config class (boost ConfigParser recommended instead)
