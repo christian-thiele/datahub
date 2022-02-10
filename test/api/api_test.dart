@@ -18,7 +18,8 @@ void main() {
     test('Serve and Cancel', () async {
       final token = CancellationToken();
       final serviceHost = ServiceHost([
-        () => ApiService(Api([ArticleEndpoint()]), InternetAddress.loopbackIPv4.address, 8083)
+        () => ApiService(Api([ArticleEndpoint()]),
+            InternetAddress.loopbackIPv4.address, 8083)
       ], catchSignal: false);
       final task = serviceHost.run(token);
       await Future.delayed(Duration(seconds: 3));
