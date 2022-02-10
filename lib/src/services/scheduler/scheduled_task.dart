@@ -1,7 +1,8 @@
 import 'dart:async';
 
-import 'package:cl_datahub/src/ioc/scheduler/overlap_behaviour.dart';
-import 'package:cl_datahub/src/ioc/scheduler/schedule.dart';
+import 'overlap_behaviour.dart';
+import 'schedule.dart';
+
 
 typedef Task = FutureOr<void> Function();
 
