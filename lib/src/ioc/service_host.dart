@@ -20,7 +20,6 @@ import 'package:cl_datahub/cl_datahub.dart';
 /// services to live in.
 class ServiceHost {
   final bool failWithServices;
-  final _baseFactories = <BaseService Function()>[() => SchedulerService()];
 
   final _runTimeCompleter = Completer();
   late final List<BaseService Function()> _factories;
@@ -32,10 +31,16 @@ class ServiceHost {
 
   static ServiceHost? _applicationHost;
 
-  ServiceHost._(List<BaseService Function()> factories,
-      {this.catchSignal = true, this.failWithServices = true})
-      : assert(_applicationHost == null) {
-    _factories = _baseFactories.followedBy(factories).toList(growable: false);
+  ServiceHost._(
+    List<BaseService Function()> factories, {
+    this.catchSignal = true,
+    this.failWithServices = true,
+    LogBackend? logBackend,
+  }) : assert(_applicationHost == null) {
+    _factories = <BaseService Function()>[
+      () => LogService(logBackend ?? ConsoleLogBackend()),
+      () => SchedulerService(),
+    ].followedBy(factories).toList(growable: false);
   }
 
   /// Creates a [ServiceHost] instance.
@@ -46,11 +51,13 @@ class ServiceHost {
     List<BaseService Function()> factories, {
     bool catchSignal = true,
     bool failWithServices = true,
+    LogBackend? logBackend,
   }) {
     return _applicationHost = ServiceHost._(
       factories,
       catchSignal: catchSignal,
       failWithServices: failWithServices,
+      logBackend: logBackend,
     );
   }
 
