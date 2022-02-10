@@ -39,7 +39,7 @@ abstract class ApiEndpoint implements RequestHandler {
         'Error while handling request to "${request.route}".',
         error: e,
         trace: stack,
-        sender: 'DataHub'
+        sender: 'DataHub',
       );
       // catch exceptions here to allow middleware to handle result
       return TextResponse.plain('500 - Internal Server Error', 500);

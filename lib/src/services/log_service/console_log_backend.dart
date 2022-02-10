@@ -44,7 +44,6 @@ class ConsoleLogBackend extends LogBackend {
     stdout.write('\n');
   }
 
-
   String? _severityColor(int severity) {
     switch (severity) {
       case LogMessage.debug:

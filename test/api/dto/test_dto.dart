@@ -1,8 +1,6 @@
 import 'package:cl_datahub_common/common.dart';
 
-enum EventCategory {
-  sport, hangout, culture, party
-}
+enum EventCategory { sport, hangout, culture, party }
 
 class TestDto extends TransferObject {
   static const fields = <Field>[
@@ -18,7 +16,7 @@ class TestDto extends TransferObject {
   TestDto.create(Map<Field, dynamic> data) : super.create(fields, data);
 
   static const categoryField =
-  EnumField<EventCategory>('category', EventCategory.values);
+      EnumField<EventCategory>('category', EventCategory.values);
 
   EventCategory? get category => get(categoryField);
 
