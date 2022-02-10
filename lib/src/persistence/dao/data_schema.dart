@@ -10,8 +10,10 @@ class DataSchema {
 
   DataSchema(this.name, this.version, this.layouts);
 
+  //TODO automatic migration
   Future<void> migrate(Migrator migrator, int fromVersion) async {
-    //TODO automatic migration
-    print('Migrating $name from $fromVersion to $version.'); //TODO logging
+    resolve<LogService>().warn(
+        'Schema "$name" changes from version $fromVersion to $version but no migration is implemented!',
+        sender: 'DataHub');
   }
 }

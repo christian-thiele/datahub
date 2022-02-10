@@ -1,4 +1,4 @@
-import 'package:cl_datahub/api.dart';
+import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/src/api/middleware/request_handler.dart';
 
 abstract class ApiEndpoint implements RequestHandler {
@@ -32,11 +32,15 @@ abstract class ApiEndpoint implements RequestHandler {
 
       return ApiResponse.dynamic(result);
     } on ApiRequestException catch (e) {
-      print(e); //TODO logging
       // catch exceptions here to allow middleware to handle result
       return TextResponse.plain(e.message, e.statusCode);
-    } catch (e) {
-      print(e); //TODO logging
+    } catch (e, stack) {
+      resolve<LogService>().error(
+        'Error while handling request to "${request.route}".',
+        error: e,
+        trace: stack,
+        sender: 'DataHub'
+      );
       // catch exceptions here to allow middleware to handle result
       return TextResponse.plain('500 - Internal Server Error', 500);
     }

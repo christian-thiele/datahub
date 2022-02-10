@@ -1,8 +1,6 @@
 import 'dart:async';
 
-import 'overlap_behaviour.dart';
-import 'schedule.dart';
-
+import 'package:cl_datahub/cl_datahub.dart';
 
 typedef Task = FutureOr<void> Function();
 
@@ -42,10 +40,9 @@ class ScheduledTask {
     _running = true;
     try {
       await task();
-    } catch (e) {
-      //TODO good logging
-      print('Scheduled execution threw exception:');
-      print(e);
+    } catch (e, stack) {
+      resolve<LogService>().e('Scheduled execution threw exception:',
+          error: e, trace: stack, sender: 'DataHub');
     } finally {
       _running = false;
     }

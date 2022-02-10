@@ -121,9 +121,6 @@ void _testRouteEncode() {
 void _testRouteMatch() {
   for (final test in tests) {
     final pattern = RoutePattern(test.a);
-    if (pattern.match(test.b) != (test.c != null)) {
-      print('here');
-    }
     expect(pattern.match(test.b), equals(test.c != null),
         reason: 'Route:\n  ${test.b}\ndoes not match pattern:\n  ${test.a}');
   }

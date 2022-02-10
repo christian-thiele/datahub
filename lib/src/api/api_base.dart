@@ -2,10 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/api.dart';
+import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/src/api/request_context.dart';
-import 'package:cl_datahub/src/api/middleware/middleware.dart';
-import 'package:cl_datahub/utils.dart';
 
 abstract class ApiBase {
   final List<ApiEndpoint> endpoints;
@@ -16,12 +14,13 @@ abstract class ApiBase {
 
   Future<void> serve(dynamic address, int port,
       {CancellationToken? cancellationToken}) async {
+    final _logService = resolve<LogService>();
     final server = await HttpServer.bind(address, port);
 
-    _log('Serving on $address:$port');
+    _logService.info('Serving on $address:$port', sender: 'DataHub');
 
     final _cancelKey = cancellationToken?.attach(() {
-      print('Shutting down...'); //TODO logging
+      _logService.info('Shutting down...', sender: 'DataHub');
       server.close();
     });
 
@@ -34,8 +33,6 @@ abstract class ApiBase {
 
     await completer.future;
   }
-
-  void _log(String message) => print(message);
 
   Future<void> _handleRequestGuarded(HttpRequest request) async {
     final stopWatch = Stopwatch()..start();
@@ -62,19 +59,25 @@ abstract class ApiBase {
       // to ApiResponses. this is just in case:
       request.response.statusCode = 500;
       request.response.writeln('500 - Internal Server Error');
-      print(e); //TODO logging
-      print(stack);
+      resolve<LogService>().error(
+        'Error while handling request to "${request.requestedUri}".',
+        sender: 'DataHub',
+        error: e,
+        trace: stack,
+      );
     }
 
     stopWatch.stop();
-    print(
-        'Handled request to ${request.requestedUri} in ${stopWatch.elapsedMilliseconds}ms.'); //TODO logging
-
     await request.response.close();
   }
 
-  void _onError(dynamic e) {
-    print(e); //TODO logging
+  void _onError(dynamic e, StackTrace? trace) {
+    resolve<LogService>().error(
+      'Error while listening to socket.',
+      sender: 'DataHub',
+      error: e,
+      trace: trace,
+    );
   }
 
   Future<ApiResponse> handleRequest(HttpRequest httpRequest) async {

@@ -23,7 +23,7 @@ abstract class ApiResource<TData> extends ApiEndpoint {
     final vars = request.queryParams.keys
         .where(isMeta)
         .map((e) => e.substring(1))
-        .take(25); //TODO maybe setMetaParamLimit(...) or smth
+        .take(50);
     final result = <String, dynamic>{};
     for (final name in vars) {
       result[name] = await getMetaData(request, name);
@@ -109,7 +109,6 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
     final json = await request.getJsonBody();
     final data = factory.call(json);
     final result = await postElement(request, data);
-    //TODO maybe don't reply with complete entry (performance?)
     return result.b;
   }
 
@@ -127,7 +126,6 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
     final json = await request.getJsonBody();
     final data = factory.call(json);
     final result = await patchElement(request, id, data);
-    //TODO maybe don't reply with complete entry (performance?)
     return result;
   }
 
@@ -191,7 +189,6 @@ abstract class SingleObjectApiResource<TData> extends ApiResource<TData> {
     final json = await request.getJsonBody();
     final data = factory.call(json);
     final result = await postElement(data);
-    //TODO maybe don't reply with complete entry (performance?)
     return {'result': result.b};
   }
 
@@ -204,7 +201,6 @@ abstract class SingleObjectApiResource<TData> extends ApiResource<TData> {
     final json = await request.getJsonBody();
     final data = factory.call(json);
     final result = await patchElement(data);
-    //TODO maybe don't reply with complete entry (performance?)
     return {'result': result};
   }
 

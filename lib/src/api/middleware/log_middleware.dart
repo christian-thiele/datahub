@@ -1,20 +1,32 @@
+import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/src/api/api_request.dart';
 import 'package:cl_datahub/src/api/api_response.dart';
 import 'package:cl_datahub/src/api/middleware/middleware.dart';
 import 'package:cl_datahub/src/api/middleware/request_handler.dart';
 
 class LogMiddleware extends Middleware {
-  LogMiddleware(RequestHandler internal) : super(internal);
+  final bool verbose;
+  final _logService = resolve<LogService>();
+
+  /// Logs requests, handling times and status codes to the [LogService].
+  ///
+  /// [verbose] log as verbose instead of info
+  LogMiddleware(RequestHandler internal, [this.verbose = false])
+      : super(internal);
 
   @override
   Future<ApiResponse> handleRequest(ApiRequest request) async {
     // Pre-Handler
-    print('${request.method}: ${request.route}'); //TODO logging
+    final stopwatch = Stopwatch()..start();
+    final log = verbose ? _logService.v : _logService.i;
+    log('${request.method}: ${request.route}', sender: 'DataHub');
 
     final result = await next(request);
 
     // Post-Handler
-    print('Result: ${result.statusCode}'); //TODO logging
+    stopwatch.stop();
+    log('${result.statusCode}: ${request.route} (${stopwatch.elapsedMilliseconds} ms)',
+        sender: 'DataHub');
 
     return result;
   }

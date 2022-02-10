@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
@@ -66,9 +67,8 @@ class ServiceHost {
       try {
         await service.initialize();
         _services.add(service);
-      } catch (e) {
-        print('Error while initializing service:');
-        print(e);
+      } catch (e, stack) {
+        _onError('Error while initializing service.', e, stack);
         if (failWithServices) {
           rethrow;
         }
@@ -118,13 +118,21 @@ class ServiceHost {
     for (final service in _services) {
       try {
         await service.shutdown();
-      } catch (e) {
-        print('Could not shutdown service gracefully:');
-        print(e);
+      } catch (e, stack) {
+        _onError('Could not shutdown service gracefully.', e, stack);
       }
     }
 
     _runTimeCompleter.complete();
+  }
+
+  void _onError(String msg, dynamic exception, StackTrace trace) {
+    final logService = tryResolveService<LogService>();
+    if (logService != null) {
+      logService.e(msg, error: exception, trace: trace, sender: 'DataHub');
+    } else {
+      print('$msg\n$e');
+    }
   }
 }
 
