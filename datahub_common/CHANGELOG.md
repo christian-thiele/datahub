@@ -19,3 +19,7 @@
 
 ## 0.2.1
 - fixed null value in TransferObject.set()
+
+## 0.2.2
+- fixed colored output in docker containers
+- added example code

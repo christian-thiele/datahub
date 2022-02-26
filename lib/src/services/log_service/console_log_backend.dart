@@ -20,7 +20,7 @@ class ConsoleLogBackend extends LogBackend {
     stdout.write(_timestampString(message.timestamp));
     stdout.write(' ');
 
-    if (stdout.supportsAnsiEscapes && color != null) {
+    if (color != null) {
       stdout.write(color);
     }
 
@@ -38,7 +38,7 @@ class ConsoleLogBackend extends LogBackend {
       stdout.write(message.trace);
     }
 
-    if (stdout.supportsAnsiEscapes && color != null) {
+    if (color != null) {
       stdout.write(_colorReset);
     }
     stdout.write('\n');
