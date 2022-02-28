@@ -40,7 +40,7 @@ class LogService extends BaseService {
       warn(message, sender: sender, error: error, trace: trace);
 
   void e(String message, {String? sender, dynamic error, StackTrace? trace}) =>
-      error(message, sender: sender, error: error, trace: trace);
+      this.error(message, sender: sender, error: error, trace: trace);
 
   void c(String message, {String? sender, dynamic error, StackTrace? trace}) =>
       critical(message, sender: sender, error: error, trace: trace);
