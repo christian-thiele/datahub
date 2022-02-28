@@ -1,0 +1,14 @@
+targets:
+  $default:
+    builders:
+      config_generator|config_generator:
+        enabled: true
+
+builders:
+  config_generator:
+    import: "package:cl_datahub/builder.dart"
+    builder_factories: ["configGenerator"]
+    build_extensions: {".dart": [".config.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]

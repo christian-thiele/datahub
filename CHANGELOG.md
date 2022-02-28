@@ -78,6 +78,12 @@
 - added onInitialized to ServiceHost
 
 ## 0.4.0
-- fixed "error"-bug in LogService when calling method "e"
-- improved critical error log
-- static tryResolve method in ServiceHost
+- LogService:
+  - fixed "error"-bug when calling method "e"
+- ServiceHost:
+  - static tryResolve
+  - improved critical error log
+- added modular ConfigService api
+- ApiService:
+  - requires ConfigService<ApiConfig>
+- added config class builder (GenerateConfig annotation) using ConfigParser from boost
