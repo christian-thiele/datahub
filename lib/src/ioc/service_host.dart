@@ -81,7 +81,7 @@ class ServiceHost {
         await service.initialize();
         _services.add(service);
       } catch (e, stack) {
-        _onError('Error while initializing service.', e, stack);
+        _onError('Error while initializing service.', e, stack, failWithServices);
         if (failWithServices) {
           rethrow;
         }
@@ -123,6 +123,13 @@ class ServiceHost {
         (throw Exception('ServiceHost is not initialized.'));
   }
 
+  static TService? tryResolve<TService extends BaseService>() {
+    if (_applicationHost == null) {
+      throw Exception('ServiceHost is not initialized.');
+    }
+    return _applicationHost!.tryResolveService<TService>();
+  }
+
   Future<void> _shutdown() async {
     if (_isInShutdown) {
       return;
@@ -134,17 +141,18 @@ class ServiceHost {
       try {
         await service.shutdown();
       } catch (e, stack) {
-        _onError('Could not shutdown service gracefully.', e, stack);
+        _onError('Could not shutdown service gracefully.', e, stack, false);
       }
     }
 
     _runTimeCompleter.complete();
   }
 
-  void _onError(String msg, dynamic exception, StackTrace trace) {
+  void _onError(String msg, dynamic exception, StackTrace trace, bool critical) {
     final logService = tryResolveService<LogService>();
     if (logService != null) {
-      logService.e(msg, error: exception, trace: trace, sender: 'DataHub');
+      final method = critical ? logService.c : logService.e;
+      method(msg, error: exception, trace: trace, sender: 'DataHub');
     } else {
       print('$msg\n$e');
     }
@@ -152,5 +160,7 @@ class ServiceHost {
 }
 
 /// Convenience method for injecting services.
+///
+/// See [ServiceHost.resolve].
 TService resolve<TService extends BaseService>() =>
     ServiceHost.resolve<TService>();

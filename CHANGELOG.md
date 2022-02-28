@@ -76,3 +76,8 @@
 
 ## 0.3.0
 - added onInitialized to ServiceHost
+
+## 0.4.0
+- fixed "error"-bug in LogService when calling method "e"
+- improved critical error log
+- static tryResolve method in ServiceHost

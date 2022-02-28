@@ -13,6 +13,8 @@ class ConsoleLogBackend extends LogBackend {
   static const _colorYellow = '\u001b[33m';
   static const _colorCyan = '\u001b[36m';
 
+  static const _indent = '                               ';
+
   @override
   void publish(LogMessage message) {
     final color = _severityColor(message.severity);
@@ -30,11 +32,13 @@ class ConsoleLogBackend extends LogBackend {
 
     if (message.exception != null) {
       stdout.write('\n');
+      stdout.write(_indent);
       stdout.write(message.exception);
     }
 
     if (message.trace != null) {
       stdout.write('\n');
+      stdout.write(_indent);
       stdout.write(message.trace);
     }
 
@@ -42,6 +46,10 @@ class ConsoleLogBackend extends LogBackend {
       stdout.write(_colorReset);
     }
     stdout.write('\n');
+
+    if (message.severity == LogMessage.critical) {
+      stdout.flush(); // make sure because critical could be very critical
+    }
   }
 
   String? _severityColor(int severity) {
