@@ -151,13 +151,11 @@ class ObjectFieldType extends FieldType {
 
   @override
   String buildEncodingStatement(String valueAccessor, bool nullable) {
-    final encode = '${typeName}TransferBean.staticToMap($valueAccessor)';
-
     if (nullable) {
-      return '(($valueAccessor) != null) ? $encode : null';
+      return '(($valueAccessor) != null) ? ${typeName}TransferBean.staticToMap($valueAccessor!) : null';
     }
 
-    return encode;
+    return '${typeName}TransferBean.staticToMap($valueAccessor)';
   }
 
   @override

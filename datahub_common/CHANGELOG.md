@@ -29,3 +29,6 @@
 
 ## 0.4.1
 - fixed some nullable issues in TransferBeanGenerator
+
+## 0.4.2
+- fixed ObjectFieldType nullable bug in TransferBeanGenerator
