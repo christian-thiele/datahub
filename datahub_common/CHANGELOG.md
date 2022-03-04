@@ -23,3 +23,6 @@
 ## 0.2.2
 - fixed colored output in docker containers
 - added example code
+
+## 0.4.0
+- TransferBean update (see cl_datahub changelog)
