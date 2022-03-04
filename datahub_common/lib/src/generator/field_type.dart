@@ -7,7 +7,7 @@ abstract class FieldType {
 
   const FieldType();
 
-  String buildEncodingStatement(String valueAccessor) {
+  String buildEncodingStatement(String valueAccessor, bool nullable) {
     return 'encodeTyped<$typeName>($valueAccessor)';
   }
 
@@ -102,10 +102,10 @@ class ListFieldType extends FieldType {
   const ListFieldType(this.elementType);
 
   @override
-  String buildEncodingStatement(String valueAccessor) {
+  String buildEncodingStatement(String valueAccessor, bool nullable) {
     const lambdaParam = 'e';
     final encoder =
-        '($lambdaParam) => ${elementType.buildEncodingStatement(lambdaParam)}';
+        '($lambdaParam) => ${elementType.buildEncodingStatement(lambdaParam, false)}';
     return 'encodeList<${elementType.typeName}>($valueAccessor, $encoder)';
   }
 
@@ -127,10 +127,10 @@ class MapFieldType extends FieldType {
   String get typeName => 'Map<String, ${valueType.typeName}>';
 
   @override
-  String buildEncodingStatement(String valueAccessor) {
+  String buildEncodingStatement(String valueAccessor, bool nullable) {
     const lambdaParam = 'e';
     final encoder =
-        '($lambdaParam) => ${valueType.buildEncodingStatement(lambdaParam)}';
+        '($lambdaParam) => ${valueType.buildEncodingStatement(lambdaParam, nullable)}';
     return 'encodeStringMap<${valueType.typeName}>($valueAccessor, $encoder)';
   }
 
@@ -150,8 +150,14 @@ class ObjectFieldType extends FieldType {
   ObjectFieldType(this.typeName);
 
   @override
-  String buildEncodingStatement(String valueAccessor) {
-    return '${typeName}TransferBean.staticToMap($valueAccessor)';
+  String buildEncodingStatement(String valueAccessor, bool nullable) {
+    final encode = '${typeName}TransferBean.staticToMap($valueAccessor)';
+
+    if (nullable) {
+      return '(($valueAccessor) != null) ? $encode : null';
+    }
+
+    return encode;
   }
 
   @override
@@ -173,7 +179,11 @@ class EnumFieldType extends FieldType {
   EnumFieldType(this.typeName);
 
   @override
-  String buildEncodingStatement(String valueAccessor) {
+  String buildEncodingStatement(String valueAccessor, bool nullable) {
+    if (nullable) {
+      return 'encodeEnumNullable($valueAccessor)';
+    }
+
     return 'encodeEnum($valueAccessor)';
   }
 

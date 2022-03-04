@@ -93,3 +93,6 @@
   - statusCode is now *named* optional
 - JsonResponse:
   - when using a DTO, a bean is required (named optional parameter)
+
+## 0.4.1
+- fixed some nullable issues in TransferBeanGenerator

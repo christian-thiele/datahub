@@ -14,8 +14,12 @@ class TransferField {
       this.defaultValue, this.named);
 
   String buildEncodingStatement(String transferObjectAccessor) {
+    final allowNull = nullable || defaultValue != null;
     final fieldAccessor = '$transferObjectAccessor.$name';
-    return type.buildEncodingStatement(fieldAccessor);
+    final dataAccessor = defaultValue != null
+        ? '($fieldAccessor ?? ${toLiteral(defaultValue)})'
+        : fieldAccessor;
+    return type.buildEncodingStatement(fieldAccessor, allowNull);
   }
 
   String buildDecodingStatement(String dataMapAccessor) {

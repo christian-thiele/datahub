@@ -124,3 +124,11 @@ T? decodeEnumNullable<T>(dynamic raw, List<T> values) {
 }
 
 String encodeEnum<T>(T value) => enumName<T>(value);
+
+String? encodeEnumNullable<T>(T? value) {
+  if (value == null) {
+    return null;
+  }
+
+  return enumName<T>(value);
+}

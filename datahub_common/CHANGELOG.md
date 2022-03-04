@@ -26,3 +26,6 @@
 
 ## 0.4.0
 - TransferBean update (see cl_datahub changelog)
+
+## 0.4.1
+- fixed some nullable issues in TransferBeanGenerator
