@@ -60,6 +60,20 @@ String toLiteral(dynamic value) {
   return value.toString();
 }
 
+FieldElement? findTransferIdField(ClassElement element) {
+  final idFields = podoFields(element).map((f) => f.a).where((f) =>
+      TypeChecker.fromRuntime(TransferId)
+          .firstAnnotationOfExact(f, throwOnUnresolved: false) !=
+      null);
+  if (idFields.length > 1) {
+    throw Exception('Only 1 TransferId field is allowed on a TransferObject.');
+  } else if (idFields.isNotEmpty) {
+    return idFields.single;
+  } else {
+    return null;
+  }
+}
+
 extension DartTypeExtension on DartType {
   /// Checks if [type] is a [TransferObject] annotated class.
   bool get isTransferObject {
