@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
+import 'package:cl_datahub/config.dart';
 import 'package:cl_datahub/src/api/middleware/log_middleware.dart';
 import 'package:test/test.dart';
 
@@ -13,13 +14,32 @@ class Api extends ApiBase {
       : super(resources, middleware: (internal) => LogMiddleware(internal));
 }
 
+class _TestConfig extends ApiConfig {
+  @override
+  final address = InternetAddress.loopbackIPv4;
+
+  @override
+  final port = 8083;
+}
+
+class TestConfigService extends ConfigService<_TestConfig> {
+  @override
+  final config = _TestConfig();
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<void> shutdown() async {}
+}
+
 void main() {
   group('ApiBase', () {
     test('Serve and Cancel', () async {
       final token = CancellationToken();
       final serviceHost = ServiceHost([
-        () => ApiService(Api([ArticleEndpoint()]),
-            InternetAddress.loopbackIPv4.address, 8083)
+        () => TestConfigService(),
+        () => ApiService(Api([ArticleEndpoint()]))
       ], catchSignal: false);
       final task = serviceHost.run(token);
       await Future.delayed(Duration(seconds: 3));

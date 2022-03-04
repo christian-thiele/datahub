@@ -81,7 +81,8 @@ class ServiceHost {
         await service.initialize();
         _services.add(service);
       } catch (e, stack) {
-        _onError('Error while initializing service.', e, stack, failWithServices);
+        _onError(
+            'Error while initializing service.', e, stack, failWithServices);
         if (failWithServices) {
           rethrow;
         }
@@ -148,7 +149,8 @@ class ServiceHost {
     _runTimeCompleter.complete();
   }
 
-  void _onError(String msg, dynamic exception, StackTrace trace, bool critical) {
+  void _onError(
+      String msg, dynamic exception, StackTrace trace, bool critical) {
     final logService = tryResolveService<LogService>();
     if (logService != null) {
       final method = critical ? logService.c : logService.e;

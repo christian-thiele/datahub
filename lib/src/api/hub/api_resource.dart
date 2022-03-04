@@ -6,11 +6,11 @@ import 'package:cl_datahub_common/common.dart';
 abstract class ApiResource<TData> extends ApiEndpoint {
   static final isMeta = (String e) => e.startsWith('\$');
 
-  final DTOFactory<TData> factory;
+  final TransferBean<TData> bean;
   final bool allowPatch, allowPost, allowDelete;
 
-  ApiResource._(RoutePattern path, this.factory, this.allowPatch,
-      this.allowPost, this.allowDelete)
+  ApiResource._(RoutePattern path, this.bean, this.allowPatch, this.allowPost,
+      this.allowDelete)
       : super(path);
 
   Future<dynamic> getMetaData(ApiRequest request, String name);
@@ -35,12 +35,12 @@ abstract class ApiResource<TData> extends ApiEndpoint {
 abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
   final String idParam;
 
-  ListApiResource(RoutePattern path, DTOFactory<TData> factory,
+  ListApiResource(RoutePattern path, TransferBean<TData> bean,
       {this.idParam = 'id',
       bool allowPatch = true,
       bool allowPost = true,
       bool allowDelete = true})
-      : super._(path, factory, allowPatch, allowPost, allowDelete) {
+      : super._(path, bean, allowPatch, allowPost, allowDelete) {
     if (!path.containsParam(idParam)) {
       throw ApiError(
           'ApiResource path does not contain the id placeholder: $idParam');
@@ -48,11 +48,6 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
 
     if (TId != String && TId != int) {
       throw ApiError('ApiResource only allows int or String as id type.');
-    }
-
-    if (TData is StringIdTransferObject && TId != String ||
-        TData is IntIdTransferObject && TId != int) {
-      throw ApiError('ApiResource<$TData, $TId> has mismatching id types.');
     }
   }
 
@@ -107,7 +102,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
     }
 
     final json = await request.getJsonBody();
-    final data = factory.call(json);
+    final data = bean.toObject(json);
     final result = await postElement(request, data);
     return result.b;
   }
@@ -124,7 +119,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
     }
 
     final json = await request.getJsonBody();
-    final data = factory.call(json);
+    final data = bean.toObject(json);
     final result = await patchElement(request, id, data);
     return result;
   }
@@ -155,9 +150,9 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
 }
 
 abstract class SingleObjectApiResource<TData> extends ApiResource<TData> {
-  SingleObjectApiResource(RoutePattern path, DTOFactory<TData> factory,
+  SingleObjectApiResource(RoutePattern path, TransferBean<TData> bean,
       {bool allowPatch = true, bool allowPost = true, bool allowDelete = true})
-      : super._(path, factory, allowPatch, allowPost, allowDelete);
+      : super._(path, bean, allowPatch, allowPost, allowDelete);
 
   Future<TData> getElement();
 
@@ -187,7 +182,7 @@ abstract class SingleObjectApiResource<TData> extends ApiResource<TData> {
     }
 
     final json = await request.getJsonBody();
-    final data = factory.call(json);
+    final data = bean.toObject(json);
     final result = await postElement(data);
     return {'result': result.b};
   }
@@ -199,7 +194,7 @@ abstract class SingleObjectApiResource<TData> extends ApiResource<TData> {
     }
 
     final json = await request.getJsonBody();
-    final data = factory.call(json);
+    final data = bean.toObject(json);
     final result = await patchElement(data);
     return {'result': result};
   }

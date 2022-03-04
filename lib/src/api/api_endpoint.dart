@@ -33,7 +33,7 @@ abstract class ApiEndpoint implements RequestHandler {
       return ApiResponse.dynamic(result);
     } on ApiRequestException catch (e) {
       // catch exceptions here to allow middleware to handle result
-      return TextResponse.plain(e.message, e.statusCode);
+      return TextResponse.plain(e.message, statusCode: e.statusCode);
     } catch (e, stack) {
       resolve<LogService>().error(
         'Error while handling request to "${request.route}".',
@@ -42,7 +42,7 @@ abstract class ApiEndpoint implements RequestHandler {
         sender: 'DataHub',
       );
       // catch exceptions here to allow middleware to handle result
-      return TextResponse.plain('500 - Internal Server Error', 500);
+      return TextResponse.plain('500 - Internal Server Error', statusCode: 500);
     }
   }
 

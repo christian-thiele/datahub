@@ -1,6 +1,6 @@
 import 'dart:math';
 
-import 'package:cl_datahub/api.dart';
+import 'package:cl_datahub/cl_datahub.dart';
 
 import '../../loremipsum.dart';
 
@@ -15,8 +15,7 @@ final articles = List.generate(
         });
 
 class ArticleResource extends ListApiResource<Map<String, dynamic>, int> {
-  ArticleResource()
-      : super(RoutePattern('/articles/{id?}'), (Map<String, dynamic> e) => e);
+  ArticleResource() : super(RoutePattern('/articles/{id?}'), MapTransferBean());
 
   @override
   Future<Map<String, dynamic>> getElement(ApiRequest request, int id) async {

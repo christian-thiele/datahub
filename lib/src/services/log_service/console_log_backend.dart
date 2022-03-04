@@ -39,7 +39,7 @@ class ConsoleLogBackend extends LogBackend {
     if (message.trace != null) {
       stdout.write('\n');
       stdout.write(_indent);
-      stdout.write(message.trace);
+      stdout.write(message.trace.toString().replaceAll('\n', '\n$_indent'));
     }
 
     if (color != null) {

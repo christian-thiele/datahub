@@ -4,8 +4,8 @@ import 'package:cl_datahub_common/common.dart';
 class StaticListApiResource<TData> extends ListApiResource<TData, int> {
   final Iterable<TData> data;
 
-  StaticListApiResource(path, DTOFactory<TData> factory, this.data)
-      : super(path, factory);
+  StaticListApiResource(path, TransferBean<TData> bean, this.data)
+      : super(path, bean);
 
   @override
   Future<TData> getElement(ApiRequest request, int id) async {

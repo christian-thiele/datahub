@@ -25,9 +25,10 @@ abstract class ApiResponse {
   /// Allowed types for [body] are:
   /// null, [ApiResponse], [Uint8List], [ByteData], [File],
   /// Map<String, dynamic>, List<dynamic> and [TransferObject]
-  factory ApiResponse.dynamic(dynamic body, [int statusCode = 200]) {
+  factory ApiResponse.dynamic(dynamic body,
+      {TransferBean? bean, int statusCode = 200}) {
     if (body == null) {
-      return EmptyResponse(statusCode);
+      return EmptyResponse(statusCode: statusCode);
     } else if (body is ApiResponse) {
       return body;
     } else if (body is Uint8List) {
@@ -38,14 +39,14 @@ abstract class ApiResponse {
       return FileResponse(body);
     } else if (body is Map<String, dynamic> ||
         body is List<dynamic> ||
-        body is TransferObject) {
+        body is TransferObjectBase) {
       return JsonResponse(body, statusCode);
     } else if (body is Stream<List<int>>) {
       throw ApiError(
           'A data stream cannot be used as response type without a length argument.'
           'Use ByteStreamResponse or FileResponse as return type instead to provide the length.');
     } else {
-      return TextResponse.plain(body.toString(), statusCode);
+      return TextResponse.plain(body.toString(), statusCode: statusCode);
     }
   }
 }
@@ -75,7 +76,7 @@ class JsonResponse extends _SynchronousResponse {
       return [];
     }
 
-    return utf8.encode(JsonEncoder(customJsonEncode).convert(_data!));
+    return utf8.encode(JsonEncoder().convert(_data!));
   }
 
   @override
@@ -88,11 +89,11 @@ class TextResponse extends _SynchronousResponse {
   final String _text;
   final String _contentType;
 
-  TextResponse.plain(this._text, [int statusCode = 200])
+  TextResponse.plain(this._text, {int statusCode = 200})
       : _contentType = 'text/plain;charset=utf-8',
         super(statusCode);
 
-  TextResponse.html(this._text, [int statusCode = 200])
+  TextResponse.html(this._text, {int statusCode = 200})
       : _contentType = 'text/html;charset=utf-8',
         super(statusCode);
 
@@ -122,7 +123,7 @@ class RawResponse extends _SynchronousResponse {
 }
 
 class EmptyResponse extends _SynchronousResponse {
-  EmptyResponse([int statusCode = 200]) : super(statusCode);
+  EmptyResponse({int statusCode = 200}) : super(statusCode);
 
   @override
   List<int> getBytes() => [];

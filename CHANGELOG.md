@@ -87,3 +87,9 @@
 - ApiService:
   - requires ConfigService<ApiConfig>
 - added config class builder (GenerateConfig annotation) using ConfigParser from boost
+- INTRODUCING: TransferBean (simplifies DTOs)
+- added TransferBean builder (builds Beans for DTOs)
+- ApiResponse:
+  - statusCode is now *named* optional
+- JsonResponse:
+  - when using a DTO, a bean is required (named optional parameter)

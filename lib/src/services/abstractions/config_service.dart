@@ -14,7 +14,5 @@ abstract class ConfigService<Config> implements BaseService {
   Config get config;
 
   static Config resolve<Config>() =>
-      ServiceHost
-          .resolve<ConfigService<Config>>()
-          .config;
+      ServiceHost.resolve<ConfigService<Config>>().config;
 }
