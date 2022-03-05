@@ -2,35 +2,15 @@ import 'dart:io';
 
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/config.dart';
-import 'package:cl_datahub/src/api/middleware/log_middleware.dart';
 import 'package:test/test.dart';
 
 import 'endpoints/article_endpoint.dart';
 import 'endpoints/article_resource.dart';
+import 'test_config.dart';
 
 class Api extends ApiBase {
   Api(List<ApiEndpoint> resources)
       : super(resources, middleware: (internal) => LogMiddleware(internal));
-}
-
-class _TestConfig extends ApiConfig {
-  @override
-  final address = InternetAddress.loopbackIPv4;
-
-  @override
-  final port = 8083;
-}
-
-class TestConfigService extends ConfigService<_TestConfig> {
-  @override
-  final config = _TestConfig();
-
-  @override
-  Future<void> initialize() async {}
-
-  @override
-  Future<void> shutdown() async {}
 }
 
 void main() {

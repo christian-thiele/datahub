@@ -20,13 +20,13 @@ class CopyWithExtensionGenerator
 
     final transferFields = classFields
         .map((f) => TransferField(
-      f.a.name,
-      f.a.name,
-      FieldType.fromDartType(f.a.type),
-      f.a.type.nullabilitySuffix != NullabilitySuffix.none,
-      null,
-      f.b.isNamed,
-    ))
+              f.a.name,
+              f.a.name,
+              FieldType.fromDartType(f.a.type),
+              f.a.type.nullabilitySuffix != NullabilitySuffix.none,
+              null,
+              f.b.isNamed,
+            ))
         .toList();
 
     yield* CopyWithExtensionBuilder(classElement.name, transferFields).build();

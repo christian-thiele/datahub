@@ -1,10 +1,22 @@
 targets:
   $default:
     builders:
-      config_generator|config_generator:
+      cl_datahub:config_generator:
         enabled: true
-      transfer_bean_generator|transfer_bean_generator:
+        generate_for:
+          - test/**
+      cl_datahub:transfer_bean_generator:
         enabled: true
+        generate_for:
+          - test/**
+      cl_datahub:transfer_superclass_generator:
+        enabled: true
+        generate_for:
+          - test/**
+      cl_datahub:copy_with_extension_generator:
+        enabled: true
+        generate_for:
+          - test/**
 
 builders:
   config_generator:

@@ -1,4 +1,3 @@
-
 import 'transfer_field.dart';
 
 class CopyWithExtensionBuilder {

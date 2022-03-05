@@ -4,15 +4,13 @@ import 'package:analyzer/dart/element/element.dart';
 import 'package:boost/boost.dart';
 import 'package:build/build.dart';
 import 'package:analyzer/dart/constant/value.dart';
+import 'package:cl_datahub/config.dart';
 import 'package:source_gen/source_gen.dart';
-
-import '../../config/generate_config.dart';
-import '../../config/config_option.dart';
 
 class ConfigGenerator extends GeneratorForAnnotation<GenerateConfig> {
   @override
-  Stream<String> generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep buildStep) async* {
+  Iterable<String> generateForAnnotatedElement(
+      Element element, ConstantReader annotation, BuildStep buildStep) sync* {
     if (element is! ClassElement) {
       throw BoostException(
           'Annotation GenerateConfig must be used on a class.');
@@ -55,9 +53,22 @@ class ConfigGenerator extends GeneratorForAnnotation<GenerateConfig> {
         fieldDefaultValue,
         p,
       );
-    });
+    }).toList();
 
-    yield '$className loadConfig([List<String>? args]) {\n'
+    yield 'class ${className}Service extends ConfigService<$className> {';
+
+    yield '@override final $className config;';
+
+    yield '${className}Service({List<String>? args}) : config = loadConfig(args);';
+
+    yield* buildLoadConfigMethod(className, options);
+
+    yield '}';
+  }
+
+  Iterable<String> buildLoadConfigMethod(
+      String className, List<_ConfigOption> options) sync* {
+    yield 'static $className loadConfig(List<String>? args) {\n'
         'final parser = ConfigParser();';
 
     for (final option in options) {
