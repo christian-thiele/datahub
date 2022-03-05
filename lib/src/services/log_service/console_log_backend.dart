@@ -46,10 +46,6 @@ class ConsoleLogBackend extends LogBackend {
       stdout.write(_colorReset);
     }
     stdout.write('\n');
-
-    if (message.severity == LogMessage.critical) {
-      stdout.flush(); // make sure because critical could be very critical
-    }
   }
 
   String? _severityColor(int severity) {

@@ -102,3 +102,6 @@
 
 ## 0.4.3
 - added copyWith method generator for TransferObjects
+
+## 0.4.4
+- fixed stdout flush bug in ConsoleLogBackend
