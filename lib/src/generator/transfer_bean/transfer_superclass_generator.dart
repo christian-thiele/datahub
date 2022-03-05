@@ -1,6 +1,6 @@
 import 'package:build/build.dart';
 import 'package:cl_datahub_common/common.dart';
-import 'package:cl_datahub_common/src/generator/field_type.dart';
+import 'field_type.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:analyzer/dart/element/element.dart';
 

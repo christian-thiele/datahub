@@ -1,4 +1,4 @@
-import 'package:cl_datahub_common/src/generator/transfer_field.dart';
+import 'transfer_field.dart';
 
 class TransferBeanBuilder {
   final String transferClass;

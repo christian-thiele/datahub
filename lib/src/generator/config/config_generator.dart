@@ -6,8 +6,8 @@ import 'package:build/build.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:source_gen/source_gen.dart';
 
-import '../generate_config.dart';
-import '../config_option.dart';
+import '../../config/generate_config.dart';
+import '../../config/config_option.dart';
 
 class ConfigGenerator extends GeneratorForAnnotation<GenerateConfig> {
   @override

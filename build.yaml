@@ -15,21 +15,21 @@ builders:
     build_to: cache
     applies_builders: ["source_gen|combining_builder"]
   transfer_bean_generator:
-    import: "package:cl_datahub_common/builder.dart"
+    import: "package:cl_datahub/builder.dart"
     builder_factories: ["transferBeanGenerator"]
     build_extensions: {".dart": [".dto.g.part"]}
     auto_apply: dependents
     build_to: cache
     applies_builders: ["source_gen|combining_builder"]
   transfer_superclass_generator:
-    import: "package:cl_datahub_common/builder.dart"
+    import: "package:cl_datahub/builder.dart"
     builder_factories: ["transferSuperclassGenerator"]
     build_extensions: {".dart": [".dts.g.part"]}
     auto_apply: dependents
     build_to: cache
     applies_builders: ["source_gen|combining_builder"]
   copy_with_extension_generator:
-    import: "package:cl_datahub_common/builder.dart"
+    import: "package:cl_datahub/builder.dart"
     builder_factories: ["copyWithExtensionGenerator"]
     build_extensions: {".dart": [".cwe.g.part"]}
     auto_apply: dependents

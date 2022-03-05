@@ -35,3 +35,6 @@
 
 ## 0.4.3
 - added copyWith method generator for TransferObjects
+
+## 0.5.0
+- refactored builder to datahub package for appbase compatibility

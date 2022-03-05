@@ -1,4 +1,4 @@
-import 'package:cl_datahub_common/src/generator/field_type.dart';
+import 'field_type.dart';
 
 import 'utils.dart';
 

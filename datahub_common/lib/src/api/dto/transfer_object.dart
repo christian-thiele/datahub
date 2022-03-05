@@ -1,5 +1,3 @@
-import 'package:cl_datahub_common/src/generator/transfer_bean_generator.dart';
-
 /// Transfer object class annotation.
 ///
 /// [TransferBeanGenerator] will generate a bean for all classes that are

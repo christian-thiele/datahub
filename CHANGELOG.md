@@ -105,3 +105,6 @@
 
 ## 0.4.4
 - fixed stdout flush bug in ConsoleLogBackend
+
+## 0.5.0
+- refactored builder to datahub package for appbase compatibility for datahub_common
