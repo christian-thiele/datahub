@@ -28,3 +28,10 @@ builders:
     auto_apply: dependents
     build_to: cache
     applies_builders: ["source_gen|combining_builder"]
+  copy_with_extension_generator:
+    import: "package:cl_datahub_common/builder.dart"
+    builder_factories: ["copyWithExtensionGenerator"]
+    build_extensions: {".dart": [".cwe.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]

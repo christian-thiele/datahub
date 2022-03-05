@@ -32,3 +32,6 @@
 
 ## 0.4.2
 - fixed ObjectFieldType nullable bug in TransferBeanGenerator
+
+## 0.4.3
+- added copyWith method generator for TransferObjects
