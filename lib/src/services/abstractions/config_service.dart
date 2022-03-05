@@ -15,4 +15,10 @@ abstract class ConfigService<Config> implements BaseService {
 
   static Config resolve<Config>() =>
       ServiceHost.resolve<ConfigService<Config>>().config;
+
+  @override
+  Future<void> initialize() async {}
+
+  @override
+  Future<void> shutdown() async {}
 }

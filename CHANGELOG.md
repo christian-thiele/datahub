@@ -108,3 +108,9 @@
 
 ## 0.5.0
 - refactored builder to datahub package for appbase compatibility for datahub_common
+
+## 0.5.1
+- changed path dependecy to ^1.8.0 for flutter dev_dependency support
+
+## 0.5.2
+- config service implementations don't have to implement initialize/shutdown
