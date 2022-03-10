@@ -1,9 +1,10 @@
 library cl_datahub;
 
 export 'api.dart';
+export 'broker.dart';
 export 'config.dart';
-export 'persistence.dart';
 export 'ioc.dart';
+export 'persistence.dart';
 export 'services.dart';
 export 'utils.dart';
 

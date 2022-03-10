@@ -5,7 +5,7 @@ import 'package:source_gen/source_gen.dart';
 import 'package:analyzer/dart/element/element.dart';
 
 import 'transfer_superclass_builder.dart';
-import 'utils.dart';
+import '../utils.dart';
 
 class TransferSuperclassGenerator
     extends GeneratorForAnnotation<TransferObject> {

@@ -8,7 +8,7 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'copy_with_extension_builder.dart';
 import 'field_type.dart';
 import 'transfer_field.dart';
-import 'utils.dart';
+import '../utils.dart';
 
 class CopyWithExtensionGenerator
     extends GeneratorForAnnotation<TransferObject> {

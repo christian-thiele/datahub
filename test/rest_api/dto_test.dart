@@ -1,6 +1,6 @@
 import 'package:test/test.dart';
 
-import 'dto/test_dto.dart';
+import '../dto/test_dto.dart';
 
 void main() {
   test('Test dto parsing', _testDtoParse);

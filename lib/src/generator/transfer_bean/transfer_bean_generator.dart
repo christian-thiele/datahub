@@ -7,7 +7,7 @@ import 'package:source_gen/source_gen.dart';
 import 'field_type.dart';
 import 'transfer_bean_builder.dart';
 import 'transfer_field.dart';
-import 'utils.dart';
+import '../utils.dart';
 
 class TransferBeanGenerator extends GeneratorForAnnotation<TransferObject> {
   @override

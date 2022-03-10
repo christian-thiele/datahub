@@ -1,6 +1,6 @@
 import 'package:analyzer/dart/element/type.dart';
 
-import 'utils.dart';
+import '../utils.dart';
 
 abstract class FieldType {
   String get typeName;

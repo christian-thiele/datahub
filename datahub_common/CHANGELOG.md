@@ -38,3 +38,6 @@
 
 ## 0.5.0
 - refactored builder to datahub package for appbase compatibility
+
+## 0.5.1
+- fixed common encoding

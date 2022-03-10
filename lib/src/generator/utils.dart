@@ -12,27 +12,34 @@ import 'package:source_gen/source_gen.dart';
 /// - Element has unnamed constructor
 /// - Constructor has only initializing formals
 ClassElement assertPodo(Element element) {
-  if (element is! ClassElement) {
-    throw Exception('Annotation must be used on a class.');
-  }
+  final classElement = assertClass(element);
 
-  if (element.unnamedConstructor == null) {
+  if (classElement.unnamedConstructor == null) {
     throw Exception(
         'Annotated class must provide an unnamed default constructor.');
   }
 
-  if (element.hasNonFinalField) {
+  if (classElement.hasNonFinalField) {
     throw Exception('Annotated class must not have non-final fields.');
   }
 
-  final constructor = element.unnamedConstructor!;
+  final constructor = classElement.unnamedConstructor!;
 
-  if (constructor.parameters.any((element) => !element.isInitializingFormal)) {
+  if (constructor.parameters.any((p) => !p.isInitializingFormal)) {
     throw Exception(
         'All default constructor parameters must be initializing formals!');
   }
 
-  return element;
+  return classElement;
+}
+
+/// Asserts that element is a class.
+ClassElement assertClass(Element element) {
+  if (element is ClassElement) {
+    return element;
+  }
+
+  throw Exception('Annotation must be used on a class.');
 }
 
 /// Returns all PlainOldDartObject fields together with their

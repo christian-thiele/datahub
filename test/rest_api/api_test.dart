@@ -6,7 +6,8 @@ import 'package:test/test.dart';
 
 import 'endpoints/article_endpoint.dart';
 import 'endpoints/article_resource.dart';
-import 'test_config.dart';
+
+import '../utils/test_config.dart';
 
 class Api extends ApiBase {
   Api(List<ApiEndpoint> resources)

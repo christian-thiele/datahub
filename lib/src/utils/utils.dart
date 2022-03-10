@@ -1,3 +1,5 @@
+import 'package:uuid/uuid.dart';
+
 const Map<int, String> _statusCodes = {
   // Informative
   100: 'Continue',
@@ -80,3 +82,5 @@ String buildQueryString(Map<String, String> query) {
               '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}')
           .join('&');
 }
+
+String uuid() => Uuid().v1().toString();

@@ -1,4 +1,3 @@
-import 'package:boost/boost.dart';
 import 'package:cl_datahub_common/common.dart';
 
 part 'test_dto.g.dart';

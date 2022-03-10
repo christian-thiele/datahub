@@ -17,6 +17,14 @@ targets:
         enabled: true
         generate_for:
           - test/**
+      cl_datahub:broker_api_service_generator:
+        enabled: true
+        generate_for:
+          - test/**
+      cl_datahub:broker_api_client_generator:
+        enabled: true
+        generate_for:
+          - test/**
 
 builders:
   config_generator:
@@ -44,6 +52,20 @@ builders:
     import: "package:cl_datahub/builder.dart"
     builder_factories: ["copyWithExtensionGenerator"]
     build_extensions: {".dart": [".cwe.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
+  broker_api_service_generator:
+    import: "package:cl_datahub/builder.dart"
+    builder_factories: ["brokerApiServiceGenerator"]
+    build_extensions: {".dart": [".bas.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
+  broker_api_client_generator:
+    import: "package:cl_datahub/builder.dart"
+    builder_factories: ["brokerApiClientGenerator"]
+    build_extensions: {".dart": [".bac.g.part"]}
     auto_apply: dependents
     build_to: cache
     applies_builders: ["source_gen|combining_builder"]

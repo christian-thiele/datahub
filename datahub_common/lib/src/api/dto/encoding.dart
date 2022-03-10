@@ -123,6 +123,8 @@ T? decodeEnumNullable<T>(dynamic raw, List<T> values) {
   }
 }
 
+String encodeJsonString(dynamic value) => JsonEncoder().convert(value);
+
 String encodeEnum<T>(T value) => enumName<T>(value);
 
 String? encodeEnumNullable<T>(T? value) {

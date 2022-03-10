@@ -118,3 +118,6 @@
 ## 0.5.3
 - fixed builders in tests
 - config_generator now generates ConfigService directly
+
+## 0.6.0
+- AMQP Broker Api & Client generator

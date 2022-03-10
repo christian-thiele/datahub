@@ -1,6 +1,6 @@
 import 'field_type.dart';
 
-import 'utils.dart';
+import '../utils.dart';
 
 class TransferField {
   final String name;
@@ -19,7 +19,7 @@ class TransferField {
     final dataAccessor = defaultValue != null
         ? '($fieldAccessor ?? ${toLiteral(defaultValue)})'
         : fieldAccessor;
-    return type.buildEncodingStatement(fieldAccessor, allowNull);
+    return type.buildEncodingStatement(dataAccessor, allowNull);
   }
 
   String buildDecodingStatement(String dataMapAccessor) {
