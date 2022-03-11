@@ -124,3 +124,6 @@
 
 ## 0.6.1
 - initialization log message
+
+## 0.6.2
+- added initializing log message to generated amqp services

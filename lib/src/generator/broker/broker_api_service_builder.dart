@@ -33,6 +33,7 @@ class BrokerApiServiceBuilder {
   Iterable<String> buildInitializeMethod() sync* {
     yield '@override Future<void> initialize() async { await super.initialize();';
     yield "await initializeCompetingConsumer('$queueName', $durable, null);";
+    yield "ServiceHost.tryResolve<LogService>()?.verbose('$implementationClass Service initialized.');";
     yield '}';
   }
 

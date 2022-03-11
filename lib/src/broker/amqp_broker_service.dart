@@ -22,7 +22,7 @@ class AmqpBrokerService implements BrokerService {
       ),
     );
     _client = Client(settings: settings);
-    _logService.info('AMQP Broker Service initialized.', sender: 'DataHub');
+    _logService.verbose('AMQP Broker Service initialized.', sender: 'DataHub');
   }
 
   @override
