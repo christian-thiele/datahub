@@ -121,3 +121,6 @@
 
 ## 0.6.0
 - AMQP Broker Api & Client generator
+
+## 0.6.1
+- initialization log message

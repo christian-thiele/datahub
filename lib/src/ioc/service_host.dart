@@ -76,6 +76,7 @@ class ServiceHost {
   /// as soon as [cancel] is triggered, all services will be shut down and
   /// this future will complete.
   Future<void> run([CancellationToken? cancel]) async {
+    final stopwatch = Stopwatch()..start();
     for (final service in _factories.map((f) => f())) {
       try {
         await service.initialize();
@@ -100,6 +101,12 @@ class ServiceHost {
     }
 
     cancel?.attach(_shutdown);
+    stopwatch.stop();
+
+    tryResolveService<LogService>()?.info(
+      'Initialization done in ${stopwatch.elapsed}.',
+      sender: 'DataHub',
+    );
 
     onInitialized?.call();
 
