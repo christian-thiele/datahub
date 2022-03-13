@@ -36,7 +36,7 @@ abstract class BaseBrokerClientService implements BaseService {
     _replyChannel = await _brokerService.openChannel();
     _replyQueue =
         await _replyChannel!.queue('', durable: false, autoDelete: true);
-    final consumer = await _replyQueue!.consume();
+    final consumer = await _replyQueue!.consume(noAck: false);
     consumer.listen(_onReplyEvent);
   }
 
@@ -45,12 +45,14 @@ abstract class BaseBrokerClientService implements BaseService {
     if (correlationId == null) {
       _log.error('Message without correlation id received on reply '
           'queue "${_replyQueue?.name}".');
+      event.reject(false);
       return;
     }
 
     if (!_replyCompleter.containsKey(correlationId)) {
       _log.error('Message with unknown correlation id received on reply queue '
           '"${_replyQueue?.name}". [correlationId: $correlationId]');
+      event.reject(false);
       return;
     }
 
@@ -58,10 +60,12 @@ abstract class BaseBrokerClientService implements BaseService {
       _log.warn('Reply to already completed rpc call received on reply queue '
           '"${_replyQueue?.name}", dropping message. '
           '[correlationId: $correlationId]');
+      event.reject(false);
       return;
     }
 
     _replyCompleter[correlationId]!.complete(event);
+    event.ack();
   }
 
   Future<AmqpMessage> waitForReply(String correlationId) async {

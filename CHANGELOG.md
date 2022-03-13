@@ -133,3 +133,7 @@
   - RPC error handling
   - multi param endpoints
   - primitive return type fix
+
+## 0.6.4
+- BrokerAPI
+  - ack for reply queues
