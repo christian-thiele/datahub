@@ -137,3 +137,7 @@
 ## 0.6.4
 - BrokerAPI
   - ack for reply queues
+
+## 0.6.5
+- BrokerAPI
+  - unified Exceptions with rest API (ApiRequestException)

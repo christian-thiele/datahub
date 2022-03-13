@@ -59,26 +59,18 @@ Future<void> _testExampleApi() async {
     try {
       await client.getSomeNotWorking(0);
     } catch (e) {
-      expect(e, isA<BrokerApiException>());
-      expect((e as BrokerApiException).message,
+      expect(e, isA<ApiRequestException>());
+      expect((e as ApiRequestException).message,
           contains('This did not work at all.'));
-      expect((e as BrokerApiException).errorCode, equals(null));
+      expect(e.statusCode, equals(500));
     }
 
     try {
       await client.getSomeNotWorking(1);
     } catch (e) {
-      expect(e, isA<BrokerApiException>());
-      expect((e as BrokerApiException).message, contains('This did not work.'));
-      expect((e as BrokerApiException).errorCode, equals(20));
-    }
-
-    try {
-      await client.getSomeNotWorking(2);
-    } catch (e) {
-      expect(e, isA<Exception>());
-      expect((e as BrokerApiException).message, contains('This did not work.'));
-      expect((e as BrokerApiException).errorCode, equals(null));
+      expect(e, isA<ApiRequestException>());
+      expect((e as ApiRequestException).message, contains('This did not work.'));
+      expect(e.statusCode, equals(20));
     }
 
     token.cancel();

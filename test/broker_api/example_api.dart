@@ -69,9 +69,7 @@ class ExampleApiImpl extends ExampleApi {
     await Future.delayed(Duration(seconds: 1));
     print('Throwing error ($type).');
     if (type == 1) {
-      throw BrokerApiException('This did not work.', errorCode: 20);
-    } else if (type == 2) {
-      throw BrokerApiException('This did not work.');
+      throw ApiRequestException(20, 'This did not work.');
     } else {
       throw Exception('This did not work at all.');
     }

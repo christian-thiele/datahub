@@ -69,9 +69,8 @@ class BaseApiClientBuilder {
       yield 'final replyPayload = (await replyFuture).payloadAsJson;';
       yield "if (replyPayload.containsKey('error')) {";
       yield "final errorCode = (replyPayload['errorCode'] is int) ? "
-          "replyPayload['errorCode'] : null;";
-      yield "throw BrokerApiException(replyPayload['error'].toString(), "
-          'errorCode: errorCode);';
+          "replyPayload['errorCode'] : 500;";
+      yield "throw ApiRequestException(errorCode, replyPayload['error'].toString());";
       yield '}';
       final decode = endpoint.replyType!
           .buildDecodingStatement("replyPayload['result']", false);
