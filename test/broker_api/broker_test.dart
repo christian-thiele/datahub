@@ -69,7 +69,8 @@ Future<void> _testExampleApi() async {
       await client.getSomeNotWorking(1);
     } catch (e) {
       expect(e, isA<ApiRequestException>());
-      expect((e as ApiRequestException).message, contains('This did not work.'));
+      expect(
+          (e as ApiRequestException).message, contains('This did not work.'));
       expect(e.statusCode, equals(20));
     }
 

@@ -141,3 +141,7 @@
 ## 0.6.5
 - BrokerAPI
   - unified Exceptions with rest API (ApiRequestException)
+
+## 0.6.6
+- ServiceHost
+  - removed BaseService constraint on resolve methods

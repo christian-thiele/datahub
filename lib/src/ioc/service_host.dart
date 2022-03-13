@@ -117,21 +117,21 @@ class ServiceHost {
     }
   }
 
-  TService resolveService<TService extends BaseService>() {
+  TService resolveService<TService>() {
     return tryResolveService<TService>() ??
         (throw Exception('Could not find service of type $TService.'));
   }
 
-  TService? tryResolveService<TService extends BaseService>() {
+  TService? tryResolveService<TService>() {
     return _services.whereIs<TService>().firstOrNull;
   }
 
-  static TService resolve<TService extends BaseService>() {
+  static TService resolve<TService>() {
     return _applicationHost?.resolveService<TService>() ??
         (throw Exception('ServiceHost is not initialized.'));
   }
 
-  static TService? tryResolve<TService extends BaseService>() {
+  static TService? tryResolve<TService>() {
     if (_applicationHost == null) {
       throw Exception('ServiceHost is not initialized.');
     }
@@ -171,5 +171,4 @@ class ServiceHost {
 /// Convenience method for injecting services.
 ///
 /// See [ServiceHost.resolve].
-TService resolve<TService extends BaseService>() =>
-    ServiceHost.resolve<TService>();
+TService resolve<TService>() => ServiceHost.resolve<TService>();
