@@ -45,42 +45,42 @@ class BaseApiClientBuilder {
   }
 
   Iterable<String> buildEndpointOverride(BrokerApiEndpoint endpoint) sync* {
-    final returnType = endpoint.isRpc
-        ? (endpoint.isAsync
-            ? 'Future<${endpoint.replyType!.typeName}>'
-            : endpoint.replyType!.typeName)
-        : 'void';
-    final param = endpoint.payloadType != null
-        ? (endpoint.payloadType!.typeName + ' ' + endpoint.payloadName!)
-        : '';
+    final returnType = endpoint.returnTypeStatement;
+    final params = endpoint.params.map((e) => e.paramStatement).join(', ');
+    final suffix = endpoint.isRpc ? 'async ' : '';
 
-    final prefix = endpoint.isRpc ? 'async ' : '';
-
-    yield '@override $returnType ${endpoint.name}($param) $prefix{';
-    if (endpoint.payloadType != null) {
-      final encode = endpoint.payloadType!
-          .buildEncodingStatement(endpoint.payloadName!, false);
-
-      yield 'final encodedPayload = $encode;';
-      yield 'final jsonPayload = encodeJsonString(encodedPayload);';
-      if (endpoint.isRpc) {
-        yield 'final correlationId = uuid();';
-        yield 'final replyFuture = waitForReply(correlationId);';
-
-        yield "_exchange.publish(jsonPayload, '', properties: MessageProperties()"
-            "..headers = {'datahub-invocation': '${endpoint.name}'}"
-            '..replyTo=replyQueueName'
-            '..corellationId=correlationId);';
-
-        yield 'final replyPayload = (await replyFuture).payloadAsJson;';
-        final decode = endpoint.replyType!.buildDecodingStatement(
-            'replyPayload as Map<String, dynamic>', false);
-        yield 'return $decode;';
-      } else {
-        yield "_exchange.publish(jsonPayload, '', properties: MessageProperties()"
-            "..headers = {'datahub-invocation': '${endpoint.name}'});";
-      }
+    yield '@override $returnType ${endpoint.name}($params) $suffix{';
+    yield 'final encodedPayload = {';
+    for (final param in endpoint.params) {
+      yield "'${param.name}': ${param.encodingStatement(param.name)},";
     }
+    yield '};';
+
+    yield 'final jsonPayload = encodeJsonString(encodedPayload);';
+    if (endpoint.isRpc) {
+      yield 'final correlationId = uuid();';
+      yield 'final replyFuture = waitForReply(correlationId);';
+
+      yield "_exchange.publish(jsonPayload, '', properties: MessageProperties()"
+          "..headers = {'datahub-invocation': '${endpoint.name}'}"
+          '..replyTo=replyQueueName'
+          '..corellationId=correlationId);';
+
+      yield 'final replyPayload = (await replyFuture).payloadAsJson;';
+      yield "if (replyPayload.containsKey('error')) {";
+      yield "final errorCode = (replyPayload['errorCode'] is int) ? "
+          "replyPayload['errorCode'] : null;";
+      yield "throw BrokerApiException(replyPayload['error'].toString(), "
+          'errorCode: errorCode);';
+      yield '}';
+      final decode = endpoint.replyType!
+          .buildDecodingStatement("replyPayload['result']", false);
+      yield 'return $decode;';
+    } else {
+      yield "_exchange.publish(jsonPayload, '', properties: MessageProperties()"
+          "..headers = {'datahub-invocation': '${endpoint.name}'});";
+    }
+
     yield '}';
   }
 }

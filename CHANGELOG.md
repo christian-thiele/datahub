@@ -127,3 +127,9 @@
 
 ## 0.6.2
 - added initializing log message to generated amqp services
+
+## 0.6.3
+- BrokerAPI
+  - RPC error handling
+  - multi param endpoints
+  - primitive return type fix

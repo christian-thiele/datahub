@@ -88,10 +88,16 @@ abstract class BaseBrokerApiService implements BaseService {
         return JsonDecoder().convert(utf8.decode(event.payload!));
       }();
 
-      final reply = await onMessage(invocation, decoded);
+      try {
+        final reply = await onMessage(invocation, decoded);
 
-      if (reply != null) {
-        event.reply(reply);
+        if (reply != null) {
+          event.reply(JsonEncoder().convert(reply));
+        }
+      } on BrokerApiException catch (e) {
+        event.reply(e.toPayload());
+      } catch (e) {
+        event.reply({'error': e.toString()});
       }
 
       event.ack();
@@ -107,7 +113,7 @@ abstract class BaseBrokerApiService implements BaseService {
   }
 
   /// When return value is non-null, a reply is sent using the reply-queue.
-  Future<dynamic> onMessage(String invocation, dynamic payload);
+  Future<Map<String, dynamic>?> onMessage(String invocation, dynamic payload);
 
   @override
   Future<void> shutdown() async {

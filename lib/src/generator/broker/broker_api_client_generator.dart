@@ -16,20 +16,10 @@ class BrokerApiClientGenerator extends GeneratorForAnnotation<BrokerInterface> {
     final queueName = annotation.read('queueName').literalValue as String;
     final queueDurable = annotation.read('durable').literalValue as bool;
 
-    final endpoints = classElement.methods.where((m) => !m.isPrivate).map((m) {
-      final payloadName = findPayloadName(m);
-      final payloadType = findPayloadType(m);
-      final replyType = findReplyType(m);
-      final isAsync = endpointIsAsync(m);
-
-      return BrokerApiEndpoint(
-        m.name,
-        payloadName,
-        payloadType,
-        replyType,
-        isAsync,
-      );
-    }).toList();
+    final endpoints = classElement.methods
+        .where((m) => !m.isPrivate)
+        .map((m) => BrokerApiEndpoint.fromMethod(m))
+        .toList();
 
     return BaseApiClientBuilder(
             classElement.name, endpoints, queueName, queueDurable)

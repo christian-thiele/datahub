@@ -27,12 +27,59 @@ Future<void> _testExampleApi() async {
         shortDescription: 'abc def 123'));
     expect(result.someStr, equals('ABC DEF 123'));
     expect(result.someInt, equals(3));
+
     final result2 = await client.getSomeString(TestDto(
         category: EventCategory.party,
         privacyLevel: 8,
         shortDescription: 'test some'));
     expect(result2.someStr, equals('TEST SOME'));
     expect(result2.someInt, equals(8));
+
+    final result3 = await client.getEnumName(TestDto(
+        category: EventCategory.hangout,
+        privacyLevel: 0,
+        shortDescription: ''));
+
+    expect(result3, equals('EventCategory.hangout'));
+
+    final result4 = await client.getSomeMoreSync(
+      TestDto(
+          privacyLevel: 1,
+          category: EventCategory.party,
+          shortDescription: 'first '),
+      TestDto(
+          privacyLevel: 1,
+          category: EventCategory.party,
+          shortDescription: 'second '),
+      'last',
+    );
+
+    expect(result4.someStr, equals('first second last'));
+
+    try {
+      await client.getSomeNotWorking(0);
+    } catch (e) {
+      expect(e, isA<BrokerApiException>());
+      expect((e as BrokerApiException).message,
+          contains('This did not work at all.'));
+      expect((e as BrokerApiException).errorCode, equals(null));
+    }
+
+    try {
+      await client.getSomeNotWorking(1);
+    } catch (e) {
+      expect(e, isA<BrokerApiException>());
+      expect((e as BrokerApiException).message, contains('This did not work.'));
+      expect((e as BrokerApiException).errorCode, equals(20));
+    }
+
+    try {
+      await client.getSomeNotWorking(2);
+    } catch (e) {
+      expect(e, isA<Exception>());
+      expect((e as BrokerApiException).message, contains('This did not work.'));
+      expect((e as BrokerApiException).errorCode, equals(null));
+    }
 
     token.cancel();
   });

@@ -38,27 +38,23 @@ class BrokerApiServiceBuilder {
   }
 
   Iterable<String> buildOnMessageMethod() sync* {
-    yield '@override Future<dynamic> onMessage(String invocation, dynamic payload) async {';
+    yield '@override Future<Map<String, dynamic>?> onMessage(String invocation, dynamic payload) async {';
     for (final endpoint in endpoints) {
       yield "if (invocation == '${endpoint.name}') {";
 
-      var invocation = '_impl.${endpoint.name}()';
-      if (endpoint.payloadType != null) {
-        final decode =
-            endpoint.payloadType!.buildDecodingStatement('payload', false);
-        yield 'final decodedPayload = $decode;';
-        invocation = '_impl.${endpoint.name}(decodedPayload)';
+      for (final param in endpoint.params) {
+        final decode = param.decodingStatement("payload['${param.name}']");
+        yield 'final _${param.name} = $decode;';
       }
 
-      if (endpoint.isAsync) {
-        invocation = 'await $invocation';
-      }
+      final invocation =
+          '_impl.${endpoint.name}(${endpoint.params.map((e) => '_${e.name}').join(', ')})';
 
       if (endpoint.isRpc) {
-        yield 'final reply = $invocation;';
+        yield 'final reply = await $invocation;';
         final mapEncode =
             endpoint.replyType!.buildEncodingStatement('reply', false);
-        yield 'return $mapEncode;';
+        yield "return {'result': $mapEncode};";
       } else {
         yield '$invocation;';
         yield 'return null;';

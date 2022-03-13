@@ -13,6 +13,16 @@ abstract class ExampleApi {
 
   // RPC with reply queue
   Future<OtherDto> getSomeString(TestDto dto);
+
+  // enum serialization
+  Future<String> getEnumName(TestDto dto);
+
+  // multiple params
+  Future<OtherDto> getSomeMoreSync(
+      TestDto dto1, TestDto dto2, String someString);
+
+  // error
+  Future<OtherDto> getSomeNotWorking(int type);
 }
 
 @BrokerApi(queueName: 'testapi')
@@ -25,11 +35,45 @@ class ExampleApiImpl extends ExampleApi {
   @override
   Future<OtherDto> getSomeString(TestDto dto) async {
     print('Received getSomeString("${dto.shortDescription}")');
-    print('Waiting 3 secs...');
-    await Future.delayed(const Duration(seconds: 3));
+    print('Waiting 1 sec...');
+    await Future.delayed(const Duration(seconds: 1));
     final result = OtherDto(
         dto.shortDescription.toString().toUpperCase(), dto.privacyLevel);
-    print('Returning "${result.someStr}');
+    print('Returning "${result.someStr}"');
     return result;
+  }
+
+  @override
+  Future<String> getEnumName(TestDto dto) async {
+    print('Received getSomeString("${dto.shortDescription}")');
+    print('Waiting 1 sec...');
+    await Future.delayed(const Duration(seconds: 1));
+    final result = dto.category.toString();
+    print('Returning "$result"');
+    return result;
+  }
+
+  @override
+  Future<OtherDto> getSomeMoreSync(
+      TestDto dto1, TestDto dto2, String someString) async {
+    return OtherDto(
+        dto1.shortDescription.toString() +
+            dto2.shortDescription.toString() +
+            someString,
+        55);
+  }
+
+  @override
+  Future<OtherDto> getSomeNotWorking(int type) async {
+    print('Waiting 1 sec...');
+    await Future.delayed(Duration(seconds: 1));
+    print('Throwing error ($type).');
+    if (type == 1) {
+      throw BrokerApiException('This did not work.', errorCode: 20);
+    } else if (type == 2) {
+      throw BrokerApiException('This did not work.');
+    } else {
+      throw Exception('This did not work at all.');
+    }
   }
 }
