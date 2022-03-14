@@ -94,24 +94,8 @@ abstract class BaseBrokerApiService implements BaseService {
         if (reply != null) {
           event.reply(JsonEncoder().convert(reply));
         }
-      } on ApiRequestException catch (e) {
-        if (event.properties?.replyTo != null) {
-          event.reply({'error': e.message, 'errorCode': e.statusCode});
-        } else {
-          rethrow;
-        }
-      } on ApiException catch (e) {
-        if (event.properties?.replyTo != null) {
-          event.reply({'error': e.message});
-        } else {
-          rethrow;
-        }
-      } catch (e) {
-        if (event.properties?.replyTo != null) {
-          event.reply({'error': e.toString()});
-        } else {
-          rethrow;
-        }
+      } catch (e, stack) {
+        _onError(event, invocation, e, stack);
       }
 
       event.ack();
@@ -134,5 +118,28 @@ abstract class BaseBrokerApiService implements BaseService {
     for (final channel in _channels) {
       await channel.close();
     }
+  }
+
+  void _onError(AmqpMessage event, String endpointName, dynamic e, StackTrace stack) {
+    if (e is ConsumerException) {
+      throw e; // this is handled above and will reject the message
+    }
+
+    if (event.properties?.replyTo != null) {
+      if (e is ApiRequestException) {
+        event.reply({'error': e.message, 'errorCode': e.statusCode});
+      } else if (e is ApiException) {
+        event.reply({'error': e.message});
+      } else {
+        event.reply({'error': e.toString()});
+      }
+    }
+
+    _log.error(
+      'Error while handling message to $endpointName.',
+      sender: 'DataHub',
+      error: e,
+      trace: stack,
+    );
   }
 }

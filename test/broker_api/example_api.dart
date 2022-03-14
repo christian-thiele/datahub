@@ -23,6 +23,9 @@ abstract class ExampleApi {
 
   // error
   Future<OtherDto> getSomeNotWorking(int type);
+
+  // fire and forget with error
+  void doSomethingAndFail(int x);
 }
 
 @BrokerApi(queueName: 'testapi')
@@ -73,5 +76,11 @@ class ExampleApiImpl extends ExampleApi {
     } else {
       throw Exception('This did not work at all.');
     }
+  }
+
+  @override
+  Future<void> doSomethingAndFail(int x) async {
+    await Future.delayed(Duration(milliseconds: 100));
+    throw Exception('well...');
   }
 }

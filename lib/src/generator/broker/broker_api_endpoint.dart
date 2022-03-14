@@ -8,6 +8,7 @@ class BrokerApiEndpoint {
   final String name;
   final List<EndpointParam> params;
   final FieldType? replyType;
+  final bool isAsync;
 
   bool get isRpc => replyType != null;
 
@@ -18,6 +19,7 @@ class BrokerApiEndpoint {
     this.name,
     this.params,
     this.replyType,
+    this.isAsync,
   );
 
   factory BrokerApiEndpoint.fromMethod(MethodElement m) {
@@ -27,11 +29,13 @@ class BrokerApiEndpoint {
       throw Exception('Endpoint return types must be of type Future. '
           '${m.name} has a non-Future return type.');
     }
+    final isAsync = endpointIsAsync(m);
 
     return BrokerApiEndpoint(
       m.name,
       params,
       replyType,
+      isAsync,
     );
   }
 }
@@ -68,11 +72,18 @@ FieldType? findReplyType(MethodElement m) {
   }
 
   if (m.returnType.isDartAsyncFuture || m.returnType.isDartAsyncFutureOr) {
-    return FieldType.fromDartType(
-        (m.returnType as ParameterizedType).typeArguments.first);
+    final argType = (m.returnType as ParameterizedType).typeArguments.first;
+    if (argType.isVoid) {
+      return null;
+    }
+    return FieldType.fromDartType(argType);
   }
 
   return FieldType.fromDartType(m.returnType);
+}
+
+bool endpointIsAsync(MethodElement m) {
+  return m.returnType.isDartAsyncFuture || m.returnType.isDartAsyncFutureOr;
 }
 
 bool endpointIsAsyncOrVoid(MethodElement m) {

@@ -48,10 +48,11 @@ class BrokerApiServiceBuilder {
       }
 
       final invocation =
-          '_impl.${endpoint.name}(${endpoint.params.map((e) => '_${e.name}').join(', ')})';
+          '${endpoint.isAsync ? 'await ' : ''}_impl.${endpoint.name}'
+          '(${endpoint.params.map((e) => '_${e.name}').join(', ')})';
 
       if (endpoint.isRpc) {
-        yield 'final reply = await $invocation;';
+        yield 'final reply = $invocation;';
         final mapEncode =
             endpoint.replyType!.buildEncodingStatement('reply', false);
         yield "return {'result': $mapEncode};";
