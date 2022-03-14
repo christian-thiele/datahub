@@ -145,3 +145,7 @@
 ## 0.6.6
 - ServiceHost
   - removed BaseService constraint on resolve methods
+
+## 0.6.7
+- BrokerAPI
+  - fixed exception handling

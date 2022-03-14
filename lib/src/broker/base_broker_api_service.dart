@@ -95,11 +95,23 @@ abstract class BaseBrokerApiService implements BaseService {
           event.reply(JsonEncoder().convert(reply));
         }
       } on ApiRequestException catch (e) {
-        event.reply({'error': e.message, 'errorCode': e.statusCode});
+        if (event.properties?.replyTo != null) {
+          event.reply({'error': e.message, 'errorCode': e.statusCode});
+        } else {
+          rethrow;
+        }
       } on ApiException catch (e) {
-        event.reply({'error': e.message});
+        if (event.properties?.replyTo != null) {
+          event.reply({'error': e.message});
+        } else {
+          rethrow;
+        }
       } catch (e) {
-        event.reply({'error': e.toString()});
+        if (event.properties?.replyTo != null) {
+          event.reply({'error': e.toString()});
+        } else {
+          rethrow;
+        }
       }
 
       event.ack();
