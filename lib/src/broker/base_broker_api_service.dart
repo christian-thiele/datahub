@@ -120,7 +120,8 @@ abstract class BaseBrokerApiService implements BaseService {
     }
   }
 
-  void _onError(AmqpMessage event, String endpointName, dynamic e, StackTrace stack) {
+  void _onError(
+      AmqpMessage event, String endpointName, dynamic e, StackTrace stack) {
     if (e is ConsumerException) {
       throw e; // this is handled above and will reject the message
     }

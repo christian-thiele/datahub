@@ -77,8 +77,9 @@ class ServiceHost {
   /// this future will complete.
   Future<void> run([CancellationToken? cancel]) async {
     final stopwatch = Stopwatch()..start();
-    for (final service in _factories.map((f) => f())) {
+    for (final factory in _factories) {
       try {
+        final service = factory();
         await service.initialize();
         _services.add(service);
       } catch (e, stack) {

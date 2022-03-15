@@ -149,3 +149,7 @@
 ## 0.6.7
 - BrokerAPI
   - fixed exception handling
+
+## 0.6.8
+- ServiceHost
+  - improved startup error handling
