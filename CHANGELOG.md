@@ -153,3 +153,7 @@
 ## 0.6.8
 - ServiceHost
   - improved startup error handling
+
+## 0.6.7
+- LogMiddleware
+  - log status codes >= 500 as error

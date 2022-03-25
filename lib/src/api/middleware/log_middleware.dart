@@ -25,9 +25,15 @@ class LogMiddleware extends Middleware {
 
     // Post-Handler
     stopwatch.stop();
-    log('${result.statusCode}: ${request.route} (${stopwatch.elapsedMilliseconds} ms)',
-        sender: 'DataHub');
 
+    if (result.statusCode >= 500) {
+      _logService.error(
+          '${result.statusCode}: ${request.route} (${stopwatch.elapsedMilliseconds} ms)',
+          sender: 'DataHub');
+    } else {
+      log('${result.statusCode}: ${request.route} (${stopwatch.elapsedMilliseconds} ms)',
+          sender: 'DataHub');
+    }
     return result;
   }
 }
