@@ -40,6 +40,9 @@ abstract class SqlBuilder {
         case PropertyCompareType.Equals:
           buffer.write(' = ');
           break;
+        case PropertyCompareType.NotEquals:
+          buffer.write(' <> ');
+          break;
         case PropertyCompareType.GreaterThan:
           buffer.write(' > ');
           break;

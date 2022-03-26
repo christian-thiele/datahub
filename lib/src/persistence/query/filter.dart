@@ -34,6 +34,12 @@ abstract class Filter {
     return PropertyCompare(PropertyCompareType.Equals, property, value);
   }
 
+  /// Convenience method for creating a [PropertyCompare] filter
+  /// with compare type [PropertyCompareType.NotEquals].
+  static PropertyCompare notEquals(DataField property, dynamic value) {
+    return PropertyCompare(PropertyCompareType.NotEquals, property, value);
+  }
+
   /// Assembles the smallest representation of [filters] combined.
   static Filter _optimizedGroup(
       Iterable<Filter> filters, FilterGroupType type) {
@@ -80,6 +86,7 @@ class FilterGroup implements Filter {
 
 enum PropertyCompareType {
   Equals,
+  NotEquals,
   Contains,
   GreaterThan,
   LessThan,

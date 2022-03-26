@@ -169,3 +169,6 @@
 
 ## 0.7.2
 - fixed generic types in copy_with_generator
+
+## 0.7.3
+- added PropertyCompareType.NotEquals
