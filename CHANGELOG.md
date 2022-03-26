@@ -175,3 +175,6 @@
 
 ## 0.7.4
 - fixed Filter.equals / Filter.notEquals with value null
+
+## 0.7.5
+- fixed non-autoIncrement insert

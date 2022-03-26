@@ -118,12 +118,18 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   @override
   Future<dynamic> insert<TDao extends BaseDao>(TDao entry) async {
     final bean = entry.bean;
-    final data = bean.unmap(entry);
-    final returning = bean is PrimaryKeyDataBean
-        ? SqlBuilder.escapeName(
-            (bean as PrimaryKeyDataBean).primaryKeyField.name)
+
+    final primaryKeyField = bean is PrimaryKeyDataBean
+        ? (bean as PrimaryKeyDataBean).primaryKeyField
         : null;
 
+    final returning = primaryKeyField != null
+        ? SqlBuilder.escapeName(primaryKeyField.name)
+        : null;
+
+    final withPrimary = !(primaryKeyField?.autoIncrement ?? false);
+
+    final data = bean.unmap(entry, includePrimaryKey: withPrimary);
     final result =
         await querySql(InsertBuilder(adapter.schema.name, entry.bean.layoutName)
           ..values(data)
