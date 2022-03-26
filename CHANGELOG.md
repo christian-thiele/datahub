@@ -172,3 +172,6 @@
 
 ## 0.7.3
 - added PropertyCompareType.NotEquals
+
+## 0.7.4
+- fixed Filter.equals / Filter.notEquals with value null
