@@ -166,3 +166,6 @@
 
 ## 0.7.1
 - re-enabled custom selects
+
+## 0.7.2
+- fixed generic types in copy_with_generator

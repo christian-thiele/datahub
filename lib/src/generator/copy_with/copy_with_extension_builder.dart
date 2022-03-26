@@ -18,7 +18,8 @@ class CopyWithExtensionBuilder {
     yield '$transferClass copyWith({';
 
     for (final field in fields) {
-      final typeName = field.a.type.element?.name;
+      final typeName = field.a.type.getDisplayString(withNullability: false);
+
       final fieldName = field.a.name;
       final fieldNullable =
           field.a.type.nullabilitySuffix != NullabilitySuffix.none;
