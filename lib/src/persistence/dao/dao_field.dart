@@ -21,9 +21,8 @@ import 'package:cl_datahub/cl_datahub.dart';
 class DaoField {
   final String? name;
   final int? length;
-  final bool? nullable;
 
-  const DaoField({this.name, this.length, this.nullable});
+  const DaoField({this.name, this.length});
 }
 
 /// Annotation for primary key dao fields.
@@ -64,6 +63,6 @@ class PrimaryKeyDaoField extends DaoField {
 class ForeignKeyDaoField extends DaoField {
   final Type foreignType;
 
-  const ForeignKeyDaoField(this.foreignType, {String? name, bool? nullable})
-      : super(name: name, length: null, nullable: nullable);
+  const ForeignKeyDaoField(this.foreignType, {String? name})
+      : super(name: name, length: null);
 }

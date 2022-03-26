@@ -1,6 +1,6 @@
 name: cl_datahub_common
 description: Shared code for cl_datahub and cl_appbase.
-version: 0.5.1
+version: 0.7.0
 homepage: https://www.corelightservices.com
 
 environment:

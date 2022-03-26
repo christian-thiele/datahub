@@ -7,7 +7,7 @@ void main() {
 }
 
 void _testDtoParse() {
-  final dto = TestDtoTransferBean.staticToObject({
+  final dto = TestDtoTransferBean.toObject({
     'category': EventCategory.hangout,
     'shortDescription': 'some description',
     'longDescription': 'some description2',
@@ -19,7 +19,7 @@ void _testDtoParse() {
   expect(dto.longDescription, equals('some description2'));
   expect(dto.privacyLevel, equals(5));
 
-  final dto2 = TestDtoTransferBean.staticToObject({
+  final dto2 = TestDtoTransferBean.toObject({
     'category': 'party',
     'longDescription': 'some description2',
     'privacyLevel': '5',

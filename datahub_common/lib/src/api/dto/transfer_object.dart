@@ -1,3 +1,5 @@
+import 'package:cl_datahub_common/src/api/dto/copy_with.dart';
+
 /// Transfer object class annotation.
 ///
 /// [TransferBeanGenerator] will generate a bean for all classes that are
@@ -9,6 +11,6 @@
 /// TransferObjects can have fields of type String, int, double, bool,
 /// Uint8List, Map and List or any Enum. Map and List element types are also
 /// restricted to those types.
-class TransferObject {
+class TransferObject extends CopyWith {
   const TransferObject();
 }

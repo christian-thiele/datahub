@@ -1,5 +1,3 @@
-import 'dart:mirrors';
-
 //TODO should be lowercase
 enum FieldType { String, Int, Float, Bool, DateTime, Bytes, Point }
 
@@ -14,10 +12,8 @@ class DataField {
   final String name;
   final bool nullable;
   final int length;
-  final VariableMirror? daoField;
 
-  DataField(this.type, this.name,
-      {this.nullable = false, int? length, this.daoField})
+  DataField(this.type, this.name, {this.nullable = false, int? length})
       : length = length ?? getDefaultLength(type);
 
   @override
@@ -53,8 +49,8 @@ class PrimaryKey extends DataField {
   final bool autoIncrement;
 
   PrimaryKey(FieldType type, String name,
-      {int length = 16, this.autoIncrement = false, VariableMirror? daoField})
-      : super(type, name, nullable: false, length: length, daoField: daoField);
+      {int length = 16, this.autoIncrement = false})
+      : super(type, name, nullable: false, length: length);
 
   @override
   bool operator ==(Object other) {
@@ -68,12 +64,9 @@ class PrimaryKey extends DataField {
 class ForeignKey extends DataField {
   PrimaryKey foreignPrimaryKey;
 
-  ForeignKey(this.foreignPrimaryKey, String name,
-      {bool nullable = false, VariableMirror? daoField})
+  ForeignKey(this.foreignPrimaryKey, String name, {bool nullable = false})
       : super(foreignPrimaryKey.type, name,
-            nullable: nullable,
-            length: foreignPrimaryKey.length,
-            daoField: daoField);
+            nullable: nullable, length: foreignPrimaryKey.length);
 
   @override
   bool operator ==(Object other) {

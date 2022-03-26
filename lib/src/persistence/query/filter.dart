@@ -1,4 +1,4 @@
-import 'package:cl_datahub/src/persistence/database_adapter.dart';
+import 'package:cl_datahub/cl_datahub.dart';
 
 /// Representing filter arguments in a uniform, abstract way.
 ///
@@ -30,8 +30,8 @@ abstract class Filter {
 
   /// Convenience method for creating a [PropertyCompare] filter
   /// with compare type [PropertyCompareType.Equals].
-  static PropertyCompare equals(String propertyName, dynamic value) {
-    return PropertyCompare(PropertyCompareType.Equals, propertyName, value);
+  static PropertyCompare equals(DataField property, dynamic value) {
+    return PropertyCompare(PropertyCompareType.Equals, property, value);
   }
 
   /// Assembles the smallest representation of [filters] combined.
@@ -89,12 +89,11 @@ enum PropertyCompareType {
 
 class PropertyCompare implements Filter {
   final PropertyCompareType type;
-  final String
-      propertyName; //TODO maybe field object or something like that (string is sketchy)
+  final DataField property;
   final dynamic value; //TODO dynamic? check if this holds up
   final bool caseSensitive;
 
-  const PropertyCompare(this.type, this.propertyName, this.value,
+  const PropertyCompare(this.type, this.property, this.value,
       {this.caseSensitive = true});
 
   @override

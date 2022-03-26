@@ -13,6 +13,14 @@ targets:
         enabled: true
         generate_for:
           - test/**
+      cl_datahub:data_bean_generator:
+        enabled: true
+        generate_for:
+          - test/**
+      cl_datahub:data_superclass_generator:
+        enabled: true
+        generate_for:
+          - test/**
       cl_datahub:copy_with_extension_generator:
         enabled: true
         generate_for:
@@ -38,6 +46,20 @@ builders:
     import: "package:cl_datahub/builder.dart"
     builder_factories: ["transferBeanGenerator"]
     build_extensions: {".dart": [".dto.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
+  data_bean_generator:
+    import: "package:cl_datahub/builder.dart"
+    builder_factories: ["dataBeanGenerator"]
+    build_extensions: {".dart": [".dao.g.part"]}
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
+  data_superclass_generator:
+    import: "package:cl_datahub/builder.dart"
+    builder_factories: ["dataSuperclassGenerator"]
+    build_extensions: {".dart": [".das.g.part"]}
     auto_apply: dependents
     build_to: cache
     applies_builders: ["source_gen|combining_builder"]

@@ -2,8 +2,10 @@ import 'package:cl_datahub/cl_datahub.dart';
 
 import 'user_dao.dart';
 
+part 'blog_dao.g.dart';
+
 @DaoType(name: 'blog')
-class BlogDao {
+class BlogDao extends _Dao {
   @PrimaryKeyDaoField()
   final String key;
 
@@ -12,6 +14,5 @@ class BlogDao {
 
   final String displayName;
 
-  BlogDao(
-      {required this.key, required this.ownerId, required this.displayName});
+  BlogDao(this.key, this.ownerId, {required this.displayName});
 }

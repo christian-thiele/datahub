@@ -5,8 +5,10 @@ import 'package:cl_datahub/cl_datahub.dart';
 import 'blog_dao.dart';
 import 'user_dao.dart';
 
+part 'article_dao.g.dart';
+
 @DaoType(name: 'article')
-class ArticleDao {
+class ArticleDao extends _Dao {
   @PrimaryKeyDaoField()
   final int id;
 

@@ -2,16 +2,19 @@ import 'dart:typed_data';
 
 import 'package:cl_datahub/cl_datahub.dart';
 
+part 'user_dao.g.dart';
+
 @DaoType(name: 'user')
-class UserDao {
+class UserDao extends _Dao {
   @PrimaryKeyDaoField()
   final int id;
 
   final int executionId;
 
+  @DaoField(name: 'username', length: 128)
   final String name;
 
-  final Point location;
+  final Point? location;
 
   final Uint8List image;
 

@@ -157,3 +157,12 @@
 ## 0.6.7
 - LogMiddleware
   - log status codes >= 500 as error
+
+## 0.7.0
+- INTRODUCING: DataBean
+  - Breaking Persistence API changes
+  - No more mirror dependency! Happy AOT compiling!
+- CopyWith builder can be used standalone with @CopyWith() annotation
+
+## 0.7.1
+- re-enabled custom selects

@@ -1,3 +1,5 @@
+import 'package:cl_datahub/cl_datahub.dart';
+
 /// Representing sort arguments in a uniform, abstract way.
 ///
 /// To allow different [DatabaseAdapter] implementations to interpret or
@@ -11,10 +13,10 @@ abstract class Sort {
   static const Sort empty = _EmptySort();
 
   /// Convenience method for creating an ascending [PropertySort].
-  static Sort asc(String propertyName) => PropertySort(propertyName, true);
+  static Sort asc(DataField property) => PropertySort(property, true);
 
   /// Convenience method for creating a descending [PropertySort].
-  static Sort desc(String propertyName) => PropertySort(propertyName, false);
+  static Sort desc(DataField property) => PropertySort(property, false);
 
   static Sort followedBy(Iterable<Sort> sorts) {
     final notEmpty =
@@ -36,10 +38,10 @@ abstract class Sort {
 }
 
 class PropertySort extends Sort {
-  final String propertyName;
+  final DataField property;
   final bool ascending;
 
-  const PropertySort(this.propertyName, this.ascending);
+  const PropertySort(this.property, this.ascending);
 
   @override
   bool get isEmpty => false;

@@ -2,6 +2,9 @@ import 'dart:typed_data';
 
 import 'package:cl_datahub/cl_datahub.dart';
 
+part 'simple_dao.g.dart';
+
+@DaoType()
 class Simple {
   @PrimaryKeyDaoField()
   final int id;

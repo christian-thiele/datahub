@@ -6,11 +6,10 @@ import 'package:cl_datahub/cl_datahub.dart';
 class DataSchema {
   final String name;
   final int version;
-  final List<DataLayout> layouts;
+  final List<BaseDataBean> beans;
 
-  DataSchema(this.name, this.version, this.layouts);
+  DataSchema(this.name, this.version, this.beans);
 
-  //TODO automatic migration
   Future<void> migrate(Migrator migrator, int fromVersion) async {
     resolve<LogService>().warn(
         'Schema "$name" changes from version $fromVersion to $version but no migration is implemented!',

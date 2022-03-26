@@ -23,19 +23,21 @@ abstract class DatabaseConnection {
   Future<void> close();
 
   Future<List<TDao>> query<TDao>(
-    DataLayout layout, {
+    DaoDataBean<TDao> bean, {
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
   });
 
-  Future<TDao?> queryId<TDao>(DataLayout layout, dynamic id);
+  Future<TDao?> queryId<TDao, TPrimaryKey>(
+      PKDaoDataBean<TDao, TPrimaryKey> bean, TPrimaryKey id);
 
-  Future<bool> idExists<TDao>(DataLayout layout, dynamic id);
+  Future<bool> idExists<TPrimaryKey>(
+      PrimaryKeyDataBean<TPrimaryKey> bean, TPrimaryKey id);
 
   Future<List<dynamic>> select(
-    DataLayout layout,
+    BaseDataBean bean,
     List<QuerySelect> select, {
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
@@ -44,21 +46,22 @@ abstract class DatabaseConnection {
   });
 
   /// Returns primary key of inserted object.
-  Future<dynamic> insert<TDao>(DataLayout layout, TDao object);
+  Future<dynamic> insert<TDao extends BaseDao>(TDao object);
 
-  Future<void> update<TDao>(DataLayout layout, TDao object);
+  Future<void> update<TDao extends PKBaseDao>(TDao object);
 
-  Future<void> updateId<TDao>(
-      DataLayout layout, dynamic id, Map<String, dynamic> values);
+  Future<void> updateId<TPrimaryKey>(PrimaryKeyDataBean<TPrimaryKey> bean,
+      TPrimaryKey id, Map<String, dynamic> values);
 
   /// Returns number of affected rows.
   Future<int> updateWhere(
-      DataLayout layout, Map<String, dynamic> values, Filter filter);
+      BaseDataBean bean, Map<String, dynamic> values, Filter filter);
 
-  Future<void> delete<TDao>(DataLayout layout, TDao object);
+  Future<void> delete<TDao extends PKBaseDao>(TDao object);
 
-  Future<void> deleteId(DataLayout layout, dynamic id);
+  Future<void> deleteId<TPrimaryKey>(
+      PrimaryKeyDataBean<TPrimaryKey> bean, TPrimaryKey id);
 
   /// Returns number of affected rows.
-  Future<int> deleteWhere(DataLayout layout, Filter filter);
+  Future<int> deleteWhere(DaoDataBean bean, Filter filter);
 }

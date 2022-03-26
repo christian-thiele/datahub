@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:boost/boost.dart';
@@ -101,4 +102,37 @@ extension DartTypeExtension on DartType {
 
   bool get isUint8List =>
       TypeChecker.fromRuntime(Uint8List).isExactlyType(this);
+}
+
+DartObject? getAnnotation(Element element, Type annotationType) {
+  return TypeChecker.fromRuntime(annotationType)
+      .firstAnnotationOf(element, throwOnUnresolved: false);
+}
+
+T? readField<T>(DartObject? element, String fieldName) {
+  if (element == null) {
+    return null;
+  }
+
+  final reader = ConstantReader(element);
+  final valueReader = reader.read(fieldName);
+
+  if (valueReader.isNull) {
+    return null;
+  }
+  return valueReader.literalValue as T?;
+}
+
+DartType? readTypeField(DartObject? element, String fieldName) {
+  if (element == null) {
+    return null;
+  }
+
+  final reader = ConstantReader(element);
+  final valueReader = reader.read(fieldName);
+
+  if (valueReader.isNull) {
+    return null;
+  }
+  return valueReader.typeValue;
 }

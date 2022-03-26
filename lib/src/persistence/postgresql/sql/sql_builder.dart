@@ -29,9 +29,9 @@ abstract class SqlBuilder {
       // for case Contains, case insensitivity is solved by using ILIKE,
       // no need for LOWER
       if (filter.caseSensitive || filter.type == PropertyCompareType.Contains) {
-        buffer.write(escapeName(filter.propertyName));
+        buffer.write(escapeName(filter.property.name));
       } else {
-        buffer.write('LOWER(${escapeName(filter.propertyName)})');
+        buffer.write('LOWER(${escapeName(filter.property.name)})');
       }
       switch (filter.type) {
         case PropertyCompareType.Contains:
@@ -90,7 +90,7 @@ abstract class SqlBuilder {
     final propertySorts = sort.linear();
     final sql = propertySorts
         .map((e) =>
-            '${escapeName(e.propertyName)} ${e.ascending ? 'ASC' : 'DESC'}')
+            '${escapeName(e.property.name)} ${e.ascending ? 'ASC' : 'DESC'}')
         .join(', ');
     return Tuple(sql, const {});
   }

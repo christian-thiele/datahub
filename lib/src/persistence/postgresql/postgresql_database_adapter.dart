@@ -95,7 +95,7 @@ class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
           schemaVersionKey, schema.version.toString());
 
       // create scheme
-      for (final layout in schema.layouts) {
+      for (final layout in schema.beans) {
         await connection.execute(CreateTableBuilder.fromLayout(schema, layout));
       }
     }

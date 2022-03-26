@@ -2,6 +2,8 @@ import 'package:cl_datahub/cl_datahub.dart';
 import 'package:test/test.dart';
 
 void main() {
+  final fieldX = DataField(FieldType.String, 'fieldX');
+
   test(
     'Select',
     _test(
@@ -13,8 +15,7 @@ void main() {
   test(
     'Select filter eq string',
     _test(
-      SelectBuilder('schema', 'table')
-        ..where(Filter.equals('fieldX', 'valueX')),
+      SelectBuilder('schema', 'table')..where(Filter.equals(fieldX, 'valueX')),
       'SELECT * FROM schema.table WHERE "fieldX" = \'valueX\'',
     ),
   );
@@ -23,7 +24,7 @@ void main() {
     'Select filter eq string caseInsensitive',
     _test(
       SelectBuilder('schema', 'table')
-        ..where(PropertyCompare(PropertyCompareType.Equals, 'fieldX', 'valueX',
+        ..where(PropertyCompare(PropertyCompareType.Equals, fieldX, 'valueX',
             caseSensitive: false)),
       'SELECT * FROM schema.table WHERE LOWER("fieldX") = \'valuex\'',
     ),
@@ -34,7 +35,7 @@ void main() {
     _test(
       SelectBuilder('schema', 'table')
         ..where(
-            PropertyCompare(PropertyCompareType.Contains, 'fieldX', 'valueX')),
+            PropertyCompare(PropertyCompareType.Contains, fieldX, 'valueX')),
       'SELECT * FROM schema.table WHERE "fieldX" LIKE \'%valueX%\'',
     ),
   );
@@ -43,8 +44,7 @@ void main() {
     'Select filter eq string contains caseInsensitive',
     _test(
       SelectBuilder('schema', 'table')
-        ..where(PropertyCompare(
-            PropertyCompareType.Contains, 'fieldX', 'valueX',
+        ..where(PropertyCompare(PropertyCompareType.Contains, fieldX, 'valueX',
             caseSensitive: false)),
       'SELECT * FROM schema.table WHERE "fieldX" ILIKE \'%valueX%\'',
     ),
@@ -53,7 +53,7 @@ void main() {
   test(
     'Select filter eq int',
     _test(
-      SelectBuilder('schema', 'table')..where(Filter.equals('fieldX', 20)),
+      SelectBuilder('schema', 'table')..where(Filter.equals(fieldX, 20)),
       'SELECT * FROM schema.table WHERE "fieldX" = 20',
     ),
   );
@@ -61,7 +61,7 @@ void main() {
   test(
     'Select filter eq double',
     _test(
-      SelectBuilder('schema', 'table')..where(Filter.equals('fieldX', 20.12)),
+      SelectBuilder('schema', 'table')..where(Filter.equals(fieldX, 20.12)),
       'SELECT * FROM schema.table WHERE "fieldX" = 20.12',
     ),
   );

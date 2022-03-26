@@ -35,15 +35,11 @@ void main() async {
 }
 
 Future _testScheme() async {
-  final blogLayout = LayoutMirror.reflect(BlogDao);
-  final articleLayout = LayoutMirror.reflect(ArticleDao);
-  final userLayout = LayoutMirror.reflect(UserDao);
-
   final imageData = Uint8List.fromList(
       Iterable.generate(256, (i) => Random().nextInt(255)).toList());
 
-  final schema =
-      DataSchema('blogsystem', 1, [blogLayout, articleLayout, userLayout]);
+  final schema = DataSchema(
+      'blogsystem', 1, [BlogDaoDataBean, ArticleDaoDataBean, UserDaoDataBean]);
 
   final adapter = PostgreSQLDatabaseAdapter(schema, host, port, database,
       username: user, password: password);
@@ -63,11 +59,11 @@ Future _testScheme() async {
     executionId: 0,
     image: imageData,
   );
-  final userId = await connection.insert(userLayout, blogUser);
+  final userId = await connection.insert(blogUser);
   print('Inserted with pk: $userId');
 
   // query some data
-  final blogUsers = await connection.query<UserDao>(userLayout);
+  final blogUsers = await connection.query(UserDaoDataBean);
   expect(blogUsers.any((element) => element.id == userId), isTrue);
   expect(blogUsers.firstWhere((element) => element.id == userId).location,
       equals(Point(1.234, 2.345)));
@@ -77,9 +73,9 @@ Future _testScheme() async {
       orderedEquals(imageData));
 
   // delete some data
-  await connection.delete(userLayout, blogUser.copyWith(id: userId));
+  await connection.delete(blogUser.copyWith(id: userId));
 
-  final blogUsers2 = await connection.query<UserDao>(userLayout);
+  final blogUsers2 = await connection.query<UserDao>(UserDaoDataBean);
   expect(blogUsers2.any((element) => element.id == userId), isFalse);
 
   // insert alotta:
@@ -90,19 +86,19 @@ Future _testScheme() async {
         location: Point(Random().nextDouble(), Random().nextDouble()),
         executionId: executionId,
         image: imageData);
-    final userId = await connection.insert(userLayout, blogUser);
+    final userId = await connection.insert(blogUser);
     print('Inserted with pk: $userId');
   }
 
   // query with sort:
-  final ascUsers = await connection.query<UserDao>(userLayout,
-      filter: Filter.equals('executionId', executionId),
-      sort: Sort.asc('name'),
+  final ascUsers = await connection.query<UserDao>(UserDaoDataBean,
+      filter: Filter.equals(UserDaoDataBean.executionIdField, executionId),
+      sort: Sort.asc(UserDaoDataBean.nameField),
       limit: 50);
   final descUsers = await connection.query<UserDao>(
-    userLayout,
-    filter: Filter.equals('executionId', executionId),
-    sort: Sort.desc('name'),
+    UserDaoDataBean,
+    filter: Filter.equals(UserDaoDataBean.executionIdField, executionId),
+    sort: Sort.desc(UserDaoDataBean.nameField),
     limit: 50,
   );
 

@@ -41,3 +41,9 @@
 
 ## 0.5.1
 - fixed common encoding
+
+## 0.6.0
+- CopyWith annotation
+
+## 0.7.0
+- Major datahub update.

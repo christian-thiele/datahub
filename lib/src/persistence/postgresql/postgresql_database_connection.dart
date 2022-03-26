@@ -34,7 +34,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     }
   }
 
-  Future<String?> setMetaValue(String key, String value) async {
+  Future<void> setMetaValue(String key, String value) async {
     _throwClosed();
     final currentValue = await getMetaValue(key);
     if (currentValue == null) {
@@ -74,56 +74,58 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
 
   @override
   Future<List<TDao>> query<TDao>(
-    DataLayout layout, {
+    DaoDataBean<TDao> bean, {
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
   }) async {
     final result =
-        await querySql(SelectBuilder(adapter.schema.name, layout.name)
+        await querySql(SelectBuilder(adapter.schema.name, bean.layoutName)
           ..select([const WildcardSelect()]) //TODO maybe "only" dto fields?
           ..where(filter)
           ..orderBy(sort)
           ..offset(offset)
           ..limit(limit));
-    return result.map((e) => layout.map<TDao>(e)).toList();
+    return result.map(bean.map).toList();
   }
 
   @override
-  Future<TDao?> queryId<TDao>(DataLayout layout, dynamic id) async {
-    final primaryKey = layout.getPrimaryKeyField() ??
-        (throw PersistenceException('No primary key found in layout.'));
+  Future<TDao?> queryId<TDao, TPrimaryKey>(
+      PKDaoDataBean<TDao, TPrimaryKey> bean, TPrimaryKey id) async {
+    final primaryKey = bean.primaryKeyField;
 
     final result = await querySql(
-        SelectBuilder(adapter.schema.name, layout.name)
-          ..where(Filter.equals(primaryKey.name, id)));
+        SelectBuilder(adapter.schema.name, bean.layoutName)
+          ..where(Filter.equals(primaryKey, id)));
 
-    return result.map((e) => layout.map<TDao>(e)).firstOrNull;
+    return result.map(bean.map).firstOrNull;
   }
 
   @override
-  Future<bool> idExists<TDao>(DataLayout layout, dynamic id) async {
-    final primaryKey = layout.getPrimaryKeyField() ??
-        (throw PersistenceException('No primary key found in layout.'));
+  Future<bool> idExists<TPrimaryKey>(
+      PrimaryKeyDataBean<TPrimaryKey> bean, TPrimaryKey id) async {
+    final primaryKey = bean.primaryKeyField;
 
     final result =
-        await querySql(SelectBuilder(adapter.schema.name, layout.name)
+        await querySql(SelectBuilder(adapter.schema.name, bean.layoutName)
           ..select([FieldSelect(primaryKey)])
-          ..where(Filter.equals(primaryKey.name, id)));
+          ..where(Filter.equals(primaryKey, id)));
 
     return result.isNotEmpty;
   }
 
   @override
-  Future<dynamic> insert<TDao>(DataLayout layout, TDao entry) async {
-    final data = layout.unmap(entry);
-    final primaryKey = layout.fields.firstOrNullWhere((f) => f is PrimaryKey);
-    final returning =
-        primaryKey != null ? SqlBuilder.escapeName(primaryKey.name) : null;
+  Future<dynamic> insert<TDao extends BaseDao>(TDao entry) async {
+    final bean = entry.bean;
+    final data = bean.unmap(entry);
+    final returning = bean is PrimaryKeyDataBean
+        ? SqlBuilder.escapeName(
+            (bean as PrimaryKeyDataBean).primaryKeyField.name)
+        : null;
 
     final result =
-        await querySql(InsertBuilder(adapter.schema.name, layout.name)
+        await querySql(InsertBuilder(adapter.schema.name, entry.bean.layoutName)
           ..values(data)
           ..returning(returning));
 
@@ -131,58 +133,61 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   }
 
   @override
-  Future<void> update<TDao>(DataLayout layout, TDao object) async {
-    final data = layout.unmap(object);
+  Future<void> update<TDao extends PKBaseDao>(TDao object) async {
+    final bean = object.bean;
+    final data = bean.unmap(object);
 
-    await execute(UpdateBuilder(adapter.schema.name, layout.name)
+    await execute(UpdateBuilder(adapter.schema.name, bean.layoutName)
       ..values(data)
-      ..where(_pkFilter(layout, layout.getPrimaryKey(object))));
+      ..where(_pkFilter(bean, object.getPrimaryKey())));
   }
 
   @override
-  Future<void> updateId<TDao>(
-      DataLayout layout, dynamic id, Map<String, dynamic> values) async {
-    await execute(UpdateBuilder(adapter.schema.name, layout.name)
+  Future<void> updateId<TPrimaryKey>(PrimaryKeyDataBean<TPrimaryKey> bean,
+      TPrimaryKey id, Map<String, dynamic> values) async {
+    await execute(UpdateBuilder(adapter.schema.name, bean.layoutName)
       ..values(values)
-      ..where(_pkFilter(layout, id)));
+      ..where(_pkFilter(bean, id)));
   }
 
   @override
   Future<int> updateWhere(
-      DataLayout layout, Map<String, dynamic> values, Filter filter) async {
-    return await execute(UpdateBuilder(adapter.schema.name, layout.name)
+      BaseDataBean bean, Map<String, dynamic> values, Filter filter) async {
+    return await execute(UpdateBuilder(adapter.schema.name, bean.layoutName)
       ..values(values)
       ..where(filter));
   }
 
   @override
-  Future<void> delete<TDao>(DataLayout layout, TDao object) async {
-    await execute(DeleteBuilder(adapter.schema.name, layout.name)
-      ..where(_pkFilter(layout, layout.getPrimaryKey(object))));
+  Future<void> delete<TDao extends PKBaseDao>(TDao object) async {
+    final bean = object.bean;
+    await execute(DeleteBuilder(adapter.schema.name, bean.layoutName)
+      ..where(_pkFilter(bean, object.getPrimaryKey())));
   }
 
   @override
-  Future<void> deleteId(DataLayout layout, dynamic id) async {
-    await execute(DeleteBuilder(adapter.schema.name, layout.name)
-      ..where(_pkFilter(layout, id)));
+  Future<void> deleteId<TPrimaryKey>(
+      PrimaryKeyDataBean<TPrimaryKey> bean, dynamic id) async {
+    await execute(DeleteBuilder(adapter.schema.name, bean.layoutName)
+      ..where(_pkFilter(bean, id)));
   }
 
   @override
-  Future<int> deleteWhere(DataLayout layout, Filter filter) async {
+  Future<int> deleteWhere(BaseDataBean bean, Filter filter) async {
     return await execute(
-        DeleteBuilder(adapter.schema.name, layout.name)..where(filter));
+        DeleteBuilder(adapter.schema.name, bean.layoutName)..where(filter));
   }
 
   @override
   Future<List> select(
-    DataLayout layout,
+    BaseDataBean bean,
     List<QuerySelect> select, {
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
   }) {
-    return querySql(SelectBuilder(adapter.schema.name, layout.name)
+    return querySql(SelectBuilder(adapter.schema.name, bean.layoutName)
       ..where(filter)
       ..orderBy(sort)
       ..offset(offset)
@@ -198,10 +203,9 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     return value;
   }
 
-  Filter _pkFilter(DataLayout layout, dynamic id) {
-    final primaryKey = layout.getPrimaryKeyField() ??
-        (throw PersistenceException('No primary key found in layout.'));
-
-    return Filter.equals(primaryKey.name, id);
+  Filter _pkFilter<TPrimaryKey>(
+      PrimaryKeyDataBean<TPrimaryKey> layout, TPrimaryKey id) {
+    final primaryKey = layout.primaryKeyField;
+    return Filter.equals(primaryKey, id);
   }
 }

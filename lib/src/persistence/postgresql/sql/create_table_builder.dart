@@ -12,9 +12,9 @@ class CreateTableBuilder implements SqlBuilder {
   CreateTableBuilder(this.schemaName, this.tableName,
       {this.ifNotExists = false});
 
-  factory CreateTableBuilder.fromLayout(DataSchema schema, DataLayout layout) {
-    return CreateTableBuilder(schema.name, layout.name, ifNotExists: true)
-      ..fields.addAll(layout.fields);
+  factory CreateTableBuilder.fromLayout(DataSchema schema, BaseDataBean bean) {
+    return CreateTableBuilder(schema.name, bean.layoutName, ifNotExists: true)
+      ..fields.addAll(bean.fields);
   }
 
   @override

@@ -41,7 +41,7 @@ class ExampleApiImpl extends ExampleApi {
     print('Waiting 1 sec...');
     await Future.delayed(const Duration(seconds: 1));
     final result = OtherDto(
-        dto.shortDescription.toString().toUpperCase(), dto.privacyLevel);
+        3, dto.shortDescription.toString().toUpperCase(), dto.privacyLevel);
     print('Returning "${result.someStr}"');
     return result;
   }
@@ -60,6 +60,7 @@ class ExampleApiImpl extends ExampleApi {
   Future<OtherDto> getSomeMoreSync(
       TestDto dto1, TestDto dto2, String someString) async {
     return OtherDto(
+        3,
         dto1.shortDescription.toString() +
             dto2.shortDescription.toString() +
             someString,

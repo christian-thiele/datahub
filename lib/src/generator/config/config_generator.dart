@@ -3,8 +3,8 @@ import 'dart:io';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:boost/boost.dart';
 import 'package:build/build.dart';
-import 'package:analyzer/dart/constant/value.dart';
 import 'package:cl_datahub/config.dart';
+import 'package:cl_datahub/src/generator/utils.dart';
 import 'package:source_gen/source_gen.dart';
 
 class ConfigGenerator extends GeneratorForAnnotation<GenerateConfig> {
@@ -190,18 +190,4 @@ String valueToLiteral(dynamic value) {
   } else {
     return '$value';
   }
-}
-
-T? readField<T>(DartObject? element, String fieldName) {
-  if (element == null) {
-    return null;
-  }
-
-  final reader = ConstantReader(element);
-  final valueReader = reader.read(fieldName);
-
-  if (valueReader.isNull) {
-    return null;
-  }
-  return valueReader.literalValue as T?;
 }
