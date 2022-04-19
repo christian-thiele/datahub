@@ -178,3 +178,6 @@
 
 ## 0.7.5
 - fixed non-autoIncrement insert
+
+## 0.7.6
+- added ignoreMigration to initializeSchema

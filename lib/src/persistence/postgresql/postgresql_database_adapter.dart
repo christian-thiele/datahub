@@ -61,26 +61,37 @@ class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
   }
 
   @override
-  Future<void> initializeSchema() async {
+  Future<void> initializeSchema({bool ignoreMigration = false}) async {
     final connection = await _connection();
 
     if (await _schemaExists(connection)) {
-      final versionString = await connection.getMetaValue(schemaVersionKey);
-      if (versionString == null) {
-        throw PersistenceException(
-            'Schema "${schema.name}" does not provide version.');
-      }
+      if (!ignoreMigration) {
+        String? versionString;
+        try {
+          versionString = await connection.getMetaValue(schemaVersionKey);
+        } catch (e) {
+          throw PersistenceException(
+            'Could not query version for schema "${schema.name}".',
+            cause: e,
+          );
+        }
 
-      final version = int.parse(versionString);
-      if (version != schema.version) {
-        resolve<LogService>().i(
-            'Migrating database schema from v$version to v${schema.version}.',
-            sender: 'DataHub');
-        final migrator = PostgreSQLDatabaseMigrator(schema, connection);
+        if (versionString == null) {
+          throw PersistenceException(
+              'Schema "${schema.name}" does not provide version.');
+        }
 
-        await schema.migrate(migrator, version);
-        await connection.setMetaValue(
-            schemaVersionKey, schema.version.toString());
+        final version = int.parse(versionString);
+        if (version != schema.version) {
+          resolve<LogService>().i(
+              'Migrating database schema from v$version to v${schema.version}.',
+              sender: 'DataHub');
+          final migrator = PostgreSQLDatabaseMigrator(schema, connection);
+
+          await schema.migrate(migrator, version);
+          await connection.setMetaValue(
+              schemaVersionKey, schema.version.toString());
+        }
       }
     } else {
       await connection.execute(RawSql('CREATE SCHEMA ${schema.name}'));

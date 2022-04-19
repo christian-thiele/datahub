@@ -17,7 +17,7 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection> {
   ///
   /// TODO more docs? maybe on migration
   /// TODO migration
-  Future<void> initializeSchema();
+  Future<void> initializeSchema({bool ignoreMigration = false});
 }
 
 // TODO connection pooling (not within this class but using it)
