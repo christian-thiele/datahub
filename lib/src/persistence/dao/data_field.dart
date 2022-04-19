@@ -1,5 +1,5 @@
 //TODO should be lowercase
-enum FieldType { String, Int, Float, Bool, DateTime, Bytes, Point }
+enum FieldType { String, Int, Float, Bool, DateTime, Bytes, Point, Json }
 
 /// Definition a data object field inside [DataLayout].
 ///
@@ -39,6 +39,7 @@ class DataField {
       case FieldType.Bool:
       case FieldType.DateTime:
       case FieldType.Bytes:
+      case FieldType.Json:
       default:
         return 0;
     }

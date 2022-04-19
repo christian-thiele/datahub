@@ -80,6 +80,8 @@ class DataBeanField {
       return FieldType.Bytes;
     } else if (TypeChecker.fromRuntime(Point).isExactlyType(fieldType)) {
       return FieldType.Point;
+    } else if (fieldType.isJsonType) {
+      return FieldType.Json;
     } else {
       throw DataBeanException.invalidType(fieldType);
     }

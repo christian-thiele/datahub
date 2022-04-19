@@ -191,6 +191,8 @@ abstract class SqlBuilder {
         return 'bytea';
       case FieldType.Point:
         return 'point';
+      case FieldType.Json:
+        return 'jsonb';
       default:
         throw PersistenceException(
             'PostgreSQL implementation does not support data type ${field.type}.');

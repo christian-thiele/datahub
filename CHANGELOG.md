@@ -181,3 +181,6 @@
 
 ## 0.7.6
 - added ignoreMigration to initializeSchema
+
+## 0.7.7
+- added support for json field types in persistence

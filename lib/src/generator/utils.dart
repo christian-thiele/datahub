@@ -102,6 +102,18 @@ extension DartTypeExtension on DartType {
 
   bool get isUint8List =>
       TypeChecker.fromRuntime(Uint8List).isExactlyType(this);
+
+  /// Json types are either List<dynamic> or Map<String, dynamic>
+  bool get isJsonType {
+    if (isDartCoreList) {
+      return (this as ParameterizedType).typeArguments.first.isDynamic;
+    } else if (isDartCoreMap) {
+      final args = (this as ParameterizedType).typeArguments;
+      return args.first.isDartCoreString && args[1].isDynamic;
+    } else {
+      return false;
+    }
+  }
 }
 
 DartObject? getAnnotation(Element element, Type annotationType) {
