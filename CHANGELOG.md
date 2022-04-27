@@ -184,3 +184,7 @@
 
 ## 0.7.7
 - added support for json field types in persistence
+
+## 0.7.8
+- TransferObject toJson / toMap does not include null values in output
+- fixed warnings in generated code

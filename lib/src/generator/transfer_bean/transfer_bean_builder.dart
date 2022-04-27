@@ -7,6 +7,7 @@ class TransferBeanBuilder {
   TransferBeanBuilder(this.transferClass, this.fields);
 
   Iterable<String> build() sync* {
+    yield '// ignore: constant_identifier_names';
     yield 'const ${transferClass}TransferBean = _${transferClass}TransferBeanImpl._();';
     yield 'class _${transferClass}TransferBeanImpl extends TransferBean<$transferClass> {';
     yield* buildConstConstructor();
@@ -21,12 +22,13 @@ class TransferBeanBuilder {
 
   Iterable<String> buildToMapMethod() sync* {
     final objectName = 'transferObject';
-    yield '@override Map<String, dynamic> toMap($transferClass $objectName) { return {';
+    yield '@override Map<String, dynamic> toMap($transferClass $objectName) {';
+    yield 'return {';
     for (final field in fields) {
       final encodingStatement = field.buildEncodingStatement(objectName);
       yield "'${field.key}': $encodingStatement,";
     }
-    yield '}; }';
+    yield '}..removeWhere((k, v) => v == null); }';
   }
 
   Iterable<String> buildToObjectMethod() sync* {

@@ -18,7 +18,7 @@ class TransferSuperclassBuilder {
   }
 
   Iterable<String> build() sync* {
-    yield 'abstract class _TransferObject extends TransferObjectBase<${idFieldType?.typeName ?? 'Null'}> {';
+    yield 'abstract class _TransferObject extends TransferObjectBase<${idFieldType?.typeName ?? 'void'}> {';
     yield '@override dynamic toJson() => ${transferClass}TransferBean.toMap(this as $transferClass);';
     yield '@override TransferBean<$transferClass> get bean => ${transferClass}TransferBean;';
     yield* buildIdMethod();
@@ -30,7 +30,7 @@ class TransferSuperclassBuilder {
       yield '@override ${idFieldType!.typeName} getId() => '
           '(this as $transferClass).${idFieldName ?? 'null'};';
     } else {
-      yield '@override Null getId() => null;';
+      yield '@override void getId() {}';
     }
   }
 }
