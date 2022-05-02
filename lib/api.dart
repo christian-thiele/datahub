@@ -1,4 +1,4 @@
-export 'src/api/api_base.dart';
+export 'src/api/api_service.dart';
 export 'src/api/api_endpoint.dart';
 export 'src/api/api_request.dart';
 export 'src/api/api_request_exception.dart';

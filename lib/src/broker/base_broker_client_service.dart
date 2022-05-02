@@ -4,7 +4,7 @@ import 'package:cl_datahub/cl_datahub.dart';
 import 'package:dart_amqp/dart_amqp.dart';
 
 //TODO handle reconnects (channel based and connection based)
-abstract class BaseBrokerClientService implements BaseService {
+abstract class BaseBrokerClientService extends BaseService {
   final _log = resolve<LogService>();
   late final BrokerService _brokerService;
   late final Channel channel;

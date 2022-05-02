@@ -3,9 +3,10 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:cl_datahub/config.dart';
+import 'package:cl_datahub/services.dart';
 
-part 'base_service.dart';
+import 'base_service.dart';
 
 /// Hosts services and provides dependency injection.
 ///
@@ -35,14 +36,18 @@ class ServiceHost {
   static ServiceHost? _applicationHost;
 
   ServiceHost._(
-    List<BaseService Function()> factories, {
-    this.catchSignal = true,
-    this.failWithServices = true,
+    List<BaseService Function()> factories,
+    this.catchSignal,
+    this.failWithServices,
     LogBackend? logBackend,
     this.onInitialized,
-  }) : assert(_applicationHost == null) {
+    List<String> args,
+  ) : assert(_applicationHost == null) {
+    final configFiles = args.map((e) => File(e)).toList();
+
     _factories = <BaseService Function()>[
       () => LogService(logBackend ?? ConsoleLogBackend()),
+      () => ConfigService(configFiles),
       () => SchedulerService(),
     ].followedBy(factories).toList(growable: false);
   }
@@ -59,13 +64,15 @@ class ServiceHost {
     bool failWithServices = true,
     LogBackend? logBackend,
     Function? onInitialized,
+    List<String> args = const <String>[],
   }) {
     return _applicationHost = ServiceHost._(
       factories,
-      catchSignal: catchSignal,
-      failWithServices: failWithServices,
-      logBackend: logBackend,
-      onInitialized: onInitialized,
+      catchSignal,
+      failWithServices,
+      logBackend,
+      onInitialized,
+      args,
     );
   }
 

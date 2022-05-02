@@ -1,8 +1,6 @@
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 
-import 'src/generator/config/config_generator.dart';
-
 import 'src/generator/broker/broker_api_service_generator.dart';
 import 'src/generator/broker/broker_api_client_generator.dart';
 
@@ -13,9 +11,6 @@ import 'src/generator/transfer_bean/transfer_superclass_generator.dart';
 
 import 'src/generator/data_layout/data_bean_generator.dart';
 import 'src/generator/data_layout/data_superclass_generator.dart';
-
-Builder configGenerator(BuilderOptions options) =>
-    SharedPartBuilder([ConfigGenerator()], 'config');
 
 Builder transferBeanGenerator(BuilderOptions options) =>
     SharedPartBuilder([TransferBeanGenerator()], 'dto');

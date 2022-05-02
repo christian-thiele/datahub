@@ -1,7 +1,9 @@
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:cl_datahub/ioc.dart';
 import 'package:dart_amqp/dart_amqp.dart';
 
-// TODO documentation, implementation etc
-abstract class BrokerService implements BaseService {
+/// Interface for message broker connections.
+///
+/// See [AmqpBrokerService]
+abstract class BrokerService extends BaseService {
   Future<Channel> openChannel();
 }

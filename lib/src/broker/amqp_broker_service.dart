@@ -1,11 +1,19 @@
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:cl_datahub/ioc.dart';
+import 'package:cl_datahub/services.dart';
 import 'package:dart_amqp/dart_amqp.dart';
 
 import 'broker_service.dart';
 
-class AmqpBrokerService implements BrokerService {
+/// Implements [BrokerService] as an AMQP client.
+///
+///
+class AmqpBrokerService extends BrokerService {
   final _logService = resolve<LogService>();
-  final _config = ConfigService.resolve<BrokerConfig>();
+
+  late final _configHost = config<String>('host');
+  late final _configPort = config<int>('port', defaultValue: 5672);
+  late final _configUser = config<String>('user');
+  late final _configPassword = config<String>('password');
 
   late final Client _client;
 
@@ -14,11 +22,11 @@ class AmqpBrokerService implements BrokerService {
   @override
   Future<void> initialize() async {
     final settings = ConnectionSettings(
-      host: _config.brokerHost,
-      port: _config.brokerPort,
+      host: _configHost,
+      port: _configPort,
       authProvider: PlainAuthenticator(
-        _config.brokerUser,
-        _config.brokerPassword,
+        _configUser,
+        _configPassword,
       ),
     );
     _client = Client(settings: settings);

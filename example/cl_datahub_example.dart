@@ -5,7 +5,7 @@ import 'package:cl_datahub/cl_datahub.dart';
 
 void main(List<String> args) async {
   final host = ServiceHost([
-    () => TestService(),
+    () => TestService('test'),
   ], onInitialized: onInit);
   await host.run();
 
@@ -16,6 +16,8 @@ void main(List<String> args) async {
 class TestService extends BaseService {
   // use ioc to inject other services
   final log = resolve<LogService>();
+
+  TestService(String configPath) : super(configPath);
 
   @override
   Future<void> initialize() async {

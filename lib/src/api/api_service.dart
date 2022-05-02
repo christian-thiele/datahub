@@ -5,12 +5,18 @@ import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/src/api/request_context.dart';
 
-abstract class ApiBase {
+abstract class ApiService extends BaseService {
+  late final _configAddress = config<String>('address', defaultValue: '');
+  late final _configPort = config<int>('port', defaultValue: 8080);
+
   final List<ApiEndpoint> endpoints;
   final MiddlewareBuilder? middleware;
   final SessionProvider? sessionProvider;
 
-  const ApiBase(this.endpoints, {this.middleware, this.sessionProvider});
+  late Future _serveTask;
+  final _shutdownToken = CancellationToken();
+
+  ApiService(this.endpoints, {this.middleware, this.sessionProvider});
 
   Future<void> serve(dynamic address, int port,
       {CancellationToken? cancellationToken}) async {
@@ -117,12 +123,29 @@ abstract class ApiBase {
     final request =
         ApiRequest(context, method, route, headers, queryParams, httpRequest);
 
-    return await () async {
-      if (middleware != null) {
-        return await middleware!.call(resource).handleRequest(request);
-      } else {
-        return await resource.handleRequest(request);
-      }
-    }();
+    if (middleware != null) {
+      return await middleware!.call(resource).handleRequest(request);
+    } else {
+      return await resource.handleRequest(request);
+    }
+  }
+
+  @override
+  Future<void> initialize() async {
+    final serveAddress = nullOrWhitespace(_configAddress)
+        ? InternetAddress.anyIPv4
+        : _configAddress;
+
+    _serveTask = serve(
+      serveAddress,
+      _configPort,
+      cancellationToken: _shutdownToken,
+    );
+  }
+
+  @override
+  Future<void> shutdown() async {
+    _shutdownToken.cancel();
+    await _serveTask;
   }
 }

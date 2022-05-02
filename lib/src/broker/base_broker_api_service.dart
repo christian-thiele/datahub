@@ -7,7 +7,7 @@ import 'broker_service.dart';
 import 'consumer_exception.dart';
 
 //TODO handle reconnects (channel based and connection based)
-abstract class BaseBrokerApiService implements BaseService {
+abstract class BaseBrokerApiService extends BaseService {
   final _log = resolve<LogService>();
   late final BrokerService _brokerService;
   final bool concurrent;
