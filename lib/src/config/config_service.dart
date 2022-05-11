@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/ioc.dart';
 import 'package:cl_datahub/services.dart';
 import 'package:path/path.dart';
@@ -12,17 +13,25 @@ import 'config_path.dart';
 /// Internal service parsing configuration files, command line arguments
 /// and environment variables.
 ///
-/// TODO docs
+/// TODO more docs
 class ConfigService extends BaseService {
   final _log = resolve<LogService>();
   final _configMap = <String, dynamic>{};
-  final List<File> _configFiles;
+  final List<String> arguments;
 
-  ConfigService(this._configFiles);
+  ConfigService(this.arguments);
 
   @override
   Future<void> initialize() async {
-    for (final file in _configFiles) {
+    for (final arg in arguments) {
+      if (arg.startsWith('--')) {
+        addConfigArgument(arg.substring(2));
+      } else {
+        addConfigFile(File(arg));
+      }
+
+      final file = File(arg);
+
       if (!await file.exists()) {
         throw Exception('Config file "${file.path}" not found.');
       }
@@ -46,7 +55,15 @@ class ConfigService extends BaseService {
     }
   }
 
-  T fetchConfig<T>(ConfigPath path, T? defaultValue) {
+  /// Get a config value under the given [path].
+  ///
+  /// If the value does not exist, [defaultValue] is returned.
+  /// If the value does not exist and [defaultValue] is null,
+  /// a [ConfigPathException] is thrown.
+  ///
+  /// If the value does not match the requested type or cannot be parsed
+  /// into the given type, a [ConfigTypeException] is thrown.
+  T fetch<T>(ConfigPath path, {T? defaultValue}) {
     final value = path.getFrom(_configMap);
     if (value is T) {
       return value;
@@ -58,18 +75,30 @@ class ConfigService extends BaseService {
     }
 
     if (T == num || T == double) {
+      if (value is num) {
+        return value as T;
+      }
+
       return (double.tryParse(value.toString()) ??
           (throw ConfigTypeException(
               configPath.toString(), T, value.runtimeType))) as T;
     }
 
     if (T == int) {
+      if (value is int) {
+        return value as T;
+      }
+
       return (int.tryParse(value.toString()) ??
           (throw ConfigTypeException(
               configPath.toString(), T, value.runtimeType))) as T;
     }
 
     if (T == bool) {
+      if (value is bool) {
+        return value as T;
+      }
+
       final str = value.toString().toLowerCase();
       return (str == '1' || str == 'true' || str == 'yes') as T;
     }
@@ -80,6 +109,63 @@ class ConfigService extends BaseService {
 
     throw ConfigTypeException(configPath.toString(), T, value.runtimeType);
   }
+
+  /// Get a config value as map and parse it into the given TransferObject.
+  ///
+  /// If the value does not exist, a [ConfigPathException] is thrown.
+  ///
+  /// If the value does not match the requested type or cannot be parsed
+  /// into the given type, a [ConfigTypeException] is thrown.
+  T fetchObject<T extends TransferObjectBase>(ConfigPath path, TransferBean<T> bean) {
+    final map = fetch<Map<String, dynamic>>(path);
+    return bean.toObject(map);
+  }
+
+  /// Add a single config value by using the command line syntax.
+  /// This is usually used for command line argument parsing.
+  ///
+  /// Syntax:
+  /// `path.to.value=value`
+  ///
+  /// You can modify config values by adding an argument to the run command
+  /// like this:
+  /// `dart service.dart --path.to.value=value`
+  ///
+  /// Config values and files override each other in the order they are provided
+  /// as arguments.
+  ///
+  /// TODO escape sequences
+  void addConfigArgument(String configArgument) {
+    final splitPoint = configArgument.indexOf('=');
+    if (splitPoint > 0) {
+      final path = ConfigPath(configArgument.substring(0, splitPoint));
+      final value = configArgument.substring(splitPoint + 1);
+      _merge(_configMap, _singleValueAsMap(path, value));
+    } else {
+      _log.error('Invalid command line argument "$configArgument".');
+    }
+  }
+
+  /// Read and add config file into the config map.
+  ///
+  /// Supported file types are yaml and json.
+  void addConfigFile(File configFile) async {
+    final stringContent = await configFile.readAsString();
+    final ext = extension(configFile.path);
+    if (ext == '.yaml' || ext == '.yml') {
+      final content = loadYaml(stringContent);
+      _merge(_configMap, content);
+    } else if (ext == '.json') {
+      final content = jsonDecode(stringContent);
+      _merge(_configMap, content);
+    } else {
+      throw Exception('Unknown config file type of file ${configFile.path}. '
+          'Supported file types are yaml and json.');
+    }
+  }
+
+  @override
+  Future<void> shutdown() async {}
 
   static void _merge(Map target, Map map) {
     for (final entry in map.entries) {
@@ -95,6 +181,18 @@ class ConfigService extends BaseService {
     }
   }
 
-  @override
-  Future<void> shutdown() async {}
+  Map<String, dynamic> _singleValueAsMap(ConfigPath path, dynamic value) {
+    if (path.isRoot) {
+      if (value is Map<String, dynamic>) {
+        return value;
+      } else {
+        throw ConfigException(
+          path.toString(),
+          'Cannot set single value as config root.',
+        );
+      }
+    }
+
+    return path.parts.reversed.fold(value, (v, k) => <String, dynamic>{k: v});
+  }
 }

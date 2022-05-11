@@ -1,5 +1,4 @@
-import 'package:cl_datahub/config.dart';
-import 'package:cl_datahub/ioc.dart';
+import 'package:cl_datahub/cl_datahub.dart';
 
 abstract class BaseService {
   final ConfigPath? configPath;
@@ -11,7 +10,17 @@ abstract class BaseService {
   T config<T>(String path, {T? defaultValue}) {
     final relative = ConfigPath(path);
     final absolute = configPath?.join(relative) ?? relative;
-    return resolve<ConfigService>().fetchConfig<T>(absolute, defaultValue);
+    return resolve<ConfigService>()
+        .fetch<T>(absolute, defaultValue: defaultValue);
+  }
+
+  /// Fetches a configuration value from [ConfigService] and parse it into the
+  /// TransferObject.
+  T configObject<T extends TransferObjectBase>(
+      String path, TransferBean<T> bean) {
+    final relative = ConfigPath(path);
+    final absolute = configPath?.join(relative) ?? relative;
+    return resolve<ConfigService>().fetchObject<T>(absolute, bean);
   }
 
   Future<void> initialize();

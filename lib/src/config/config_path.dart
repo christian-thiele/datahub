@@ -14,6 +14,9 @@ class ConfigPath {
       : parts = UnmodifiableListView(parts),
         assert(parts.every(_isValidPart));
 
+  /// Checks if the path points to the config root.
+  bool get isRoot => parts.isEmpty;
+
   /// Creates a [ConfigPath] selecting [path] in [this] path.
   ConfigPath join(ConfigPath path) =>
       ConfigPath.fromParts([...parts, ...path.parts]);

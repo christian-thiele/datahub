@@ -9,7 +9,7 @@ import 'endpoints/article_resource.dart';
 
 import '../utils/test_config.dart';
 
-class Api extends ApiBase {
+class Api extends ApiService {
   Api(List<ApiEndpoint> resources)
       : super(resources, middleware: (internal) => LogMiddleware(internal));
 }
@@ -20,7 +20,7 @@ void main() {
       final token = CancellationToken();
       final serviceHost = ServiceHost([
         () => TestConfigService(),
-        () => ApiService(Api([ArticleEndpoint()]))
+        () => Api([ArticleEndpoint()]),
       ], catchSignal: false);
       final task = serviceHost.run(token);
       await Future.delayed(Duration(seconds: 3));

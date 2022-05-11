@@ -43,13 +43,12 @@ class ServiceHost {
     this.onInitialized,
     List<String> args,
   ) : assert(_applicationHost == null) {
-    final configFiles = args.map((e) => File(e)).toList();
-
     _factories = <BaseService Function()>[
       () => LogService(logBackend ?? ConsoleLogBackend()),
-      () => ConfigService(configFiles),
+      () => ConfigService(args),
       () => SchedulerService(),
-    ].followedBy(factories).toList(growable: false);
+      ...factories
+    ];
   }
 
   /// Creates a [ServiceHost] instance.
