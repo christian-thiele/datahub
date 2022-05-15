@@ -193,3 +193,4 @@
 - Config do-over
 - Environment setting
 - LogLevel setting
+- ServiceHost shutdown on failure fix

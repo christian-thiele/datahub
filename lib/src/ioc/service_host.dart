@@ -94,7 +94,8 @@ class ServiceHost {
         _onError(
             'Error while initializing service.', e, stack, failWithServices);
         if (failWithServices) {
-          rethrow;
+          await _shutdown();
+          exit(1);
         }
       }
     }
