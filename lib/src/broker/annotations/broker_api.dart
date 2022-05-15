@@ -9,14 +9,8 @@ class BrokerApi {
   final Type? brokerInterface;
   final bool concurrent;
 
-  //TODO those two should be inherited
-  final bool durable;
-  final String queueName;
-
   const BrokerApi({
     this.brokerInterface,
     this.concurrent = false,
-    this.durable = true,
-    required this.queueName,
   });
 }

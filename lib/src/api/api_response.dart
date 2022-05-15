@@ -175,3 +175,12 @@ class FileResponse extends ByteStreamResponse {
           contentType: contentType,
         );
 }
+
+//TODO nicer debug message
+class DebugResponse extends TextResponse {
+  DebugResponse(dynamic error, StackTrace stack, int statusCode)
+      : super.plain(
+          'The following error occurred:\n$error\n$stack\n\nThis is a debug message. '
+              'Messages like this will only be displayed in DEV mode.',
+          statusCode: statusCode);
+}

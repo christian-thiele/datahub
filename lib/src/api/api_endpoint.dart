@@ -1,5 +1,10 @@
-import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/api/middleware/request_handler.dart';
+
+import 'package:cl_datahub/api.dart';
+import 'package:cl_datahub/config.dart';
+import 'package:cl_datahub/ioc.dart';
+import 'package:cl_datahub/services.dart';
+
+import 'middleware/request_handler.dart';
 
 abstract class ApiEndpoint implements RequestHandler {
   final RoutePattern routePattern;
@@ -41,8 +46,13 @@ abstract class ApiEndpoint implements RequestHandler {
         trace: stack,
         sender: 'DataHub',
       );
+
       // catch exceptions here to allow middleware to handle result
-      return TextResponse.plain('500 - Internal Server Error', statusCode: 500);
+      if (resolve<ConfigService>().environment == Environment.dev) {
+        return DebugResponse(e, stack, 500);
+      }else{
+        return TextResponse.plain('500 - Internal Server Error', statusCode: 500);
+      }
     }
   }
 

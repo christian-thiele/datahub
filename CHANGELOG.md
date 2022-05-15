@@ -197,3 +197,6 @@
   - shutdown on failure fix
 - Persistence
   - added PropertyCompareType.In
+- ApiService
+  - ApiService + ApiBase is now just ApiService
+  - in DEV-Environment, ApiEndpoints return debug information on errors
