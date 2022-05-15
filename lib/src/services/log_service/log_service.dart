@@ -30,6 +30,8 @@ class LogService extends BaseService {
 
   LogService(this._backend);
 
+  void setLogLevel(LogLevel level) => _backend.setLogLevel(level.toSeverity());
+
   void d(String message, {String? sender}) => debug(message, sender: sender);
 
   void v(String message, {String? sender}) => verbose(message, sender: sender);

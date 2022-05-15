@@ -5,6 +5,11 @@ import 'package:intl/intl.dart';
 import 'log_backend.dart';
 import 'log_message.dart';
 
+/// The default [LogBackend] implementation.
+///
+/// It logs messages to stdout. Every message with a severity below the
+/// log level is dropped. The log level can be changed by setting the config
+/// value "datahub.log". The default log level is debug (0).
 class ConsoleLogBackend extends LogBackend {
   static const _colorReset = '\u001b[0m';
   static const _colorRed = '\u001b[31m';
@@ -15,8 +20,14 @@ class ConsoleLogBackend extends LogBackend {
 
   static const _indent = '                               ';
 
+  int _logLevel = 0;
+
   @override
   void publish(LogMessage message) {
+    if (_logLevel > message.severity) {
+      return;
+    }
+
     final color = _severityColor(message.severity);
 
     stdout.write(_timestampString(message.timestamp));
@@ -47,6 +58,9 @@ class ConsoleLogBackend extends LogBackend {
     }
     stdout.write('\n');
   }
+
+  @override
+  void setLogLevel(int level) => _logLevel = level;
 
   String? _severityColor(int severity) {
     switch (severity) {

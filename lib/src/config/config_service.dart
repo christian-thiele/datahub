@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/ioc.dart';
 import 'package:cl_datahub/services.dart';
@@ -13,11 +14,22 @@ import 'config_path.dart';
 /// Internal service parsing configuration files, command line arguments
 /// and environment variables.
 ///
+/// The config path "datahub" is reserved for internal values:
+///
+/// `datahub.log` defines the log level [LogService]. See enum values in [LogLevel].
+/// `datahub.environment` defines the service environment. See enum values in [Environment].
+///
 /// TODO more docs
 class ConfigService extends BaseService {
   final _log = resolve<LogService>();
   final _configMap = <String, dynamic>{};
   final List<String> arguments;
+
+  /// The services environment.
+  ///
+  /// The value of this is determined by the config value "datahub.environment".
+  /// The default value is [Environment.dev].
+  late final Environment environment;
 
   ConfigService(this.arguments);
 
@@ -53,6 +65,8 @@ class ConfigService extends BaseService {
         );
       }
     }
+
+    _readDatahubConfig();
   }
 
   /// Get a config value under the given [path].
@@ -194,5 +208,22 @@ class ConfigService extends BaseService {
     }
 
     return path.parts.reversed.fold(value, (v, k) => <String, dynamic>{k: v});
+  }
+
+  void _readDatahubConfig() {
+    try {
+      final datahubConfig = fetch(ConfigPath('datahub')) as Map<String, dynamic>;
+      if (datahubConfig['log'] != null) {
+        _log.setLogLevel(findEnum(datahubConfig['log'], LogLevel.values));
+      }
+
+      if (datahubConfig['environment'] != null) {
+        environment = findEnum(datahubConfig['log'], Environment.values);
+      }
+
+    } on ConfigPathException catch (_) {
+      _log.warn('No datahub config found, using default values.');
+      environment = Environment.dev;
+    }
   }
 }

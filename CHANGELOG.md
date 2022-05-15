@@ -188,3 +188,8 @@
 ## 0.7.8
 - TransferObject toJson / toMap does not include null values in output
 - fixed warnings in generated code
+
+## 0.8.0
+- Config do-over
+- Environment setting
+- LogLevel setting
