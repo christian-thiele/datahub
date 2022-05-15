@@ -2,14 +2,16 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/cl_datahub.dart';
 import 'package:cl_datahub/ioc.dart';
 import 'package:cl_datahub/services.dart';
+import 'package:cl_datahub_common/common.dart';
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
 
 import 'config_exception.dart';
 import 'config_path.dart';
+import 'environment.dart';
+import 'log_level.dart';
 
 /// Internal service parsing configuration files, command line arguments
 /// and environment variables.
@@ -130,7 +132,8 @@ class ConfigService extends BaseService {
   ///
   /// If the value does not match the requested type or cannot be parsed
   /// into the given type, a [ConfigTypeException] is thrown.
-  T fetchObject<T extends TransferObjectBase>(ConfigPath path, TransferBean<T> bean) {
+  T fetchObject<T extends TransferObjectBase>(
+      ConfigPath path, TransferBean<T> bean) {
     final map = fetch<Map<String, dynamic>>(path);
     return bean.toObject(map);
   }
@@ -212,7 +215,8 @@ class ConfigService extends BaseService {
 
   void _readDatahubConfig() {
     try {
-      final datahubConfig = fetch(ConfigPath('datahub')) as Map<String, dynamic>;
+      final datahubConfig =
+          fetch(ConfigPath('datahub')) as Map<String, dynamic>;
       if (datahubConfig['log'] != null) {
         _log.setLogLevel(findEnum(datahubConfig['log'], LogLevel.values));
       }
@@ -220,7 +224,6 @@ class ConfigService extends BaseService {
       if (datahubConfig['environment'] != null) {
         environment = findEnum(datahubConfig['log'], Environment.values);
       }
-
     } on ConfigPathException catch (_) {
       _log.warn('No datahub config found, using default values.');
       environment = Environment.dev;
