@@ -190,7 +190,10 @@
 - fixed warnings in generated code
 
 ## 0.8.0
-- Config do-over
-- Environment setting
-- LogLevel setting
-- ServiceHost shutdown on failure fix
+- ServiceHost
+  - Config do-over
+  - Environment setting
+  - LogLevel setting
+  - shutdown on failure fix
+- Persistence
+  - added PropertyCompareType.In

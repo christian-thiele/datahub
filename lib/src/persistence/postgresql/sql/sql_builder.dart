@@ -35,6 +35,7 @@ abstract class SqlBuilder {
       } else {
         buffer.write('LOWER(${escapeName(filter.property.name)})');
       }
+
       switch (filter.type) {
         case PropertyCompareType.Contains:
           buffer.write(filter.caseSensitive ? ' LIKE ' : ' ILIKE ');
@@ -67,6 +68,9 @@ abstract class SqlBuilder {
         case PropertyCompareType.LessOrEqual:
           buffer.write(' <= ');
           break;
+        case PropertyCompareType.In:
+          buffer.write(' IN ');
+          break;
         default:
           throw PersistenceException(
               'PropertyCompareType not implemented: ${filter.type}');
@@ -91,6 +95,7 @@ abstract class SqlBuilder {
           }
           break;
       }
+      // ignore: deprecated_member_use_from_same_package
     } else if (filter is CustomSqlCondition) {
       buffer.write(filter.sql);
     } else {
@@ -233,6 +238,10 @@ abstract class SqlBuilder {
 
     if (value is DateTime) {
       return '\'${value.toIso8601String()}\'';
+    }
+
+    if (value is Iterable) {
+      return '(${value.map(escapeValue).join(', ')})';
     }
 
     return '\'${value.toString().replaceAll('\'', '\'\'')}\''; //TODO other escape things

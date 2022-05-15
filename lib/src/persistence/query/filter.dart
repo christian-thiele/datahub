@@ -91,7 +91,8 @@ enum PropertyCompareType {
   GreaterThan,
   LessThan,
   GreaterOrEqual,
-  LessOrEqual
+  LessOrEqual,
+  In,
 }
 
 class PropertyCompare implements Filter {
