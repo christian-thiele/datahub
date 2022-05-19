@@ -211,3 +211,4 @@
 
 ## 0.8.3
 - removed log message for config file loading
+- fixed uppercase log and environment values

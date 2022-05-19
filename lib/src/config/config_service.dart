@@ -199,8 +199,7 @@ class ConfigService extends BaseService {
         continue;
       }
 
-      if (target[entry.key] is Map<String, dynamic> &&
-          entry.value is Map) {
+      if (target[entry.key] is Map<String, dynamic> && entry.value is Map) {
         _merge(target[entry.key], entry.value);
       } else if (entry.value is Map) {
         // avoid unmodifiable maps
@@ -232,11 +231,14 @@ class ConfigService extends BaseService {
       final datahubConfig =
           fetch<Map<String, dynamic>>(ConfigPath('datahub'), defaultValue: {});
       if (datahubConfig['log'] != null) {
-        _log.setLogLevel(findEnum(datahubConfig['log'], LogLevel.values));
+        _log.setLogLevel(findEnum(
+            datahubConfig['log'].toString().toLowerCase(), LogLevel.values));
       }
 
       if (datahubConfig['environment'] != null) {
-        environment = findEnum(datahubConfig['log'], Environment.values);
+        environment = findEnum(
+            datahubConfig['environment'].toString().toLowerCase(),
+            Environment.values);
       }
     } on ConfigPathException catch (_) {
       _log.warn('No datahub config found, using default values.');
