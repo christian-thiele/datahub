@@ -1,10 +1,6 @@
 targets:
   $default:
     builders:
-      cl_datahub:config_generator:
-        enabled: true
-        generate_for:
-          - test/**
       cl_datahub:transfer_bean_generator:
         enabled: true
         generate_for:
@@ -35,13 +31,6 @@ targets:
           - test/**
 
 builders:
-  config_generator:
-    import: "package:cl_datahub/builder.dart"
-    builder_factories: ["configGenerator"]
-    build_extensions: {".dart": [".config.g.part"]}
-    auto_apply: dependents
-    build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
   transfer_bean_generator:
     import: "package:cl_datahub/builder.dart"
     builder_factories: ["transferBeanGenerator"]

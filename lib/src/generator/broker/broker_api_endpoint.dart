@@ -22,8 +22,9 @@ class BrokerApiEndpoint {
     this.isAsync,
   );
 
-  factory BrokerApiEndpoint.fromMethod(MethodElement m) {
-    final params = m.parameters.map((p) => EndpointParam.fromParam(p)).toList();
+  factory BrokerApiEndpoint.fromMethod(
+      MethodElement m, List<ParameterElement> parameters) {
+    final params = parameters.map((p) => EndpointParam.fromParam(p)).toList();
     final replyType = findReplyType(m);
     if (!endpointIsAsyncOrVoid(m)) {
       throw Exception('Endpoint return types must be of type Future. '

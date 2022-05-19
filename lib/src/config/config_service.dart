@@ -24,7 +24,7 @@ import 'log_level.dart';
 /// TODO more docs
 class ConfigService extends BaseService {
   final _log = resolve<LogService>();
-  final _configMap = <String, dynamic>{};
+  final Map<String, dynamic> _configMap;
   final List<String> arguments;
 
   /// The services environment.
@@ -33,7 +33,7 @@ class ConfigService extends BaseService {
   /// The default value is [Environment.dev].
   late final Environment environment;
 
-  ConfigService(this.arguments);
+  ConfigService(this._configMap, this.arguments);
 
   @override
   Future<void> initialize() async {
@@ -80,50 +80,58 @@ class ConfigService extends BaseService {
   /// If the value does not match the requested type or cannot be parsed
   /// into the given type, a [ConfigTypeException] is thrown.
   T fetch<T>(ConfigPath path, {T? defaultValue}) {
-    final value = path.getFrom(_configMap);
-    if (value is T) {
-      return value;
-    }
-
-    if (value == null) {
-      return defaultValue ??
-          (throw ConfigPathException(path.toString(), path.parts.last));
-    }
-
-    if (T == num || T == double) {
-      if (value is num) {
-        return value as T;
+    try {
+      final value = path.getFrom(_configMap);
+      if (value is T) {
+        return value;
       }
 
-      return (double.tryParse(value.toString()) ??
-          (throw ConfigTypeException(
-              configPath.toString(), T, value.runtimeType))) as T;
-    }
-
-    if (T == int) {
-      if (value is int) {
-        return value as T;
+      if (value == null) {
+        return defaultValue ??
+            (throw ConfigPathException(path.toString(), path.parts.last));
       }
 
-      return (int.tryParse(value.toString()) ??
-          (throw ConfigTypeException(
-              configPath.toString(), T, value.runtimeType))) as T;
-    }
+      if (T == num || T == double) {
+        if (value is num) {
+          return value as T;
+        }
 
-    if (T == bool) {
-      if (value is bool) {
-        return value as T;
+        return (double.tryParse(value.toString()) ??
+            (throw ConfigTypeException(
+                configPath.toString(), T, value.runtimeType))) as T;
       }
 
-      final str = value.toString().toLowerCase();
-      return (str == '1' || str == 'true' || str == 'yes') as T;
-    }
+      if (T == int) {
+        if (value is int) {
+          return value as T;
+        }
 
-    if (T == String) {
-      return value.toString() as T;
-    }
+        return (int.tryParse(value.toString()) ??
+            (throw ConfigTypeException(
+                configPath.toString(), T, value.runtimeType))) as T;
+      }
 
-    throw ConfigTypeException(configPath.toString(), T, value.runtimeType);
+      if (T == bool) {
+        if (value is bool) {
+          return value as T;
+        }
+
+        final str = value.toString().toLowerCase();
+        return (str == '1' || str == 'true' || str == 'yes') as T;
+      }
+
+      if (T == String) {
+        return value.toString() as T;
+      }
+
+      throw ConfigTypeException(configPath.toString(), T, value.runtimeType);
+    } on ConfigPathException catch (_) {
+      if (defaultValue != null) {
+        return defaultValue;
+      }
+
+      rethrow;
+    }
   }
 
   /// Get a config value as map and parse it into the given TransferObject.
@@ -216,7 +224,7 @@ class ConfigService extends BaseService {
   void _readDatahubConfig() {
     try {
       final datahubConfig =
-          fetch(ConfigPath('datahub')) as Map<String, dynamic>;
+          fetch<Map<String, dynamic>>(ConfigPath('datahub'), defaultValue: {});
       if (datahubConfig['log'] != null) {
         _log.setLogLevel(findEnum(datahubConfig['log'], LogLevel.values));
       }

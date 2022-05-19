@@ -42,10 +42,11 @@ class ServiceHost {
     LogBackend? logBackend,
     this.onInitialized,
     List<String> args,
+    Map<String, dynamic> config,
   ) : assert(_applicationHost == null) {
     _factories = <BaseService Function()>[
       () => LogService(logBackend ?? ConsoleLogBackend()),
-      () => ConfigService(args),
+      () => ConfigService(config, args),
       () => SchedulerService(),
       ...factories
     ];
@@ -53,10 +54,13 @@ class ServiceHost {
 
   /// Creates a [ServiceHost] instance.
   ///
-  /// [catchSignal] listens to CTRL+C in command line and shuts down services gracefully
-  /// [failWithServices] service hosts terminates the app if a single service fails to initialize
-  /// [logBackend] initializes LogService with custom backend
-  /// [onInitialized] is called when service initialization is done
+  /// [catchSignal] listens to CTRL+C in command line and shuts down services gracefully.
+  /// [failWithServices] service hosts terminates the app if a single service fails to initialize.
+  /// [logBackend] initializes LogService with custom backend.
+  /// [onInitialized] is called when service initialization is done.
+  /// Feed the command line arguments from the applications main function into
+  /// [args] for the [ConfigService] to detect configuration arguments.
+  /// [config] provides default configuration values to the [ConfigService].
   factory ServiceHost(
     List<BaseService Function()> factories, {
     bool catchSignal = true,
@@ -64,6 +68,7 @@ class ServiceHost {
     LogBackend? logBackend,
     Function? onInitialized,
     List<String> args = const <String>[],
+    Map<String, dynamic> config = const <String, dynamic>{},
   }) {
     return _applicationHost = ServiceHost._(
       factories,
@@ -72,6 +77,7 @@ class ServiceHost {
       logBackend,
       onInitialized,
       args,
+      config,
     );
   }
 
@@ -86,13 +92,23 @@ class ServiceHost {
   Future<void> run([CancellationToken? cancel]) async {
     final stopwatch = Stopwatch()..start();
     for (final factory in _factories) {
+      BaseService? service;
       try {
-        final service = factory();
+        service = factory();
         await service.initialize();
         _services.add(service);
       } catch (e, stack) {
-        _onError(
-            'Error while initializing service.', e, stack, failWithServices);
+        if (service == null) {
+          _onError('Error while creating service instance.', e, stack,
+              failWithServices);
+        } else {
+          _onError(
+              'Error while initializing service instance of ${service.runtimeType}.',
+              e,
+              stack,
+              failWithServices);
+        }
+
         if (failWithServices) {
           await _shutdown();
           exit(1);

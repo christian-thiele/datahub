@@ -1,4 +1,3 @@
-
 import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/config.dart';
 import 'package:cl_datahub/ioc.dart';
@@ -50,8 +49,9 @@ abstract class ApiEndpoint implements RequestHandler {
       // catch exceptions here to allow middleware to handle result
       if (resolve<ConfigService>().environment == Environment.dev) {
         return DebugResponse(e, stack, 500);
-      }else{
-        return TextResponse.plain('500 - Internal Server Error', statusCode: 500);
+      } else {
+        return TextResponse.plain('500 - Internal Server Error',
+            statusCode: 500);
       }
     }
   }

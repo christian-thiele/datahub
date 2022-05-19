@@ -6,7 +6,11 @@ import 'broker_service.dart';
 
 /// Implements [BrokerService] as an AMQP client.
 ///
-///
+/// Configuration values:
+///   `host`: Broker connection host
+///   `port`: Broker connection port (optional)
+///   `user`: Username for authentication at broker
+///   `password`: Password for authentication at broker
 class AmqpBrokerService extends BrokerService {
   final _logService = resolve<LogService>();
 
@@ -17,7 +21,7 @@ class AmqpBrokerService extends BrokerService {
 
   late final Client _client;
 
-  AmqpBrokerService();
+  AmqpBrokerService([String? path]) : super(path);
 
   @override
   Future<void> initialize() async {
@@ -29,6 +33,7 @@ class AmqpBrokerService extends BrokerService {
         _configPassword,
       ),
     );
+
     _client = Client(settings: settings);
     _logService.verbose('AMQP Broker Service initialized.', sender: 'DataHub');
   }

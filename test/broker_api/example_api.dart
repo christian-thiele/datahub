@@ -28,7 +28,7 @@ abstract class ExampleApi {
   void doSomethingAndFail(int x);
 }
 
-@BrokerApi(queueName: 'testapi')
+@BrokerApi()
 class ExampleApiImpl extends ExampleApi {
   @override
   void doSomething(int x) {
@@ -47,11 +47,11 @@ class ExampleApiImpl extends ExampleApi {
   }
 
   @override
-  Future<String> getEnumName(TestDto dto) async {
-    print('Received getSomeString("${dto.shortDescription}")');
+  Future<String> getEnumName(TestDto wrongParamName) async {
+    print('Received getSomeString("${wrongParamName.shortDescription}")');
     print('Waiting 1 sec...');
     await Future.delayed(const Duration(seconds: 1));
-    final result = dto.category.toString();
+    final result = wrongParamName.category.toString();
     print('Returning "$result"');
     return result;
   }

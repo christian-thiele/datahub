@@ -5,5 +5,6 @@ import 'package:dart_amqp/dart_amqp.dart';
 ///
 /// See [AmqpBrokerService]
 abstract class BrokerService extends BaseService {
+  BrokerService([String? path]) : super(path);
   Future<Channel> openChannel();
 }

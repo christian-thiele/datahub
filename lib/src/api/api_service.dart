@@ -16,7 +16,9 @@ abstract class ApiService extends BaseService {
   late Future _serveTask;
   final _shutdownToken = CancellationToken();
 
-  ApiService(this.endpoints, {this.middleware, this.sessionProvider});
+  ApiService(String? config, this.endpoints,
+      {this.middleware, this.sessionProvider})
+      : super(config);
 
   Future<void> serve(dynamic address, int port,
       {CancellationToken? cancellationToken}) async {

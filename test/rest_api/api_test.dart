@@ -7,21 +7,22 @@ import 'package:test/test.dart';
 import 'endpoints/article_endpoint.dart';
 import 'endpoints/article_resource.dart';
 
-import '../utils/test_config.dart';
-
 class Api extends ApiService {
   Api(List<ApiEndpoint> resources)
-      : super(resources, middleware: (internal) => LogMiddleware(internal));
+      : super(null, resources,
+            middleware: (internal) => LogMiddleware(internal));
 }
 
 void main() {
   group('ApiBase', () {
     test('Serve and Cancel', () async {
       final token = CancellationToken();
-      final serviceHost = ServiceHost([
-        () => TestConfigService(),
-        () => Api([ArticleEndpoint()]),
-      ], catchSignal: false);
+      final serviceHost = ServiceHost(
+        [
+          () => Api([ArticleEndpoint()]),
+        ],
+        catchSignal: false,
+      );
       final task = serviceHost.run(token);
       await Future.delayed(Duration(seconds: 3));
       token.cancel();

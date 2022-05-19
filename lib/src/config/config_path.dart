@@ -33,7 +33,7 @@ class ConfigPath {
       return values;
     }
 
-    if (values is! Map<String, dynamic>) {
+    if (values is! Map<String, dynamic> || !values.containsKey(path.first)) {
       throw ConfigPathException(path.join('.'), path.first);
     }
 

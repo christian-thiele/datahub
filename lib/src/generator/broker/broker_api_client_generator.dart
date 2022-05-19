@@ -18,7 +18,7 @@ class BrokerApiClientGenerator extends GeneratorForAnnotation<BrokerInterface> {
 
     final endpoints = classElement.methods
         .where((m) => !m.isPrivate)
-        .map((m) => BrokerApiEndpoint.fromMethod(m))
+        .map((m) => BrokerApiEndpoint.fromMethod(m, m.parameters))
         .toList();
 
     return BaseApiClientBuilder(
