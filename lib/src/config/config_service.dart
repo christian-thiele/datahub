@@ -194,13 +194,18 @@ class ConfigService extends BaseService {
   @override
   Future<void> shutdown() async {}
 
-  static void _merge(Map target, Map map) {
+  static void _merge(Map<String, dynamic> target, Map map) {
     for (final entry in map.entries) {
-      if (target[entry.key] is Map && entry.value is Map) {
+      if (entry.key is! String) {
+        continue;
+      }
+
+      if (target[entry.key] is Map<String, dynamic> &&
+          entry.value is Map) {
         _merge(target[entry.key], entry.value);
       } else if (entry.value is Map) {
         // avoid unmodifiable maps
-        target[entry.key] = {};
+        target[entry.key] = <String, dynamic>{};
         _merge(target[entry.key], entry.value);
       } else {
         target[entry.key] = entry.value;

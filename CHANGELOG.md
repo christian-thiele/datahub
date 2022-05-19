@@ -204,3 +204,7 @@
 ## 0.8.1
 - ServiceHost
   - fixed config file loading
+
+## 0.8.2
+- ServiceHost
+  - fixed config file loading
