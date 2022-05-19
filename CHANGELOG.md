@@ -200,3 +200,7 @@
 - ApiService
   - ApiService + ApiBase is now just ApiService
   - in DEV-Environment, ApiEndpoints return debug information on errors
+
+## 0.8.1
+- ServiceHost
+  - fixed config file loading

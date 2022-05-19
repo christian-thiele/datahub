@@ -24,7 +24,7 @@ import 'log_level.dart';
 /// TODO more docs
 class ConfigService extends BaseService {
   final _log = resolve<LogService>();
-  final Map<String, dynamic> _configMap;
+  final _configMap = <String, dynamic>{};
   final List<String> arguments;
 
   /// The services environment.
@@ -33,7 +33,9 @@ class ConfigService extends BaseService {
   /// The default value is [Environment.dev].
   late final Environment environment;
 
-  ConfigService(this._configMap, this.arguments);
+  ConfigService(Map<String, dynamic> defaultConfig, this.arguments) {
+    _merge(_configMap, defaultConfig);
+  }
 
   @override
   Future<void> initialize() async {
