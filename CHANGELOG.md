@@ -208,3 +208,6 @@
 ## 0.8.2
 - ServiceHost
   - fixed config file loading
+
+## 0.8.3
+- removed log message for config file loading

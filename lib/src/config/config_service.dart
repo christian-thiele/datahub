@@ -59,7 +59,6 @@ class ConfigService extends BaseService {
             : loadYaml(stringContents);
 
         _merge(_configMap, mapContents);
-        _log.verbose('Loaded configuration file: ${file.path}');
       } catch (e, stack) {
         _log.critical(
           'Could not load config file "${file.path}".',
