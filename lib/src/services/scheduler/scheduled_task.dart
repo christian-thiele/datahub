@@ -21,7 +21,7 @@ class ScheduledTask {
   }
 
   void _startNext([DateTime? execution]) {
-    final nextExecution = _findNext(execution);
+    final nextExecution = schedule.findNext(execution);
     _timer = Timer(DateTime.now().difference(nextExecution),
         () => _trigger(nextExecution));
   }
@@ -45,29 +45,6 @@ class ScheduledTask {
           error: e, trace: stack, sender: 'DataHub');
     } finally {
       _running = false;
-    }
-  }
-
-  DateTime _findNext(DateTime? execution) {
-    if (schedule is RepeatSchedule) {
-      return (execution ?? DateTime.now())
-          .add((schedule as RepeatSchedule).interval);
-    } else if (schedule is DailySchedule) {
-      if (execution != null) {
-        return execution.add(const Duration(days: 1));
-      } else {
-        final now = DateTime.now();
-        final daily = schedule as DailySchedule;
-        final today = DateTime(now.year, now.month, now.day, daily.hour,
-            daily.minute, daily.second);
-        if (today.isAfter(now)) {
-          return today;
-        } else {
-          return today.add(const Duration(days: 1));
-        }
-      }
-    } else {
-      throw Exception('Invalid schedule type.');
     }
   }
 }

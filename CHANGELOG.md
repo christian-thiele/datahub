@@ -212,3 +212,6 @@
 ## 0.8.3
 - removed log message for config file loading
 - fixed uppercase log and environment values
+- SchedulerService
+  - fixed RepeatSchedule
+  - added startNow to RepeatSchedule
