@@ -216,4 +216,7 @@
 ## 0.8.4
 - SchedulerService
   - fixed RepeatSchedule
-  - added startNow to RepeatSchedule
+
+## 0.8.5
+- SchedulerService
+  - fixed RepeatSchedule

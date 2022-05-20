@@ -22,7 +22,7 @@ class ScheduledTask {
 
   void _startNext([DateTime? execution]) {
     final nextExecution = schedule.findNext(execution);
-    _timer = Timer(DateTime.now().difference(nextExecution),
+    _timer = Timer(nextExecution.difference(DateTime.now()),
         () => _trigger(nextExecution));
   }
 
