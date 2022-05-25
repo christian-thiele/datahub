@@ -3,71 +3,127 @@ import 'package:test/test.dart';
 
 void main() {
   final fieldX = DataField(FieldType.String, 'fieldX');
+  final schemaTable = TableSelectSource('schema', 'table');
+  final otherTable = TableSelectSource('schema', 'other');
+  final otherTable2 = TableSelectSource('schema', 'different');
+  group('TableSelectSource', () {
+    test(
+      'Select',
+      _test(
+        SelectBuilder(schemaTable),
+        'SELECT * FROM schema.table',
+      ),
+    );
 
-  test(
-    'Select',
-    _test(
-      SelectBuilder(TableSelectSource('schema', 'table')),
-      'SELECT * FROM schema.table',
-    ),
-  );
+    test(
+      'Select filter eq string',
+      _test(
+        SelectBuilder(schemaTable)..where(Filter.equals(fieldX, 'valueX')),
+        'SELECT * FROM schema.table WHERE "fieldX" = \'valueX\'',
+      ),
+    );
 
-  test(
-    'Select filter eq string',
-    _test(
-      SelectBuilder(TableSelectSource('schema', 'table'))
-        ..where(Filter.equals(fieldX, 'valueX')),
-      'SELECT * FROM schema.table WHERE "fieldX" = \'valueX\'',
-    ),
-  );
+    test(
+      'Select filter eq string caseInsensitive',
+      _test(
+        SelectBuilder(schemaTable)
+          ..where(PropertyCompare(PropertyCompareType.Equals, fieldX, 'valueX',
+              caseSensitive: false)),
+        'SELECT * FROM schema.table WHERE LOWER("fieldX") = \'valuex\'',
+      ),
+    );
 
-  test(
-    'Select filter eq string caseInsensitive',
-    _test(
-      SelectBuilder(TableSelectSource('schema', 'table'))
-        ..where(PropertyCompare(PropertyCompareType.Equals, fieldX, 'valueX',
+    test(
+      'Select filter eq string contains',
+      _test(
+        SelectBuilder(schemaTable)
+          ..where(
+              PropertyCompare(PropertyCompareType.Contains, fieldX, 'valueX')),
+        'SELECT * FROM schema.table WHERE "fieldX" LIKE \'%valueX%\'',
+      ),
+    );
+
+    test(
+      'Select filter eq string contains caseInsensitive',
+      _test(
+        SelectBuilder(schemaTable)
+          ..where(PropertyCompare(
+              PropertyCompareType.Contains, fieldX, 'valueX',
+              caseSensitive: false)),
+        'SELECT * FROM schema.table WHERE "fieldX" ILIKE \'%valueX%\'',
+      ),
+    );
+
+    test(
+      'Select filter eq int',
+      _test(
+        SelectBuilder(schemaTable)..where(Filter.equals(fieldX, 20)),
+        'SELECT * FROM schema.table WHERE "fieldX" = 20',
+      ),
+    );
+
+    test(
+      'Select filter eq double',
+      _test(
+        SelectBuilder(schemaTable)..where(Filter.equals(fieldX, 20.12)),
+        'SELECT * FROM schema.table WHERE "fieldX" = 20.12',
+      ),
+    );
+  });
+
+  group('JoinedSelectSource', () {
+    test(
+      'Join other',
+      _test(
+        SelectBuilder(
+          JoinedSelectSource(
+            schemaTable,
+            [
+              TableJoin(otherTable, 'id', PropertyCompareType.Equals, 'main_id')
+            ],
+          ),
+        ),
+        'SELECT * FROM schema.table JOIN schema.other ON schema.table.id = schema.other.main_id',
+      ),
+    );
+
+    test(
+      'Join other filter eq string',
+      _test(
+        SelectBuilder(
+          JoinedSelectSource(
+            schemaTable,
+            [
+              TableJoin(otherTable, 'id', PropertyCompareType.Equals, 'main_id')
+            ],
+          ),
+        )..where(Filter.equals(fieldX, 'valueX')),
+        'SELECT * FROM schema.table JOIN schema.other ON schema.table.id = '
+        'schema.other.main_id WHERE "fieldX" = \'valueX\'',
+      ),
+    );
+
+    test(
+      'Join multiple',
+      _test(
+        SelectBuilder(
+          JoinedSelectSource(
+            schemaTable,
+            [
+              TableJoin(
+                  otherTable, 'id', PropertyCompareType.Equals, 'main_id'),
+              TableJoin(
+                  otherTable2, 'xyz', PropertyCompareType.LessThan, 'abc'),
+            ],
+          ),
+        )..where(PropertyCompare(PropertyCompareType.Equals, fieldX, 'valueX',
             caseSensitive: false)),
-      'SELECT * FROM schema.table WHERE LOWER("fieldX") = \'valuex\'',
-    ),
-  );
-
-  test(
-    'Select filter eq string contains',
-    _test(
-      SelectBuilder(TableSelectSource('schema', 'table'))
-        ..where(
-            PropertyCompare(PropertyCompareType.Contains, fieldX, 'valueX')),
-      'SELECT * FROM schema.table WHERE "fieldX" LIKE \'%valueX%\'',
-    ),
-  );
-
-  test(
-    'Select filter eq string contains caseInsensitive',
-    _test(
-      SelectBuilder(TableSelectSource('schema', 'table'))
-        ..where(PropertyCompare(PropertyCompareType.Contains, fieldX, 'valueX',
-            caseSensitive: false)),
-      'SELECT * FROM schema.table WHERE "fieldX" ILIKE \'%valueX%\'',
-    ),
-  );
-
-  test(
-    'Select filter eq int',
-    _test(
-      SelectBuilder(TableSelectSource('schema', 'table'))
-        ..where(Filter.equals(fieldX, 20)),
-      'SELECT * FROM schema.table WHERE "fieldX" = 20',
-    ),
-  );
-
-  test(
-    'Select filter eq double',
-    _test(
-      SelectBuilder(TableSelectSource('schema', 'table'))
-        ..where(Filter.equals(fieldX, 20.12)),
-      'SELECT * FROM schema.table WHERE "fieldX" = 20.12',
-    ),
-  );
+        'SELECT * FROM schema.table JOIN schema.other ON schema.table.id = '
+        'schema.other.main_id JOIN schema.different ON schema.table.xyz < '
+        'schema.different.abc WHERE LOWER("fieldX") = \'valuex\'',
+      ),
+    );
+  });
 }
 
 dynamic Function() _test(SqlBuilder builder, String sql,

@@ -32,6 +32,16 @@ class TableJoin {
         return '=';
       case PropertyCompareType.NotEquals:
         return '<>';
+      case PropertyCompareType.LessThan:
+        return '<';
+      case PropertyCompareType.LessOrEqual:
+        return '<=';
+      case PropertyCompareType.GreaterThan:
+        return '>';
+      case PropertyCompareType.GreaterOrEqual:
+        return '>=';
+      case PropertyCompareType.In:
+        return 'in';
       default:
         throw Exception('Invalid join compare type: $onCompare');
     }
