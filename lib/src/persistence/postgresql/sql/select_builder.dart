@@ -1,16 +1,17 @@
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 
+export 'select_source.dart';
+
 class SelectBuilder implements SqlBuilder {
-  final String schemaName;
-  final String tableName;
+  final SelectSource from;
   Filter _filter = Filter.empty;
   Sort _sort = Sort.empty;
   List<QuerySelect>? _select;
   int _limit = -1;
   int _offset = 0;
 
-  SelectBuilder(this.schemaName, this.tableName);
+  SelectBuilder(this.from);
 
   void select(List<QuerySelect> selections) {
     _select = selections;
@@ -46,7 +47,8 @@ class SelectBuilder implements SqlBuilder {
       buffer.write('* ');
     }
 
-    buffer.write('FROM $schemaName.$tableName');
+    buffer.write('FROM ');
+    buffer.write(from.sql);
 
     if (!_filter.isEmpty) {
       buffer.write(' WHERE ');

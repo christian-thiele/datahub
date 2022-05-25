@@ -2,12 +2,11 @@ import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 
 class UpdateBuilder implements SqlBuilder {
-  final String schemaName;
-  final String tableName;
+  final TableSelectSource from;
   final Map<String, dynamic> _values = {};
   Filter _filter = Filter.empty;
 
-  UpdateBuilder(this.schemaName, this.tableName);
+  UpdateBuilder(this.from);
 
   void values(Map<String, dynamic> entryValues) {
     _values.addAll(entryValues);
@@ -25,8 +24,12 @@ class UpdateBuilder implements SqlBuilder {
             Triple(SqlBuilder.escapeName(e.key), '${e.key}_val', e.value))
         .toList();
 
-    buffer.write('UPDATE $schemaName.$tableName SET '
-        '${values.map((e) => '${e.a} = ${SqlBuilder.substitutionLiteral(e)}').join(', ')}');
+    buffer.write('UPDATE ');
+    buffer.write(from.sql);
+    buffer.write(' SET ');
+    buffer.write(values
+        .map((e) => '${e.a} = ${SqlBuilder.substitutionLiteral(e)}')
+        .join(', '));
 
     final substitutionValues =
         Map.fromEntries(values.map((e) => MapEntry(e.b, e.c)));
