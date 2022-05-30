@@ -1,28 +1,28 @@
 import 'package:cl_datahub/cl_datahub.dart';
 
-abstract class SelectSource {
+abstract class SelectFrom {
   String get sql;
 }
 
-class TableSelectSource extends SelectSource {
+class SelectFromTable extends SelectFrom {
   final String schemaName;
   final String tableName;
 
-  TableSelectSource(this.schemaName, this.tableName);
+  SelectFromTable(this.schemaName, this.tableName);
 
   @override
   String get sql => '$schemaName.$tableName';
 }
 
 class TableJoin {
-  final TableSelectSource table;
+  final SelectFromTable table;
   final String onMainField;
   final PropertyCompareType onCompare;
   final String onJoinField;
 
   TableJoin(this.table, this.onMainField, this.onCompare, this.onJoinField);
 
-  String getJoinSql(TableSelectSource main) => ' JOIN ${table.sql} ON '
+  String getJoinSql(SelectFromTable main) => ' JOIN ${table.sql} ON '
       '${main.sql}.$onMainField $_compareSql ${table.sql}.$onJoinField';
 
   //TODO use filterSql here instead to allow more complex joins
@@ -48,11 +48,11 @@ class TableJoin {
   }
 }
 
-class JoinedSelectSource extends SelectSource {
-  final TableSelectSource main;
+class JoinedSelectFrom extends SelectFrom {
+  final SelectFromTable main;
   final List<TableJoin> joins;
 
-  JoinedSelectSource(this.main, this.joins);
+  JoinedSelectFrom(this.main, this.joins);
 
   @override
   String get sql {

@@ -1,11 +1,13 @@
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:test/test.dart';
 
+import 'package:cl_datahub/src/persistence/postgresql/sql/sql.dart';
+
 void main() {
   final fieldX = DataField(FieldType.String, 'fieldX');
-  final schemaTable = TableSelectSource('schema', 'table');
-  final otherTable = TableSelectSource('schema', 'other');
-  final otherTable2 = TableSelectSource('schema', 'different');
+  final schemaTable = SelectFromTable('schema', 'table');
+  final otherTable = SelectFromTable('schema', 'other');
+  final otherTable2 = SelectFromTable('schema', 'different');
   group('TableSelectSource', () {
     test(
       'Select',

@@ -6,6 +6,7 @@ import 'package:cl_datahub/cl_datahub.dart';
 import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 
+import '../loremipsum.dart';
 import 'dao/blog_daos/article_dao.dart';
 import 'dao/blog_daos/blog_dao.dart';
 import 'dao/blog_daos/user_dao.dart';
@@ -60,7 +61,6 @@ Future _testScheme() async {
     image: imageData,
   );
   final userId = await connection.insert(blogUser);
-  print('Inserted with pk: $userId');
 
   // query some data
   final blogUsers = await connection.query(UserDaoDataBean);
@@ -87,7 +87,23 @@ Future _testScheme() async {
         executionId: executionId,
         image: imageData);
     final userId = await connection.insert(blogUser);
-    print('Inserted with pk: $userId');
+
+    final blog = BlogDao('bloggo$i', userId, displayName: 'Blog of User $i');
+    final blogKey = await connection.insert(blog);
+
+    final articleCount = Random().nextInt(10);
+    for (var x = 0; x < articleCount; x++) {
+      final article = ArticleDao(
+        title: 'I am $i and this is $x',
+        content: loremIpsum,
+        blogKey: blog.key,
+        createdTimestamp: DateTime.now(),
+        lastEditTimestamp: DateTime.now(),
+        image: imageData,
+        userId: userId,
+      );
+      final articleId = await connection.insert(article);
+    }
   }
 
   // query with sort:
@@ -108,4 +124,7 @@ Future _testScheme() async {
       ascUsers, orderedEquals(ascUsers.toList()..sortBy((u) => u.name, true)));
   expect(descUsers,
       orderedEquals(descUsers.toList()..sortBy((u) => u.name, false)));
+  
+  // select with join
+  final joinedData = await connection.select(bean, select)
 }

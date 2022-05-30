@@ -4,6 +4,8 @@ import 'package:cl_datahub/cl_datahub.dart';
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:postgres/postgres.dart' as postgres;
 
+import 'sql/sql.dart';
+
 const metaTable = '_datahub_meta';
 
 class PostgreSQLDatabaseConnection extends DatabaseConnection {
@@ -80,7 +82,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     int offset = 0,
     int limit = -1,
   }) async {
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     final result =
         await querySql(SelectBuilder(from)
           ..select([const WildcardSelect()]) //TODO maybe "only" dto fields?
@@ -96,7 +98,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
       PKDaoDataBean<TDao, TPrimaryKey> bean, TPrimaryKey id) async {
     final primaryKey = bean.primaryKeyField;
 
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     final result = await querySql(
         SelectBuilder(from)
           ..where(Filter.equals(primaryKey, id)));
@@ -109,7 +111,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
       PrimaryKeyDataBean<TPrimaryKey> bean, TPrimaryKey id) async {
     final primaryKey = bean.primaryKeyField;
 
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     final result =
         await querySql(SelectBuilder(from)
           ..select([FieldSelect(primaryKey)])
@@ -146,7 +148,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     final bean = object.bean;
     final data = bean.unmap(object);
 
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     await execute(UpdateBuilder(from)
       ..values(data)
       ..where(_pkFilter(bean, object.getPrimaryKey())));
@@ -155,7 +157,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   @override
   Future<void> updateId<TPrimaryKey>(PrimaryKeyDataBean<TPrimaryKey> bean,
       TPrimaryKey id, Map<String, dynamic> values) async {
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     await execute(UpdateBuilder(from)
       ..values(values)
       ..where(_pkFilter(bean, id)));
@@ -164,7 +166,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   @override
   Future<int> updateWhere(
       BaseDataBean bean, Map<String, dynamic> values, Filter filter) async {
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     return await execute(UpdateBuilder(from)
       ..values(values)
       ..where(filter));
@@ -173,7 +175,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   @override
   Future<void> delete<TDao extends PKBaseDao>(TDao object) async {
     final bean = object.bean;
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     await execute(DeleteBuilder(from)
       ..where(_pkFilter(bean, object.getPrimaryKey())));
   }
@@ -181,14 +183,14 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   @override
   Future<void> deleteId<TPrimaryKey>(
       PrimaryKeyDataBean<TPrimaryKey> bean, dynamic id) async {
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     await execute(DeleteBuilder(from)
       ..where(_pkFilter(bean, id)));
   }
 
   @override
   Future<int> deleteWhere(BaseDataBean bean, Filter filter) async {
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     return await execute(
         DeleteBuilder(from)..where(filter));
   }
@@ -202,7 +204,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     int offset = 0,
     int limit = -1,
   }) {
-    final from = TableSelectSource(adapter.schema.name, bean.layoutName);
+    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     return querySql(SelectBuilder(from)
       ..where(filter)
       ..orderBy(sort)

@@ -4,6 +4,7 @@ import 'package:cl_datahub/cl_datahub.dart';
 import 'package:postgres/postgres.dart' as postgres;
 
 import 'postgresql_database_migrator.dart';
+import 'sql/sql.dart';
 
 //TODO factor out postgreSQL related code to separate package
 

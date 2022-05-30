@@ -1,5 +1,6 @@
 export 'sql_builder.dart';
 export 'select_builder.dart';
+export 'select_from.dart';
 export 'insert_builder.dart';
 export 'update_builder.dart';
 export 'delete_builder.dart';

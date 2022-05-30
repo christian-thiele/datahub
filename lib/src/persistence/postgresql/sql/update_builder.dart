@@ -1,8 +1,11 @@
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 
+import 'select_from.dart';
+import 'sql_builder.dart';
+
 class UpdateBuilder implements SqlBuilder {
-  final TableSelectSource from;
+  final SelectFrom from;
   final Map<String, dynamic> _values = {};
   Filter _filter = Filter.empty;
 

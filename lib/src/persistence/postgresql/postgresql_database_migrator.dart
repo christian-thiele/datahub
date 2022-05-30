@@ -1,5 +1,7 @@
 import 'package:cl_datahub/cl_datahub.dart';
 
+import 'sql/sql.dart';
+
 class PostgreSQLDatabaseMigrator extends Migrator {
   final DataSchema _schema;
   final PostgreSQLDatabaseConnection _connection;
