@@ -12,35 +12,39 @@ void main() {
 void _blogMirror() {
   expect(BlogDaoDataBean.layoutName, equals('blog'));
   expect(
-      BlogDaoDataBean.fields,
-      unorderedEquals([
-        PrimaryKey(FieldType.String, 'key'),
-        ForeignKey(PrimaryKey(FieldType.Int, 'id'), 'ownerId'),
-        DataField(FieldType.String, 'displayName')
-      ]));
+    BlogDaoDataBean.fields,
+    unorderedEquals([
+      PrimaryKey(FieldType.String, 'blog', 'key'),
+      ForeignKey(PrimaryKey(FieldType.Int, 'user', 'id'), 'blog', 'ownerId'),
+      DataField(FieldType.String, 'blog', 'displayName')
+    ]),
+  );
 
   expect(ArticleDaoDataBean.layoutName, equals('article'));
   expect(
-      ArticleDaoDataBean.fields,
-      unorderedEquals([
-        PrimaryKey(FieldType.Int, 'id'),
-        ForeignKey(PrimaryKey(FieldType.Int, 'id'), 'userId'),
-        ForeignKey(PrimaryKey(FieldType.String, 'key'), 'blogKey'),
-        DataField(FieldType.String, 'title'),
-        DataField(FieldType.String, 'content'),
-        DataField(FieldType.Bytes, 'image'),
-        DataField(FieldType.DateTime, 'createdTimestamp'),
-        DataField(FieldType.DateTime, 'lastEditTimestamp')
-      ]));
+    ArticleDaoDataBean.fields,
+    unorderedEquals([
+      PrimaryKey(FieldType.Int, 'article', 'id'),
+      ForeignKey(PrimaryKey(FieldType.Int, 'user', 'id'), 'article', 'userId'),
+      ForeignKey(
+          PrimaryKey(FieldType.String, 'blog', 'key'), 'article', 'blogKey'),
+      DataField(FieldType.String, 'article', 'title'),
+      DataField(FieldType.String, 'article', 'content'),
+      DataField(FieldType.Bytes, 'article', 'image'),
+      DataField(FieldType.DateTime, 'article', 'createdTimestamp'),
+      DataField(FieldType.DateTime, 'article', 'lastEditTimestamp')
+    ]),
+  );
 
   expect(UserDaoDataBean.layoutName, equals('user'));
   expect(
-      UserDaoDataBean.fields,
-      unorderedEquals([
-        PrimaryKey(FieldType.Int, 'id'),
-        DataField(FieldType.Int, 'executionId'),
-        DataField(FieldType.String, 'username', length: 128),
-        DataField(FieldType.Point, 'location', nullable: true),
-        DataField(FieldType.Bytes, 'image'),
-      ]));
+    UserDaoDataBean.fields,
+    unorderedEquals([
+      PrimaryKey(FieldType.Int, 'user', 'id'),
+      DataField(FieldType.Int, 'user', 'executionId'),
+      DataField(FieldType.String, 'user', 'username', length: 128),
+      DataField(FieldType.Point, 'user', 'location', nullable: true),
+      DataField(FieldType.Bytes, 'user', 'image'),
+    ]),
+  );
 }

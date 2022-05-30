@@ -26,6 +26,7 @@ class DataBeanField {
     final fieldType = getColumnType(field);
     final fieldLength = getLength(field);
     final fieldNullable = getNullability(field);
+    final layoutName = getLayoutName(field.enclosingElement as ClassElement);
 
     if (isPrimaryKeyField(field)) {
       if (fieldType != FieldType.Int && fieldType != FieldType.String) {
@@ -39,6 +40,7 @@ class DataBeanField {
 
       return PrimaryKey(
         fieldType,
+        layoutName,
         fieldName,
         length: fieldLength,
         autoIncrement: fieldType == FieldType.Int && isAutoIncrement(field),
@@ -51,12 +53,14 @@ class DataBeanField {
       }
       return ForeignKey(
         foreignPrimary,
+        layoutName,
         fieldName,
         nullable: fieldNullable,
       );
     } else {
       return DataField(
         fieldType,
+        layoutName,
         fieldName,
         length: fieldLength,
         nullable: fieldNullable,

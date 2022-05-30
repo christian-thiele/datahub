@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:boost/boost.dart';
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:test/test.dart';
@@ -30,15 +28,15 @@ void main() {
     }, timeout: Timeout(Duration(minutes: 5)));
 
     test('Hub Resource', () async {
-      final api = Api([ArticleResource()]);
-
       final token = CancellationToken();
-      final task = api.serve(InternetAddress.loopbackIPv4.address, 8083,
-          cancellationToken: token);
+      final serviceHost = ServiceHost(
+        [
+          () => Api([ArticleResource()]),
+        ],
+        catchSignal: false,
+      );
+      final task = serviceHost.run(token);
       await Future.delayed(Duration(seconds: 3));
-
-      ///TODO test requests
-
       token.cancel();
       await task;
     }, timeout: Timeout(Duration(minutes: 5)));

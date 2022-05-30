@@ -37,7 +37,7 @@ abstract class DatabaseConnection {
       PrimaryKeyDataBean<TPrimaryKey> bean, TPrimaryKey id);
 
   Future<List<dynamic>> select(
-    SelectSource bean,
+    QuerySource bean,
     List<QuerySelect> select, {
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,

@@ -88,17 +88,17 @@ class DataBeanBuilder {
   String _buildInitializer(DataBeanField beanField) {
     final dataField = beanField.dataField;
     if (dataField is PrimaryKey) {
-      return "PrimaryKey(${dataField.type}, '${dataField.name}', "
+      return "PrimaryKey(${dataField.type}, '${dataField.layoutName}', '${dataField.name}', "
           'length: ${dataField.length}, autoIncrement: ${dataField.autoIncrement},)';
     } else if (dataField is ForeignKey) {
       if (beanField.foreignFieldAccessor == null) {
         throw Exception(
             'ForeignFieldAccessor == null, this is likely a bug in the data_bean_generator code!');
       }
-      return "ForeignKey(${beanField.foreignFieldAccessor}, '${dataField.name}', "
+      return "ForeignKey(${beanField.foreignFieldAccessor}, '${dataField.layoutName}', '${dataField.name}', "
           'nullable: ${dataField.nullable},)';
     } else {
-      return "DataField(${dataField.type}, '${dataField.name}', "
+      return "DataField(${dataField.type}, '${dataField.layoutName}', '${dataField.name}', "
           'nullable: ${dataField.nullable}, length: ${dataField.length},)';
     }
   }

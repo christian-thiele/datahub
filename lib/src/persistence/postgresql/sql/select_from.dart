@@ -1,7 +1,29 @@
 import 'package:cl_datahub/cl_datahub.dart';
+import 'package:cl_datahub/src/persistence/postgresql/sql/sql.dart';
 
 abstract class SelectFrom {
   String get sql;
+
+  static SelectFrom fromQuerySource(String schemaName, QuerySource source) {
+    if (source is BaseDataBean) {
+      return SelectFromTable(schemaName, source.layoutName);
+    } else if (source is JoinedQuerySource) {
+      return JoinedSelectFrom(
+        SelectFromTable(schemaName, source.main.layoutName),
+        source.joins
+            .map((e) => TableJoin(
+                  SelectFromTable(schemaName, e.bean.layoutName),
+                  e.mainField.name,
+                  e.type,
+                  e.beanField.name,
+                ))
+            .toList(),
+      );
+    } else {
+      throw Exception(
+          'PostgreSQL implementation does not support QuerySource of type ${source.runtimeType}.');
+    }
+  }
 }
 
 class SelectFromTable extends SelectFrom {
@@ -23,7 +45,8 @@ class TableJoin {
   TableJoin(this.table, this.onMainField, this.onCompare, this.onJoinField);
 
   String getJoinSql(SelectFromTable main) => ' JOIN ${table.sql} ON '
-      '${main.sql}.$onMainField $_compareSql ${table.sql}.$onJoinField';
+      '${main.sql}.${SqlBuilder.escapeName(onMainField)} $_compareSql '
+      '${table.sql}.${SqlBuilder.escapeName(onJoinField)}';
 
   //TODO use filterSql here instead to allow more complex joins
   String get _compareSql {

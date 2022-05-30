@@ -220,3 +220,14 @@
 ## 0.8.5
 - SchedulerService
   - fixed RepeatSchedule
+
+## 0.9.0
+- added JoinedQuerySource
+- DatabaseConnection
+  - select method accepts broad QuerySource instead of narrow DataBean
+- QuerySelect
+  - DataField now implements QuerySelect directly (no FieldSelect required)
+  - FieldSelect provides alias field
+  - WildcardSelect provides bean field to only select bean fields in joins
+- ServiceHost
+  - static IoT hook released when host lifecycle is over

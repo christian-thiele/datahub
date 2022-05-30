@@ -12,8 +12,7 @@ class DataBeanGenerator extends GeneratorForAnnotation<DaoType> {
       Element element, ConstantReader annotation, BuildStep buildStep) sync* {
     final classElement = assertPodo(element);
     final classFields = podoFields(classElement);
-    final layoutName =
-        (annotation.read('name').literalValue as String?) ?? classElement.name;
+    final layoutName = getLayoutName(classElement);
     yield* DataBeanBuilder(classElement.name, layoutName, classFields).build();
   }
 }

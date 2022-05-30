@@ -99,8 +99,8 @@ class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
 
       await connection.execute(CreateTableBuilder(schema.name, metaTable)
         ..fields.addAll([
-          PrimaryKey(FieldType.String, 'key'),
-          DataField(FieldType.String, 'value')
+          PrimaryKey(FieldType.String, metaTable, 'key'),
+          DataField(FieldType.String, metaTable, 'value')
         ]));
 
       await connection.setMetaValue(

@@ -7,7 +7,7 @@ import 'package:cl_datahub/persistence.dart';
 /// (e.g. convert to SQL statements).
 ///
 /// See:  [WildcardSelect]
-///       [FieldSelect]
+///       [DataField]
 ///       [AggregateSelect]
 abstract class QuerySelect {
   const QuerySelect();
@@ -19,16 +19,22 @@ abstract class QuerySelect {
 
 /// Select every available column / field.
 ///
-/// Equivalent to `SELECT *` in SQL.
+/// If a DataBean is provided, only fields of this DataBean are selected.
+/// This is useful when using joins.
+///
+/// If no DataBean is given, this equals `SELECT *` in SQL.
 class WildcardSelect extends QuerySelect {
-  const WildcardSelect();
+  final BaseDataBean? bean;
+
+  const WildcardSelect({this.bean});
 }
 
 /// Select a specific column / field.
 class FieldSelect extends QuerySelect {
   final DataField field;
+  final String? alias;
 
-  const FieldSelect(this.field);
+  const FieldSelect(this.field, {this.alias});
 }
 
 enum AggregateType { count, min, max, sum, avg }

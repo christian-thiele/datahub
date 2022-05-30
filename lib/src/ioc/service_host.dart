@@ -138,6 +138,7 @@ class ServiceHost {
 
     await _runTimeCompleter.future;
 
+    _applicationHost = null;
     if (catchSignal) {
       exit(0);
     }

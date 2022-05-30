@@ -83,13 +83,12 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     int limit = -1,
   }) async {
     final from = SelectFromTable(adapter.schema.name, bean.layoutName);
-    final result =
-        await querySql(SelectBuilder(from)
-          ..select([const WildcardSelect()]) //TODO maybe "only" dto fields?
-          ..where(filter)
-          ..orderBy(sort)
-          ..offset(offset)
-          ..limit(limit));
+    final result = await querySql(SelectBuilder(from)
+      ..select([const WildcardSelect()])
+      ..where(filter)
+      ..orderBy(sort)
+      ..offset(offset)
+      ..limit(limit));
     return result.map(bean.map).toList();
   }
 
@@ -100,8 +99,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
 
     final from = SelectFromTable(adapter.schema.name, bean.layoutName);
     final result = await querySql(
-        SelectBuilder(from)
-          ..where(Filter.equals(primaryKey, id)));
+        SelectBuilder(from)..where(Filter.equals(primaryKey, id)));
 
     return result.map(bean.map).firstOrNull;
   }
@@ -112,10 +110,9 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     final primaryKey = bean.primaryKeyField;
 
     final from = SelectFromTable(adapter.schema.name, bean.layoutName);
-    final result =
-        await querySql(SelectBuilder(from)
-          ..select([FieldSelect(primaryKey)])
-          ..where(Filter.equals(primaryKey, id)));
+    final result = await querySql(SelectBuilder(from)
+      ..select([primaryKey])
+      ..where(Filter.equals(primaryKey, id)));
 
     return result.isNotEmpty;
   }
@@ -176,35 +173,33 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   Future<void> delete<TDao extends PKBaseDao>(TDao object) async {
     final bean = object.bean;
     final from = SelectFromTable(adapter.schema.name, bean.layoutName);
-    await execute(DeleteBuilder(from)
-      ..where(_pkFilter(bean, object.getPrimaryKey())));
+    await execute(
+        DeleteBuilder(from)..where(_pkFilter(bean, object.getPrimaryKey())));
   }
 
   @override
   Future<void> deleteId<TPrimaryKey>(
       PrimaryKeyDataBean<TPrimaryKey> bean, dynamic id) async {
     final from = SelectFromTable(adapter.schema.name, bean.layoutName);
-    await execute(DeleteBuilder(from)
-      ..where(_pkFilter(bean, id)));
+    await execute(DeleteBuilder(from)..where(_pkFilter(bean, id)));
   }
 
   @override
   Future<int> deleteWhere(BaseDataBean bean, Filter filter) async {
     final from = SelectFromTable(adapter.schema.name, bean.layoutName);
-    return await execute(
-        DeleteBuilder(from)..where(filter));
+    return await execute(DeleteBuilder(from)..where(filter));
   }
 
   @override
   Future<List> select(
-    BaseDataBean bean,
+    QuerySource source,
     List<QuerySelect> select, {
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
   }) {
-    final from = SelectFromTable(adapter.schema.name, bean.layoutName);
+    final from = SelectFrom.fromQuerySource(adapter.schema.name, source);
     return querySql(SelectBuilder(from)
       ..where(filter)
       ..orderBy(sort)

@@ -31,9 +31,9 @@ abstract class SqlBuilder {
       if (filter.caseSensitive ||
           filter.type == PropertyCompareType.Contains ||
           filter.value == null) {
-        buffer.write(escapeName(filter.property.name));
+        buffer.write(fieldSql(filter.property));
       } else {
-        buffer.write('LOWER(${escapeName(filter.property.name)})');
+        buffer.write('LOWER(${fieldSql(filter.property)})');
       }
 
       switch (filter.type) {
@@ -109,17 +109,29 @@ abstract class SqlBuilder {
   static Tuple<String, Map<String, dynamic>> sortSql(Sort sort) {
     final propertySorts = sort.linear();
     final sql = propertySorts
-        .map((e) =>
-            '${escapeName(e.property.name)} ${e.ascending ? 'ASC' : 'DESC'}')
+        .map((e) => '${fieldSql(e.property)} ${e.ascending ? 'ASC' : 'DESC'}')
         .join(', ');
     return Tuple(sql, const {});
   }
 
   static Tuple<String, Map<String, dynamic>> selectSql(QuerySelect select) {
     if (select is WildcardSelect) {
-      return const Tuple('*', {});
+      if (select.bean != null) {
+        return Tuple(select.bean!.layoutName + '.*', const {});
+      } else {
+        return const Tuple('*', {});
+      }
+    } else if (select is DataField) {
+      return Tuple(fieldSql(select), const {});
     } else if (select is FieldSelect) {
-      return Tuple(escapeName(select.field.name), const {});
+      if (select.alias != null) {
+        return Tuple(
+          '${fieldSql(select.field)} AS ${escapeName(select.alias!)}',
+          const {},
+        );
+      } else {
+        return selectSql(select.field);
+      }
     } else if (select is AggregateSelect) {
       if (select.type != AggregateType.count && select.select == null) {
         throw PersistenceException(
@@ -202,6 +214,10 @@ abstract class SqlBuilder {
         throw PersistenceException(
             'PostgreSQL implementation does not support data type ${field.type}.');
     }
+  }
+
+  static String fieldSql(DataField field) {
+    return '${escapeName(field.layoutName)}.${escapeName(field.name)}';
   }
 
   static String escapeName(String name) {

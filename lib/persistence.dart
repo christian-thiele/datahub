@@ -8,6 +8,7 @@ export 'src/persistence/dao/dao_type.dart';
 export 'src/persistence/query/filter.dart';
 export 'src/persistence/query/sort.dart';
 export 'src/persistence/query/query_select.dart';
+export 'src/persistence/query/query_source.dart';
 
 export 'src/persistence/migration/migrator.dart';
 

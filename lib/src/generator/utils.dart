@@ -4,6 +4,7 @@ import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:boost/boost.dart';
+import 'package:cl_datahub/persistence.dart';
 import 'package:cl_datahub_common/common.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -147,4 +148,9 @@ DartType? readTypeField(DartObject? element, String fieldName) {
     return null;
   }
   return valueReader.typeValue;
+}
+
+String getLayoutName(ClassElement element) {
+  final annotation = getAnnotation(element, DaoType);
+  return readField<String>(annotation, 'name') ?? element.name.toLowerCase();
 }

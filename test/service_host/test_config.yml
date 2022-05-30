@@ -1,0 +1,11 @@
+fileValue: "abc 123"
+fileList:
+  - valueA
+  - valueB
+  - valueC
+
+complexList:
+  - simple
+  - 1234
+  - complex:
+      subVal: "xxx"

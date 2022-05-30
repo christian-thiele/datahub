@@ -125,6 +125,14 @@ class ConfigService extends BaseService {
         return value.toString() as T;
       }
 
+      if (T == List<String>) {
+        if (value is List) {
+          return value.map((e) => e.toString()).cast<String>().toList() as T;
+        }
+
+        throw ConfigTypeException(configPath.toString(), T, value.runtimeType);
+      }
+
       throw ConfigTypeException(configPath.toString(), T, value.runtimeType);
     } on ConfigPathException catch (_) {
       if (defaultValue != null) {
@@ -194,6 +202,19 @@ class ConfigService extends BaseService {
   Future<void> shutdown() async {}
 
   static void _merge(Map<String, dynamic> target, Map map) {
+    dynamic clean(dynamic v) {
+      if (v is Map) {
+        // avoid unmodifiable maps
+        final map = <String, dynamic>{};
+        _merge(map, v);
+        return map;
+      } else if (v is Iterable) {
+        return v.map(clean).toList();
+      } else {
+        return v;
+      }
+    }
+
     for (final entry in map.entries) {
       if (entry.key is! String) {
         continue;
@@ -201,12 +222,8 @@ class ConfigService extends BaseService {
 
       if (target[entry.key] is Map<String, dynamic> && entry.value is Map) {
         _merge(target[entry.key], entry.value);
-      } else if (entry.value is Map) {
-        // avoid unmodifiable maps
-        target[entry.key] = <String, dynamic>{};
-        _merge(target[entry.key], entry.value);
       } else {
-        target[entry.key] = entry.value;
+        target[entry.key] = clean(entry.value);
       }
     }
   }

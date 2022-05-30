@@ -1,19 +1,23 @@
+import 'package:cl_datahub/persistence.dart';
+
 //TODO should be lowercase
 enum FieldType { String, Int, Float, Bool, DateTime, Bytes, Point, Json }
 
-/// Definition a data object field inside [DataLayout].
+/// Definition a data object field inside a [BaseDataBean].
 ///
 /// If [length] is not set, the default of the given type is used:
 /// String: 255
 /// Int: 32 (bit)
 /// Float: 64 (bit)
-class DataField {
+class DataField extends QuerySelect {
+  final String layoutName;
   final FieldType type;
   final String name;
   final bool nullable;
   final int length;
 
-  DataField(this.type, this.name, {this.nullable = false, int? length})
+  DataField(this.type, this.layoutName, this.name,
+      {this.nullable = false, int? length})
       : length = length ?? getDefaultLength(type);
 
   @override
@@ -49,9 +53,9 @@ class DataField {
 class PrimaryKey extends DataField {
   final bool autoIncrement;
 
-  PrimaryKey(FieldType type, String name,
+  PrimaryKey(FieldType type, String layoutName, String name,
       {int length = 16, this.autoIncrement = false})
-      : super(type, name, nullable: false, length: length);
+      : super(type, layoutName, name, nullable: false, length: length);
 
   @override
   bool operator ==(Object other) {
@@ -65,8 +69,9 @@ class PrimaryKey extends DataField {
 class ForeignKey extends DataField {
   PrimaryKey foreignPrimaryKey;
 
-  ForeignKey(this.foreignPrimaryKey, String name, {bool nullable = false})
-      : super(foreignPrimaryKey.type, name,
+  ForeignKey(this.foreignPrimaryKey, String layoutName, String name,
+      {bool nullable = false})
+      : super(foreignPrimaryKey.type, layoutName, name,
             nullable: nullable, length: foreignPrimaryKey.length);
 
   @override
