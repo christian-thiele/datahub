@@ -231,3 +231,6 @@
   - WildcardSelect provides bean field to only select bean fields in joins
 - ServiceHost
   - static IoT hook released when host lifecycle is over
+
+## 0.9.1
+- mainField and otherField on DataBean.join are optional

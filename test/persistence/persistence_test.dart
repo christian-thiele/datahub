@@ -137,11 +137,7 @@ Future _testScheme() async {
 
   // select with join
   final joinedData = await connection.select(
-    ArticleDaoDataBean.join(
-      UserDaoDataBean,
-      ArticleDaoDataBean.userIdField,
-      UserDaoDataBean.idField,
-    ),
+    ArticleDaoDataBean.join(UserDaoDataBean),
     [
       WildcardSelect(bean: ArticleDaoDataBean),
       FieldSelect(UserDaoDataBean.nameField, alias: 'user_name'),
