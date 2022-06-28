@@ -55,6 +55,9 @@ jobs:
       - name: Verify formatting (cl_datahub)
         run: dart format --output=none --set-exit-if-changed .
 
+      - name: Generate code (cl_datahub)
+        run: dart run build_runner build
+
       # Consider passing '--fatal-infos' for slightly stricter analysis.
       - name: Analyze project source (cl_datahub)
         run: dart analyze
