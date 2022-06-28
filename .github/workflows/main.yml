@@ -62,15 +62,13 @@ jobs:
       - name: Analyze project source (cl_datahub)
         run: dart analyze
 
-      - uses: getong/rabbitmq-action@v1.2
+      - name: Run tests (cl_datahub)
+        uses: getong/rabbitmq-action@v1.2
         with:
           rabbitmq version: '3.8.2-management-alpine'
           host port: 5672
           rabbitmq user: 'guest'
           rabbitmq password: 'guest'
-          rabbitmq vhost: 'vhost'
-
-      - name: Run tests (cl_datahub)
         run: dart test
 
       - name: Publish (cl_datahub_common)
