@@ -6,8 +6,12 @@ import '../dto/test_dto.dart';
 import 'example_api.dart';
 
 void main() {
-  test('Test ExampleApi', _testExampleApi,
-      timeout: Timeout(Duration(minutes: 5)));
+  test(
+    'Test ExampleApi',
+    _testExampleApi,
+    timeout: Timeout(Duration(minutes: 5)),
+    skip: true,
+  );
 }
 
 Future<void> _testExampleApi() async {
