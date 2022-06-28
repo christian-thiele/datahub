@@ -17,7 +17,7 @@ abstract class BaseDataBean implements QuerySource {
   JoinedQuerySource join(BaseDataBean other,
       {DataField? mainField,
       DataField? otherField,
-      PropertyCompareType type = PropertyCompareType.Equals}) {
+      CompareType type = CompareType.equals}) {
     if ((mainField == null) != (otherField == null)) {
       throw PersistenceException(
           'mainField and otherField must be either both null or both non-null.');

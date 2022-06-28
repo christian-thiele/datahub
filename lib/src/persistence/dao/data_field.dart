@@ -9,7 +9,7 @@ enum FieldType { String, Int, Float, Bool, DateTime, Bytes, Point, Json }
 /// String: 255
 /// Int: 32 (bit)
 /// Float: 64 (bit)
-class DataField extends QuerySelect {
+class DataField extends Expression implements QuerySelect {
   final String layoutName;
   final FieldType type;
   final String name;

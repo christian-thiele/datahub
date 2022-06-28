@@ -48,4 +48,11 @@ class AggregateSelect extends QuerySelect {
   const AggregateSelect(this.type, this.alias, [this.select]);
 }
 
+class ExpressionSelect extends QuerySelect {
+  final Expression expression;
+  final String alias;
+
+  const ExpressionSelect(this.expression, this.alias);
+}
+
 //TODO group by?

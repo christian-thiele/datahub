@@ -8,7 +8,13 @@ import 'package:cl_datahub/cl_datahub.dart';
 ///
 /// All [Filter] implementations are immutable.
 abstract class Filter {
+  const Filter();
+
   bool get isEmpty;
+
+  Filter and(Filter other) => andGroup([this, other]);
+
+  Filter or(Filter other) => orGroup([this, other]);
 
   /// Tries to simplify the Filter structure to avoid redundancy.
   Filter reduce();
@@ -19,38 +25,39 @@ abstract class Filter {
   /// Returns the smallest representation of the "And" group of [filters].
   ///
   /// See implementation of [_optimizedGroup] for details;
-  static Filter and(Iterable<Filter> filters) =>
+  static Filter andGroup(Iterable<Filter> filters) =>
       _optimizedGroup(filters, FilterGroupType.And);
 
   /// Returns the smallest representation of the "Or" group of [filters].
   ///
   /// See implementation of [_optimizedGroup] for details;
-  static Filter or(Iterable<Filter> filters) =>
+  static Filter orGroup(Iterable<Filter> filters) =>
       _optimizedGroup(filters, FilterGroupType.Or);
 
-  /// Convenience method for creating a [PropertyCompare] filter
-  /// with compare type [PropertyCompareType.Equals].
-  static PropertyCompare equals(DataField property, dynamic value) {
-    return PropertyCompare(PropertyCompareType.Equals, property, value);
+  /// Convenience method for creating a [CompareFilter] filter
+  /// with compare type [CompareType.equals].
+  ///
+  /// If any of the parameters is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  static CompareFilter equals(dynamic left, dynamic right) {
+    return CompareFilter(Expression.dynamic(left), CompareType.equals,
+        Expression.dynamic(right));
   }
 
-  /// Convenience method for creating a [PropertyCompare] filter
-  /// with compare type [PropertyCompareType.NotEquals].
-  static PropertyCompare notEquals(DataField property, dynamic value) {
-    return PropertyCompare(PropertyCompareType.NotEquals, property, value);
+  /// Convenience method for creating a [CompareFilter] filter
+  /// with compare type [CompareType.notEquals].
+  ///
+  /// If any of the parameters is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  static CompareFilter notEquals(dynamic left, dynamic right) {
+    return CompareFilter(Expression.dynamic(left), CompareType.notEquals,
+        Expression.dynamic(right));
   }
 
   /// Assembles the smallest representation of [filters] combined.
   static Filter _optimizedGroup(
       Iterable<Filter> filters, FilterGroupType type) {
-    final notEmpty = filters.where((element) => !element.isEmpty);
-    if (notEmpty.isEmpty) {
-      return Filter.empty;
-    } else if (notEmpty.length == 1) {
-      return notEmpty.single;
-    } else {
-      return FilterGroup(notEmpty.toList(growable: false), type);
-    }
+    return FilterGroup(filters.toList(growable: false), type).reduce();
   }
 }
 
@@ -60,7 +67,7 @@ enum FilterGroupType { And, Or }
 ///
 /// Best practice: Use the convenience methods [Filter.and] / [Filter.or]
 /// instead of instantiating [FilterGroup] directly.
-class FilterGroup implements Filter {
+class FilterGroup extends Filter {
   final List<Filter> filters;
   final FilterGroupType type;
 
@@ -71,37 +78,40 @@ class FilterGroup implements Filter {
 
   @override
   Filter reduce() {
-    final reduced =
-        filters.map((f) => f.reduce()).where((element) => !element.isEmpty);
+    final reduced = filters
+        .map((f) => f.reduce())
+        .where((element) => !element.isEmpty)
+        .toList(growable: false);
 
     if (reduced.isEmpty) {
       return Filter.empty;
     } else if (reduced.length == 1) {
       return reduced.single;
     } else {
-      return FilterGroup(reduced.toList(growable: false), type);
+      // TODO solve unnecessarily nested groups
+      return FilterGroup(reduced, type);
     }
   }
 }
 
-enum PropertyCompareType {
-  Equals,
-  NotEquals,
-  Contains,
-  GreaterThan,
-  LessThan,
-  GreaterOrEqual,
-  LessOrEqual,
-  In,
+enum CompareType {
+  equals,
+  notEquals,
+  contains,
+  greaterThan,
+  lessThan,
+  greaterOrEqual,
+  lessOrEqual,
+  isIn,
 }
 
-class PropertyCompare implements Filter {
-  final PropertyCompareType type;
-  final DataField property;
-  final dynamic value; //TODO dynamic? check if this holds up
+class CompareFilter extends Filter {
+  final Expression left;
+  final CompareType type;
+  final Expression right;
   final bool caseSensitive;
 
-  const PropertyCompare(this.type, this.property, this.value,
+  const CompareFilter(this.left, this.type, this.right,
       {this.caseSensitive = true});
 
   @override
@@ -114,7 +124,7 @@ class PropertyCompare implements Filter {
 @Deprecated('This method assumes that the adapter supports SQL, '
     'as well as the specific dialect you are using. Only use this method '
     'when you know the adapter implementation you are using.')
-class CustomSqlCondition implements Filter {
+class CustomSqlCondition extends Filter {
   final String sql;
 
   CustomSqlCondition(this.sql);
@@ -126,7 +136,7 @@ class CustomSqlCondition implements Filter {
   Filter reduce() => this;
 }
 
-class _EmptyFilter implements Filter {
+class _EmptyFilter extends Filter {
   const _EmptyFilter();
 
   @override

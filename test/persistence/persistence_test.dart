@@ -111,15 +111,15 @@ Future _testScheme() async {
   // query with sort:
   final ascUsers = await connection.query<UserDao>(
     UserDaoDataBean,
-    filter: Filter.equals(UserDaoDataBean.executionIdField, executionId),
-    sort: Sort.asc(UserDaoDataBean.nameField),
+    filter: UserDaoDataBean.executionIdField.equals(executionId),
+    sort: UserDaoDataBean.nameField.asc(),
     limit: 50,
   );
 
   final descUsers = await connection.query<UserDao>(
     UserDaoDataBean,
-    filter: Filter.equals(UserDaoDataBean.executionIdField, executionId),
-    sort: Sort.desc(UserDaoDataBean.nameField),
+    filter: UserDaoDataBean.executionIdField.equals(executionId),
+    sort: UserDaoDataBean.nameField.desc(),
     limit: 50,
   );
 
@@ -143,7 +143,7 @@ Future _testScheme() async {
       FieldSelect(UserDaoDataBean.nameField, alias: 'user_name'),
       UserDaoDataBean.executionIdField,
     ],
-    filter: Filter.equals(UserDaoDataBean.executionIdField, executionId),
+    filter: UserDaoDataBean.executionIdField.equals(executionId),
   );
 
   expect(joinedData.length, equals(articleCount * 50));

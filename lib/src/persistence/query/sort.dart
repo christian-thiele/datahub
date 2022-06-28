@@ -12,11 +12,13 @@ abstract class Sort {
 
   static const Sort empty = _EmptySort();
 
-  /// Convenience method for creating an ascending [PropertySort].
-  static Sort asc(DataField property) => PropertySort(property, true);
+  /// Convenience method for creating an ascending [ExpressionSort].
+  static Sort asc(dynamic expression) =>
+      ExpressionSort(Expression.dynamic(expression), true);
 
-  /// Convenience method for creating a descending [PropertySort].
-  static Sort desc(DataField property) => PropertySort(property, false);
+  /// Convenience method for creating a descending [ExpressionSort].
+  static Sort desc(dynamic expression) =>
+      ExpressionSort(Expression.dynamic(expression), false);
 
   static Sort followedBy(Iterable<Sort> sorts) {
     final notEmpty =
@@ -33,15 +35,15 @@ abstract class Sort {
   /// Tries to simplify the Sort structure to avoid redundancy.
   Sort reduce();
 
-  /// Returns a linear list of [PropertySorts].
-  List<PropertySort> linear();
+  /// Returns a linear list of [ExpressionSort].
+  List<ExpressionSort> linear();
 }
 
-class PropertySort extends Sort {
-  final DataField property;
+class ExpressionSort extends Sort {
+  final Expression expression;
   final bool ascending;
 
-  const PropertySort(this.property, this.ascending);
+  const ExpressionSort(this.expression, this.ascending);
 
   @override
   bool get isEmpty => false;
@@ -50,7 +52,7 @@ class PropertySort extends Sort {
   Sort reduce() => this;
 
   @override
-  List<PropertySort> linear() => [this];
+  List<ExpressionSort> linear() => [this];
 }
 
 class SortGroup extends Sort {
@@ -76,7 +78,7 @@ class SortGroup extends Sort {
   bool get isEmpty => sorts.isEmpty;
 
   @override
-  List<PropertySort> linear() =>
+  List<ExpressionSort> linear() =>
       sorts.expand((element) => element.linear()).toList();
 }
 
@@ -90,5 +92,5 @@ class _EmptySort implements Sort {
   Sort reduce() => this;
 
   @override
-  List<PropertySort> linear() => [];
+  List<ExpressionSort> linear() => [];
 }
