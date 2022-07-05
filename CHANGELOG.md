@@ -269,4 +269,7 @@
 
 ## 0.11.1
 - errors in ApiService.serve are now handled gracefully
-- more filter convenience methods on Expression 
+- more filter convenience methods on Expression
+
+## 0.11.2
+- fixed datahub_common dependency
