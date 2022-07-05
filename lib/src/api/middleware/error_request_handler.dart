@@ -14,5 +14,6 @@ class ErrorRequestHandler implements RequestHandler {
   ErrorRequestHandler(this.error);
 
   @override
-  Future<ApiResponse> handleRequest(ApiRequest request) async => throw error;
+  Future<ApiResponse> handleRequest(ApiRequest request) async =>
+      TextResponse.plain(error.message, statusCode: error.statusCode);
 }

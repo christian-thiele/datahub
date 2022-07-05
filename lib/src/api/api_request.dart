@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:cl_datahub_common/common.dart';
 
 import 'request_context.dart';
 
@@ -57,6 +57,7 @@ class ApiRequest {
       return decoded;
     }
 
-    throw ApiRequestException.badRequest('Missing or malformed query parameter: $name');
+    throw ApiRequestException.badRequest(
+        'Missing or malformed query parameter: $name');
   }
 }
