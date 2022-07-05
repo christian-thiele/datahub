@@ -29,9 +29,10 @@ void main() {
       'Select filter eq string caseInsensitive',
       _test(
         SelectBuilder(schemaTable)
-          ..where(PropertyCompare(PropertyCompareType.Equals, fieldX, 'valueX',
+          ..where(CompareFilter(
+              fieldX, CompareType.equals, ValueExpression('valueX'),
               caseSensitive: false)),
-        'SELECT * FROM schema.table WHERE LOWER("fake"."fieldX") = \'valuex\'',
+        'SELECT * FROM schema.table WHERE LOWER("fake"."fieldX") = LOWER(\'valueX\')',
       ),
     );
 
@@ -39,8 +40,8 @@ void main() {
       'Select filter eq string contains',
       _test(
         SelectBuilder(schemaTable)
-          ..where(
-              PropertyCompare(PropertyCompareType.Contains, fieldX, 'valueX')),
+          ..where(CompareFilter(
+              fieldX, CompareType.contains, ValueExpression('valueX'))),
         'SELECT * FROM schema.table WHERE "fake"."fieldX" LIKE \'%valueX%\'',
       ),
     );
@@ -49,8 +50,8 @@ void main() {
       'Select filter eq string contains caseInsensitive',
       _test(
         SelectBuilder(schemaTable)
-          ..where(PropertyCompare(
-              PropertyCompareType.Contains, fieldX, 'valueX',
+          ..where(CompareFilter(
+              fieldX, CompareType.contains, ValueExpression('valueX'),
               caseSensitive: false)),
         'SELECT * FROM schema.table WHERE "fake"."fieldX" ILIKE \'%valueX%\'',
       ),
@@ -80,9 +81,7 @@ void main() {
         SelectBuilder(
           JoinedSelectFrom(
             schemaTable,
-            [
-              TableJoin(otherTable, 'id', PropertyCompareType.Equals, 'main_id')
-            ],
+            [TableJoin(otherTable, 'id', CompareType.equals, 'main_id')],
           ),
         ),
         'SELECT * FROM schema.table JOIN schema.other ON schema.table."id" = schema.other."main_id"',
@@ -95,9 +94,7 @@ void main() {
         SelectBuilder(
           JoinedSelectFrom(
             schemaTable,
-            [
-              TableJoin(otherTable, 'id', PropertyCompareType.Equals, 'main_id')
-            ],
+            [TableJoin(otherTable, 'id', CompareType.equals, 'main_id')],
           ),
         )..where(Filter.equals(fieldX, 'valueX')),
         'SELECT * FROM schema.table JOIN schema.other ON schema.table."id" = '
@@ -112,17 +109,16 @@ void main() {
           JoinedSelectFrom(
             schemaTable,
             [
-              TableJoin(
-                  otherTable, 'id', PropertyCompareType.Equals, 'main_id'),
-              TableJoin(
-                  otherTable2, 'xyz', PropertyCompareType.LessThan, 'abc'),
+              TableJoin(otherTable, 'id', CompareType.equals, 'main_id'),
+              TableJoin(otherTable2, 'xyz', CompareType.lessThan, 'abc'),
             ],
           ),
-        )..where(PropertyCompare(PropertyCompareType.Equals, fieldX, 'valueX',
+        )..where(CompareFilter(
+            fieldX, CompareType.equals, ValueExpression('valueX'),
             caseSensitive: false)),
         'SELECT * FROM schema.table JOIN schema.other ON schema.table."id" = '
         'schema.other."main_id" JOIN schema.different ON schema.table."xyz" < '
-        'schema.different."abc" WHERE LOWER("fake"."fieldX") = \'valuex\'',
+        'schema.different."abc" WHERE LOWER("fake"."fieldX") = LOWER(\'valueX\')',
       ),
     );
   });

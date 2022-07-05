@@ -39,7 +39,7 @@ class SelectFromTable extends SelectFrom {
 class TableJoin {
   final SelectFromTable table;
   final String onMainField;
-  final PropertyCompareType onCompare;
+  final CompareType onCompare;
   final String onJoinField;
 
   TableJoin(this.table, this.onMainField, this.onCompare, this.onJoinField);
@@ -51,19 +51,19 @@ class TableJoin {
   //TODO use filterSql here instead to allow more complex joins
   String get _compareSql {
     switch (onCompare) {
-      case PropertyCompareType.Equals:
+      case CompareType.equals:
         return '=';
-      case PropertyCompareType.NotEquals:
+      case CompareType.notEquals:
         return '<>';
-      case PropertyCompareType.LessThan:
+      case CompareType.lessThan:
         return '<';
-      case PropertyCompareType.LessOrEqual:
+      case CompareType.lessOrEqual:
         return '<=';
-      case PropertyCompareType.GreaterThan:
+      case CompareType.greaterThan:
         return '>';
-      case PropertyCompareType.GreaterOrEqual:
+      case CompareType.greaterOrEqual:
         return '>=';
-      case PropertyCompareType.In:
+      case CompareType.isIn:
         return 'in';
       default:
         throw Exception('Invalid join compare type: $onCompare');

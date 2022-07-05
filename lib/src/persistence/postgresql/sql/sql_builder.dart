@@ -25,50 +25,54 @@ abstract class SqlBuilder {
           buffer.write(results.map((e) => '(${e.a})').join(' OR '));
           break;
       }
-    } else if (filter is PropertyCompare) {
+    } else if (filter is CompareFilter) {
       // for case Contains, case insensitivity is solved by using ILIKE,
       // no need for LOWER
       if (filter.caseSensitive ||
-          filter.type == PropertyCompareType.Contains ||
-          filter.value == null) {
-        buffer.write(fieldSql(filter.property));
+          filter.type == CompareType.contains ||
+          filter.right == ValueExpression(null)) {
+        final result = expressionSql(filter.left);
+        buffer.write(result.a);
+        values.addAll(result.b);
       } else {
-        buffer.write('LOWER(${fieldSql(filter.property)})');
+        final result = expressionSql(filter.left);
+        buffer.write('LOWER(${result.a})');
+        values.addAll(result.b);
       }
 
       switch (filter.type) {
-        case PropertyCompareType.Contains:
+        case CompareType.contains:
           buffer.write(filter.caseSensitive ? ' LIKE ' : ' ILIKE ');
           break;
-        case PropertyCompareType.Equals:
+        case CompareType.equals:
           // special cases when checking null
-          if (filter.value == null) {
+          if (filter.right == ValueExpression(null)) {
             buffer.write(' IS ');
           } else {
             buffer.write(' = ');
           }
           break;
-        case PropertyCompareType.NotEquals:
+        case CompareType.notEquals:
           // special cases when checking null
-          if (filter.value == null) {
+          if (filter.right == ValueExpression(null)) {
             buffer.write(' IS NOT ');
           } else {
             buffer.write(' <> ');
           }
           break;
-        case PropertyCompareType.GreaterThan:
+        case CompareType.greaterThan:
           buffer.write(' > ');
           break;
-        case PropertyCompareType.LessThan:
+        case CompareType.lessThan:
           buffer.write(' < ');
           break;
-        case PropertyCompareType.GreaterOrEqual:
+        case CompareType.greaterOrEqual:
           buffer.write(' >= ');
           break;
-        case PropertyCompareType.LessOrEqual:
+        case CompareType.lessOrEqual:
           buffer.write(' <= ');
           break;
-        case PropertyCompareType.In:
+        case CompareType.isIn:
           buffer.write(' IN ');
           break;
         default:
@@ -82,16 +86,23 @@ abstract class SqlBuilder {
       // @CTH by CTH: maybe provide a "namespace" to methods like this to avoid
       // clashing names?
       switch (filter.type) {
-        case PropertyCompareType.Contains:
+        case CompareType.contains:
           // case insensitivity is solved by using ILIKE instead of LIKE,
           // no need for LOWER here
-          buffer.write(escapeValueLike(filter.value));
+          final result = escapeValueLike(filter.right);
+          buffer.write(result.a);
+          values.addAll(result.b);
           break;
         default:
-          if (filter.caseSensitive || filter.value == null) {
-            buffer.write(escapeValue(filter.value));
+          if (filter.caseSensitive ||
+              filter.right == const ValueExpression(null)) {
+            final result = expressionSql(filter.right);
+            buffer.write(result.a);
+            values.addAll(result.b);
           } else {
-            buffer.write(escapeValue(filter.value).toLowerCase());
+            final result = expressionSql(filter.right);
+            buffer.write('LOWER(${result.a})');
+            values.addAll(result.b);
           }
           break;
       }
@@ -108,10 +119,12 @@ abstract class SqlBuilder {
 
   static Tuple<String, Map<String, dynamic>> sortSql(Sort sort) {
     final propertySorts = sort.linear();
-    final sql = propertySorts
-        .map((e) => '${fieldSql(e.property)} ${e.ascending ? 'ASC' : 'DESC'}')
-        .join(', ');
-    return Tuple(sql, const {});
+    final result = propertySorts.map((e) {
+      final result = expressionSql(e.expression);
+      return Tuple('${result.a} ${e.ascending ? 'ASC' : 'DESC'}', result.b);
+    }).toList();
+    return Tuple(result.a.join(', '),
+        Map.fromEntries(result.b.expand((e) => e.entries)));
   }
 
   static Tuple<String, Map<String, dynamic>> selectSql(QuerySelect select) {
@@ -140,24 +153,32 @@ abstract class SqlBuilder {
 
       switch (select.type) {
         case AggregateType.count:
-          return Tuple('COUNT(*)', const {});
+          return Tuple('COUNT(*) AS ${escapeName(select.alias)}', const {});
         case AggregateType.min:
           // dereference safe because of exception above
           final inner = selectSql(select.select!);
-          return Tuple('MIN(${inner.a})', inner.b);
+          return Tuple(
+              'MIN(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
         case AggregateType.max:
           // dereference safe because of exception above
           final inner = selectSql(select.select!);
-          return Tuple('MAX(${inner.a})', inner.b);
+          return Tuple(
+              'MAX(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
         case AggregateType.sum:
           // dereference safe because of exception above
           final inner = selectSql(select.select!);
-          return Tuple('SUM(${inner.a})', inner.b);
+          return Tuple(
+              'SUM(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
         case AggregateType.avg:
           // dereference safe because of exception above
           final inner = selectSql(select.select!);
-          return Tuple('AVG(${inner.a})', inner.b);
+          return Tuple(
+              'AVG(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
       }
+    } else if (select is ExpressionSelect) {
+      return Tuple(
+          '${expressionSql(select.expression)} AS ${escapeName(select.alias)}',
+          {});
     } else {
       throw PersistenceException('PostgreSQL implementation does not '
           'support aggregate type ${select.runtimeType}.');
@@ -263,14 +284,19 @@ abstract class SqlBuilder {
     return '\'${value.toString().replaceAll('\'', '\'\'')}\''; //TODO other escape things
   }
 
-  static String escapeValueLike(dynamic value) {
-    if (value is DateTime) {
-      // weird but who knows what kind of use case this has
-      // i would expect it to work like that...
-      return '\'%${value.toIso8601String()}%\'';
+  static Tuple<String, Map<String, dynamic>> escapeValueLike(Expression value) {
+    if (value is ValueExpression) {
+      if (value.value is DateTime) {
+        // weird but who knows what kind of use case this has
+        // i would expect it to work like that...
+        return Tuple('\'%${value.value.toIso8601String()}%\'', {});
+      } else {
+        return Tuple('\'%${value.value.toString().replaceAll('\'', '\'\'')}%\'',
+            {}); //TODO other escape things
+      }
     }
 
-    return '\'%${value.toString().replaceAll('\'', '\'\'')}%\''; //TODO other escape things
+    return expressionSql(value);
   }
 
   /// Returns a substitution literal.
@@ -285,6 +311,21 @@ abstract class SqlBuilder {
       return "decode(@${e.b}, 'hex')";
     } else {
       return '@${e.b}';
+    }
+  }
+
+  static Tuple<String, Map<String, dynamic>> expressionSql(
+      Expression expression) {
+    if (expression is DataField) {
+      return Tuple(fieldSql(expression), {});
+    } else if (expression is ValueExpression) {
+      return Tuple(escapeValue(expression.value), {});
+      // ignore: deprecated_member_use_from_same_package
+    } else if (expression is CustomSqlExpression) {
+      return Tuple(expression.sqlExpression, {});
+    } else {
+      throw PersistenceException('PostgreSQL implementation does not '
+          'support Expression type ${expression.runtimeType}.');
     }
   }
 

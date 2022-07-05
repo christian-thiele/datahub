@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
 
     container:
-      image:  google/dart:beta
+      image:  dart:stable
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -55,6 +55,9 @@ jobs:
       - name: Verify formatting (cl_datahub)
         run: dart format --output=none --set-exit-if-changed .
 
+      - name: Generate code (cl_datahub)
+        run: dart run build_runner build
+
       # Consider passing '--fatal-infos' for slightly stricter analysis.
       - name: Analyze project source (cl_datahub)
         run: dart analyze
@@ -63,9 +66,9 @@ jobs:
         run: dart test
 
       - name: Publish (cl_datahub_common)
-        run: pub publish -f
+        run: dart pub publish -f
         working-directory: datahub_common
         continue-on-error: true
 
       - name: Publish (cl_datahub)
-        run: pub publish -f
+        run: dart pub publish -f

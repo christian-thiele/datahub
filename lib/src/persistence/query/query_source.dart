@@ -9,7 +9,7 @@ abstract class QuerySource {}
 class BeanJoin {
   final BaseDataBean bean;
   final DataField mainField;
-  final PropertyCompareType type;
+  final CompareType type;
   final DataField beanField;
 
   BeanJoin(this.bean, this.mainField, this.type, this.beanField);
@@ -26,7 +26,7 @@ class JoinedQuerySource extends QuerySource {
   /// This enabled chaining of join() calls.
   JoinedQuerySource join(
       BaseDataBean other, DataField mainField, DataField otherField,
-      {PropertyCompareType type = PropertyCompareType.Equals}) {
+      {CompareType type = CompareType.equals}) {
     return JoinedQuerySource(
       main,
       joins.followedBy([BeanJoin(other, mainField, type, otherField)]).toList(),

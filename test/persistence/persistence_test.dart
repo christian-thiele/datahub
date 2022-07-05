@@ -111,15 +111,15 @@ Future _testScheme() async {
   // query with sort:
   final ascUsers = await connection.query<UserDao>(
     UserDaoDataBean,
-    filter: Filter.equals(UserDaoDataBean.executionIdField, executionId),
-    sort: Sort.asc(UserDaoDataBean.nameField),
+    filter: UserDaoDataBean.executionIdField.equals(executionId),
+    sort: UserDaoDataBean.nameField.asc(),
     limit: 50,
   );
 
   final descUsers = await connection.query<UserDao>(
     UserDaoDataBean,
-    filter: Filter.equals(UserDaoDataBean.executionIdField, executionId),
-    sort: Sort.desc(UserDaoDataBean.nameField),
+    filter: UserDaoDataBean.executionIdField.equals(executionId),
+    sort: UserDaoDataBean.nameField.desc(),
     limit: 50,
   );
 
@@ -137,17 +137,13 @@ Future _testScheme() async {
 
   // select with join
   final joinedData = await connection.select(
-    ArticleDaoDataBean.join(
-      UserDaoDataBean,
-      ArticleDaoDataBean.userIdField,
-      UserDaoDataBean.idField,
-    ),
+    ArticleDaoDataBean.join(UserDaoDataBean),
     [
       WildcardSelect(bean: ArticleDaoDataBean),
       FieldSelect(UserDaoDataBean.nameField, alias: 'user_name'),
       UserDaoDataBean.executionIdField,
     ],
-    filter: Filter.equals(UserDaoDataBean.executionIdField, executionId),
+    filter: UserDaoDataBean.executionIdField.equals(executionId),
   );
 
   expect(joinedData.length, equals(articleCount * 50));

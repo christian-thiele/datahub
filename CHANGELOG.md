@@ -233,6 +233,18 @@
   - static IoT hook released when host lifecycle is over
 
 ## 0.9.1
+- mainField and otherField on DataBean.join are optional
+
+# 0.10.0
+- renamed PropertyCompareType to CompareType
+- refactored CompareType values to lower camel case
+- added Expression
+  - added Expression convenience methods to create Filter objects
+  - added Expression convenience methods to create Sort objects
+- PropertyCompare has been replaced by CompareFilter
+- FieldSort has been replaced by ExpressionSort
+
+## 0.10.1
 - throw error in TransferBeanBuilder when id-field is nullable
 - fix environment not initialized bug
 - added environment accessor to BaseService
