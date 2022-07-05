@@ -9,7 +9,9 @@ T decodeTyped<T>(dynamic raw) {
 }
 
 T? decodeTypedNullable<T>(dynamic raw) {
-  if (raw == null) {
+  final type = TypeCheck<T>();
+
+  if (raw == null || type.isSubtypeOf<Null>()) {
     return null;
   }
 
@@ -17,32 +19,46 @@ T? decodeTypedNullable<T>(dynamic raw) {
     return raw;
   }
 
-  if (T == String) {
+  if (type.isSubtypeOf<String?>()) {
     return raw.toString() as T;
   }
 
-  if (T == int) {
-    return int.tryParse(raw.toString()) as T;
+  if (type.isSubtypeOf<int?>()) {
+    final result = int.tryParse(raw.toString());
+    return (result is T) ? result as T : null;
   }
 
-  if (T == double) {
-    return double.tryParse(raw.toString()) as T;
+  if (type.isSubtypeOf<double?>()) {
+    final result = double.tryParse(raw.toString());
+    return (result is T) ? result as T : null;
   }
 
-  if (T == bool) {
+  if (type.isSubtypeOf<bool?>()) {
     if (raw is num) {
       return raw > 0 as T;
     }
 
-    return (raw.toString().toLowerCase() == 'true') as T;
+    if (raw.toString().toLowerCase() == 'true') {
+      return true as T;
+    } else if (raw.toString().toLowerCase() == 'false') {
+      return false as T;
+    }
+
+    return null;
   }
 
-  if (T == DateTime) {
-    return DateTime.tryParse(raw.toString()) as T;
+  if (type.isSubtypeOf<DateTime?>()) {
+    final result = DateTime.tryParse(raw.toString());
+    return (result is T) ? result as T : null;
   }
 
-  if (T == Uint8List) {
-    return Base64Decoder().convert(raw.toString()) as T;
+  if (type.isSubtypeOf<Uint8List?>()) {
+    final str = raw.toString();
+    if (str.isEmpty) {
+      return null;
+    }
+
+    return Base64Decoder().convert(str) as T;
   }
 
   throw ApiError.invalidType(T);
@@ -124,14 +140,3 @@ T? decodeEnumNullable<T>(dynamic raw, List<T> values) {
 }
 
 String encodeJsonString(dynamic value) => JsonEncoder().convert(value);
-
-//TODO replace with value.name when upgrading to dart 2.17
-String encodeEnum<T>(T value) => enumName<T>(value);
-
-String? encodeEnumNullable<T>(T? value) {
-  if (value == null) {
-    return null;
-  }
-
-  return enumName<T>(value);
-}

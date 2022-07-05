@@ -17,7 +17,7 @@ class LogMiddleware extends Middleware {
     // Pre-Handler
     final stopwatch = Stopwatch()..start();
     final log = verbose ? _logService.v : _logService.i;
-    log('${request.method}: ${request.route}', sender: 'DataHub');
+    log('${request.method.name}: ${request.route}', sender: 'DataHub');
 
     final result = await next(request);
 

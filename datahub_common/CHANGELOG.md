@@ -47,3 +47,10 @@
 
 ## 0.7.0
 - Major datahub update.
+
+## 0.7.1
+- fixed decodeTyped of nullable types
+
+## 0.8.0
+- updated to dart version 2.17
+- removed encodeEnum (now dart feature)

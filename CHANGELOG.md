@@ -261,3 +261,8 @@
 
 ## 0.10.4
 - fixed ErrorRequestHandler
+
+## 0.11.0
+- updated to dart 2.17
+- fixed decodeTyped of nullable types
+- removed encodeEnum (now dart feature)

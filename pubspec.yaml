@@ -1,16 +1,16 @@
 name: cl_datahub
 description: A Framework for creating Web APIs.
-version: 0.10.3
+version: 0.11.0
 homepage: https://www.corelightservices.com
 
 environment:
-  sdk: '>=2.16.0 <3.0.0'
+  sdk: '>=2.17.0 <3.0.0'
 
 dependencies:
   boost: ^1.7.0
   postgres: ^2.4.3
   uuid: ^3.0.1
-  cl_datahub_common: 0.7.0
+  cl_datahub_common: 0.8.0
   path: ^1.8.0
   intl: ^0.17.0
   source_gen: ^1.2.2

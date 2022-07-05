@@ -175,10 +175,10 @@ class EnumFieldType extends FieldType {
   @override
   String buildEncodingStatement(String valueAccessor, bool nullable) {
     if (nullable) {
-      return 'encodeEnumNullable($valueAccessor)';
+      return '$valueAccessor?.name';
     }
 
-    return 'encodeEnum($valueAccessor)';
+    return '$valueAccessor.name';
   }
 
   @override
