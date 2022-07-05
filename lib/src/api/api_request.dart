@@ -44,13 +44,19 @@ class ApiRequest {
 
   /// Returns the named query parameter.
   ///
-  /// Throws [ApiRequestException.badRequest] if value does not exist and
-  /// [fallback] is null.
+  /// Throws [ApiRequestException.badRequest] if value does not exist or could
+  /// not be parsed.
+  /// If a null return value is preferred instead, simply set a nullable
+  /// type for [T] and no exception will be thrown.
   ///
-  /// Valid types for [T] are [String], [int], [double], [bool], [DateTime] or [Uint8List].
-  T getParam<T>(String name, [T? fallback]) {
-    return decodeTypedNullable<T>(queryParams[name]) ??
-        fallback ??
-        (throw ApiRequestException.badRequest('Missing query param: $name'));
+  /// Valid types for [T] (nullable, as well as non-nullable)
+  /// are [String], [int], [double], [bool], [DateTime] or [Uint8List].
+  T getParam<T>(String name) {
+    final decoded = decodeTypedNullable<T>(queryParams[name]);
+    if (decoded is T) {
+      return decoded;
+    }
+
+    throw ApiRequestException.badRequest('Missing or malformed query parameter: $name');
   }
 }

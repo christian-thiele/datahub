@@ -252,3 +252,6 @@
 - fixed AMQP channels not getting disposed after shutdown
 - added type parameter to ApiRequest.getParam for dynamic decoding
 - removed ApiRequest.getParamInt (use ApiRequest.getParam<int>() instead)
+
+## 0.10.2
+- fixed ApiRequest.getParam behaviour (accepts nullable types)
