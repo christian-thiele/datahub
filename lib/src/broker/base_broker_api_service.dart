@@ -1,10 +1,14 @@
 import 'dart:convert';
 
+import 'package:cl_datahub_common/common.dart';
+import 'package:dart_amqp/dart_amqp.dart';
+
 import 'package:cl_datahub/api.dart';
 import 'package:cl_datahub/ioc.dart';
 import 'package:cl_datahub/services.dart';
-import 'package:cl_datahub_common/common.dart';
-import 'package:dart_amqp/dart_amqp.dart';
+
+import 'broker_service.dart';
+import 'consumer_exception.dart';
 
 //TODO handle reconnects (channel based and connection based)
 abstract class BaseBrokerApiService extends BaseService {
