@@ -255,3 +255,6 @@
 
 ## 0.10.2
 - fixed ApiRequest.getParam behaviour (accepts nullable types)
+
+## 0.10.3
+- fixed errors in ApiResource
