@@ -266,3 +266,7 @@
 - updated to dart 2.17
 - fixed decodeTyped of nullable types
 - removed encodeEnum (now dart feature)
+
+## 0.11.1
+- errors in ApiService.serve are now handled gracefully
+- more filter convenience methods on Expression 

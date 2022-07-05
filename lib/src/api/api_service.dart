@@ -21,6 +21,7 @@ import 'request_context.dart';
 import 'route.dart';
 
 abstract class ApiService extends BaseService {
+  final _logService = resolve<LogService>();
   late final _configAddress = config<String>('address', defaultValue: '');
   late final _configPort = config<int>('port', defaultValue: 8080);
 
@@ -43,24 +44,32 @@ abstract class ApiService extends BaseService {
 
   Future<void> serve(dynamic address, int port,
       {CancellationToken? cancellationToken}) async {
-    final _logService = resolve<LogService>();
-    final server = await HttpServer.bind(address, port);
+    try {
+      final server = await HttpServer.bind(address, port);
 
-    _logService.info('Serving on $address:$port', sender: 'DataHub');
+      _logService.info('Serving on $address:$port', sender: 'DataHub');
 
-    final _cancelKey = cancellationToken?.attach(() {
-      _logService.info('Shutting down...', sender: 'DataHub');
-      server.close();
-    });
+      final _cancelKey = cancellationToken?.attach(() {
+        _logService.info('Shutting down...', sender: 'DataHub');
+        server.close();
+      });
 
-    final completer = Completer();
+      final completer = Completer();
 
-    server.listen(_handleRequestGuarded, onError: _onError, onDone: () {
-      cancellationToken?.detach(_cancelKey!);
-      completer.complete();
-    });
+      server.listen(_handleRequestGuarded, onError: _onError, onDone: () {
+        cancellationToken?.detach(_cancelKey!);
+        completer.complete();
+      });
 
-    await completer.future;
+      await completer.future;
+    } catch (e, stack) {
+      _logService.critical(
+        'Error while serving API.',
+        error: e,
+        trace: stack,
+        sender: 'DataHub',
+      );
+    }
   }
 
   Future<void> _handleRequestGuarded(HttpRequest request) async {

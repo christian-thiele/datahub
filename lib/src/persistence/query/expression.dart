@@ -34,9 +34,62 @@ abstract class Expression {
   Filter notEquals(dynamic other) =>
       CompareFilter(this, CompareType.notEquals, Expression.dynamic(other));
 
-  Sort asc() => ExpressionSort(this, true);
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is greater than [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter greaterThan(dynamic other) =>
+      CompareFilter(this, CompareType.greaterThan, Expression.dynamic(other));
 
-  Sort desc() => ExpressionSort(this, false);
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is greater than or equals [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter greaterOrEqual(dynamic other) => CompareFilter(
+      this, CompareType.greaterOrEqual, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is less than [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter lessThan(dynamic other) =>
+      CompareFilter(this, CompareType.lessThan, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is less than or equals [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter lessOrEqual(dynamic other) =>
+      CompareFilter(this, CompareType.lessOrEqual, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this contains [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter contains(dynamic other) =>
+      CompareFilter(this, CompareType.contains, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is in [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter isIn(dynamic other) =>
+      CompareFilter(this, CompareType.isIn, Expression.dynamic(other));
+
+  /// Creates a [Sort] that orders ascending by this expression.
+  Sort asc() => sort(true);
+
+  /// Creates a [Sort] that orders descending by this expression.
+  Sort desc() => sort(false);
+
+  /// Creates a [Sort] that orders by this expression.
+  Sort sort(bool ascending) => ExpressionSort(this, ascending);
 }
 
 class ValueExpression extends Expression {

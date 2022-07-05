@@ -1,13 +1,13 @@
 name: cl_datahub_common
 description: Shared code for cl_datahub and cl_appbase.
-version: 0.8.0
+version: 0.8.1
 homepage: https://www.corelightservices.com
 
 environment:
   sdk: '>=2.17.0 <3.0.0'
 
 dependencies:
-  boost: ^1.4.0
+  boost: ^1.7.0
 
 dev_dependencies:
   pedantic: ^1.11.0

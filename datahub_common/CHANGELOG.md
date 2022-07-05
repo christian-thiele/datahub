@@ -54,3 +54,6 @@
 ## 0.8.0
 - updated to dart version 2.17
 - removed encodeEnum (now dart feature)
+
+## 0.8.1
+- fixed boost dependency
