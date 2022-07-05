@@ -88,8 +88,8 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
     if (id != null) {
       return await getElement(request, id);
     } else {
-      final offset = request.getParamInt('offset', 0);
-      final limit = request.getParamInt('limit', 25);
+      final offset = request.getParam<int>('offset', 0);
+      final limit = request.getParam<int>('limit', 25);
 
       return await getList(request, offset, limit);
     }

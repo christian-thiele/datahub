@@ -1,14 +1,30 @@
 import 'dart:async';
 import 'dart:io';
-
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/api/request_context.dart';
+
+import 'package:cl_datahub/ioc.dart';
+import 'package:cl_datahub/services.dart';
+import 'package:cl_datahub/utils.dart';
+
+import 'middleware/error_request_handler.dart';
+import 'middleware/middleware.dart';
+import 'middleware/request_handler.dart';
+import 'sessions/session_provider.dart';
+import 'sessions/session.dart';
+
+import 'api_endpoint.dart';
+import 'api_request.dart';
+import 'api_request_exception.dart';
+import 'api_request_method.dart';
+import 'api_response.dart';
+import 'request_context.dart';
+import 'route.dart';
 
 abstract class ApiService extends BaseService {
   late final _configAddress = config<String>('address', defaultValue: '');
   late final _configPort = config<int>('port', defaultValue: 8080);
 
+  final String basePath;
   final List<ApiEndpoint> endpoints;
   final MiddlewareBuilder? middleware;
   final SessionProvider? sessionProvider;
@@ -16,9 +32,14 @@ abstract class ApiService extends BaseService {
   late Future _serveTask;
   final _shutdownToken = CancellationToken();
 
-  ApiService(String? config, this.endpoints,
-      {this.middleware, this.sessionProvider})
-      : super(config);
+  ApiService(
+    String? config,
+    this.endpoints, {
+    this.middleware,
+    this.sessionProvider,
+    String? apiBasePath,
+  })  : basePath = _sanitizeBasePath(apiBasePath),
+        super(config);
 
   Future<void> serve(dynamic address, int port,
       {CancellationToken? cancellationToken}) async {
@@ -67,8 +88,14 @@ abstract class ApiService extends BaseService {
       // to ApiResponses. this is just in case:
       request.response.statusCode = 500;
       request.response.writeln('500 - Internal Server Error');
+
+      var errorMessage = 'Error while handling request.';
+      try {
+        errorMessage = 'Error while handling request to "${request.uri}".';
+      } catch (_) {}
+
       resolve<LogService>().error(
-        'Error while handling request to "${request.requestedUri}".',
+        errorMessage,
         sender: 'DataHub',
         error: e,
         trace: stack,
@@ -89,24 +116,18 @@ abstract class ApiService extends BaseService {
   }
 
   Future<ApiResponse> handleRequest(HttpRequest httpRequest) async {
-    //TODO strip api base path (like /v1)
-    final path = httpRequest.requestedUri.path;
-    final resource = endpoints.firstWhere(
-        (element) => element.routePattern.match(path),
-        orElse: () => throw ApiRequestException.notFound(
-            'Resource \"$path\" not found.'));
-    final method = parseMethod(httpRequest.method);
+    final absolutePath = httpRequest.uri.path;
+    final handler = _findRequestHandler(absolutePath);
+    final path = absolutePath.substring(absolutePath.length);
 
-    final route = resource.routePattern.decode(httpRequest.uri.path);
-
-    // get query params
-    final queryParams = httpRequest.uri.queryParameters;
-
-    // get headers
     final headers = <String, List<String>>{};
     httpRequest.headers.forEach((name, values) {
       headers[name] = values;
     });
+
+    final route = (handler is ApiEndpoint)
+        ? handler.routePattern.decode(path)
+        : Route(RoutePattern.any, path, {}, path);
 
     // find session
     Session? session;
@@ -122,13 +143,19 @@ abstract class ApiService extends BaseService {
 
     //TODO cookies
 
-    final request =
-        ApiRequest(context, method, route, headers, queryParams, httpRequest);
+    final request = ApiRequest(
+      context,
+      parseMethod(httpRequest.method),
+      route,
+      headers,
+      httpRequest.uri.queryParameters,
+      httpRequest,
+    );
 
     if (middleware != null) {
-      return await middleware!.call(resource).handleRequest(request);
+      return await middleware!.call(handler).handleRequest(request);
     } else {
-      return await resource.handleRequest(request);
+      return await handler.handleRequest(request);
     }
   }
 
@@ -149,5 +176,38 @@ abstract class ApiService extends BaseService {
   Future<void> shutdown() async {
     _shutdownToken.cancel();
     await _serveTask;
+  }
+
+  // TODO this could be part of RoutePattern instead
+  static String _sanitizeBasePath(String? apiBasePath) {
+    if (nullOrWhitespace(apiBasePath)) {
+      return '';
+    }
+
+    if (!apiBasePath!.startsWith('/')) {
+      apiBasePath = '/$apiBasePath';
+    }
+
+    apiBasePath = apiBasePath.replaceAll(RegExp(r'\/+'), '/');
+
+    if (apiBasePath.endsWith('/')) {
+      apiBasePath = apiBasePath.substring(0, apiBasePath.length - 1);
+    }
+
+    return apiBasePath;
+  }
+
+  RequestHandler _findRequestHandler(String absolutePath) {
+    if (!absolutePath.startsWith(basePath)) {
+      return ErrorRequestHandler(ApiRequestException.notFound(
+          'Resource \"$absolutePath\" not found.'));
+    }
+
+    final path = absolutePath.substring(absolutePath.length);
+
+    return endpoints
+            .firstOrNullWhere((element) => element.routePattern.match(path)) ??
+        ErrorRequestHandler(ApiRequestException.notFound(
+            'Resource \"$absolutePath\" not found.'));
   }
 }

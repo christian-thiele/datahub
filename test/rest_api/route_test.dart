@@ -24,8 +24,9 @@ final pattern4 = '/path/to/{stuff}/and/*';
 final pattern5 = '/path/to/{stuff}/and/*/';
 final pattern6 = '/path/to/{stuff}/and/{optionalParam?}';
 final pattern7 = '/path/to/{stuff}/and/{optionalParam?}/';
-final pattern8 = '/path/to/{stuff}/and/{optionalParam?}/more';
+final pattern8 = 'path/to/{stuff}/and/{optionalParam?}/more';
 final pattern9 = '/path/to/{stuff}/and/{optionalParam?}/*';
+final patternX = '*';
 final invalid1 = '/invalid/path/{stuff}/and/*/no';
 final invalid2 = '/*invalid/path/{stuff}/and/*/no';
 
@@ -94,6 +95,7 @@ final tests = [
   Triple(
       '/profile/events/{id?}', '/profile/events/%24count', {'id': '\$count'}),
   Triple('/profile/events/{id?}', '/profile/events/\$count', {'id': '\$count'}),
+  Triple(patternX, '/something/else', {}),
 ];
 
 final invalidRoutes = [invalid1, invalid2];

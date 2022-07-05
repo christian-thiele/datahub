@@ -1,8 +1,6 @@
 import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/api/api_request.dart';
-import 'package:cl_datahub/src/api/api_response.dart';
-import 'package:cl_datahub/src/api/middleware/middleware.dart';
-import 'package:cl_datahub/src/api/middleware/request_handler.dart';
+
+import 'request_handler.dart';
 
 class LogMiddleware extends Middleware {
   final bool verbose;

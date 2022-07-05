@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cl_datahub/api.dart';
+import 'package:cl_datahub/cl_datahub.dart';
 
 import 'request_context.dart';
 
@@ -45,23 +46,11 @@ class ApiRequest {
   ///
   /// Throws [ApiRequestException.badRequest] if value does not exist and
   /// [fallback] is null.
-  String getParam(String name, [String? fallback]) {
-    return queryParams[name]?.toString() ??
-        fallback ??
-        (throw ApiRequestException.badRequest('Missing query param: $name'));
-  }
-
-  /// Returns the named query parameter of the request as int.
   ///
-  /// Throws [ApiRequestException.badRequest] if value does not exist and
-  /// [fallback] is null or if value is not an integer.
-  int getParamInt(String name, [int? fallback]) {
-    if (queryParams[name] != null) {
-      return int.tryParse(queryParams[name]!) ??
-          (throw ApiRequestException.badRequest('Invalid query param: $name'));
-    }
-
-    return fallback ??
+  /// Valid types for [T] are [String], [int], [double], [bool], [DateTime] or [Uint8List].
+  T getParam<T>(String name, [T? fallback]) {
+    return decodeTypedNullable<T>(queryParams[name]) ??
+        fallback ??
         (throw ApiRequestException.badRequest('Missing query param: $name'));
   }
 }

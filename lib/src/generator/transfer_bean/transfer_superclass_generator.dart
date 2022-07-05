@@ -1,3 +1,4 @@
+import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:build/build.dart';
 import 'package:cl_datahub_common/common.dart';
 import 'field_type.dart';
@@ -14,6 +15,13 @@ class TransferSuperclassGenerator
       Element element, ConstantReader annotation, BuildStep buildStep) sync* {
     final classElement = assertPodo(element);
     final idField = findTransferIdField(classElement);
+
+    if (idField != null &&
+        idField.type.nullabilitySuffix != NullabilitySuffix.none) {
+      throw Exception(
+          'Only non-nullable String and int are allowed as ID-field types.');
+    }
+
     final idFieldType =
         (idField != null) ? FieldType.fromDartType(idField.type) : null;
     yield* TransferSuperclassBuilder(

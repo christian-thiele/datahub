@@ -231,3 +231,12 @@
   - WildcardSelect provides bean field to only select bean fields in joins
 - ServiceHost
   - static IoT hook released when host lifecycle is over
+
+## 0.9.1
+- throw error in TransferBeanBuilder when id-field is nullable
+- fix environment not initialized bug
+- added environment accessor to BaseService
+- minor internal fixes
+- fixed AMQP channels not getting disposed after shutdown
+- added type parameter to ApiRequest.getParam for dynamic decoding
+- removed ApiRequest.getParamInt (use ApiRequest.getParam<int>() instead)

@@ -31,6 +31,7 @@ class ConfigService extends BaseService {
   ///
   /// The value of this is determined by the config value "datahub.environment".
   /// The default value is [Environment.dev].
+  @override
   late final Environment environment;
 
   ConfigService(Map<String, dynamic> defaultConfig, this.arguments) {
@@ -254,8 +255,11 @@ class ConfigService extends BaseService {
 
       if (datahubConfig['environment'] != null) {
         environment = findEnum(
-            datahubConfig['environment'].toString().toLowerCase(),
-            Environment.values);
+          datahubConfig['environment'].toString().toLowerCase(),
+          Environment.values,
+        );
+      } else {
+        environment = Environment.dev;
       }
     } on ConfigPathException catch (_) {
       _log.warn('No datahub config found, using default values.');

@@ -3,9 +3,6 @@ import 'dart:convert';
 import 'package:cl_datahub/cl_datahub.dart';
 import 'package:dart_amqp/dart_amqp.dart';
 
-import 'broker_service.dart';
-import 'consumer_exception.dart';
-
 //TODO handle reconnects (channel based and connection based)
 abstract class BaseBrokerApiService extends BaseService {
   final _log = resolve<LogService>();
@@ -45,6 +42,7 @@ abstract class BaseBrokerApiService extends BaseService {
   Future<void> initializeFanOutExchange(
       String exchangeName, String? consumerTag) async {
     final channel = await _brokerService.openChannel();
+    _channels.add(channel);
     final exchange = await channel.exchange(exchangeName, ExchangeType.FANOUT);
     final queue = await channel.queue('', autoDelete: true);
     await queue.bind(exchange, '');

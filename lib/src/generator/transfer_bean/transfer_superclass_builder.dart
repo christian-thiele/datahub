@@ -13,7 +13,8 @@ class TransferSuperclassBuilder {
     if (idFieldType is! StringFieldType &&
         idFieldType is! IntFieldType &&
         idFieldType != null) {
-      throw Exception('Only String and int are allowed as ID-field types.');
+      throw Exception(
+          'Only non-nullable String and int are allowed as ID-field types.');
     }
   }
 

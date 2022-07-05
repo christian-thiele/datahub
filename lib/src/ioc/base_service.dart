@@ -6,6 +6,9 @@ abstract class BaseService {
   BaseService([String? path])
       : configPath = path == null ? null : ConfigPath(path);
 
+  /// Fetch the environment configuration from [ConfigService].
+  Environment get environment => resolve<ConfigService>().environment;
+
   /// Fetches a configuration value from [ConfigService].
   T config<T>(String path, {T? defaultValue}) {
     final relative = ConfigPath(path);

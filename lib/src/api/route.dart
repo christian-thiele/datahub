@@ -94,7 +94,10 @@ class RoutePattern {
   final RegExp routeMatchExp;
   final bool isWildcardPattern;
 
-  RoutePattern._(
+  static final any =
+      RoutePattern._('*', [_WildcardSegment()], RegExp(r'.*'), true);
+
+  const RoutePattern._(
       this.pattern, this._segments, this.routeMatchExp, this.isWildcardPattern);
 
   factory RoutePattern(String pattern) {
@@ -207,7 +210,7 @@ class RoutePattern {
 class _Segment {
   final String source;
 
-  _Segment(this.source);
+  const _Segment(this.source);
 
   String toMatchExp() => '\\/${_regexEscape(source)}';
 
@@ -219,7 +222,7 @@ class _PLSegment extends _Segment {
   final String key;
   final bool optional;
 
-  _PLSegment(String source, this.prefix, this.key, this.optional)
+  const _PLSegment(String source, this.prefix, this.key, this.optional)
       : super(source);
 
   @override
@@ -249,7 +252,7 @@ class _PLSegment extends _Segment {
 }
 
 class _WildcardSegment extends _Segment {
-  _WildcardSegment() : super('*');
+  const _WildcardSegment() : super('*');
 
   @override
   String toMatchExp() => '(?<$_wildcardGroup>(\\/(\\\$?[\\w\\.-]*))*)';

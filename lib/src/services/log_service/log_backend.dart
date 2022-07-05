@@ -1,5 +1,3 @@
-import 'package:cl_datahub/cl_datahub.dart';
-
 import 'log_message.dart';
 
 /// Backend interface for [LogService].

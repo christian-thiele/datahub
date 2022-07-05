@@ -5,7 +5,7 @@ import 'package:cl_datahub/cl_datahub.dart';
 part 'simple_dao.g.dart';
 
 @DaoType()
-class Simple {
+class Simple extends _Dao {
   @PrimaryKeyDaoField()
   final int id;
 
