@@ -1,5 +1,5 @@
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/persistence.dart';
+import 'package:datahub/persistence.dart';
 
 import 'select_from.dart';
 import 'sql_builder.dart';

@@ -1,5 +1,5 @@
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/persistence.dart';
+import 'package:datahub/persistence.dart';
 
 abstract class BaseDataBean implements QuerySource {
   String get layoutName;

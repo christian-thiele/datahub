@@ -1,4 +1,4 @@
-import 'package:cl_datahub_common/common.dart';
+import 'package:datahub/datahub.dart';
 
 import 'other_dto.dart';
 

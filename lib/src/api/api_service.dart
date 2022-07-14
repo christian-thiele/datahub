@@ -2,9 +2,9 @@ import 'dart:async';
 import 'dart:io';
 import 'package:boost/boost.dart';
 
-import 'package:cl_datahub/ioc.dart';
-import 'package:cl_datahub/services.dart';
-import 'package:cl_datahub/utils.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
+import 'package:datahub/utils.dart';
 
 import 'middleware/error_request_handler.dart';
 import 'middleware/middleware.dart';

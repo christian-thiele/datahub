@@ -1,4 +1,4 @@
-import 'package:cl_datahub/persistence.dart';
+import 'package:datahub/persistence.dart';
 
 /// Representing query select targets in a uniform, abstract way.
 ///

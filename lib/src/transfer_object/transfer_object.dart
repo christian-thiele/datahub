@@ -1,4 +1,4 @@
-import 'package:cl_datahub_common/src/api/dto/copy_with.dart';
+import 'copy_with.dart';
 
 /// Transfer object class annotation.
 ///

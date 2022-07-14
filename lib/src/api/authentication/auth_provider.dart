@@ -1,4 +1,4 @@
-import 'package:cl_datahub/api.dart';
+import 'package:datahub/api.dart';
 
 abstract class AuthProvider<TAuthResult extends AuthResult> {
   /// Authenticates user with given authData from json request.

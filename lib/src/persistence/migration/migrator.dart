@@ -1,4 +1,4 @@
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 
 /// Provides an interface for migrating between schema versions.
 ///

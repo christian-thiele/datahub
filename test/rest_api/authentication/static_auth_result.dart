@@ -1,4 +1,4 @@
-import 'package:cl_datahub/api.dart';
+import 'package:datahub/api.dart';
 
 class StaticAuthResult extends AuthResult {
   final int userId;

@@ -1,4 +1,6 @@
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/config.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/transfer_object.dart';
 
 abstract class BaseService {
   final ConfigPath? configPath;

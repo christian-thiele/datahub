@@ -1,6 +1,5 @@
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/utils.dart';
-import 'package:cl_datahub_common/common.dart';
+import 'package:datahub/utils.dart';
 
 class ApiRequestException extends ApiException {
   final int statusCode;

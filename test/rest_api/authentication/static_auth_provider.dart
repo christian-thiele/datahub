@@ -1,5 +1,5 @@
-import 'package:cl_datahub/src/api/api_request_exception.dart';
-import 'package:cl_datahub/src/api/authentication/auth_provider.dart';
+import 'package:datahub/src/api/api_request_exception.dart';
+import 'package:datahub/src/api/authentication/auth_provider.dart';
 
 import 'static_auth_result.dart';
 

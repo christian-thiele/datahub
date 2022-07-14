@@ -1,7 +1,7 @@
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 import 'package:postgres/postgres.dart';
 
 abstract class SqlBuilder {

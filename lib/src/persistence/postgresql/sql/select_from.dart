@@ -1,5 +1,5 @@
-import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/persistence/postgresql/sql/sql.dart';
+import 'package:datahub/datahub.dart';
+import 'package:datahub/src/persistence/postgresql/sql/sql.dart';
 
 abstract class SelectFrom {
   String get sql;

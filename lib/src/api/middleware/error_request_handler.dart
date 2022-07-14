@@ -1,5 +1,5 @@
-import 'package:cl_datahub/cl_datahub.dart';
-import 'package:cl_datahub/src/api/middleware/request_handler.dart';
+import 'package:datahub/datahub.dart';
+import 'package:datahub/src/api/middleware/request_handler.dart';
 
 /// Errors that happen outside of [RequestHandler]s, for example
 /// 404 errors where no [RequestHandler] fits the given route, requests

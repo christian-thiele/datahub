@@ -1,4 +1,4 @@
-import 'package:cl_datahub/persistence.dart';
+import 'package:datahub/persistence.dart';
 
 //TODO should be lowercase
 enum FieldType { String, Int, Float, Bool, DateTime, Bytes, Point, Json }

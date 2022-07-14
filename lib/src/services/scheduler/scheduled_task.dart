@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 
 typedef Task = FutureOr<void> Function();
 

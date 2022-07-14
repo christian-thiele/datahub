@@ -1,4 +1,4 @@
-import 'package:cl_datahub/persistence.dart';
+import 'package:datahub/persistence.dart';
 
 /// Defining a common base class among query sources.
 ///

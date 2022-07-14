@@ -1,6 +1,6 @@
-import 'package:cl_datahub/src/api/api_request.dart';
-import 'package:cl_datahub/src/api/api_response.dart';
-import 'package:cl_datahub/src/api/middleware/request_handler.dart';
+import 'package:datahub/src/api/api_request.dart';
+import 'package:datahub/src/api/api_response.dart';
+import 'package:datahub/src/api/middleware/request_handler.dart';
 
 typedef MiddlewareBuilder = RequestHandler Function(RequestHandler);
 

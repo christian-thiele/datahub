@@ -1,11 +1,11 @@
 import 'dart:convert';
 
-import 'package:cl_datahub_common/common.dart';
 import 'package:dart_amqp/dart_amqp.dart';
 
-import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/ioc.dart';
-import 'package:cl_datahub/services.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
+import 'package:datahub/utils.dart';
 
 import 'broker_service.dart';
 import 'consumer_exception.dart';

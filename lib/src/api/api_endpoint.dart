@@ -1,7 +1,7 @@
-import 'package:cl_datahub/api.dart';
-import 'package:cl_datahub/config.dart';
-import 'package:cl_datahub/ioc.dart';
-import 'package:cl_datahub/services.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/config.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
 
 import 'middleware/request_handler.dart';
 

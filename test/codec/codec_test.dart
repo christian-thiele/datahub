@@ -1,5 +1,5 @@
-import 'package:cl_datahub_common/common.dart';
 import 'package:test/test.dart';
+import 'package:datahub/datahub.dart';
 
 void main() {
   group('Encoding', () {

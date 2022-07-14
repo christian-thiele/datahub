@@ -1,4 +1,4 @@
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/transfer_object.dart';
 
 /// Annotation for dao classes.
 ///

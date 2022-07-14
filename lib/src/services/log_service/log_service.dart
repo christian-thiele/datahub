@@ -1,5 +1,5 @@
-import 'package:cl_datahub/config.dart';
-import 'package:cl_datahub/ioc.dart';
+import 'package:datahub/config.dart';
+import 'package:datahub/ioc.dart';
 
 import 'log_backend.dart';
 import 'log_message.dart';

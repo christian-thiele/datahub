@@ -1,4 +1,4 @@
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 import 'package:test/test.dart';
 import 'package:boost/boost.dart';
 

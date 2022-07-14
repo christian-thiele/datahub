@@ -1,4 +1,4 @@
-import 'package:cl_datahub_common/common.dart';
+import 'package:datahub/utils.dart';
 
 enum ApiRequestMethod { GET, POST, PUT, PATCH, DELETE }
 

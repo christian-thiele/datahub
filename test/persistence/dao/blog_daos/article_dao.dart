@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 
 import 'blog_dao.dart';
 import 'user_dao.dart';

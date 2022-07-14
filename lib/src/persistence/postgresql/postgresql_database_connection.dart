@@ -1,5 +1,5 @@
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:postgres/postgres.dart' as postgres;

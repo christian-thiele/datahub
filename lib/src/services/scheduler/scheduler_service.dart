@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cl_datahub/ioc.dart';
+import 'package:datahub/ioc.dart';
 
 import 'overlap_behaviour.dart';
 import 'schedule.dart';

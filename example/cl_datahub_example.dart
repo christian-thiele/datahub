@@ -1,7 +1,7 @@
 // ignore: unused_import
 import 'dart:io';
 
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 
 void main(List<String> args) async {
   final host = ServiceHost([

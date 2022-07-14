@@ -1,5 +1,5 @@
-import 'package:cl_datahub/ioc.dart';
-import 'package:cl_datahub/services.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
 import 'package:dart_amqp/dart_amqp.dart';
 
 import 'broker_service.dart';

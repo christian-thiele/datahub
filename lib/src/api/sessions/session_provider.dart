@@ -1,4 +1,4 @@
-import 'package:cl_datahub/src/api/sessions/session.dart';
+import 'package:datahub/src/api/sessions/session.dart';
 
 /// Interface for session persistence.
 abstract class SessionProvider<TAuthResult, TSession extends Session, TUserId> {

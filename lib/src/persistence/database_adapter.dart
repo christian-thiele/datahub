@@ -1,4 +1,4 @@
-import 'package:cl_datahub/persistence.dart';
+import 'package:datahub/persistence.dart';
 
 /// Abstract interface for connecting to a database.
 /// TODO more docs

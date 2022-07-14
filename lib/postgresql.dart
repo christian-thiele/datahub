@@ -1,4 +1,4 @@
-library cl_datahub;
+library datahub;
 
 // TODO this should be an extension library!
 export 'src/persistence/postgresql/postgresql_database_adapter.dart';

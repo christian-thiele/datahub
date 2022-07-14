@@ -1,4 +1,4 @@
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 
 /// Represents an expression that is either static or evaluated
 /// for every individual dataset and evaluates into a value.

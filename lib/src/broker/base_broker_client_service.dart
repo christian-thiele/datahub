@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 import 'package:dart_amqp/dart_amqp.dart';
 
 //TODO handle reconnects (channel based and connection based)

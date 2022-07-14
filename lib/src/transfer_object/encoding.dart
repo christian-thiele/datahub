@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:boost/boost.dart';
-
-import 'package:cl_datahub_common/common.dart';
+import 'package:datahub/utils.dart';
 
 T decodeTyped<T>(dynamic raw) {
   return decodeTypedNullable(raw) ?? (throw ApiException('Missing value.'));

@@ -1,4 +1,4 @@
-import 'package:cl_datahub/cl_datahub.dart';
+import 'package:datahub/datahub.dart';
 
 //TODO pretty docs
 // - represents group of data layouts with name and version, analog to database schema

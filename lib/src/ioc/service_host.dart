@@ -3,8 +3,8 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:boost/boost.dart';
-import 'package:cl_datahub/config.dart';
-import 'package:cl_datahub/services.dart';
+import 'package:datahub/config.dart';
+import 'package:datahub/services.dart';
 
 import 'base_service.dart';
 
