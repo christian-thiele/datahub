@@ -6,6 +6,9 @@ homepage: https://datahubproject.net/
 environment:
   sdk: '>=2.17.0 <3.0.0'
 
+executables:
+  datahub:
+
 dependencies:
   boost: ^1.7.0
   postgres: ^2.4.3
