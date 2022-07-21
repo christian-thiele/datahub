@@ -114,6 +114,7 @@ class CreateCommand extends CliCommand {
     await step('Running pub get.', () async {
       await dart(
         'pub get',
+        baseDir: baseDir,
         verbose: verbose,
       );
     });

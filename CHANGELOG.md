@@ -1,3 +1,6 @@
+## 0.12.3
+- fixed dart pub get call in CLI
+
 ## 0.12.2
 - added DataHub CLI
 
