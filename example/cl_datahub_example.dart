@@ -4,12 +4,15 @@ import 'dart:io';
 import 'package:datahub/datahub.dart';
 
 void main(List<String> args) async {
-  final host = ServiceHost([
-    () => TestService('test'),
-  ], onInitialized: onInit);
+  final host = ServiceHost(
+    [
+      () => TestService('test'),
+    ],
+    onInitialized: onInit,
+  );
   await host.run();
 
-  // required because of signal catching inside service host
+  // required because of signal catching inside ServiceHost
   exit(0);
 }
 

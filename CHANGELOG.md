@@ -1,3 +1,6 @@
+## 0.12.2
+- added DataHub CLI
+
 ## 0.12.1
 - fixed dependencies
 
