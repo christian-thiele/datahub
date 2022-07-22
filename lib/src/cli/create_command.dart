@@ -14,6 +14,15 @@ import 'resources/readme.dart';
 import 'utils.dart';
 
 class CreateCommand extends CliCommand {
+  CreateCommand() {
+    argParser.addFlag(
+      'force',
+      abbr: 'f',
+      help: 'Force create project.\n'
+          'Does not cancel if the directory already exists.',
+    );
+  }
+
   @override
   String get description => 'Creates a new DataHub Project.';
 
@@ -32,13 +41,14 @@ class CreateCommand extends CliCommand {
     await step(
       'Creating dart package.',
       () async {
-        if (await baseDir.exists()) {
+        final force = argResults?['force'] ?? false;
+        if (!force && await baseDir.exists()) {
           throw CliException(
               'Directory "$projectName" already exists in working dir.');
         }
 
         await dart(
-          'create $projectName --no-pub',
+          'create $projectName -t console --no-pub' + (force ? ' --force' : ''),
           verbose: verbose,
         );
       },

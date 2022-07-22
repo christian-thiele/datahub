@@ -1,3 +1,6 @@
+## 0.12.4
+- added force flag to datahub create (CLI)
+
 ## 0.12.3
 - fixed dart pub get call in CLI
 
