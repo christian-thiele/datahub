@@ -19,3 +19,6 @@ export 'src/persistence/database_adapter.dart';
 export 'src/persistence/database_connection.dart';
 export 'src/persistence/database_context.dart';
 export 'src/persistence/persistence_exception.dart';
+
+export 'src/persistence/repository/repository.dart';
+export 'src/persistence/repository/crud_repository.dart';
