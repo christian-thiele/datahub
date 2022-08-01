@@ -2,6 +2,9 @@ import 'package:datahub/config.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/transfer_object.dart';
 
+/// Base class for all services.
+///
+/// See [ServiceHost] for more information.
 abstract class BaseService {
   final ConfigPath? configPath;
 

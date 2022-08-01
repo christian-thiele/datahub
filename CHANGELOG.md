@@ -1,3 +1,9 @@
+## 0.13.0
+- Transaction Support
+  - added DatabaseContext
+  - database migrations run in transactions
+- added Repository and CRUDRepository
+
 ## 0.12.4
 - added force flag to datahub create (CLI)
 

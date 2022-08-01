@@ -52,104 +52,105 @@ Future _testScheme() async {
 
   final connection = await adapter.openConnection();
   expect(connection.isOpen, isTrue);
-
-  // insert some data
-  final blogUser = UserDao(
-    name: 'testUser',
-    location: Point(1.234, 2.345),
-    executionId: 0,
-    image: imageData,
-  );
-  final userId = await connection.insert(blogUser);
-
-  // query some data
-  final blogUsers = await connection.query(UserDaoDataBean);
-  expect(blogUsers.any((element) => element.id == userId), isTrue);
-  expect(blogUsers.firstWhere((element) => element.id == userId).location,
-      equals(Point(1.234, 2.345)));
-  expect(blogUsers.firstWhere((element) => element.id == userId).image.length,
-      imageData.length);
-  expect(blogUsers.firstWhere((element) => element.id == userId).image,
-      orderedEquals(imageData));
-
-  // delete some data
-  await connection.delete(blogUser.copyWith(id: userId));
-
-  final blogUsers2 = await connection.query<UserDao>(UserDaoDataBean);
-  expect(blogUsers2.any((element) => element.id == userId), isFalse);
-
-  // insert alotta:
-  final executionId = Random().nextInt(5000);
-  final articleCount = 10;
-  for (var i = 0; i < 50; i++) {
+  await connection.runTransaction((context) async {
+    // insert some data
     final blogUser = UserDao(
-      name: 'TestUser$i',
-      location: Point(Random().nextDouble(), Random().nextDouble()),
-      executionId: executionId,
+      name: 'testUser',
+      location: Point(1.234, 2.345),
+      executionId: 0,
       image: imageData,
     );
-    final userId = await connection.insert(blogUser);
+    final userId = await context.insert(blogUser);
 
-    final blog = BlogDao('${executionId}_bloggo_$i', userId,
-        displayName: 'Blog of User $i');
-    await connection.insert(blog);
+    // query some data
+    final blogUsers = await context.query(UserDaoDataBean);
+    expect(blogUsers.any((element) => element.id == userId), isTrue);
+    expect(blogUsers.firstWhere((element) => element.id == userId).location,
+        equals(Point(1.234, 2.345)));
+    expect(blogUsers.firstWhere((element) => element.id == userId).image.length,
+        imageData.length);
+    expect(blogUsers.firstWhere((element) => element.id == userId).image,
+        orderedEquals(imageData));
 
-    for (var x = 0; x < articleCount; x++) {
-      final article = ArticleDao(
-        title: 'I am $i and this is $x',
-        content: loremIpsum.substring(0, 150),
-        blogKey: blog.key,
-        createdTimestamp: DateTime.now(),
-        lastEditTimestamp: DateTime.now(),
+    // delete some data
+    await context.delete(blogUser.copyWith(id: userId));
+
+    final blogUsers2 = await context.query<UserDao>(UserDaoDataBean);
+    expect(blogUsers2.any((element) => element.id == userId), isFalse);
+
+    // insert alotta:
+    final executionId = Random().nextInt(5000);
+    final articleCount = 10;
+    for (var i = 0; i < 50; i++) {
+      final blogUser = UserDao(
+        name: 'TestUser$i',
+        location: Point(Random().nextDouble(), Random().nextDouble()),
+        executionId: executionId,
         image: imageData,
-        userId: userId,
       );
-      await connection.insert(article);
+      final userId = await context.insert(blogUser);
+
+      final blog = BlogDao('${executionId}_bloggo_$i', userId,
+          displayName: 'Blog of User $i');
+      await context.insert(blog);
+
+      for (var x = 0; x < articleCount; x++) {
+        final article = ArticleDao(
+          title: 'I am $i and this is $x',
+          content: loremIpsum.substring(0, 150),
+          blogKey: blog.key,
+          createdTimestamp: DateTime.now(),
+          lastEditTimestamp: DateTime.now(),
+          image: imageData,
+          userId: userId,
+        );
+        await context.insert(article);
+      }
     }
-  }
 
-  // query with sort:
-  final ascUsers = await connection.query<UserDao>(
-    UserDaoDataBean,
-    filter: UserDaoDataBean.executionIdField.equals(executionId),
-    sort: UserDaoDataBean.nameField.asc(),
-    limit: 50,
-  );
+    // query with sort:
+    final ascUsers = await context.query<UserDao>(
+      UserDaoDataBean,
+      filter: UserDaoDataBean.executionIdField.equals(executionId),
+      sort: UserDaoDataBean.nameField.asc(),
+      limit: 50,
+    );
 
-  final descUsers = await connection.query<UserDao>(
-    UserDaoDataBean,
-    filter: UserDaoDataBean.executionIdField.equals(executionId),
-    sort: UserDaoDataBean.nameField.desc(),
-    limit: 50,
-  );
+    final descUsers = await context.query<UserDao>(
+      UserDaoDataBean,
+      filter: UserDaoDataBean.executionIdField.equals(executionId),
+      sort: UserDaoDataBean.nameField.desc(),
+      limit: 50,
+    );
 
-  expect(ascUsers, unorderedEquals(descUsers));
-  expect(ascUsers, orderedEquals(descUsers.reversed));
+    expect(ascUsers, unorderedEquals(descUsers));
+    expect(ascUsers, orderedEquals(descUsers.reversed));
 
-  expect(
-      ascUsers, orderedEquals(ascUsers.toList()..sortBy((u) => u.name, true)));
-  expect(descUsers,
-      orderedEquals(descUsers.toList()..sortBy((u) => u.name, false)));
+    expect(ascUsers,
+        orderedEquals(ascUsers.toList()..sortBy((u) => u.name, true)));
+    expect(descUsers,
+        orderedEquals(descUsers.toList()..sortBy((u) => u.name, false)));
 
-  // idExists
-  final exists = await connection.idExists(UserDaoDataBean, descUsers.first.id);
-  expect(exists, isTrue);
+    // idExists
+    final exists = await context.idExists(UserDaoDataBean, descUsers.first.id);
+    expect(exists, isTrue);
 
-  // select with join
-  final joinedData = await connection.select(
-    ArticleDaoDataBean.join(UserDaoDataBean),
-    [
-      WildcardSelect(bean: ArticleDaoDataBean),
-      FieldSelect(UserDaoDataBean.nameField, alias: 'user_name'),
-      UserDaoDataBean.executionIdField,
-    ],
-    filter: UserDaoDataBean.executionIdField.equals(executionId),
-  );
+    // select with join
+    final joinedData = await context.select(
+      ArticleDaoDataBean.join(UserDaoDataBean),
+      [
+        WildcardSelect(bean: ArticleDaoDataBean),
+        FieldSelect(UserDaoDataBean.nameField, alias: 'user_name'),
+        UserDaoDataBean.executionIdField,
+      ],
+      filter: UserDaoDataBean.executionIdField.equals(executionId),
+    );
 
-  expect(joinedData.length, equals(articleCount * 50));
+    expect(joinedData.length, equals(articleCount * 50));
 
-  final sample = joinedData.random as Map<String, dynamic>;
-  expect(sample.keys.length, equals(ArticleDaoDataBean.fields.length + 2));
-  expect(sample['user_name'], isA<String>());
-  expect(sample['user_name'] as String, isNotEmpty);
+    final sample = joinedData.random as Map<String, dynamic>;
+    expect(sample.keys.length, equals(ArticleDaoDataBean.fields.length + 2));
+    expect(sample['user_name'], isA<String>());
+    expect(sample['user_name'] as String, isNotEmpty);
+  });
 }
