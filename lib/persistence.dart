@@ -1,3 +1,6 @@
+/// Persistence
+library persistence;
+
 export 'src/persistence/dao/data_field.dart';
 export 'src/persistence/dao/data_schema.dart';
 export 'src/persistence/dao/data_bean.dart';

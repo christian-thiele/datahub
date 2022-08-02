@@ -1,3 +1,6 @@
+/// Message Broker
+library broker;
+
 export 'src/broker/annotations/broker_api.dart';
 export 'src/broker/annotations/broker_interface.dart';
 

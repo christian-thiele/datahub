@@ -1,3 +1,6 @@
+/// DTO Serialization / Deserialization
+library transfer_object;
+
 export 'src/transfer_object/copy_with.dart';
 export 'src/transfer_object/transfer_bean.dart';
 export 'src/transfer_object/transfer_id.dart';

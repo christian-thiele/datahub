@@ -1,3 +1,6 @@
+/// REST Api
+library api;
+
 export 'src/api/api_service.dart';
 export 'src/api/api_endpoint.dart';
 export 'src/api/api_request.dart';
