@@ -1,5 +1,4 @@
 import 'package:datahub/persistence.dart';
-import 'package:datahub/src/persistence/repository/repository.dart';
 
 /// [Repository] implementation for basic CRUD operations.
 ///

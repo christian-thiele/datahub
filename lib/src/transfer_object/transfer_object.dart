@@ -2,7 +2,7 @@ import 'copy_with.dart';
 
 /// Transfer object class annotation.
 ///
-/// [TransferBeanGenerator] will generate a bean for all classes that are
+/// [package:datahub_codegen TransferBeanGenerator] will generate a bean for all classes that are
 /// annotated with this.
 ///
 /// Classes annotated with [TransferObject] must be immutable PODO objects

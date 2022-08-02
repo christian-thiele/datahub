@@ -1,5 +1,4 @@
-import 'package:datahub/datahub.dart';
-
+import 'database_adapter.dart';
 import 'database_context.dart';
 
 /// Represents a single connection to a database.

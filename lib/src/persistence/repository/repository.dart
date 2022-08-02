@@ -1,6 +1,5 @@
 import 'package:datahub/ioc.dart';
 import 'package:datahub/persistence.dart';
-import 'package:datahub/src/persistence/repository/crud_repository.dart';
 
 /// Base class for repository services.
 ///
