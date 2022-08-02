@@ -22,7 +22,7 @@ Dart code can be executed without compiling.
 #### Get Dependencies
 
 ```shell
-^ dart pub get
+\$ dart pub get
 ```
 
 #### Run Code Generator
