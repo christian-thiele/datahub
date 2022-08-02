@@ -1,4 +1,4 @@
-import 'package:boost/boost.dart';
+import 'package:boost/boost.dart' as boost;
 import 'package:datahub/datahub.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
@@ -11,7 +11,7 @@ void main() {
 }
 
 Future _defaultConfig() async {
-  final token = CancellationToken();
+  final token = boost.CancellationToken();
   final serviceHost = ServiceHost([],
       catchSignal: false,
       config: {
@@ -31,7 +31,7 @@ Future _defaultConfig() async {
 }
 
 Future _yamlConfig() async {
-  final token = CancellationToken();
+  final token = boost.CancellationToken();
   final serviceHost = ServiceHost([],
       catchSignal: false,
       config: {
@@ -44,6 +44,9 @@ Future _yamlConfig() async {
     final fileList = configService.fetch<List<String>>(ConfigPath('fileList'));
     expect(fileList, isA<List<String>>());
     expect(fileList, orderedEquals(['valueA', 'valueB', 'valueC']));
+
+    final absentValue = configService.fetch<int?>(ConfigPath('doesntexist'));
+    expect(absentValue, isNull);
 
     final complexList = configService.fetch(ConfigPath('complexList'));
     expect(complexList, isA<List>());

@@ -60,6 +60,41 @@ T? decodeTypedNullable<T>(dynamic raw) {
     return Base64Decoder().convert(str) as T;
   }
 
+  if (type.isSubtypeOf<List<String>?>()) {
+    if (raw is List) {
+      return raw.whereNotNull.map((e) => e.toString()).toList() as T;
+    }
+
+    return null;
+  }
+
+  if (type.isSubtypeOf<List<double>?>()) {
+    if (raw is List) {
+      return raw.map((e) => double.tryParse(e.toString())).whereNotNull.toList()
+          as T;
+    }
+
+    return null;
+  }
+
+  if (type.isSubtypeOf<List<int>?>()) {
+    if (raw is List) {
+      return raw.map((e) => int.tryParse(e.toString())).whereNotNull.toList()
+          as T;
+    }
+
+    return null;
+  }
+
+  if (type.isSubtypeOf<List<num>?>()) {
+    if (raw is List) {
+      return raw.map((e) => num.tryParse(e.toString())).whereNotNull.toList()
+          as T;
+    }
+
+    return null;
+  }
+
   throw ApiError.invalidType(T);
 }
 

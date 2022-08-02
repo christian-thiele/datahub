@@ -15,7 +15,7 @@ class AmqpBrokerService extends BrokerService {
   final _logService = resolve<LogService>();
 
   late final _configHost = config<String>('host');
-  late final _configPort = config<int>('port', defaultValue: 5672);
+  late final _configPort = config<int?>('port') ?? 5672;
   late final _configUser = config<String>('user');
   late final _configPassword = config<String>('password');
 

@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:datahub/api.dart';
-import 'package:datahub/transfer_object.dart';
+import 'package:datahub/utils.dart';
 
 import 'request_context.dart';
 

@@ -15,11 +15,10 @@ abstract class BaseService {
   Environment get environment => resolve<ConfigService>().environment;
 
   /// Fetches a configuration value from [ConfigService].
-  T config<T>(String path, {T? defaultValue}) {
+  T config<T>(String path) {
     final relative = ConfigPath(path);
     final absolute = configPath?.join(relative) ?? relative;
-    return resolve<ConfigService>()
-        .fetch<T>(absolute, defaultValue: defaultValue);
+    return resolve<ConfigService>().fetch<T>(absolute);
   }
 
   /// Fetches a configuration value from [ConfigService] and parse it into the

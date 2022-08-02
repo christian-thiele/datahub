@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:datahub/utils.dart';
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
-
 import 'package:boost/boost.dart';
+
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:datahub/transfer_object.dart';
@@ -76,72 +77,31 @@ class ConfigService extends BaseService {
 
   /// Get a config value under the given [path].
   ///
-  /// If the value does not exist, [defaultValue] is returned.
-  /// If the value does not exist and [defaultValue] is null,
-  /// a [ConfigPathException] is thrown.
+  /// Throws [ConfigPathException] if value does not exist.
+  /// If a null return value is preferred instead, simply set a nullable
+  /// type for [T] and no exception will be thrown.
+  ///
+  /// Valid types for [T] (nullable, as well as non-nullable)
+  /// are [String], [int], [double], [bool], [DateTime], [Uint8List],
+  /// [List]<[int]> or [List]<[String]> or [Map]<[String], dynamic>.
   ///
   /// If the value does not match the requested type or cannot be parsed
   /// into the given type, a [ConfigTypeException] is thrown.
-  T fetch<T>(ConfigPath path, {T? defaultValue}) {
+  T fetch<T>(ConfigPath path) {
     try {
-      final value = path.getFrom(_configMap);
-      if (value is T) {
-        return value;
+      final raw = path.getFrom(_configMap);
+      final decoded = decodeTypedNullable<T>(raw);
+      if (decoded is T) {
+        return decoded;
       }
 
-      if (value == null) {
-        return defaultValue ??
-            (throw ConfigPathException(path.toString(), path.parts.last));
-      }
-
-      if (T == num || T == double) {
-        if (value is num) {
-          return value as T;
-        }
-
-        return (double.tryParse(value.toString()) ??
-            (throw ConfigTypeException(
-                configPath.toString(), T, value.runtimeType))) as T;
-      }
-
-      if (T == int) {
-        if (value is int) {
-          return value as T;
-        }
-
-        return (int.tryParse(value.toString()) ??
-            (throw ConfigTypeException(
-                configPath.toString(), T, value.runtimeType))) as T;
-      }
-
-      if (T == bool) {
-        if (value is bool) {
-          return value as T;
-        }
-
-        final str = value.toString().toLowerCase();
-        return (str == '1' || str == 'true' || str == 'yes') as T;
-      }
-
-      if (T == String) {
-        return value.toString() as T;
-      }
-
-      if (T == List<String>) {
-        if (value is List) {
-          return value.map((e) => e.toString()).cast<String>().toList() as T;
-        }
-
-        throw ConfigTypeException(configPath.toString(), T, value.runtimeType);
-      }
-
-      throw ConfigTypeException(configPath.toString(), T, value.runtimeType);
+      throw ConfigTypeException(path.toString(), T, raw.runtimeType);
     } on ConfigPathException catch (_) {
-      if (defaultValue != null) {
-        return defaultValue;
+      if (null is T) {
+        return null as T;
+      } else {
+        rethrow;
       }
-
-      rethrow;
     }
   }
 
@@ -248,7 +208,7 @@ class ConfigService extends BaseService {
   void _readDatahubConfig() {
     try {
       final datahubConfig =
-          fetch<Map<String, dynamic>>(ConfigPath('datahub'), defaultValue: {});
+          fetch<Map<String, dynamic>?>(ConfigPath('datahub')) ?? {};
       if (datahubConfig['log'] != null) {
         _log.setLogLevel(findEnum(
             datahubConfig['log'].toString().toLowerCase(), LogLevel.values));
@@ -263,7 +223,10 @@ class ConfigService extends BaseService {
         environment = Environment.dev;
       }
     } on ConfigPathException catch (_) {
-      _log.warn('No datahub config found, using default values.');
+      _log.warn(
+        'No datahub config found, using default values.',
+        sender: 'DataHub',
+      );
       environment = Environment.dev;
     }
   }

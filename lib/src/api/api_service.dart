@@ -22,8 +22,8 @@ import 'route.dart';
 
 abstract class ApiService extends BaseService {
   final _logService = resolve<LogService>();
-  late final _configAddress = config<String>('address', defaultValue: '');
-  late final _configPort = config<int>('port', defaultValue: 8080);
+  late final _configAddress = config<String?>('address');
+  late final _configPort = config<int?>('port') ?? 8080;
 
   final String basePath;
   final List<ApiEndpoint> endpoints;

@@ -1,3 +1,8 @@
+## 0.13.1
+- moved decodeTyped to utils library
+- added List<String>, List<int>, List<double> to decodeTyped
+- ConfigService.fetch / BaseService.config now accepts nullable types
+
 ## 0.13.0
 - Transaction Support
   - added DatabaseContext

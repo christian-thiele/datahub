@@ -1,6 +1,6 @@
 /// Annotation for Broker APIs.
 ///
-/// BrokerAPIs are server side implementation of [BrokerInterface]
+/// BrokerAPIs are server side implementations of [BrokerInterface]s.
 ///
 /// When param [brokerInterface] is omitted, it is assumed that the annotated
 /// class also serves as BrokerInterface.
