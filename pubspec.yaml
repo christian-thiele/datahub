@@ -1,6 +1,6 @@
 name: datahub
 description: A dart ecosystem for developing cloud native microservices.
-version: 0.13.1
+version: 0.13.2
 homepage: https://datahubproject.net/
 
 environment:

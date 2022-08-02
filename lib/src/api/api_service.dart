@@ -141,9 +141,10 @@ abstract class ApiService extends BaseService {
     // find session
     Session? session;
     if (sessionProvider != null) {
-      if (headers['session-token']?.isNotEmpty ?? false) {
-        session =
-            await sessionProvider!.redeemToken(headers['session-token']!.first);
+      final authorization =
+          (headers['Authorization'] ?? headers['authorization']);
+      if (authorization?.isNotEmpty ?? false) {
+        session = await sessionProvider!.redeemToken(authorization!.first);
       }
     }
 

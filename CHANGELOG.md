@@ -1,3 +1,6 @@
+## 0.13.2
+- use "Authorization" header instead of "session-token"
+
 ## 0.13.1
 - moved decodeTyped to utils library
 - added List<String>, List<int>, List<double> to decodeTyped
