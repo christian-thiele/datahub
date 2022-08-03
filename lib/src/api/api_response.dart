@@ -158,8 +158,7 @@ class ByteStreamResponse extends ApiResponse {
         'Content-Length': length.toString(),
         'Content-Type': contentType,
         if (!nullOrEmpty(fileName))
-          'Content-Disposition':
-              '${enumName(disposition)}; filename="$fileName"',
+          'Content-Disposition': '${disposition.name}; filename="$fileName"',
       };
 }
 

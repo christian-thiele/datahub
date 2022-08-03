@@ -10,7 +10,7 @@ executables:
   datahub:
 
 dependencies:
-  boost: ^1.7.0
+  boost: ^1.8.0
   postgres: ^2.4.3
   uuid: ^3.0.1
   path: ^1.8.0
