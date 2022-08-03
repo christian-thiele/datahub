@@ -151,7 +151,7 @@ Map<String, dynamic> encodeStringMap<V>(
   return value.map((key, value) => MapEntry(key, encoder(value)));
 }
 
-T decodeEnum<T>(dynamic raw, List<T> values) {
+T decodeEnum<T extends Enum>(dynamic raw, List<T> values) {
   if (raw is String) {
     return findEnum(raw, values);
   } else if (raw is T) {
@@ -161,7 +161,7 @@ T decodeEnum<T>(dynamic raw, List<T> values) {
   }
 }
 
-T? decodeEnumNullable<T>(dynamic raw, List<T> values) {
+T? decodeEnumNullable<T extends Enum>(dynamic raw, List<T> values) {
   if (raw is String) {
     return findEnum(raw, values);
   } else if (raw is T) {
