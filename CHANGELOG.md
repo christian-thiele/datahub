@@ -1,3 +1,7 @@
+## 0.14.0
+- updated boost dependency
+- added rest_client library
+
 ## 0.13.2
 - use "Authorization" header instead of "session-token"
 

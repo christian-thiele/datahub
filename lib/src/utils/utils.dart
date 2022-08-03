@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:uuid/uuid.dart';
 
 const Map<int, String> _statusCodes = {
@@ -71,16 +72,21 @@ const Map<int, String> _statusCodes = {
 String getHttpStatus(int statusCode) =>
     _statusCodes[statusCode] ?? 'Unknown Status';
 
-String buildQueryString(Map<String, String> query) {
+String buildQueryString(Map<String, String?> query) {
   if (query.isEmpty) {
     return '';
   }
 
-  return '?' +
-      query.entries
-          .map((e) =>
-              '${Uri.encodeQueryComponent(e.key)}=${Uri.encodeQueryComponent(e.value)}')
-          .join('&');
+  String encodeEntry(MapEntry<String, String?> e) {
+    final key = Uri.encodeQueryComponent(e.key);
+    if (!nullOrEmpty(e.value)) {
+      return '$key=${Uri.encodeQueryComponent(e.value!)}';
+    } else {
+      return key;
+    }
+  }
+
+  return '?${query.entries.map(encodeEntry).join('&')}';
 }
 
 String uuid() => Uuid().v1().toString();
