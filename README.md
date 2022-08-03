@@ -1,5 +1,5 @@
 <p align="center">
-<img src="http://datahubproject.net/logo.svg" />
+<img src="https://datahubproject.net/logo.svg" />
 </p>
 
 <h2 align="center">DataHub Dart Library</h2>

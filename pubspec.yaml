@@ -1,5 +1,5 @@
 name: datahub
-description: A dart ecosystem for developing cloud native microservices.
+description: DataHub is a Cloud Development Ecosystem aiming to bring the power of Dart into the Cloud.
 version: 0.13.2
 homepage: https://datahubproject.net/
 
