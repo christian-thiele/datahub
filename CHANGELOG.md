@@ -1,3 +1,7 @@
+## 0.14.5
+- ApiRequest
+  - added getBody for transfer objects as request body
+
 ## 0.14.4
 - fixed Repository transaction return value
 

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:datahub/api.dart';
+import 'package:datahub/datahub.dart';
 import 'package:datahub/utils.dart';
 
 import 'request_context.dart';
@@ -37,6 +38,23 @@ class ApiRequest {
   Future<Map<String, dynamic>> getJsonBody() async {
     try {
       return JsonDecoder().convert(await getTextBody()) as Map<String, dynamic>;
+    } catch (_) {
+      throw ApiRequestException.badRequest('Invalid body data.');
+    }
+  }
+
+  /// Returns decoded body data.
+  ///
+  /// Useful for receiving transfer objects.
+  Future<T> getBody<T>({TransferBean<T>? bean}) async {
+    try {
+      final json = await getJsonBody();
+      if (bean != null) {
+        return bean.toObject(json);
+      }
+
+      return decodeTypedNullable<T>(json) ??
+          (throw ApiRequestException.badRequest('Invalid body data.'));
     } catch (_) {
       throw ApiRequestException.badRequest('Invalid body data.');
     }
