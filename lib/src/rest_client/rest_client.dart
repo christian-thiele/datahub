@@ -237,7 +237,7 @@ TResponse? _handleData<TData, TResponse>(
   } else if (TResponse == Uint8List) {
     return data as TResponse;
   } else if (responseType.isMapOf<String, dynamic>() || responseType.isList) {
-    return jsonEncode(encoding.decode(data)) as TResponse;
+    return jsonDecode(encoding.decode(data)) as TResponse;
   } else if (TResponse == Null) {
     return null;
   }

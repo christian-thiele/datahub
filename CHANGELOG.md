@@ -1,3 +1,6 @@
+## 0.14.2
+- fixed rest_client with Map<String, dynamic> / List
+
 ## 0.14.1
 - fixed Repository (missing initializeSchema)
 
