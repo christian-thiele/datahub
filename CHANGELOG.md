@@ -1,3 +1,6 @@
+## 0.14.4
+- fixed Repository transaction return value
+
 ## 0.14.3
 - fixed SQL building for postgres (name escape bugs)
 

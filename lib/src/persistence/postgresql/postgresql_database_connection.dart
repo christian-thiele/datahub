@@ -27,7 +27,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     return await _connection.transaction((connection) async {
       final context = PostgreSQLDatabaseContext(
           adapter as PostgreSQLDatabaseAdapter, connection);
-      await delegate(context);
+      return await delegate(context);
     });
   }
 }
