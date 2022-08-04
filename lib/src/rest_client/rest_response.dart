@@ -3,7 +3,6 @@ import 'package:datahub/api.dart';
 import 'package:datahub/utils.dart';
 import 'package:http/http.dart';
 
-
 class RestResponse<TResult> {
   final Uri? requestUrl;
   final int statusCode;
