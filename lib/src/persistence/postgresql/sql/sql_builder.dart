@@ -130,7 +130,7 @@ abstract class SqlBuilder {
   static Tuple<String, Map<String, dynamic>> selectSql(QuerySelect select) {
     if (select is WildcardSelect) {
       if (select.bean != null) {
-        return Tuple(select.bean!.layoutName + '.*', const {});
+        return Tuple(escapeName(select.bean!.layoutName) + '.*', const {});
       } else {
         return const Tuple('*', {});
       }

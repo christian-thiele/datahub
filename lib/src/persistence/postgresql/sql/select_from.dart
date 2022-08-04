@@ -33,7 +33,7 @@ class SelectFromTable extends SelectFrom {
   SelectFromTable(this.schemaName, this.tableName);
 
   @override
-  String get sql => '$schemaName.$tableName';
+  String get sql => '"$schemaName"."$tableName"';
 }
 
 class TableJoin {

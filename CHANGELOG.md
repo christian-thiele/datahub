@@ -1,3 +1,6 @@
+## 0.14.3
+- fixed SQL building for postgres (name escape bugs)
+
 ## 0.14.2
 - fixed rest_client with Map<String, dynamic> / List
 
