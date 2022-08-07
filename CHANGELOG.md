@@ -1,3 +1,7 @@
+## 0.14.6
+- DataHub CLI
+  - added build-args support
+
 ## 0.14.5
 - ApiRequest
   - added getBody for transfer objects as request body

@@ -18,6 +18,9 @@ class BuildCommand extends CliCommand {
   String get name => 'build';
 
   @override
+  String get invocation => '${super.invocation} [docker build-args]';
+
+  @override
   Future<void> runCommand() async {
     final projectName = await readName();
     final projectVersion = argResults!['version'] ?? await readVersion();
@@ -35,8 +38,10 @@ class BuildCommand extends CliCommand {
       await step(
         'Building debug docker image.',
         () async {
+          await requireFile('Dockerfile.debug');
+          final dockerArgs = buildDockerArgs(argResults!.rest);
           await docker(
-            'build -t $projectName:debug -f Dockerfile.debug .',
+            'build -t $projectName:debug -f Dockerfile.debug$dockerArgs .',
             verbose: verbose,
           );
         },
@@ -47,8 +52,10 @@ class BuildCommand extends CliCommand {
       await step(
         'Building release docker image.',
         () async {
+          await requireFile('Dockerfile');
+          final dockerArgs = buildDockerArgs(argResults!.rest);
           await docker(
-            'build -t $projectName:latest .',
+            'build -t $projectName:latest$dockerArgs .',
             verbose: verbose,
           );
         },
