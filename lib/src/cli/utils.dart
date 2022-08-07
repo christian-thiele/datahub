@@ -96,7 +96,7 @@ String buildDockerArgs(List<String> args) {
     if (!regex.hasMatch(arg)) {
       throw CliException('Invalid build-arg: "$arg".');
     }
-    buffer.write(' --build-arg $arg"');
+    buffer.write(' --build-arg $arg');
   }
   return buffer.toString();
 }
