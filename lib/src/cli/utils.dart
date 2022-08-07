@@ -93,9 +93,10 @@ String buildDockerArgs(List<String> args) {
   final buffer = StringBuffer();
   final regex = RegExp(r'^([^=]+)=(.*)$');
   for (final arg in args) {
-    final match = regex.firstMatch(arg) ??
-        (throw CliException('Invalid build-arg: "$arg".'));
-    buffer.write(' --build-arg ${match.group(1)}="${match.group(2)}"');
+    if (!regex.hasMatch(arg)) {
+      throw CliException('Invalid build-arg: "$arg".');
+    }
+    buffer.write(' --build-arg $arg"');
   }
   return buffer.toString();
 }

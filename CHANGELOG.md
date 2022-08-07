@@ -1,3 +1,7 @@
+## 0.14.7
+- DataHub CLI
+  - fixed build-args feature
+
 ## 0.14.6
 - DataHub CLI
   - added build-args support
