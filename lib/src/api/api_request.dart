@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:datahub/api.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';
 
 import 'request_context.dart';
@@ -68,7 +68,7 @@ class ApiRequest {
   /// type for [T] and no exception will be thrown.
   ///
   /// Valid types for [T] (nullable, as well as non-nullable)
-  /// are [String], [int], [double], [bool], [DateTime] or [Uint8List].
+  /// are [String], [int], [double], [bool], [DateTime], [Duration] or [Uint8List].
   T getParam<T>(String name) {
     final decoded = decodeTypedNullable<T>(queryParams[name]);
     if (decoded is T) {

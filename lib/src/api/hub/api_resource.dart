@@ -84,7 +84,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
       return _handleMetaRequest(request);
     }
 
-    final id = _findId(request.route);
+    final id = request.route.getParam<TId?>(idParam);
 
     if (id != null) {
       return await getElement(request, id);
@@ -114,11 +114,7 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
       throw ApiRequestException.methodNotAllowed();
     }
 
-    final id = _findId(request.route);
-    if (id == null) {
-      throw ApiRequestException.badRequest('Missing id');
-    }
-
+    final id = request.route.getParam<TId>(idParam);
     final json = await request.getJsonBody();
     final data = bean.toObject(json);
     final result = await patchElement(request, id, data);
@@ -131,22 +127,8 @@ abstract class ListApiResource<TData, TId> extends ApiResource<TData> {
       throw ApiRequestException.methodNotAllowed();
     }
 
-    final id = _findId(request.route);
-    if (id == null) {
-      throw ApiRequestException.badRequest('Missing id');
-    }
-
+    final id = request.route.getParam<TId>(idParam);
     return await deleteElement(request, id);
-  }
-
-  TId? _findId(Route route) {
-    if (TId == int) {
-      return route.getParamInt(idParam) as TId?;
-    } else if (TId == String) {
-      return route.getParam(idParam) as TId?;
-    } else {
-      return null;
-    }
   }
 }
 

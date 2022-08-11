@@ -51,6 +51,11 @@ T? decodeTypedNullable<T>(dynamic raw) {
     return (result is T) ? result as T : null;
   }
 
+  if (type.isSubtypeOf<Duration?>()) {
+    final result = decodeTypedNullable<int>(raw);
+    return (result is int) ? Duration(milliseconds: result) as T : null;
+  }
+
   if (type.isSubtypeOf<Uint8List?>()) {
     final str = raw.toString();
     if (str.isEmpty) {
@@ -105,6 +110,10 @@ dynamic encodeTyped<T>(T? value) {
 
   if (T == DateTime) {
     return (value as DateTime).toIso8601String();
+  }
+
+  if (T == Duration) {
+    return (value as Duration).inMilliseconds;
   }
 
   if (T == Uint8List) {

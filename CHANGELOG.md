@@ -1,3 +1,6 @@
+## 0.14.9
+- added Duration to transfer codec (represented as milliseconds)
+
 ## 0.14.8
 - DataHub CLI
   - fixed build-args feature

@@ -280,16 +280,24 @@ class Route {
 
   Route(this.pattern, this.url, this.routeParams, this.wildcard);
 
-  //TODO doc -> throw behaviour etc
-  int? getParamInt(String name) {
-    if (routeParams[name] != null) {
-      return int.tryParse(routeParams[name]!) ??
-          (throw ApiRequestException.badRequest('Invalid route param: $name'));
+  /// Returns the named route parameter.
+  ///
+  /// Throws [ApiRequestException.badRequest] if value does not exist or could
+  /// not be parsed.
+  /// If a null return value is preferred instead, simply set a nullable
+  /// type for [T] and no exception will be thrown.
+  ///
+  /// Valid types for [T] (nullable, as well as non-nullable)
+  /// are [String], [int], [double], [bool], [DateTime], [Duration] or [Uint8List].
+  T getParam<T>(String name) {
+    final decoded = decodeTypedNullable<T>(routeParams[name]);
+    if (decoded is T) {
+      return decoded;
     }
-    return null;
-  }
 
-  String? getParam(String name) => routeParams[name];
+    throw ApiRequestException.badRequest(
+        'Missing or malformed route parameter: $name');
+  }
 
   @override
   String toString() => url;
