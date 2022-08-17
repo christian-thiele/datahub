@@ -1,8 +1,11 @@
+import 'dart:async';
+
 import 'package:datahub/datahub.dart';
-import 'package:datahub/src/persistence/postgresql/postgresql_database_context.dart';
 
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:postgres/postgres.dart' as postgres;
+
+import 'postgresql_database_context.dart';
 
 const metaTable = '_datahub_meta';
 
@@ -19,15 +22,37 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   @override
   Future<void> close() async => await _connection.close();
 
-  // The transaction method from postgres lib behaves the same way this is
-  // expected to behave, so no extra handling required.
+  // This weird pattern is necessary to preserve the stack trace of exceptions
+  // thrown inside of [delegate]. The PostgreSQLConnection.transaction method
+  // does not rethrow exceptions but stores them an throws them again, which
+  // creates a new stack trace starting from here, which hides the source of
+  // the error and can make debugging difficult. By using Completers to keep
+  // the execution of delegate outside of the transaction method,
+  // we can rethrow exceptions easily.
   @override
   Future<T> runTransaction<T>(
       Future<T> Function(DatabaseContext context) delegate) async {
-    return await _connection.transaction((connection) async {
-      final context = PostgreSQLDatabaseContext(
-          adapter as PostgreSQLDatabaseAdapter, connection);
-      return await delegate(context);
+    final connectionCompleter =
+        Completer<postgres.PostgreSQLExecutionContext>();
+    final delegateCompleter = Completer();
+
+    final transactionFuture = _connection.transaction((connection) async {
+      connectionCompleter.complete(connection);
+      await delegateCompleter.future;
     });
+
+    final context = PostgreSQLDatabaseContext(
+      adapter as PostgreSQLDatabaseAdapter,
+      await connectionCompleter.future,
+    );
+
+    try {
+      return await delegate(context);
+    } catch (e) {
+      rethrow;
+    } finally {
+      delegateCompleter.complete();
+      await transactionFuture;
+    }
   }
 }

@@ -1,6 +1,5 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
-import 'package:datahub/src/persistence/query/query_result.dart';
 
 abstract class DataBean<TDao> extends QuerySource<TDao> {
   String get layoutName;
@@ -12,7 +11,12 @@ abstract class DataBean<TDao> extends QuerySource<TDao> {
   Map<String, dynamic> unmap(TDao dao, {bool includePrimaryKey = false});
 
   @override
-  TDao map(List<QueryResult> data);
+  TDao map(List<QueryResult> results) {
+    final data = results.firstWhere((r) => r.layoutName == layoutName).data;
+    return mapValues(data);
+  }
+
+  TDao mapValues(Map<String, dynamic> data);
 
   /// Create [JoinedQuerySource] where this DataBean is used as main source.
   ///

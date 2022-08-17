@@ -146,20 +146,24 @@ Future _testScheme() async {
 
     expect(joinedData.length, equals(articleCount * 50));
 
-    final sample = joinedData.random as Map<String, dynamic>;
+    final sample = joinedData.random;
     expect(sample.keys.length, equals(ArticleDaoDataBean.fields.length + 2));
     expect(sample['user_name'], isA<String>());
     expect(sample['user_name'] as String, isNotEmpty);
 
-    // select distinct
-    final distinct = await context.select(
-      UserDaoDataBean.join(ArticleDaoDataBean),
-      [
-        WildcardSelect(bean: ArticleDaoDataBean),
-        FieldSelect(UserDaoDataBean.nameField, alias: 'user_name'),
-        UserDaoDataBean.executionIdField,
-      ],
+    // query distinct
+    final distinct = await context.query(
+      UserDaoDataBean.join(
+        ArticleDaoDataBean,
+        mainField: UserDaoDataBean.idField,
+        otherField: ArticleDaoDataBean.userIdField,
+      ),
+      distinct: [UserDaoDataBean.idField],
       filter: UserDaoDataBean.executionIdField.equals(executionId),
     );
+
+    expect(distinct.length, equals(ascUsers.length));
+    expect(distinct,
+        everyElement((Tuple<UserDao, ArticleDao> e) => e.a.id == e.b.userId));
   });
 }

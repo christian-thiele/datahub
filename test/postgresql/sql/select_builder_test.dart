@@ -11,10 +11,10 @@ class TableDataBean extends DataBean<void> {
   String get layoutName => 'table';
 
   @override
-  void map(List<QueryResult> data) => null;
+  Map<String, dynamic> unmap(dao, {bool includePrimaryKey = false}) => {};
 
   @override
-  Map<String, dynamic> unmap(dao, {bool includePrimaryKey = false}) => {};
+  void mapValues(Map<String, dynamic> data) => null;
 }
 
 void main() {

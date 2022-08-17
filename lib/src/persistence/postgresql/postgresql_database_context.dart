@@ -119,9 +119,8 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
   Future<dynamic> insert<TDao extends BaseDao>(TDao entry) async {
     final bean = entry.bean;
 
-    final primaryKeyField = bean is PrimaryKeyDataBean
-        ? (bean as PrimaryKeyDataBean).primaryKeyField
-        : null;
+    final primaryKeyField =
+        bean is PrimaryKeyDataBean ? bean.primaryKeyField : null;
 
     final returning = primaryKeyField != null
         ? SqlBuilder.escapeName(primaryKeyField.name)
@@ -197,7 +196,7 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
   }
 
   @override
-  Future<List> select(
+  Future<List<Map<String, dynamic>>> select(
     QuerySource source,
     List<QuerySelect> select, {
     Filter filter = Filter.empty,
@@ -207,12 +206,13 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     int limit = -1,
   }) async {
     final from = SelectFrom.fromQuerySource(_adapter.schema.name, source);
-    return await querySql(SelectBuilder(from)
+    final results = await querySql(SelectBuilder(from)
       ..where(filter)
       ..orderBy(sort)
       ..offset(offset)
       ..limit(limit)
       ..select(select));
+    return results.map((e) => QueryResult.merge(e)).toList();
   }
 
   dynamic _fromSqlData(dynamic value) {

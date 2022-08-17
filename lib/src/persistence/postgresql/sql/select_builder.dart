@@ -20,7 +20,7 @@ class SelectBuilder implements SqlBuilder {
   }
 
   void distinct(List<QuerySelect>? distinct) {
-    _distinct = _distinct;
+    _distinct = distinct;
   }
 
   void offset(int value) {

@@ -1,6 +1,5 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
-import 'package:datahub/src/persistence/query/query_result.dart';
 
 /// Defining a common base class among query sources.
 ///
@@ -27,10 +26,13 @@ abstract class JoinedQuerySource {
   List<BeanJoin> get joins;
 }
 
-class TupleJoinQuerySource<Ta, Tb> extends QuerySource<Tuple<Ta, Tb>> {
+class TupleJoinQuerySource<Ta, Tb> extends QuerySource<Tuple<Ta, Tb>>
+    implements JoinedQuerySource {
+  @override
   final DataBean<Ta> main;
   final BeanJoin<Tb> joinB;
 
+  @override
   List<BeanJoin> get joins => [joinB];
 
   TupleJoinQuerySource(this.main, this.joinB);
@@ -54,12 +56,14 @@ class TupleJoinQuerySource<Ta, Tb> extends QuerySource<Tuple<Ta, Tb>> {
   }
 }
 
-class TripleJoinQuerySource<Ta, Tb, Tc>
-    extends QuerySource<Triple<Ta, Tb, Tc>> {
+class TripleJoinQuerySource<Ta, Tb, Tc> extends QuerySource<Triple<Ta, Tb, Tc>>
+    implements JoinedQuerySource {
+  @override
   final DataBean<Ta> main;
   final BeanJoin<Tb> joinB;
   final BeanJoin<Tc> joinC;
 
+  @override
   List<BeanJoin> get joins => [joinB, joinC];
 
   TripleJoinQuerySource(this.main, this.joinB, this.joinC);

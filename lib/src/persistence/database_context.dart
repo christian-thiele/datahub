@@ -20,7 +20,7 @@ abstract class DatabaseContext {
   Future<bool> idExists<TPrimaryKey>(
       PrimaryKeyDataBean<dynamic, TPrimaryKey> bean, TPrimaryKey id);
 
-  Future<List<dynamic>> select(
+  Future<List<Map<String, dynamic>>> select(
     QuerySource bean,
     List<QuerySelect> select, {
     List<QuerySelect> distinct = const <QuerySelect>[],
