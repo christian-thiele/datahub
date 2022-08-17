@@ -113,14 +113,12 @@ Future _testScheme() async {
       UserDaoDataBean,
       filter: UserDaoDataBean.executionIdField.equals(executionId),
       sort: UserDaoDataBean.nameField.asc(),
-      limit: 50,
     );
 
     final descUsers = await context.query<UserDao>(
       UserDaoDataBean,
       filter: UserDaoDataBean.executionIdField.equals(executionId),
       sort: UserDaoDataBean.nameField.desc(),
-      limit: 50,
     );
 
     expect(ascUsers, unorderedEquals(descUsers));
@@ -152,5 +150,16 @@ Future _testScheme() async {
     expect(sample.keys.length, equals(ArticleDaoDataBean.fields.length + 2));
     expect(sample['user_name'], isA<String>());
     expect(sample['user_name'] as String, isNotEmpty);
+
+    // select distinct
+    final distinct = await context.select(
+      UserDaoDataBean.join(ArticleDaoDataBean),
+      [
+        WildcardSelect(bean: ArticleDaoDataBean),
+        FieldSelect(UserDaoDataBean.nameField, alias: 'user_name'),
+        UserDaoDataBean.executionIdField,
+      ],
+      filter: UserDaoDataBean.executionIdField.equals(executionId),
+    );
   });
 }

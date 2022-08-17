@@ -6,7 +6,7 @@ import 'package:datahub/datahub.dart';
 class DataSchema {
   final String name;
   final int version;
-  final List<BaseDataBean> beans;
+  final List<DataBean> beans;
 
   DataSchema(this.name, this.version, this.beans);
 

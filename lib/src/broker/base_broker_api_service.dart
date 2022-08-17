@@ -26,8 +26,9 @@ abstract class BaseBrokerApiService extends BaseService {
   Future<void> initialize() async {
     final service = ServiceHost.tryResolve<BrokerService>();
     if (service == null) {
-      _log.e(
-          'A BrokerService is required to start the BrokerAPI. Try placing a BrokerService implementation before this service to your ServiceHost.');
+      _log.e('A BrokerService is required to start the BrokerAPI. '
+          'Try providing a BrokerService implementation before '
+          'this service to your ServiceHost.');
       throw Exception('No BrokerService found in ServiceHost.');
     }
     _brokerService = service;

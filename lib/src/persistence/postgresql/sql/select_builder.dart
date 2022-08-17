@@ -9,6 +9,7 @@ class SelectBuilder implements SqlBuilder {
   Filter _filter = Filter.empty;
   Sort _sort = Sort.empty;
   List<QuerySelect>? _select;
+  List<QuerySelect>? _distinct;
   int _limit = -1;
   int _offset = 0;
 
@@ -16,6 +17,10 @@ class SelectBuilder implements SqlBuilder {
 
   void select(List<QuerySelect> selections) {
     _select = selections;
+  }
+
+  void distinct(List<QuerySelect>? distinct) {
+    _distinct = _distinct;
   }
 
   void offset(int value) {
@@ -38,6 +43,13 @@ class SelectBuilder implements SqlBuilder {
   Tuple<String, Map<String, dynamic>> buildSql() {
     final buffer = StringBuffer('SELECT ');
     final values = <String, dynamic>{};
+
+    if (_distinct?.isNotEmpty ?? false) {
+      buffer.write('DISTINCT ON (');
+      final selectResults = _distinct!.map((s) => SqlBuilder.selectSql(s));
+      buffer.write(selectResults.map((e) => e.a).join(', '));
+      buffer.write(') ');
+    }
 
     if (_select?.isNotEmpty ?? false) {
       final selectResults = _select!.map((s) => SqlBuilder.selectSql(s));

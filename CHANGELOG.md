@@ -1,3 +1,10 @@
+## 0.15.0
+- DataBean
+  - reduced complexity on abstract classes
+  - changed type constraints on DatabaseContext methods
+- DatabaseContext.query
+  - can now return DAOs from joins (no longer constrained to DataBean as source)
+
 ## 0.14.9
 - added Duration to transfer codec (represented as milliseconds)
 

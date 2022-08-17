@@ -5,12 +5,14 @@ abstract class SelectFrom {
   String get sql;
 
   static SelectFrom fromQuerySource(String schemaName, QuerySource source) {
-    if (source is BaseDataBean) {
+    if (source is DataBean) {
       return SelectFromTable(schemaName, source.layoutName);
     } else if (source is JoinedQuerySource) {
       return JoinedSelectFrom(
-        SelectFromTable(schemaName, source.main.layoutName),
-        source.joins
+        SelectFromTable(
+            schemaName, (source as JoinedQuerySource).main.layoutName),
+        (source as JoinedQuerySource)
+            .joins
             .map((e) => TableJoin(
                   SelectFromTable(schemaName, e.bean.layoutName),
                   e.mainField.name,

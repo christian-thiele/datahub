@@ -1,12 +1,18 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
+import 'package:datahub/src/persistence/query/query_result.dart';
 
-abstract class BaseDataBean implements QuerySource {
+abstract class DataBean<TDao> extends QuerySource<TDao> {
   String get layoutName;
 
   List<DataField> get fields;
 
-  const BaseDataBean();
+  const DataBean();
+
+  Map<String, dynamic> unmap(TDao dao, {bool includePrimaryKey = false});
+
+  @override
+  TDao map(List<QueryResult> data);
 
   /// Create [JoinedQuerySource] where this DataBean is used as main source.
   ///
@@ -14,7 +20,7 @@ abstract class BaseDataBean implements QuerySource {
   /// this is used as [mainField] and the corresponding [PrimaryKey] of [other]
   /// is used as [otherField]. If this bean has multiple [ForeignKey]s to
   /// [other], this throws a [PersistenceException].
-  JoinedQuerySource join(BaseDataBean other,
+  TupleJoinQuerySource<TDao, Tb> join<Tb>(DataBean<Tb> other,
       {DataField? mainField,
       DataField? otherField,
       CompareType type = CompareType.equals}) {
@@ -36,24 +42,13 @@ abstract class BaseDataBean implements QuerySource {
           'Could not autodetect join relation between "$runtimeType" and "${other.runtimeType}".');
     }
 
-    return JoinedQuerySource(
-        this, [BeanJoin(other, mainField, type, otherField)]);
+    return TupleJoinQuerySource(
+        this, BeanJoin(other, mainField, type, otherField));
   }
 }
 
-abstract class PrimaryKeyDataBean<TPrimaryKey> extends BaseDataBean {
+abstract class PrimaryKeyDataBean<TDao, TPrimaryKey> extends DataBean<TDao> {
   PrimaryKey get primaryKeyField;
-}
 
-abstract class DaoDataBean<TDao> extends BaseDataBean {
-  const DaoDataBean();
-
-  Map<String, dynamic> unmap(TDao dao, {bool includePrimaryKey = false});
-
-  TDao map(Map<String, dynamic> data);
-}
-
-abstract class PKDaoDataBean<TDao, TPrimaryKey> extends DaoDataBean<TDao>
-    implements PrimaryKeyDataBean<TPrimaryKey> {
-  const PKDaoDataBean();
+  const PrimaryKeyDataBean();
 }

@@ -24,7 +24,7 @@ abstract class QuerySelect {
 ///
 /// If no DataBean is given, this equals `SELECT *` in SQL.
 class WildcardSelect extends QuerySelect {
-  final BaseDataBean? bean;
+  final DataBean? bean;
 
   const WildcardSelect({this.bean});
 }

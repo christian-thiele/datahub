@@ -3,12 +3,18 @@ import 'package:test/test.dart';
 
 import 'package:datahub/src/persistence/postgresql/sql/sql.dart';
 
-class TableDataBean extends BaseDataBean {
+class TableDataBean extends DataBean<void> {
   @override
   List<DataField> get fields => [];
 
   @override
   String get layoutName => 'table';
+
+  @override
+  void map(List<QueryResult> data) => null;
+
+  @override
+  Map<String, dynamic> unmap(dao, {bool includePrimaryKey = false}) => {};
 }
 
 void main() {

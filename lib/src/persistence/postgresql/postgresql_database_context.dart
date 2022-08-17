@@ -42,50 +42,69 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     return await _context.execute(result.a, substitutionValues: result.b);
   }
 
-  Future<List<Map<String, dynamic>>> querySql(SqlBuilder builder) async {
+  Future<List<List<QueryResult>>> querySql(SqlBuilder builder) async {
     final builderResult = builder.buildSql();
-    final result = await _context.query(builderResult.a,
-        substitutionValues: builderResult.b);
-    return result
-        .map((row) => row
-            .toColumnMap()
-            .map((key, value) => MapEntry(key, _fromSqlData(value))))
-        .toList();
+    final result = await _context.query(
+      builderResult.a,
+      substitutionValues: builderResult.b,
+    );
+
+    List<QueryResult> mapRow(postgres.PostgreSQLResultRow row) {
+      final map = <String, Map<String, dynamic>>{};
+      for (var i = 0; i < row.columnDescriptions.length; i++) {
+        final col = row.columnDescriptions[i];
+        final data = map[col.tableName] ??= {};
+        data[col.columnName] = row[i];
+      }
+      return map.entries
+          .map((e) => QueryResult(e.key,
+              e.value.map((key, value) => MapEntry(key, _fromSqlData(value)))))
+          .toList();
+    }
+
+    return result.map(mapRow).toList();
   }
 
   @override
-  Future<List<TDao>> query<TDao>(
-    DaoDataBean<TDao> bean, {
+  Future<List<TResult>> query<TResult>(
+    QuerySource<TResult> bean, {
     Filter filter = Filter.empty,
+    List<QuerySelect> distinct = const <QuerySelect>[],
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
   }) async {
-    final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
+    final from = SelectFrom.fromQuerySource(_adapter.schema.name, bean);
     final result = await querySql(SelectBuilder(from)
       ..select([const WildcardSelect()])
+      ..distinct(distinct)
       ..where(filter)
       ..orderBy(sort)
       ..offset(offset)
       ..limit(limit));
-    return result.map(bean.map).toList();
+
+    return result.map((r) => bean.map(r)).toList();
   }
 
   @override
   Future<TDao?> queryId<TDao, TPrimaryKey>(
-      PKDaoDataBean<TDao, TPrimaryKey> bean, TPrimaryKey id) async {
+    PrimaryKeyDataBean<TDao, TPrimaryKey> bean,
+    TPrimaryKey id,
+  ) async {
     final primaryKey = bean.primaryKeyField;
 
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
     final result = await querySql(
         SelectBuilder(from)..where(Filter.equals(primaryKey, id)));
 
-    return result.map(bean.map).firstOrNull;
+    return result.map((r) => bean.map(r)).firstOrNull;
   }
 
   @override
   Future<bool> idExists<TPrimaryKey>(
-      PrimaryKeyDataBean<TPrimaryKey> bean, TPrimaryKey id) async {
+    PrimaryKeyDataBean<dynamic, TPrimaryKey> bean,
+    TPrimaryKey id,
+  ) async {
     final primaryKey = bean.primaryKeyField;
 
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
@@ -116,11 +135,11 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
           ..values(data)
           ..returning(returning));
 
-    return result.firstOrNull?.values.firstOrNull;
+    return result.firstOrNull?.firstOrNull?.data.values.firstOrNull;
   }
 
   @override
-  Future<void> update<TDao extends PKBaseDao>(TDao object) async {
+  Future<void> update<TDao extends PrimaryKeyDao>(TDao object) async {
     final bean = object.bean;
     final data = bean.unmap(object);
 
@@ -131,8 +150,11 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
   }
 
   @override
-  Future<void> updateId<TPrimaryKey>(PrimaryKeyDataBean<TPrimaryKey> bean,
-      TPrimaryKey id, Map<String, dynamic> values) async {
+  Future<void> updateId<TPrimaryKey>(
+    PrimaryKeyDataBean<dynamic, TPrimaryKey> bean,
+    TPrimaryKey id,
+    Map<String, dynamic> values,
+  ) async {
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
     await execute(UpdateBuilder(from)
       ..values(values)
@@ -141,15 +163,18 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
 
   @override
   Future<int> updateWhere(
-      BaseDataBean bean, Map<String, dynamic> values, Filter filter) async {
-    final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
+    QuerySource source,
+    Map<String, dynamic> values,
+    Filter filter,
+  ) async {
+    final from = SelectFrom.fromQuerySource(_adapter.schema.name, source);
     return await execute(UpdateBuilder(from)
       ..values(values)
       ..where(filter));
   }
 
   @override
-  Future<void> delete<TDao extends PKBaseDao>(TDao object) async {
+  Future<void> delete<TDao extends PrimaryKeyDao>(TDao object) async {
     final bean = object.bean;
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
     await execute(
@@ -158,13 +183,15 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
 
   @override
   Future<void> deleteId<TPrimaryKey>(
-      PrimaryKeyDataBean<TPrimaryKey> bean, dynamic id) async {
+    PrimaryKeyDataBean<dynamic, TPrimaryKey> bean,
+    dynamic id,
+  ) async {
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
     await execute(DeleteBuilder(from)..where(_pkFilter(bean, id)));
   }
 
   @override
-  Future<int> deleteWhere(BaseDataBean bean, Filter filter) async {
+  Future<int> deleteWhere(DataBean bean, Filter filter) async {
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
     return await execute(DeleteBuilder(from)..where(filter));
   }
@@ -174,12 +201,13 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     QuerySource source,
     List<QuerySelect> select, {
     Filter filter = Filter.empty,
+    List<QuerySelect> distinct = const <QuerySelect>[],
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
-  }) {
+  }) async {
     final from = SelectFrom.fromQuerySource(_adapter.schema.name, source);
-    return querySql(SelectBuilder(from)
+    return await querySql(SelectBuilder(from)
       ..where(filter)
       ..orderBy(sort)
       ..offset(offset)
@@ -196,7 +224,9 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
   }
 
   Filter _pkFilter<TPrimaryKey>(
-      PrimaryKeyDataBean<TPrimaryKey> layout, TPrimaryKey id) {
+    PrimaryKeyDataBean<dynamic, TPrimaryKey> layout,
+    TPrimaryKey id,
+  ) {
     final primaryKey = layout.primaryKeyField;
     return Filter.equals(primaryKey, id);
   }

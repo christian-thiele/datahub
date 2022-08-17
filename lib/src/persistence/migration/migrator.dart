@@ -5,13 +5,12 @@ import 'package:datahub/datahub.dart';
 /// A migrator implementation is provided as a parameter to
 /// the [DataSchema.migrate] method.
 abstract class Migrator {
-  Future<void> addLayout(BaseDataBean bean);
+  Future<void> addLayout(DataBean bean);
   Future<void> removeLayout(String name);
 
   //TODO maybe accept a function to generate default values for columns?
-  Future<void> addField(
-      BaseDataBean bean, DataField field, dynamic initialValue);
-  Future<void> removeField(BaseDataBean bean, String fieldName);
+  Future<void> addField(DataBean bean, DataField field, dynamic initialValue);
+  Future<void> removeField(DataBean bean, String fieldName);
 
   @Deprecated('This method assumes that the adapter supports SQL, '
       'as well as the specific dialect you are using. Only use this method '

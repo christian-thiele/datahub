@@ -11,18 +11,18 @@ class PostgreSQLDatabaseMigrator extends Migrator {
 
   @override
   Future<void> addField(
-      BaseDataBean bean, DataField field, dynamic initialValue) async {
+      DataBean bean, DataField field, dynamic initialValue) async {
     await _context.execute(AddFieldBuilder(_schema.name, bean.layoutName, field,
         initialValue: initialValue));
   }
 
   @override
-  Future<void> addLayout(BaseDataBean bean) async {
+  Future<void> addLayout(DataBean bean) async {
     await _context.execute(CreateTableBuilder.fromLayout(_schema, bean));
   }
 
   @override
-  Future<void> removeField(BaseDataBean bean, String fieldName) async {
+  Future<void> removeField(DataBean bean, String fieldName) async {
     await _context
         .execute(RemoveFieldBuilder(_schema.name, bean.layoutName, fieldName));
   }

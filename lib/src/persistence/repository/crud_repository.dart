@@ -6,9 +6,9 @@ import 'package:datahub/persistence.dart';
 /// own transaction. Therefore it is considered bad-practice to add
 /// methods to a repository that are composed from methods implemented
 /// by this class.
-abstract class CRUDRepository<TDao extends PKBaseDao<TDao, TPrimaryKey>,
+abstract class CRUDRepository<TDao extends PrimaryKeyDao<TDao, TPrimaryKey>,
     TPrimaryKey> extends Repository {
-  final PKDaoDataBean<TDao, TPrimaryKey> bean;
+  final PrimaryKeyDataBean<TDao, TPrimaryKey> bean;
 
   CRUDRepository(super.config, this.bean);
 

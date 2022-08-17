@@ -1,12 +1,12 @@
 import 'package:datahub/datahub.dart';
 
 abstract class BaseDao<TDao> {
-  DaoDataBean<TDao> get bean;
+  DataBean<TDao> get bean;
 }
 
-abstract class PKBaseDao<TDao, TPrimaryKey> extends BaseDao<TDao> {
+abstract class PrimaryKeyDao<TDao, TPrimaryKey> extends BaseDao<TDao> {
   @override
-  PKDaoDataBean<TDao, TPrimaryKey> get bean;
+  PrimaryKeyDataBean<TDao, TPrimaryKey> get bean;
 
   TPrimaryKey getPrimaryKey();
 }
