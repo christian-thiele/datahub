@@ -95,7 +95,7 @@ void main() {
         SelectBuilder(
           JoinedSelectFrom(
             schemaTable,
-            [TableJoin(otherTable, 'id', CompareType.equals, 'main_id')],
+            [TableJoin(otherTable, 'id', CompareType.equals, 'main_id', true)],
           ),
         ),
         'SELECT * FROM "schema"."table" JOIN "schema"."other" ON "schema"."table"."id" = "schema"."other"."main_id"',
@@ -108,7 +108,7 @@ void main() {
         SelectBuilder(
           JoinedSelectFrom(
             schemaTable,
-            [TableJoin(otherTable, 'id', CompareType.equals, 'main_id')],
+            [TableJoin(otherTable, 'id', CompareType.equals, 'main_id', true)],
           ),
         )
           ..where(Filter.equals(fieldX, 'valueX'))
@@ -125,15 +125,15 @@ void main() {
           JoinedSelectFrom(
             schemaTable,
             [
-              TableJoin(otherTable, 'id', CompareType.equals, 'main_id'),
-              TableJoin(otherTable2, 'xyz', CompareType.lessThan, 'abc'),
+              TableJoin(otherTable, 'id', CompareType.equals, 'main_id', true),
+              TableJoin(otherTable2, 'xyz', CompareType.lessThan, 'abc', false),
             ],
           ),
         )..where(CompareFilter(
             fieldX, CompareType.equals, ValueExpression('valueX'),
             caseSensitive: false)),
         'SELECT * FROM "schema"."table" JOIN "schema"."other" ON "schema"."table"."id" = '
-        '"schema"."other"."main_id" JOIN "schema"."different" ON "schema"."table"."xyz" < '
+        '"schema"."other"."main_id" LEFT JOIN "schema"."different" ON "schema"."table"."xyz" < '
         '"schema"."different"."abc" WHERE LOWER("fake"."fieldX") = LOWER(\'valueX\')',
       ),
     );

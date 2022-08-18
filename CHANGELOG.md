@@ -1,3 +1,7 @@
+## 0.15.1
+- DatabaseContext.query
+  - inner and outer joins supported with nullable / non-null return types
+
 ## 0.15.0
 - DataBean
   - reduced complexity on abstract classes

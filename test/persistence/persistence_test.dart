@@ -94,17 +94,19 @@ Future _testScheme() async {
           displayName: 'Blog of User $i');
       await context.insert(blog);
 
-      for (var x = 0; x < articleCount; x++) {
-        final article = ArticleDao(
-          title: 'I am $i and this is $x',
-          content: loremIpsum.substring(0, 150),
-          blogKey: blog.key,
-          createdTimestamp: DateTime.now(),
-          lastEditTimestamp: DateTime.now(),
-          image: imageData,
-          userId: userId,
-        );
-        await context.insert(article);
+      if (i < 40) {
+        for (var x = 0; x < articleCount; x++) {
+          final article = ArticleDao(
+            title: 'I am $i and this is $x',
+            content: loremIpsum.substring(0, 150),
+            blogKey: blog.key,
+            createdTimestamp: DateTime.now(),
+            lastEditTimestamp: DateTime.now(),
+            image: imageData,
+            userId: userId,
+          );
+          await context.insert(article);
+        }
       }
     }
 
@@ -144,7 +146,7 @@ Future _testScheme() async {
       filter: UserDaoDataBean.executionIdField.equals(executionId),
     );
 
-    expect(joinedData.length, equals(articleCount * 50));
+    expect(joinedData.length, equals(articleCount * 40));
 
     final sample = joinedData.random;
     expect(sample.keys.length, equals(ArticleDaoDataBean.fields.length + 2));
@@ -153,7 +155,7 @@ Future _testScheme() async {
 
     // query distinct
     final distinct = await context.query(
-      UserDaoDataBean.join(
+      UserDaoDataBean.leftJoin(
         ArticleDaoDataBean,
         mainField: UserDaoDataBean.idField,
         otherField: ArticleDaoDataBean.userIdField,
@@ -163,7 +165,13 @@ Future _testScheme() async {
     );
 
     expect(distinct.length, equals(ascUsers.length));
-    expect(distinct,
-        everyElement((Tuple<UserDao, ArticleDao> e) => e.a.id == e.b.userId));
+    expect(
+        distinct, anyElement((Tuple<UserDao, ArticleDao?> e) => e.b == null));
+    expect(
+        distinct, anyElement((Tuple<UserDao, ArticleDao?> e) => e.b != null));
+    expect(
+        distinct,
+        everyElement((Tuple<UserDao, ArticleDao?> e) =>
+            e.b == null || e.a.id == e.b!.userId));
   });
 }

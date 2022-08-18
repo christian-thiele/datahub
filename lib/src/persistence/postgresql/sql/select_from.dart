@@ -13,12 +13,15 @@ abstract class SelectFrom {
             schemaName, (source as JoinedQuerySource).main.layoutName),
         (source as JoinedQuerySource)
             .joins
-            .map((e) => TableJoin(
-                  SelectFromTable(schemaName, e.bean.layoutName),
-                  e.mainField.name,
-                  e.type,
-                  e.beanField.name,
-                ))
+            .map(
+              (e) => TableJoin(
+                SelectFromTable(schemaName, e.bean.layoutName),
+                e.mainField.name,
+                e.type,
+                e.beanField.name,
+                (source as JoinedQuerySource).innerJoin,
+              ),
+            )
             .toList(),
       );
     } else {
@@ -43,10 +46,18 @@ class TableJoin {
   final String onMainField;
   final CompareType onCompare;
   final String onJoinField;
+  final bool innerJoin;
 
-  TableJoin(this.table, this.onMainField, this.onCompare, this.onJoinField);
+  TableJoin(
+    this.table,
+    this.onMainField,
+    this.onCompare,
+    this.onJoinField,
+    this.innerJoin,
+  );
 
-  String getJoinSql(SelectFromTable main) => ' JOIN ${table.sql} ON '
+  String getJoinSql(SelectFromTable main) =>
+      ' ${innerJoin ? '' : 'LEFT '}JOIN ${table.sql} ON '
       '${main.sql}.${SqlBuilder.escapeName(onMainField)} $_compareSql '
       '${table.sql}.${SqlBuilder.escapeName(onJoinField)}';
 

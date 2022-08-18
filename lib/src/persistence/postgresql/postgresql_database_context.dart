@@ -49,6 +49,19 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
       substitutionValues: builderResult.b,
     );
 
+    QueryResult? mapResult(MapEntry<String, Map<String, dynamic>> e) {
+      final values =
+          e.value.map((key, value) => MapEntry(key, _fromSqlData(value)));
+      if (values.values.whereNotNull.isEmpty) {
+        return null;
+      }
+
+      return QueryResult(
+        e.key,
+        values,
+      );
+    }
+
     List<QueryResult> mapRow(postgres.PostgreSQLResultRow row) {
       final map = <String, Map<String, dynamic>>{};
       for (var i = 0; i < row.columnDescriptions.length; i++) {
@@ -56,10 +69,7 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
         final data = map[col.tableName] ??= {};
         data[col.columnName] = row[i];
       }
-      return map.entries
-          .map((e) => QueryResult(e.key,
-              e.value.map((key, value) => MapEntry(key, _fromSqlData(value)))))
-          .toList();
+      return map.entries.map(mapResult).whereNotNull.toList();
     }
 
     return result.map(mapRow).toList();
@@ -83,7 +93,7 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
       ..offset(offset)
       ..limit(limit));
 
-    return result.map((r) => bean.map(r)).toList();
+    return result.map((r) => bean.map(r)).whereNotNull.toList();
   }
 
   @override
