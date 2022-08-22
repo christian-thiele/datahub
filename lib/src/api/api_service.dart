@@ -127,7 +127,9 @@ abstract class ApiService extends BaseService {
   Future<ApiResponse> handleRequest(HttpRequest httpRequest) async {
     final absolutePath = httpRequest.uri.path;
     final handler = _findRequestHandler(absolutePath);
-    final path = absolutePath.substring(basePath.length);
+    final path = absolutePath.startsWith(basePath)
+        ? absolutePath.substring(basePath.length)
+        : '';
 
     final headers = <String, List<String>>{};
     httpRequest.headers.forEach((name, values) {

@@ -1,3 +1,7 @@
+## 0.15.2
+- ApiService
+  - fixed internal error when handling request not matching base path
+
 ## 0.15.1
 - DatabaseContext.query
   - inner and outer joins supported with nullable / non-null return types
