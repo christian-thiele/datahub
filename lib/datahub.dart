@@ -2,6 +2,7 @@ library datahub;
 
 export 'api.dart';
 export 'broker.dart';
+export 'collection.dart';
 export 'config.dart';
 export 'ioc.dart';
 export 'persistence.dart';

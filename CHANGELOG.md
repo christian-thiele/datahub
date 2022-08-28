@@ -1,3 +1,6 @@
+## 0.16.0
+- added Collection Library
+
 ## 0.15.2
 - ApiService
   - fixed internal error when handling request not matching base path
