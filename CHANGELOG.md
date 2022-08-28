@@ -1,5 +1,9 @@
 ## 0.16.0
 - added Collection Library
+- RestClient
+  - added ApiEndpointClient, ApiResourceClient, ListApiResourceClient
+  - header values are now List<String> instead of String
+  - URL-parms are now encoded using RoutePattern
 
 ## 0.15.2
 - ApiService
