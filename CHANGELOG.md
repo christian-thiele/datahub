@@ -4,6 +4,8 @@
   - added ApiEndpointClient, ApiResourceClient, ListApiResourceClient
   - header values are now List<String> instead of String
   - URL-parms are now encoded using RoutePattern
+- Broker
+  - added EventHubs
 
 ## 0.15.2
 - ApiService
