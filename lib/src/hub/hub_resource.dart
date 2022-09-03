@@ -1,16 +1,8 @@
-import 'package:datahub/transfer_object.dart';
+import 'package:datahub/datahub.dart';
 
-/// Base class for all Hub-Resources.
-///
-/// A hub resource is read-only by default. Other HubResource classes
-/// like [MutableHubResource] are modifiable.
-class HubResource<T> {
-  final String name;
-  final TransferBean<T> bean;
+/// Annotation for Resources
+class HubResource {
+  final String path;
 
-  HubResource(this.name, this.bean);
-}
-
-class MutableHubResource<T> extends HubResource<T> {
-  MutableHubResource(super.name, super.bean);
+  const HubResource(this.path);
 }
