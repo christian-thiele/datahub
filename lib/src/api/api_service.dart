@@ -5,6 +5,7 @@ import 'package:boost/boost.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:datahub/utils.dart';
+import 'package:http2/transport.dart';
 
 import 'middleware/error_request_handler.dart';
 import 'middleware/middleware.dart';
@@ -45,18 +46,19 @@ abstract class ApiService extends BaseService {
   Future<void> serve(dynamic address, int port,
       {CancellationToken? cancellationToken}) async {
     try {
-      final server = await HttpServer.bind(address, port);
+      final socket = await ServerSocket.bind(address, port);
 
       _logService.info('Serving on $address:$port', sender: 'DataHub');
 
       final _cancelKey = cancellationToken?.attach(() {
-        _logService.info('Shutting down...', sender: 'DataHub');
-        server.close();
+        _logService.info('Shutting down API...', sender: 'DataHub');
+        // TODO gracefully end streams / connections
+        socket.close();
       });
 
       final completer = Completer();
 
-      server.listen(_handleRequestGuarded, onError: _onError, onDone: () {
+      socket.listen(_handleSocket, onError: _onError, onDone: () {
         cancellationToken?.detach(_cancelKey!);
         completer.complete();
       });
@@ -122,6 +124,14 @@ abstract class ApiService extends BaseService {
       error: e,
       trace: trace,
     );
+  }
+
+  void _handleSocket(Socket socket) async {
+    final connection = ServerTransportConnection.viaSocket(socket);
+    await connection.onInitialPeerSettingsReceived; //TODO check if ok / necessary
+    await for (final stream in connection.incomingStreams) {
+
+    }
   }
 
   Future<ApiResponse> handleRequest(HttpRequest httpRequest) async {
