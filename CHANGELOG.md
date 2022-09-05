@@ -1,11 +1,18 @@
 ## 0.16.0
-- added Collection Library
+- ApiService
+  - added HTTP/2 support
+  - added protocol negotiation
+- ByteStreamResponse / FileResponse
+  - Content-Disposition is transmitted regardless of availability of filename
 - RestClient
   - added ApiEndpointClient, ApiResourceClient, ListApiResourceClient
   - header values are now List<String> instead of String
   - URL-parms are now encoded using RoutePattern
 - Broker
   - added EventHubs
+- Utils
+  - added MIME type / extension mapper
+- added Collection Library
 
 ## 0.15.2
 - ApiService

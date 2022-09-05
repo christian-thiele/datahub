@@ -39,7 +39,7 @@ class ConsoleLogBackend extends LogBackend {
 
     stdout.write(_severityPrefix(message.severity));
     stdout.write(' ');
-    stdout.write(message.message);
+    stdout.write(message.message.replaceAll('\n', '\n$_indent'));
 
     if (message.exception != null) {
       stdout.write('\n');

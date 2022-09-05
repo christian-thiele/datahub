@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:io';
+import 'dart:convert';
+import 'dart:io' as io;
 import 'package:boost/boost.dart';
 
 import 'package:datahub/ioc.dart';
@@ -7,6 +8,8 @@ import 'package:datahub/services.dart';
 import 'package:datahub/utils.dart';
 import 'package:http2/transport.dart';
 
+import 'http/http_request.dart';
+import 'http/http_server.dart';
 import 'middleware/error_request_handler.dart';
 import 'middleware/middleware.dart';
 import 'middleware/request_handler.dart';
@@ -16,7 +19,6 @@ import 'sessions/session.dart';
 import 'api_endpoint.dart';
 import 'api_request.dart';
 import 'api_request_exception.dart';
-import 'api_request_method.dart';
 import 'api_response.dart';
 import 'request_context.dart';
 import 'route.dart';
@@ -25,14 +27,12 @@ abstract class ApiService extends BaseService {
   final _logService = resolve<LogService>();
   late final _configAddress = config<String?>('address');
   late final _configPort = config<int?>('port') ?? 8080;
+  late final HttpServer _server;
 
   final String basePath;
   final List<ApiEndpoint> endpoints;
   final MiddlewareBuilder? middleware;
   final SessionProvider? sessionProvider;
-
-  late Future _serveTask;
-  final _shutdownToken = CancellationToken();
 
   ApiService(
     String? config,
@@ -43,41 +43,28 @@ abstract class ApiService extends BaseService {
   })  : basePath = _sanitizeBasePath(apiBasePath),
         super(config);
 
-  Future<void> serve(dynamic address, int port,
-      {CancellationToken? cancellationToken}) async {
-    try {
-      final socket = await ServerSocket.bind(address, port);
+  @override
+  Future<void> initialize() async {
+    final serveAddress = nullOrWhitespace(_configAddress)
+        ? io.InternetAddress.anyIPv4
+        : _configAddress;
 
-      _logService.info('Serving on $address:$port', sender: 'DataHub');
+    final context = io.SecurityContext()
+      ..setAlpnProtocols(['h2', 'h2-14', 'http/1.1'], true)
+      ..useCertificateChain('test/hub/localhost.crt')
+      ..usePrivateKey('test/hub/localhost.key');
 
-      final _cancelKey = cancellationToken?.attach(() {
-        _logService.info('Shutting down API...', sender: 'DataHub');
-        // TODO gracefully end streams / connections
-        socket.close();
-      });
+    final socket =
+        await io.SecureServerSocket.bind(serveAddress, _configPort, context);
 
-      final completer = Completer();
-
-      socket.listen(_handleSocket, onError: _onError, onDone: () {
-        cancellationToken?.detach(_cancelKey!);
-        completer.complete();
-      });
-
-      await completer.future;
-    } catch (e, stack) {
-      _logService.critical(
-        'Error while serving API.',
-        error: e,
-        trace: stack,
-        sender: 'DataHub',
-      );
-    }
+    _server = HttpServer(socket, _onError, _onStreamError);
+    _server.http1Requests.listen(_handleRequestHttp1);
+    _server.http2Streams.listen(_handleStreamHttp2);
   }
 
-  Future<void> _handleRequestGuarded(HttpRequest request) async {
-    final stopWatch = Stopwatch()..start();
+  Future<void> _handleRequestHttp1(io.HttpRequest request) async {
     try {
-      var result = await handleRequest(request);
+      var result = await handleRequest(HttpRequest.http1(request));
 
       result
           .getHeaders()
@@ -105,7 +92,7 @@ abstract class ApiService extends BaseService {
         errorMessage = 'Error while handling request to "${request.uri}".';
       } catch (_) {}
 
-      resolve<LogService>().error(
+      _logService.error(
         errorMessage,
         sender: 'DataHub',
         error: e,
@@ -113,38 +100,104 @@ abstract class ApiService extends BaseService {
       );
     }
 
-    stopWatch.stop();
     await request.response.close();
   }
 
-  void _onError(dynamic e, StackTrace? trace) {
-    resolve<LogService>().error(
-      'Error while listening to socket.',
-      sender: 'DataHub',
-      error: e,
-      trace: trace,
-    );
-  }
+  Future<void> _handleStreamHttp2(ServerTransportStream stream) async {
+    try {
+      final dataController = StreamController<List<int>>();
+      final requestCompleter = Completer<HttpRequest>();
+      final terminated = CancellationToken();
 
-  void _handleSocket(Socket socket) async {
-    final connection = ServerTransportConnection.viaSocket(socket);
-    await connection.onInitialPeerSettingsReceived; //TODO check if ok / necessary
-    await for (final stream in connection.incomingStreams) {
+      stream.onTerminated = (_) => terminated.cancel();
 
+      stream.incomingMessages.listen(
+        (event) async {
+          if (event is HeadersStreamMessage) {
+            if (event.endStream) {
+              unawaited(dataController.close());
+            }
+
+            requestCompleter
+                .complete(HttpRequest.http2(event, dataController.stream));
+          } else if (event is DataStreamMessage) {
+            dataController.add(event.bytes);
+            if (event.endStream) {
+              unawaited(dataController.close());
+            }
+          }
+        },
+        onError: _onStreamError,
+      );
+
+      final request = await requestCompleter.future;
+
+      try {
+        final response = await handleRequest(request);
+        if (terminated.cancellationRequested) {
+          throw Exception('Remote closed stream.');
+        }
+
+        stream.sendHeaders([
+          Header.ascii(':status', response.statusCode.toString()),
+          ...response
+              .getHeaders()
+              .entries
+              .map((h) => Header.ascii(h.key.toLowerCase(), h.value)),
+        ]);
+
+        await for (final chunk in response.getData()) {
+          if (terminated.cancellationRequested) {
+            throw Exception('Remote closed stream.');
+          }
+          stream.sendData(chunk);
+        }
+      } on ApiRequestException catch (e) {
+        // exceptions are usually handled at the ApiEndpoint and converted
+        // to ApiResponses. this is just in case:
+        if (!terminated.cancellationRequested) {
+          stream
+              .sendHeaders([Header.ascii(':status', e.statusCode.toString())]);
+          stream.sendData(utf8.encode(
+              '${e.statusCode} ${getHttpStatus(e.statusCode)}: ${e.message}'));
+        }
+      } catch (e, stack) {
+        // exceptions are usually handled at the ApiEndpoint and converted
+        // to ApiResponses. this is just in case:
+        var errorMessage = 'Error while handling request.';
+        try {
+          errorMessage = 'Error while handling request to "${request.path}".';
+        } catch (_) {}
+
+        _logService.error(
+          errorMessage,
+          sender: 'DataHub',
+          error: e,
+          trace: stack,
+        );
+
+        if (!terminated.cancellationRequested) {
+          stream.sendHeaders([Header.ascii(':status', '500')]);
+          stream.sendData(utf8.encode('500 - Internal Server Error'));
+        }
+      } finally {
+        await stream.outgoingMessages.close();
+      }
+    } catch (e, stack) {
+      _logService.error(
+        'Error while handling HTTP2 stream.',
+        sender: 'DataHub',
+        error: e,
+        trace: stack,
+      );
     }
   }
 
   Future<ApiResponse> handleRequest(HttpRequest httpRequest) async {
-    final absolutePath = httpRequest.uri.path;
-    final handler = _findRequestHandler(absolutePath);
-    final path = absolutePath.startsWith(basePath)
-        ? absolutePath.substring(basePath.length)
+    final handler = _findRequestHandler(httpRequest.path);
+    final path = httpRequest.path.startsWith(basePath)
+        ? httpRequest.path.substring(basePath.length)
         : '';
-
-    final headers = <String, List<String>>{};
-    httpRequest.headers.forEach((name, values) {
-      headers[name] = values;
-    });
 
     final route = (handler is ApiEndpoint)
         ? handler.routePattern.decode(path)
@@ -153,8 +206,8 @@ abstract class ApiService extends BaseService {
     // find session
     Session? session;
     if (sessionProvider != null) {
-      final authorization =
-          (headers['Authorization'] ?? headers['authorization']);
+      final authorization = (httpRequest.headers['Authorization'] ??
+          httpRequest.headers['authorization']);
       if (authorization?.isNotEmpty ?? false) {
         session = await sessionProvider!.redeemToken(authorization!.first);
       }
@@ -167,11 +220,11 @@ abstract class ApiService extends BaseService {
 
     final request = ApiRequest(
       context,
-      parseMethod(httpRequest.method),
+      httpRequest.method,
       route,
-      headers,
-      httpRequest.uri.queryParameters,
-      httpRequest,
+      httpRequest.headers,
+      httpRequest.queryParams,
+      httpRequest.bodyData,
     );
 
     if (middleware != null) {
@@ -181,23 +234,20 @@ abstract class ApiService extends BaseService {
     }
   }
 
-  @override
-  Future<void> initialize() async {
-    final serveAddress = nullOrWhitespace(_configAddress)
-        ? InternetAddress.anyIPv4
-        : _configAddress;
-
-    _serveTask = serve(
-      serveAddress,
-      _configPort,
-      cancellationToken: _shutdownToken,
+  void _onError(dynamic e, StackTrace? trace) {
+    resolve<LogService>().error(
+      'Error while listening to socket.',
+      sender: 'DataHub',
+      error: e,
+      trace: trace,
     );
   }
 
-  @override
-  Future<void> shutdown() async {
-    _shutdownToken.cancel();
-    await _serveTask;
+  void _onStreamError(dynamic e, StackTrace? trace) {
+    resolve<LogService>().verbose(
+      'Error while handling HTTP2 stream.\n$e',
+      sender: 'DataHub',
+    );
   }
 
   // TODO this could be part of RoutePattern instead
@@ -231,5 +281,10 @@ abstract class ApiService extends BaseService {
             .firstOrNullWhere((element) => element.routePattern.match(path)) ??
         ErrorRequestHandler(ApiRequestException.notFound(
             'Resource \"$absolutePath\" not found.'));
+  }
+
+  @override
+  Future<void> shutdown() async {
+    await _server.close();
   }
 }

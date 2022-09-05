@@ -83,7 +83,7 @@ class JsonResponse extends _SynchronousResponse {
 
   @override
   Map<String, String> getHeaders() {
-    return {HttpHeaders.contentTypeHeader: 'application/json;encoding=utf-8'};
+    return {HttpHeaders.contentTypeHeader: 'application/json; encoding=utf-8'};
   }
 }
 
@@ -92,11 +92,11 @@ class TextResponse extends _SynchronousResponse {
   final String _contentType;
 
   TextResponse.plain(this._text, {int statusCode = 200})
-      : _contentType = 'text/plain;charset=utf-8',
+      : _contentType = 'text/plain; charset=utf-8',
         super(statusCode);
 
   TextResponse.html(this._text, {int statusCode = 200})
-      : _contentType = 'text/html;charset=utf-8',
+      : _contentType = 'text/html; charset=utf-8',
         super(statusCode);
 
   @override
@@ -157,6 +157,7 @@ class ByteStreamResponse extends ApiResponse {
   Map<String, String> getHeaders() => {
         'Content-Length': length.toString(),
         'Content-Type': contentType,
+        if (nullOrEmpty(fileName)) 'Content-Disposition': '${disposition.name}',
         if (!nullOrEmpty(fileName))
           'Content-Disposition': '${disposition.name}; filename="$fileName"',
       };
@@ -165,15 +166,17 @@ class ByteStreamResponse extends ApiResponse {
 class FileResponse extends ByteStreamResponse {
   final File file;
 
-  FileResponse(this.file,
-      {ContentDisposition disposition = ContentDisposition.inline,
-      String contentType = 'application/octet-stream'})
-      : super(
+  FileResponse(
+    this.file, {
+    ContentDisposition disposition = ContentDisposition.inline,
+    String? contentType,
+  }) : super(
           file.openRead(),
           file.lengthSync(),
           fileName: p.basename(file.path),
           disposition: disposition,
-          contentType: contentType,
+          contentType: Mime.fromExtension(p.extension(file.path)) ??
+              'application/octet-stream',
         );
 }
 
