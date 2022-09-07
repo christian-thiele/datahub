@@ -1,6 +1,7 @@
 ## 0.16.0
+- Added HttpClient / HttpServer as multi-version HTTP implementations
 - ApiService
-  - added HTTP/2 support
+  - added HTTP/2 support (using HttpServer)
   - added protocol negotiation
 - ByteStreamResponse / FileResponse
   - Content-Disposition is transmitted regardless of availability of filename

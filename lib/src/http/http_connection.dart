@@ -2,20 +2,20 @@ import 'dart:async';
 import 'dart:io' as io;
 import 'dart:typed_data';
 import 'package:boost/boost.dart';
-import 'package:datahub/src/api/http/socket_adapter.dart';
+import 'package:datahub/src/http/socket_adapter.dart';
 import 'package:http2/src/connection_preface.dart';
 
-enum _Protocol { HTTP11, HTTP2 }
+enum HttpVersion { HTTP11, HTTP2 }
 
 class HttpConnection {
   static void detectProtocol(io.Socket socket, void Function(io.Socket) http1,
       void Function(io.Socket) http2) {
     readConnectionPreface(socket).then((value) {
       switch (value.b) {
-        case _Protocol.HTTP11:
+        case HttpVersion.HTTP11:
           http1(DetachedSocket(socket, value.a));
           break;
-        case _Protocol.HTTP2:
+        case HttpVersion.HTTP2:
           http2(DetachedSocket(socket, value.a));
           break;
       }
@@ -28,29 +28,29 @@ class HttpConnection {
         .sequenceEquals(CONNECTION_PREFACE);
   }
 
-  static Future<Tuple<Stream<Uint8List>, _Protocol>> readConnectionPreface(
+  static Future<Tuple<Stream<Uint8List>, HttpVersion>> readConnectionPreface(
     Stream<Uint8List> socket,
   ) async {
     final controller = StreamController<Uint8List>();
     final buffer = <int>[];
-    final completer = Completer<_Protocol>();
+    final completer = Completer<HttpVersion>();
 
     void onData(Uint8List data) {
       if (!completer.isCompleted) {
         if (data.length >= CONNECTION_PREFACE.length) {
           if (startsWithHttp2Preface(data)) {
-            completer.complete(_Protocol.HTTP2);
+            completer.complete(HttpVersion.HTTP2);
           } else {
-            completer.complete(_Protocol.HTTP11);
+            completer.complete(HttpVersion.HTTP11);
           }
         } else {
           final rest = CONNECTION_PREFACE.length - buffer.length;
           buffer.addAll(data.take(rest));
           if (buffer.length >= CONNECTION_PREFACE.length) {
             if (startsWithHttp2Preface(buffer)) {
-              completer.complete(_Protocol.HTTP2);
+              completer.complete(HttpVersion.HTTP2);
             } else {
-              completer.complete(_Protocol.HTTP11);
+              completer.complete(HttpVersion.HTTP11);
             }
           }
         }
