@@ -6,7 +6,7 @@
 - ByteStreamResponse / FileResponse
   - Content-Disposition is transmitted regardless of availability of filename
 - RestClient
-  - added ApiEndpointClient, ApiResourceClient, ListApiResourceClient
+  - added HTTP/2 support (using HttpClient)
   - header values are now List<String> instead of String
   - URL-parms are now encoded using RoutePattern
 - Broker
