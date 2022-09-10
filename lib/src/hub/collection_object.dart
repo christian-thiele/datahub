@@ -47,7 +47,7 @@ class CollectionObjectTransferBean<T extends TransferObjectBase<Object>>
         size: decodeTyped<int>(data['size']),
         elements: decodeList(
           data['elements'],
-              (p0) => elementBean.toObject(p0),
+          (p0) => elementBean.toObject(p0),
         ),
       );
 }

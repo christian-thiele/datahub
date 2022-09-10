@@ -1,7 +1,12 @@
 import 'dart:convert';
 import 'dart:io' as io;
+import 'package:http/http.dart';
 import 'package:http2/http2.dart' as http2;
 import 'package:boost/boost.dart';
+
+import 'http_headers.dart';
+
+late final charsetRegExp = RegExp(r'(charset|encoding)=([^;,\n]+)');
 
 Map<String, List<String>> http1Headers(io.HttpHeaders headers) {
   final map = <String, List<String>>{};
@@ -19,4 +24,17 @@ Tuple<Map<String, String>, Map<String, List<String>>> http2Headers(
   final httpHeaders = Map.fromEntries(decodedHeaders.b.map((e) =>
       MapEntry(e.key, e.value.split(',').map((e) => e.trim()).toList())));
   return Tuple(pseudoHeaders, httpHeaders);
+}
+
+Encoding? getEncodingFromHeaders(Map<String, List<String>> headers) {
+  if (headers.containsKey(HttpHeaders.contentType)) {
+    final contentType = headers[HttpHeaders.contentType]!.first;
+    final parts = contentType.split(';');
+    final charsetMatch =
+        parts.map((p) => charsetRegExp.firstMatch(p)).whereNotNull.firstOrNull;
+
+    return Encoding.getByName(charsetMatch?.group(1));
+  } else {
+    return null;
+  }
 }

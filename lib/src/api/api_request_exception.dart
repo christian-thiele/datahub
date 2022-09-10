@@ -1,4 +1,5 @@
 import 'package:boost/boost.dart';
+import 'package:datahub/api.dart';
 import 'package:datahub/utils.dart';
 
 class ApiRequestException extends ApiException {
@@ -8,9 +9,13 @@ class ApiRequestException extends ApiException {
       : super(_toMessage(statusCode, message));
 
   ApiRequestException.unauthorized([message]) : this(401, message);
+
   ApiRequestException.notFound([message]) : this(404, message);
+
   ApiRequestException.forbidden([message]) : this(403, message);
+
   ApiRequestException.badRequest([message]) : this(400, message);
+
   ApiRequestException.methodNotAllowed([message]) : this(405, message);
 
   ApiRequestException.internalError(message) : this(500, message);
@@ -22,4 +27,7 @@ class ApiRequestException extends ApiException {
 
     return message!;
   }
+
+  ApiResponse toResponse() =>
+      TextResponse.plain(message, statusCode: statusCode);
 }

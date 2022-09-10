@@ -1,6 +1,13 @@
 import 'package:boost/boost.dart';
 
 class Mime {
+  static const plainText = 'text/plain';
+  static const html = 'text/html';
+  static const octetStream = 'application/octet-stream';
+  static const formData = 'application/x-www-form-urlencoded';
+  static const json = 'application/json';
+  static const datahubResourceStream = 'application/x-datahub-resource-stream';
+
   Mime._();
 
   static String? fromExtension(String extension) {
@@ -49,7 +56,7 @@ class Mime {
     'jar': 'application/java-archive',
     'ser': 'application/java-serialized-object',
     'class': 'application/java-vm',
-    'json': 'application/json',
+    'json': json,
     'jsonml': 'application/jsonml+json',
     'lostxml': 'application/lost+xml',
     'hqx': 'application/mac-binhex40',
@@ -73,18 +80,18 @@ class Mime {
     'doc': 'application/msword',
     'dot': 'application/msword',
     'mxf': 'application/mxf',
-    'bin': 'application/octet-stream',
-    'dms': 'application/octet-stream',
-    'lrf': 'application/octet-stream',
-    'mar': 'application/octet-stream',
-    'so': 'application/octet-stream',
-    'dist': 'application/octet-stream',
-    'distz': 'application/octet-stream',
-    'pkg': 'application/octet-stream',
-    'bpk': 'application/octet-stream',
-    'dump': 'application/octet-stream',
-    'elc': 'application/octet-stream',
-    'deploy': 'application/octet-stream',
+    'bin': octetStream,
+    'dms': octetStream,
+    'lrf': octetStream,
+    'mar': octetStream,
+    'so': octetStream,
+    'dist': octetStream,
+    'distz': octetStream,
+    'pkg': octetStream,
+    'bpk': octetStream,
+    'dump': octetStream,
+    'elc': octetStream,
+    'deploy': octetStream,
     'oda': 'application/oda',
     'opf': 'application/oebps-package+xml',
     'ogx': 'application/ogg',
@@ -888,18 +895,18 @@ class Mime {
     'ifb': 'text/calendar',
     'css': 'text/css',
     'csv': 'text/csv',
-    'html': 'text/html',
-    'htm': 'text/html',
+    'html': html,
+    'htm': html,
     'js': 'text/javascript',
     'mjs': 'text/javascript',
     'n3': 'text/n3',
-    'txt': 'text/plain',
-    'text': 'text/plain',
-    'conf': 'text/plain',
-    'def': 'text/plain',
-    'list': 'text/plain',
-    'log': 'text/plain',
-    'in': 'text/plain',
+    'txt': plainText,
+    'text': plainText,
+    'conf': plainText,
+    'def': plainText,
+    'list': plainText,
+    'log': plainText,
+    'in': plainText,
     'dsc': 'text/prs.lines.tag',
     'rtx': 'text/richtext',
     'sgml': 'text/sgml',

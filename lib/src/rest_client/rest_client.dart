@@ -13,6 +13,7 @@ import 'rest_response.dart';
 class RestClient {
   final HttpClient _httpClient;
   final HttpAuth? auth;
+  bool get isHttp2 => _httpClient.isHttp2;
 
   RestClient(
     this._httpClient, {
@@ -20,14 +21,33 @@ class RestClient {
   });
 
   static Future<RestClient> connect(
-    Uri address, {
-    HttpAuth? auth,
-    io.SecurityContext? securityContext,
-    bool Function(io.X509Certificate certificate)? onBadCertificate,
-    Duration? timeout,
-  }) async {
+      Uri address, {
+        HttpAuth? auth,
+        io.SecurityContext? securityContext,
+        bool Function(io.X509Certificate certificate)? onBadCertificate,
+        Duration? timeout,
+      }) async {
     return RestClient(
       await HttpClient.autodetect(
+        address,
+        securityContext: securityContext,
+        onBadCertificate: onBadCertificate,
+        timeout: timeout,
+      ),
+      auth: auth,
+    );
+  }
+
+
+  static Future<RestClient> connectHttp2(
+      Uri address, {
+        HttpAuth? auth,
+        io.SecurityContext? securityContext,
+        bool Function(io.X509Certificate certificate)? onBadCertificate,
+        Duration? timeout,
+      }) async {
+    return RestClient(
+      await HttpClient.http2(
         address,
         securityContext: securityContext,
         onBadCertificate: onBadCertificate,
@@ -177,7 +197,7 @@ class RestClient {
   }) async {
     final uri = _httpClient.address.replace(
       path: endpoint.encode(urlParams),
-      queryParameters: query,
+      queryParameters: query.isNotEmpty ? query : null,
     );
 
     final requestHeaders = {

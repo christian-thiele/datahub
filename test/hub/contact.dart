@@ -14,5 +14,3 @@ class Contact extends _TransferObject {
 
   Contact(this.id, this.name, this.number, this.address);
 }
-
-

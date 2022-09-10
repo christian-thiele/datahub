@@ -124,7 +124,9 @@ class HttpServer {
       final requestCompleter = Completer<HttpRequest>();
       final terminated = CancellationToken();
 
-      stream.onTerminated = (_) => terminated.cancel();
+      stream.onTerminated = (_) {
+        terminated.cancel();
+      };
 
       stream.incomingMessages.listen(
         (event) async {
@@ -142,7 +144,8 @@ class HttpServer {
             }
           }
         },
-        onError: onStreamError,
+        onDone: dataController.close,
+        onError: (e, stack) => onStreamError(e, stack),
       );
 
       final request = await requestCompleter.future;
@@ -161,12 +164,15 @@ class HttpServer {
 
         stream.sendHeaders(headers);
 
-        await for (final chunk in response.bodyData) {
-          if (terminated.cancellationRequested) {
-            throw Exception('Remote closed stream.');
-          }
-          stream.sendData(chunk);
-        }
+        final responseBodyComplete = Completer();
+        final responseBodySubscription = response.bodyData.listen(
+          stream.sendData,
+          onDone: responseBodyComplete.complete,
+          onError: responseBodyComplete.completeError,
+        );
+
+        terminated.attach(responseBodySubscription.cancel);
+        await responseBodyComplete.future;
 
         //## PUSH STREAM ?
         /*if (stream.canPush && response is PushStreamResponse) {

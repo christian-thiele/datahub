@@ -14,11 +14,18 @@ abstract class Resource<T extends TransferObjectBase> {
 
   Resource(this.routePattern, this.bean);
 
+  /// Fetches the value of the resource once.
   Future<T> get();
+
+  /// Subscribes to the resource and emits the value
+  /// every time it updates.
+  Stream<T> get stream;
 }
 
-abstract class MutableResource<T extends TransferObjectBase> extends Resource<T> {
+abstract class MutableResource<T extends TransferObjectBase>
+    extends Resource<T> {
   MutableResource(super.routePattern, super.bean);
 
+  /// Pushes a new value to the resource.
   Future<void> set(T value);
 }

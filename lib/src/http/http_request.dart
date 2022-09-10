@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:boost/boost.dart';
@@ -14,6 +15,8 @@ class HttpRequest {
 
   String get path => nullOrWhitespace(requestUri.path) ? '/' : requestUri.path;
   Map<String, String> get queryParams => requestUri.queryParameters;
+
+  Encoding? get charset => getEncodingFromHeaders(headers);
 
   HttpRequest(
     this.method,
