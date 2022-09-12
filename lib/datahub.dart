@@ -4,6 +4,7 @@ export 'api.dart';
 export 'broker.dart';
 export 'collection.dart';
 export 'config.dart';
+export 'hub.dart';
 export 'ioc.dart';
 export 'persistence.dart';
 export 'services.dart';
