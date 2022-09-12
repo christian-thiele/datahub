@@ -15,6 +15,7 @@ class ClientResourceStreamController<T extends TransferObjectBase> {
       _client; //TODO replace this with interface for other transport protocols
   final TransferBean<T> bean;
   final RoutePattern routePattern;
+  final Map<String, String> params;
 
   late final _subject = BehaviorSubject<T>(
     onListen: _connect,
@@ -27,7 +28,8 @@ class ClientResourceStreamController<T extends TransferObjectBase> {
 
   Stream<T> get stream => _subject.stream;
 
-  ClientResourceStreamController(this._client, this.routePattern, this.bean);
+  ClientResourceStreamController(
+      this._client, this.routePattern, this.params, this.bean);
 
   final _connectSemaphore = Semaphore();
   StreamSubscription? _currentSubscription;
@@ -37,7 +39,7 @@ class ClientResourceStreamController<T extends TransferObjectBase> {
       await _connectSemaphore.runLocked(() async {
         if (_currentSubscription == null) {
           final streamResponse = await _client.getObject<Stream<List<int>>>(
-            routePattern.encode({}),
+            routePattern.encode(params),
             headers: {
               HttpHeaders.accept: [Mime.datahubResourceStream]
             },

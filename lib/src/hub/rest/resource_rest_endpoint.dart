@@ -1,18 +1,34 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub/http.dart';
+import 'package:datahub/src/api/middleware/request_handler.dart';
+import 'package:datahub/src/hub/hub_provider.dart';
 import 'package:datahub/src/hub/transport/resource_transport_stream.dart';
 import 'package:rxdart/rxdart.dart';
 
+import '../resource.dart';
 import '../transport/server_resource_stream_controller.dart';
 
-class ResourceRestEndpoint<T extends TransferObjectBase> extends ApiEndpoint {
+typedef ResourceSelector<THub> = Resource Function(THub hub);
+
+class ResourceRestEndpoint extends ApiEndpoint {
   final _logService = resolve<LogService>();
-  final _resourceSubject = BehaviorSubject<T>();
+  final Resource _resource;
   final _controllers = <ServerResourceStreamController>[];
 
-  ResourceRestEndpoint(super.routePattern, Stream<T> resourceStream) {
-    resourceStream.pipe(_resourceSubject);
-  }
+  @override
+  RoutePattern get routePattern => _resource.routePattern;
+
+  ResourceRestEndpoint(this._resource) : super(_resource.routePattern);
+
+  static ResourceRestEndpoint forHubResource<THub>(
+          ResourceSelector<THub> selector) =>
+      ResourceRestEndpoint(selector(resolve<HubProvider<THub>>() as THub));
+
+  static List<ResourceRestEndpoint> allOf<THub>() =>
+      resolve<HubProvider<THub>>()
+          .resources
+          .map((e) => ResourceRestEndpoint(e))
+          .toList();
 
   @override
   Future get(ApiRequest request) async {
@@ -20,7 +36,9 @@ class ResourceRestEndpoint<T extends TransferObjectBase> extends ApiEndpoint {
       if (request.headers[HttpHeaders.accept]!
           .contains(Mime.datahubResourceStream)) {
         final controller = ServerResourceStreamController(
-          _resourceSubject.stream,
+          _resource
+              .getStream(request.route.routeParams)
+              .shareValueSeeded(await _resource.get(request.route.routeParams)),
           _removeController,
           uuid(),
         );
@@ -33,7 +51,17 @@ class ResourceRestEndpoint<T extends TransferObjectBase> extends ApiEndpoint {
       }
     }
 
-    return _resourceSubject.value;
+    return await _resource.get(request.route.routeParams);
+  }
+
+  @override
+  Future put(ApiRequest request) async {
+    if (_resource is MutableResource) {
+      final body = await request.getBody(bean: _resource.bean);
+      await (_resource as MutableResource).set(body, request.route.routeParams);
+    } else {
+      throw ApiRequestException.methodNotAllowed();
+    }
   }
 
   void _removeController(ServerResourceStreamController controller) {

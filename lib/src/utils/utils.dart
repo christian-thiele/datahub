@@ -90,3 +90,22 @@ String buildQueryString(Map<String, String?> query) {
 }
 
 String uuid() => Uuid().v1().toString();
+
+extension MapEquality<K, V> on Map<K, V> {
+  bool entriesEqual(Map<K, V> other) {
+    if (other.length != length) {
+      return false;
+    }
+
+    for (final entry in entries) {
+      if (other.containsKey(entry.key)) {
+        return false;
+      }
+      if (entry.value != other[entry.key]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}

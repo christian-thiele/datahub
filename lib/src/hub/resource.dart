@@ -1,8 +1,7 @@
-import 'package:datahub/api.dart';
-import 'package:datahub/src/hub/collection_size.dart';
-import 'package:datahub/transfer_object.dart';
+import 'dart:async';
 
-import 'collection_object.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/transfer_object.dart';
 
 /// Base class for all Hub-Resources.
 ///
@@ -15,11 +14,11 @@ abstract class Resource<T extends TransferObjectBase> {
   Resource(this.routePattern, this.bean);
 
   /// Fetches the value of the resource once.
-  Future<T> get();
+  Future<T> get([Map<String, String> params = const {}]);
 
   /// Subscribes to the resource and emits the value
   /// every time it updates.
-  Stream<T> get stream;
+  Stream<T> getStream([Map<String, String> params = const {}]);
 }
 
 abstract class MutableResource<T extends TransferObjectBase>
@@ -27,5 +26,5 @@ abstract class MutableResource<T extends TransferObjectBase>
   MutableResource(super.routePattern, super.bean);
 
   /// Pushes a new value to the resource.
-  Future<void> set(T value);
+  Future<void> set(T value, [Map<String, String> params = const {}]);
 }

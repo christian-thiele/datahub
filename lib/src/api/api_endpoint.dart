@@ -5,7 +5,20 @@ import 'package:datahub/services.dart';
 
 import 'middleware/request_handler.dart';
 
-abstract class ApiEndpoint implements RequestHandler {
+/// A RequestHandler with a [RoutePattern] to match against.
+///
+/// ApiEndpoint provides basic error response conversion.
+/// To use it, override any of the [get], [post], [put], [patch], [delete]
+/// methods. It is safe to throw exceptions inside of them.
+///
+/// A [ApiRequestException] thrown from inside of the handler methods
+/// will result in the corresponding ApiResponse.
+///
+/// Any other Exception thrown will be converted to a response with status code
+/// 500. If DataHub runs in [Environment.dev] configuration, the exception
+/// and its stack trace will be included as text in the response.
+/// (See [DebugResponse].)
+abstract class ApiEndpoint extends RequestHandler {
   final RoutePattern routePattern;
 
   ApiEndpoint(this.routePattern);

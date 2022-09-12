@@ -21,12 +21,12 @@ class RestClient {
   });
 
   static Future<RestClient> connect(
-      Uri address, {
-        HttpAuth? auth,
-        io.SecurityContext? securityContext,
-        bool Function(io.X509Certificate certificate)? onBadCertificate,
-        Duration? timeout,
-      }) async {
+    Uri address, {
+    HttpAuth? auth,
+    io.SecurityContext? securityContext,
+    bool Function(io.X509Certificate certificate)? onBadCertificate,
+    Duration? timeout,
+  }) async {
     return RestClient(
       await HttpClient.autodetect(
         address,
@@ -38,14 +38,13 @@ class RestClient {
     );
   }
 
-
   static Future<RestClient> connectHttp2(
-      Uri address, {
-        HttpAuth? auth,
-        io.SecurityContext? securityContext,
-        bool Function(io.X509Certificate certificate)? onBadCertificate,
-        Duration? timeout,
-      }) async {
+    Uri address, {
+    HttpAuth? auth,
+    io.SecurityContext? securityContext,
+    bool Function(io.X509Certificate certificate)? onBadCertificate,
+    Duration? timeout,
+  }) async {
     return RestClient(
       await HttpClient.http2(
         address,
@@ -294,7 +293,7 @@ class RestClient {
       return data as TResponse;
     } else if (responseType.isMapOf<String, dynamic>() || responseType.isList) {
       return jsonDecode(await encoding.decodeStream(data)) as TResponse;
-    } else if (TResponse == Null) {
+    } else if (TypeCheck<void>().isSubtypeOf<TResponse>()) {
       return null;
     }
 
