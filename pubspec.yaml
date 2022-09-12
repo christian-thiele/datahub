@@ -1,6 +1,6 @@
 name: datahub
 description: DataHub is a Cloud Development Ecosystem aiming to bring the power of Dart into the Cloud.
-version: 0.16.0-dev.3
+version: 0.16.0-dev.4
 homepage: https://datahubproject.net/
 
 environment:
@@ -27,4 +27,8 @@ dev_dependencies:
   datahub_codegen: ^0.15.0
   pedantic: ^1.11.0
   test: ^1.21.1
+
+false_secrets:
+  - test/hub/localhost.crt
+  - test/hub/localhost.key
 
