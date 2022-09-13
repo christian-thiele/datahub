@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 
 /// Interface for performing operations / running queries on the database.
@@ -57,4 +58,38 @@ abstract class DatabaseContext {
 
   /// Returns number of affected rows.
   Future<int> deleteWhere(DataBean bean, Filter filter);
+}
+
+/// Utility methods that can be used on any [DatabaseContext].
+extension DatabaseContextUtils on DatabaseContext {
+  /// Checks if there are any entries that match the filter.
+  Future<bool> any(DataBean bean, {Filter filter = Filter.empty}) async {
+    return await count(bean, filter: filter) > 0;
+  }
+
+  /// Returns the number of elements that match the [filter].
+  Future<int> count(DataBean bean, {Filter filter = Filter.empty}) async {
+    final result = await select(bean, [QuerySelect.count], filter: filter);
+    return result.firstOrNull?[QuerySelect.count.alias] ?? 0;
+  }
+
+  /// Returns the first entry of the query.
+  Future<TDao?> first<TDao>(
+    QuerySource<TDao> source, {
+    Filter filter = Filter.empty,
+    List<QuerySelect> distinct = const <QuerySelect>[],
+    Sort sort = Sort.empty,
+    int offset = 0,
+  }) async {
+    final result = await query<TDao>(
+      source,
+      filter: filter,
+      distinct: distinct,
+      sort: sort,
+      offset: offset,
+      limit: 1,
+    );
+
+    return result.firstOrNull;
+  }
 }

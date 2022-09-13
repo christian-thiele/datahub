@@ -9,11 +9,15 @@
   - added HTTP/2 support (using HttpClient)
   - header values are now List<String> instead of String
   - URL-parms are now encoded using RoutePattern
+- Persistence
+  - added any, first, count as extensions to DatabaseContext
+  - added any, first, count, mutate operations to CRUDRepository
+  - added context parameter to all CRUDRepository methods to allow compositing
 - Broker
   - added EventHubs
-- Utils
-  - added MIME type / extension mapper
-- added Collection Library
+  - Utils
+    - added MIME type / extension mapper
+  - added Collection Library
 
 ## 0.15.2
 - ApiService
