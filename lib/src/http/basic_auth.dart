@@ -26,7 +26,8 @@ class BasicAuth implements BearerAuth {
     return BasicAuth(parts.first, parts.skip(1).join(':'), prefix: prefix);
   }
 
-  factory BasicAuth.fromRequest(ApiRequest request, {String prefix = 'Basic '}) {
+  factory BasicAuth.fromRequest(ApiRequest request,
+      {String prefix = 'Basic '}) {
     final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
     if (nullOrWhitespace(token)) {
       throw ApiRequestException.unauthorized();

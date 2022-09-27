@@ -5,18 +5,20 @@ import 'package:datahub/api.dart';
 import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';
 
-import 'request_context.dart';
-
 class ApiRequest {
-  final RequestContext context;
   final ApiRequestMethod method;
   final Route route;
   final Map<String, List<String>> headers;
   final Map<String, String> queryParams;
   final Stream<List<int>> bodyData;
 
-  ApiRequest(this.context, this.method, this.route, this.headers,
-      this.queryParams, this.bodyData);
+  ApiRequest(
+    this.method,
+    this.route,
+    this.headers,
+    this.queryParams,
+    this.bodyData,
+  );
 
   /// Returns a Uint8List of the body data.
   ///

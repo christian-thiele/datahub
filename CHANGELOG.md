@@ -3,6 +3,7 @@
 - ApiService
   - added HTTP/2 support (using HttpServer)
   - added protocol negotiation
+  - removed legacy auth system
 - ByteStreamResponse / FileResponse
   - Content-Disposition is transmitted regardless of availability of filename
 - RestClient

@@ -3,6 +3,8 @@
 /// HTTP multi-version client and server classes.
 library http;
 
+export 'src/http/basic_auth.dart';
+export 'src/http/bearer_auth.dart';
 export 'src/http/http_auth.dart';
 export 'src/http/http_client.dart';
 export 'src/http/http_form_data.dart';

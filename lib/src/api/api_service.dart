@@ -10,14 +10,11 @@ import 'package:datahub/http.dart';
 import 'middleware/error_request_handler.dart';
 import 'middleware/middleware.dart';
 import 'middleware/request_handler.dart';
-import 'sessions/session_provider.dart';
-import 'sessions/session.dart';
 
 import 'api_endpoint.dart';
 import 'api_request.dart';
 import 'api_request_exception.dart';
 import 'api_response.dart';
-import 'request_context.dart';
 import 'route.dart';
 
 class ApiService extends BaseService {
@@ -28,13 +25,11 @@ class ApiService extends BaseService {
   final String basePath;
   final List<ApiEndpoint> endpoints;
   final MiddlewareBuilder? middleware;
-  final SessionProvider? sessionProvider;
 
   ApiService(
     String? config,
     this.endpoints, {
     this.middleware,
-    this.sessionProvider,
     String? apiBasePath,
   })  : basePath = _sanitizeBasePath(apiBasePath),
         super(config);
@@ -70,23 +65,9 @@ class ApiService extends BaseService {
           ? handler.routePattern.decode(path)
           : Route(RoutePattern.any, path, {}, path);
 
-      // find session
-      Session? session;
-      if (sessionProvider != null) {
-        final authorization = (httpRequest.headers['Authorization'] ??
-            httpRequest.headers['authorization']);
-        if (authorization?.isNotEmpty ?? false) {
-          session = await sessionProvider!.redeemToken(authorization!.first);
-        }
-      }
-
-      //TODO rethink RequestContext. not very sexy
-      final context = RequestContext(sessionProvider, session);
-
       //TODO cookies
 
       final request = ApiRequest(
-        context,
         httpRequest.method,
         route,
         httpRequest.headers,

@@ -12,7 +12,7 @@ import 'rest_response.dart';
 
 class RestClient {
   final HttpClient _httpClient;
-  final HttpAuth? auth;
+  HttpAuth? auth;
   bool get isHttp2 => _httpClient.isHttp2;
 
   RestClient(

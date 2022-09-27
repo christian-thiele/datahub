@@ -2,65 +2,20 @@ import 'dart:async';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
+import 'package:datahub/http.dart';
 import 'package:datahub/rest_client.dart';
-import 'package:datahub/src/hub/hub.dart';
-import 'package:datahub/src/hub/hub_client.dart';
-import 'package:datahub/src/hub/hub_provider.dart';
-import 'package:datahub/src/hub/resource_adapter.dart';
 import 'package:test/test.dart';
 
-import 'package:datahub/src/hub/hub_resource.dart';
-import 'package:datahub/src/hub/resource.dart';
-import 'package:datahub/src/hub/rest/resource_rest_client.dart';
-import 'package:datahub/src/hub/rest/resource_rest_endpoint.dart';
-
 import 'contact.dart';
+
+part 'hub_test.g.dart';
 
 @Hub()
 abstract class TestHub {
   @HubResource('/contact/{id}')
-  Resource<Contact> get contact;
+  MutableResource<Contact> get contact;
 }
 
-/// GENERATED
-class TestHubClient extends HubClient<TestHub> implements TestHub {
-  final RestClient _restClient; //TODO abstract for protocol agnostic client
-
-  TestHubClient(this._restClient);
-
-  @override
-  late final MutableResource<Contact> contact = MutableResourceRestClient(
-    _restClient,
-    RoutePattern('/contact/{id}'),
-    ContactTransferBean,
-  );
-}
-
-/// GENERATED
-abstract class TestHubProvider extends HubProvider<TestHub> implements TestHub {
-  TestHubProvider();
-
-  @override
-  late final MutableResource<Contact> contact = MutableResourceAdapter(
-    RoutePattern('/contact/{id}'),
-    ContactTransferBean,
-    getContact,
-    setContact,
-    getContactStream,
-  );
-
-  @override
-  List<Resource<TransferObjectBase>> get resources => [contact];
-
-  // mutable methods
-  Future<Contact> getContact(Map<String, String> params);
-
-  Future<void> setContact(Contact value, Map<String, String> params);
-
-  Stream<Contact> getContactStream(Map<String, String> params);
-}
-
-// implementation
 class TestHubProviderImpl extends TestHubProvider {
   final _contacts = <String, Contact>{};
   final _contactChanged = StreamController<Contact>.broadcast();
@@ -104,8 +59,10 @@ Future<void> _test() async {
           ],
         ),
   ], catchSignal: false, onInitialized: () async {
-    final client =
-        await RestClient.connectHttp2(Uri.parse('http://localhost:8080'));
+    final client = await RestClient.connectHttp2(
+      Uri.parse('http://localhost:8080'),
+      auth: BasicAuth('testuser', 'secretpassword'),
+    );
 
     final hub = TestHubClient(client); //resolve
 
