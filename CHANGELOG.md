@@ -9,6 +9,7 @@
   - added HTTP/2 support (using HttpClient)
   - header values are now List<String> instead of String
   - URL-parms are now encoded using RoutePattern
+  - added HttpAuth, BearerAuth, BasicAuth
 - Persistence
   - added any, first, count as extensions to DatabaseContext
   - added any, first, count, mutate operations to CRUDRepository
