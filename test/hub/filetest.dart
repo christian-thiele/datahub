@@ -51,7 +51,7 @@ class FileEndpoint extends ApiEndpoint {
   Future post(ApiRequest request) async {
     print('received file request');
     final watch = Stopwatch()..start();
-    final length = request.headers[HttpHeaders.contentLengthHeader];
+    final length = request.headers[HttpHeaders.contentLength];
     print('length: $length');
     final file = File('file.dat');
     if (await file.exists()) {

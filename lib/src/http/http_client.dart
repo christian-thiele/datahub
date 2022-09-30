@@ -83,6 +83,8 @@ abstract class HttpClient {
   }
 
   Future<HttpResponse> request(HttpRequest httpRequest);
+
+  Future<void> close();
 }
 
 class _Http11Client extends HttpClient {
@@ -117,6 +119,11 @@ class _Http11Client extends HttpClient {
           MapEntry(key, value.split(',').map((e) => e.trim()).toList())),
       response.stream,
     );
+  }
+
+  @override
+  Future<void> close() async {
+    _client.close();
   }
 }
 
@@ -217,5 +224,11 @@ class _Http2Client extends HttpClient {
     );
 
     return await response.future;
+  }
+
+  @override
+  Future<void> close() async {
+    await connection.terminate();
+    await socket.close();
   }
 }
