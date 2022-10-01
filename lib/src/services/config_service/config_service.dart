@@ -13,7 +13,7 @@ import 'package:datahub/transfer_object.dart';
 import 'config_exception.dart';
 import 'config_path.dart';
 import 'environment.dart';
-import 'log_level.dart';
+import '../log_service/log_level.dart';
 
 /// Internal service parsing configuration files, command line arguments
 /// and environment variables.

@@ -1,11 +1,7 @@
 import 'package:datahub/datahub.dart';
-import 'package:datahub/http.dart';
-import 'package:datahub/src/api/middleware/request_handler.dart';
-import 'package:datahub/src/hub/hub_provider.dart';
-import 'package:datahub/src/hub/transport/resource_transport_stream.dart';
 import 'package:rxdart/rxdart.dart';
 
-import '../resource.dart';
+import '../transport/resource_transport_stream.dart';
 import '../transport/server_resource_stream_controller.dart';
 
 typedef ResourceSelector<THub> = Resource Function(THub hub);

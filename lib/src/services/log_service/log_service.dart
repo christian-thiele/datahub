@@ -1,7 +1,7 @@
-import 'package:datahub/config.dart';
 import 'package:datahub/ioc.dart';
 
 import 'log_backend.dart';
+import 'log_level.dart';
 import 'log_message.dart';
 
 /// DataHubs logging solution.

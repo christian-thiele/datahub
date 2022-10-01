@@ -1,5 +1,4 @@
 import 'package:datahub/api.dart';
-import 'package:datahub/config.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 

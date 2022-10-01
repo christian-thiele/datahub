@@ -41,12 +41,12 @@ class RestClient {
 
   /// Create a [RestClient] with an underlying HTTP 1.1 client.
   static Future<RestClient> connectHttp11(
-      Uri address, {
-        HttpAuth? auth,
-        io.SecurityContext? securityContext,
-        bool Function(io.X509Certificate certificate)? onBadCertificate,
-        Duration? timeout,
-      }) async {
+    Uri address, {
+    HttpAuth? auth,
+    io.SecurityContext? securityContext,
+    bool Function(io.X509Certificate certificate)? onBadCertificate,
+    Duration? timeout,
+  }) async {
     return RestClient(
       await HttpClient.http11(
         address,
@@ -58,12 +58,12 @@ class RestClient {
 
   /// Create a [RestClient] with an underlying HTTP 2 client.
   static Future<RestClient> connectHttp2(
-      Uri address, {
-        HttpAuth? auth,
-        io.SecurityContext? securityContext,
-        bool Function(io.X509Certificate certificate)? onBadCertificate,
-        Duration? timeout,
-      }) async {
+    Uri address, {
+    HttpAuth? auth,
+    io.SecurityContext? securityContext,
+    bool Function(io.X509Certificate certificate)? onBadCertificate,
+    Duration? timeout,
+  }) async {
     return RestClient(
       await HttpClient.http2(
         address,

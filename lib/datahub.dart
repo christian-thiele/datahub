@@ -3,7 +3,6 @@ library datahub;
 export 'api.dart';
 export 'broker.dart';
 export 'collection.dart';
-export 'config.dart';
 export 'http.dart';
 export 'hub.dart';
 export 'ioc.dart';

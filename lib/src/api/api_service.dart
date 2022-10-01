@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:io' as io;
 import 'package:boost/boost.dart';
 
-import 'package:datahub/config.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:datahub/http.dart';

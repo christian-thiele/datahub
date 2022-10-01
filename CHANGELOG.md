@@ -20,6 +20,8 @@
   - Utils
     - added MIME type / extension mapper
   - added Collection Library
+- Config
+  - moved all ConfigService related classes to datahub/services.dart
 
 ## 0.15.2
 - ApiService

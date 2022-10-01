@@ -1,5 +1,5 @@
-import 'package:datahub/config.dart';
 import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
 import 'package:datahub/transfer_object.dart';
 
 /// Base class for all services.
