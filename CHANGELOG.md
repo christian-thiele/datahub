@@ -25,6 +25,8 @@
 - BaseService
   - initialize and shutdown are not abstract anymore
     (removed the requirement to override them)
+- KeyService / JWT
+  - added JWT class, KeyService for public key caching
 
 ## 0.15.2
 - ApiService

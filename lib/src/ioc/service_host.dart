@@ -46,7 +46,8 @@ class ServiceHost {
     _factories = <BaseService Function()>[
       () => LogService(logBackend ?? ConsoleLogBackend()),
       () => ConfigService(config, args),
-      () => SchedulerService(),
+      SchedulerService.new,
+      KeyService.new,
       ...factories
     ];
   }

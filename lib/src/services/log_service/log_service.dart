@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/ioc.dart';
 
 import 'log_backend.dart';
@@ -8,6 +9,9 @@ import 'log_message.dart';
 ///
 /// This service is automatically added to any [ServiceHost] to provide
 /// logging functionality to other modules of the DataHub framework.
+///
+/// The configuration value `datahub.log` defines the initial log level.
+/// See enum values in [LogLevel].
 ///
 /// Messages can be logged by resolving the [LogService] and calling
 /// its logging methods.
@@ -29,7 +33,7 @@ import 'log_message.dart';
 class LogService extends BaseService {
   final LogBackend _backend;
 
-  LogService(this._backend);
+  LogService(this._backend) : super('datahub');
 
   void setLogLevel(LogLevel level) => _backend.setLogLevel(level.toSeverity());
 
@@ -130,7 +134,13 @@ class LogService extends BaseService {
   }
 
   @override
-  Future<void> initialize() async => await _backend.initialize();
+  Future<void> initialize() async {
+    await _backend.initialize();
+    final logConfig = config<String?>('log')?.toLowerCase();
+    if (logConfig != null) {
+      setLogLevel(findEnum(logConfig, LogLevel.values));
+    }
+  }
 
   @override
   Future<void> shutdown() async => await _backend.shutdown();

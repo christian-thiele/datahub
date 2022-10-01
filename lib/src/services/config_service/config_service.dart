@@ -10,19 +10,15 @@ import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:datahub/transfer_object.dart';
 
-import 'config_exception.dart';
-import 'config_path.dart';
-import 'environment.dart';
-import '../log_service/log_level.dart';
-
 /// Internal service parsing configuration files, command line arguments
 /// and environment variables.
 ///
 /// The config path "datahub" is reserved for internal values:
 ///
-/// `datahub.log` defines the log level [LogService]. See enum values in [LogLevel].
 /// `datahub.environment` defines the service environment. See enum values in [Environment].
 ///
+/// Some built-in services like [LogService] or [KeyService] define their own#
+/// set of config values within the "datahub" config path.
 /// TODO more docs
 class ConfigService extends BaseService {
   final _log = resolve<LogService>();
@@ -206,11 +202,6 @@ class ConfigService extends BaseService {
     try {
       final datahubConfig =
           fetch<Map<String, dynamic>?>(ConfigPath('datahub')) ?? {};
-      if (datahubConfig['log'] != null) {
-        _log.setLogLevel(findEnum(
-            datahubConfig['log'].toString().toLowerCase(), LogLevel.values));
-      }
-
       if (datahubConfig['environment'] != null) {
         environment = findEnum(
           datahubConfig['environment'].toString().toLowerCase(),

@@ -15,3 +15,5 @@ export 'src/services/config_service/config_exception.dart';
 export 'src/services/config_service/config_path.dart';
 export 'src/services/config_service/config_service.dart';
 export 'src/services/config_service/environment.dart';
+
+export 'src/services/key_service/key_service.dart';

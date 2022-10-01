@@ -109,3 +109,16 @@ extension MapEquality<K, V> on Map<K, V> {
     return true;
   }
 }
+
+String addBase64Padding(String value) {
+  final length = value.length;
+  final pad = length % 4;
+  if (pad != 0) {
+    return value.padRight(length + 4 - pad, '=');
+  }
+  return value;
+}
+
+String stripBase64Padding(String value) {
+  return value.replaceAll(RegExp(r'=+$'), '');
+}
