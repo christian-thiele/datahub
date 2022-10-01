@@ -32,9 +32,6 @@ class TestService extends BaseService {
     log.error('Some error message.');
     log.critical('Some critical message.');
   }
-
-  @override
-  Future<void> shutdown() async {}
 }
 
 void onInit() {

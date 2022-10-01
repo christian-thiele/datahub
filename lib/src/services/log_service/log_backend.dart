@@ -5,7 +5,9 @@ import 'log_message.dart';
 /// see:
 ///   [ConsoleLogBackend]
 abstract class LogBackend {
-  Future<void> initialize() => Future.value();
+  Future<void> initialize() async {}
+  Future<void> shutdown() async {}
+
   void publish(LogMessage message);
   void setLogLevel(int level);
 }

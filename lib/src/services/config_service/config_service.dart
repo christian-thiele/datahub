@@ -160,9 +160,6 @@ class ConfigService extends BaseService {
     }
   }
 
-  @override
-  Future<void> shutdown() async {}
-
   static void _merge(Map<String, dynamic> target, Map map) {
     dynamic clean(dynamic v) {
       if (v is Map) {

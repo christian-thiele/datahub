@@ -9,7 +9,7 @@
 - RestClient
   - added HTTP/2 support (using HttpClient)
   - header values are now List<String> instead of String
-  - URL-parms are now encoded using RoutePattern
+  - URL-params are now encoded using RoutePattern
   - added HttpAuth, BearerAuth, BasicAuth
 - Persistence
   - added any, first, count as extensions to DatabaseContext
@@ -22,6 +22,9 @@
   - added Collection Library
 - Config
   - moved all ConfigService related classes to datahub/services.dart
+- BaseService
+  - initialize and shutdown are not abstract anymore
+    (removed the requirement to override them)
 
 ## 0.15.2
 - ApiService

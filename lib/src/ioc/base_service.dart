@@ -30,7 +30,7 @@ abstract class BaseService {
     return resolve<ConfigService>().fetchObject<T>(absolute, bean);
   }
 
-  Future<void> initialize();
+  Future<void> initialize() async {}
 
-  Future<void> shutdown();
+  Future<void> shutdown() async {}
 }

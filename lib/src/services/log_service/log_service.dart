@@ -133,5 +133,5 @@ class LogService extends BaseService {
   Future<void> initialize() async => await _backend.initialize();
 
   @override
-  Future<void> shutdown() async {}
+  Future<void> shutdown() async => await _backend.shutdown();
 }

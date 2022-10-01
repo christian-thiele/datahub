@@ -34,12 +34,6 @@ class TestHubProviderImpl extends TestHubProvider {
     _contacts[id] = value;
     _contactChanged.add(value.copyWith(id: id));
   }
-
-  @override
-  Future<void> initialize() async {}
-
-  @override
-  Future<void> shutdown() async {}
 }
 
 void main() {

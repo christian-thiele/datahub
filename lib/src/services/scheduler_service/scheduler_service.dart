@@ -17,9 +17,6 @@ class SchedulerService extends BaseService {
   }
 
   @override
-  Future<void> initialize() async {}
-
-  @override
   Future<void> shutdown() async {
     _tasks.forEach((task) => task.cancel());
   }
