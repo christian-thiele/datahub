@@ -13,8 +13,6 @@ import 'cache_key.dart';
 ///
 /// You can disable the key cache by setting the `datahub.enableKeyCache`
 /// configuration value to false.
-///
-/// Configuration
 class KeyService extends BaseService {
   late final _enableCache = config<bool?>('enableKeyCache') ?? true;
 

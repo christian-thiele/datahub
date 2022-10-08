@@ -15,7 +15,7 @@ class BasicAuth implements BearerAuth {
 
   BasicAuth(this.username, this.password, {this.prefix = 'Basic '});
 
-  factory BasicAuth.fromToken(String token, {String prefix = 'Basic '}) {
+  factory BasicAuth.fromAuthorizationHeader(String token, {String prefix = 'Basic '}) {
     final basicToken = token.substring(prefix.length);
     final decodedToken = utf8.decode(base64Decode(basicToken));
     final parts = decodedToken.split(':');
@@ -33,7 +33,7 @@ class BasicAuth implements BearerAuth {
       throw ApiRequestException.unauthorized();
     }
 
-    return BasicAuth.fromToken(token!, prefix: prefix);
+    return BasicAuth.fromAuthorizationHeader(token!, prefix: prefix);
   }
 
   @override

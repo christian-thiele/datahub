@@ -19,6 +19,14 @@ class JWT extends BearerAuth {
 
   String? get aud => payload['aud'];
 
+  DateTime? get iat => payload['iat'] == null
+      ? null
+      : DateTime.fromMillisecondsSinceEpoch((payload['iat'] as int) * 1000);
+
+  DateTime? get exp => payload['exp'] == null
+      ? null
+      : DateTime.fromMillisecondsSinceEpoch((payload['exp'] as int) * 1000);
+
   JWT(super.token, {super.prefix = 'Bearer '})
       : header = _readHeader(token),
         payload = _readPayload(token),
@@ -47,29 +55,52 @@ class JWT extends BearerAuth {
   /// It is highly recommended to provide the [issuer] param, which
   /// prevents this method from fetching openid-configuration from unknown /
   /// malicious sources.
+  ///
+  /// All of the following conditions must be true or else
+  /// this method will throw:
+  ///   - iat (issued at) must be before now
+  ///   - exp (expiration) must be after now
+  ///   - kid (key id) must be set or [publicKey] must be non-null
+  ///   - iss (issuer) must be set
+  ///   - [issuer] must be null or equal to iss
+  ///   - [audience] must be null or equal to aud
+  ///   - signature must be valid
+  ///
+  /// The key signature is checked either against the given [publicKey], or
+  /// the key that is provided by the issuers JWKS.
+  /// JWKS keys are usually cached by [KeyService].
   Future<void> verify({
     String? issuer,
     String? audience,
     RSAPublicKey? publicKey,
   }) async {
     if (alg != 'RS256') {
-      throw Exception('Unsupported signing algorithm "$alg".');
+      throw ApiRequestException.unauthorized(
+          'Unsupported signing algorithm "$alg".');
+    }
+
+    if (iat?.isBefore(DateTime.now()) == true) {
+      throw ApiRequestException.unauthorized('Invalid issue timestamp.');
+    }
+
+    if (exp?.isBefore(DateTime.now()) == true) {
+      throw ApiRequestException.unauthorized('Token expired.');
     }
 
     if (kid == null && publicKey == null) {
-      throw Exception('Missing key id in token header.');
+      throw ApiRequestException.unauthorized('Missing key id in token header.');
     }
 
     if (iss == null) {
-      throw Exception('Missing issuer in token.');
+      throw ApiRequestException.unauthorized('Missing issuer in token.');
     }
 
     if (issuer != null && iss != issuer) {
-      throw Exception('Issuer mismatch.');
+      throw ApiRequestException.unauthorized('Issuer mismatch.');
     }
 
     if (audience != null && aud != audience) {
-      throw Exception('Audience mismatch.');
+      throw ApiRequestException.unauthorized('Audience mismatch.');
     }
 
     final key = publicKey ??
@@ -83,13 +114,13 @@ class JWT extends BearerAuth {
       return;
     }
 
-    throw Exception('Invalid signature.');
+    throw ApiRequestException.unauthorized('Invalid signature.');
   }
 
   static Map<String, dynamic> _readHeader(String token) {
     final parts = token.split('.');
     if (parts.length != 3) {
-      throw Exception('Invalid JWT.');
+      throw ApiRequestException.unauthorized('Invalid JWT.');
     }
     return _jsonBase64.decode(addBase64Padding(parts.first))
         as Map<String, dynamic>;
@@ -98,7 +129,7 @@ class JWT extends BearerAuth {
   static Map<String, dynamic> _readPayload(String token) {
     final parts = token.split('.');
     if (parts.length != 3) {
-      throw Exception('Invalid JWT.');
+      throw ApiRequestException.unauthorized('Invalid JWT.');
     }
     return _jsonBase64.decode(addBase64Padding(parts[1]))
         as Map<String, dynamic>;
@@ -107,7 +138,7 @@ class JWT extends BearerAuth {
   static Uint8List _readSignature(String token) {
     final parts = token.split('.');
     if (parts.length != 3) {
-      throw Exception('Invalid JWT.');
+      throw ApiRequestException.unauthorized('Invalid JWT.');
     }
     return base64Decode(addBase64Padding(token.split('.')[2]));
   }
