@@ -1,10 +1,8 @@
 import 'package:datahub/api.dart';
+import 'package:datahub/http.dart';
 
-class BearerAuthSession extends Session {
-  @override
-  Stream<void> get expiration => throw UnimplementedError();
+abstract class BearerAuthSession extends Session {
+  final BearerAuth token;
 
-  @override
-  DateTime get timestamp => throw UnimplementedError();
-
+  BearerAuthSession(this.token);
 }

@@ -76,6 +76,7 @@ class ApiService extends BaseService {
         httpRequest.headers,
         httpRequest.queryParams,
         httpRequest.bodyData,
+        null,
       );
 
       final response =

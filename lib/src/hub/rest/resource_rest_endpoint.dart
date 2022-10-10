@@ -37,6 +37,7 @@ class ResourceRestEndpoint extends ApiEndpoint {
               .shareValueSeeded(await _resource.get(request.route.routeParams)),
           _removeController,
           uuid(),
+          request.session?.expiration ?? Rx.never(),
         );
         _controllers.add(controller);
         _logService.verbose(

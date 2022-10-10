@@ -2,9 +2,8 @@ import 'dart:async';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
-import 'package:datahub/rest_client.dart';
-import 'package:datahub/src/hub/resource.dart';
-import 'package:datahub/src/hub/transport/client_resource_stream_controller.dart';
+
+import '../transport/client_resource_stream_controller.dart';
 
 class ResourceRestClient<T extends TransferObjectBase> extends Resource<T>
     with _ImmutableResourceMethods {

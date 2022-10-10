@@ -11,6 +11,7 @@ class ApiRequest {
   final Map<String, List<String>> headers;
   final Map<String, String> queryParams;
   final Stream<List<int>> bodyData;
+  final Session? session;
 
   ApiRequest(
     this.method,
@@ -18,6 +19,7 @@ class ApiRequest {
     this.headers,
     this.queryParams,
     this.bodyData,
+    this.session,
   );
 
   /// Returns a Uint8List of the body data.
@@ -80,4 +82,7 @@ class ApiRequest {
     throw ApiRequestException.badRequest(
         'Missing or malformed query parameter: $name');
   }
+
+  ApiRequest withSession(Session session) =>
+      ApiRequest(method, route, headers, queryParams, bodyData, session);
 }

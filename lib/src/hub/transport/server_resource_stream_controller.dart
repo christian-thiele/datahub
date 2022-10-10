@@ -9,6 +9,7 @@ class ServerResourceStreamController<T extends TransferObjectBase> {
   final String id;
   final Stream<T> resourceStream;
   StreamSubscription? _resourceSubscription;
+  late final StreamSubscription _expirationSubscription;
   final void Function(ServerResourceStreamController) _onDone;
 
   late final _controller = StreamController<ResourceTransportMessage>(
@@ -16,7 +17,14 @@ class ServerResourceStreamController<T extends TransferObjectBase> {
     onCancel: _onCancel,
   );
 
-  ServerResourceStreamController(this.resourceStream, this._onDone, this.id);
+  ServerResourceStreamController(
+    this.resourceStream,
+    this._onDone,
+    this.id,
+    Stream<void> expiration,
+  ) {
+    _expirationSubscription = expiration.listen((_) => _onCancel());
+  }
 
   Stream<ResourceTransportMessage> get stream => _controller.stream;
 
@@ -27,7 +35,7 @@ class ServerResourceStreamController<T extends TransferObjectBase> {
           _controller.add(ResourceTransportMessage(
               ResourceTransportMessageType.set,
               utf8.encode(jsonEncode(event))));
-        } catch (e, stack) {
+        } catch (e) {
           //TODO error handling (encoding)
         }
       },
@@ -44,6 +52,7 @@ class ServerResourceStreamController<T extends TransferObjectBase> {
   FutureOr<void> _onCancel() async {
     await _controller.close();
     await _resourceSubscription?.cancel();
+    await _expirationSubscription.cancel();
     _onDone(this);
   }
 }
