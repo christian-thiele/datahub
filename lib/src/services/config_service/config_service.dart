@@ -86,12 +86,11 @@ class ConfigService extends BaseService {
   T fetch<T>(ConfigPath path) {
     try {
       final raw = path.getFrom(_configMap);
-      final decoded = decodeTypedNullable<T>(raw);
-      if (decoded is T) {
-        return decoded;
+      try {
+        return decodeTyped<T>(raw);
+      } on CodecException catch (_) {
+        throw ConfigTypeException(path.toString(), T, raw.runtimeType);
       }
-
-      throw ConfigTypeException(path.toString(), T, raw.runtimeType);
     } on ConfigPathException catch (_) {
       if (null is T) {
         return null as T;

@@ -57,8 +57,9 @@ class ApiRequest {
         return bean.toObject(json);
       }
 
-      return decodeTypedNullable<T>(json) ??
-          (throw ApiRequestException.badRequest('Invalid body data.'));
+      return decodeTyped<T>(json);
+    } on CodecException catch (e) {
+      throw ApiRequestException.badRequest(e.message);
     } catch (_) {
       throw ApiRequestException.badRequest('Invalid body data.');
     }
@@ -74,13 +75,12 @@ class ApiRequest {
   /// Valid types for [T] (nullable, as well as non-nullable)
   /// are [String], [int], [double], [bool], [DateTime], [Duration] or [Uint8List].
   T getParam<T>(String name) {
-    final decoded = decodeTypedNullable<T>(queryParams[name]);
-    if (decoded is T) {
-      return decoded;
+    try {
+      return decodeTyped<T>(queryParams[name]);
+    } on CodecException catch (_) {
+      throw ApiRequestException.badRequest(
+          'Missing or malformed query parameter: $name');
     }
-
-    throw ApiRequestException.badRequest(
-        'Missing or malformed query parameter: $name');
   }
 
   ApiRequest withSession(Session session) =>

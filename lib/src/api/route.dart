@@ -290,13 +290,12 @@ class Route {
   /// Valid types for [T] (nullable, as well as non-nullable)
   /// are [String], [int], [double], [bool], [DateTime], [Duration] or [Uint8List].
   T getParam<T>(String name) {
-    final decoded = decodeTypedNullable<T>(routeParams[name]);
-    if (decoded is T) {
-      return decoded;
+    try {
+      return decodeTyped<T>(routeParams[name]);
+    } on CodecException catch (_) {
+      throw ApiRequestException.badRequest(
+          'Missing or malformed route parameter: $name');
     }
-
-    throw ApiRequestException.badRequest(
-        'Missing or malformed route parameter: $name');
   }
 
   @override

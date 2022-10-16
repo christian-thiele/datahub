@@ -27,6 +27,8 @@
     (removed the requirement to override them)
 - KeyService / JWT
   - added JWT class, KeyService for public key caching
+- TransferEncoding
+  - rework of codec system
 
 ## 0.15.2
 - ApiService

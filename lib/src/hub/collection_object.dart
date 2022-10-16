@@ -25,7 +25,7 @@ class CollectionObject<T extends TransferObjectBase<Object>>
   Map<String, dynamic> toJson() => {
         'offset': offset,
         'size': size,
-        'elements': encodeList<T>(elements, (e) => e.toJson()),
+        'elements': encodeList<List<T>, T>(elements, (e) => e.toJson()),
       };
 }
 
