@@ -25,13 +25,14 @@ class ArticleDao extends _Dao {
   final DateTime createdTimestamp;
   final DateTime lastEditTimestamp;
 
-  ArticleDao(
-      {this.id = 0,
-      required this.userId,
-      required this.blogKey,
-      required this.title,
-      required this.content,
-      required this.image,
-      required this.createdTimestamp,
-      required this.lastEditTimestamp});
+  ArticleDao({
+    this.id = 0,
+    required this.userId,
+    required this.blogKey,
+    required this.title,
+    required this.content,
+    required this.image,
+    required this.createdTimestamp,
+    required this.lastEditTimestamp,
+  });
 }

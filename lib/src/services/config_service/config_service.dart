@@ -209,6 +209,11 @@ class ConfigService extends BaseService {
       } else {
         environment = Environment.dev;
       }
+
+      final logConfig = datahubConfig['log'];
+      if (logConfig != null) {
+        _log.setLogLevel(findEnum(logConfig, LogLevel.values));
+      }
     } on ConfigPathException catch (_) {
       _log.warn(
         'No datahub config found, using default values.',

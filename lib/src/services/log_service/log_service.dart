@@ -1,4 +1,3 @@
-import 'package:boost/boost.dart';
 import 'package:datahub/ioc.dart';
 
 import 'log_backend.dart';
@@ -134,13 +133,7 @@ class LogService extends BaseService {
   }
 
   @override
-  Future<void> initialize() async {
-    await _backend.initialize();
-    final logConfig = config<String?>('log')?.toLowerCase();
-    if (logConfig != null) {
-      setLogLevel(findEnum(logConfig, LogLevel.values));
-    }
-  }
+  Future<void> initialize() async => await _backend.initialize();
 
   @override
   Future<void> shutdown() async => await _backend.shutdown();
