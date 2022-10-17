@@ -220,11 +220,13 @@ void _encodeMapString() {
     equals(null),
   );
   expect(
-    encodeMapTyped<Map<String, String?>, String?>({'key1': 'value1', 'key2': null}),
+    encodeMapTyped<Map<String, String?>, String?>(
+        {'key1': 'value1', 'key2': null}),
     equals({'key1': 'value1', 'key2': null}),
   );
   expect(
-    encodeMapTyped<Map<String, String?>?, String?>({'key1': 'value1', 'key2': null}),
+    encodeMapTyped<Map<String, String?>?, String?>(
+        {'key1': 'value1', 'key2': null}),
     equals({'key1': 'value1', 'key2': null}),
   );
 }
