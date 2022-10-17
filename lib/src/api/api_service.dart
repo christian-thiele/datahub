@@ -27,6 +27,7 @@ class ApiService extends BaseService {
   final List<ApiEndpoint> endpoints;
   final MiddlewareBuilder? middleware;
   final AuthProvider? authProvider;
+  final io.SecurityContext? securityContext;
 
   ApiService(
     String? config,
@@ -34,6 +35,7 @@ class ApiService extends BaseService {
     this.middleware,
     this.authProvider,
     String? apiBasePath,
+    this.securityContext,
   })  : basePath = _sanitizeBasePath(apiBasePath),
         super(config);
 
@@ -43,15 +45,9 @@ class ApiService extends BaseService {
         ? io.InternetAddress.anyIPv4
         : _configAddress;
 
-    //TODO security / ssl stuff
-    final useSsl = false;
-    final context = io.SecurityContext()
-      ..setAlpnProtocols(['h2', 'h2-14', 'http/1.1'], true)
-      ..useCertificateChain('test/hub/localhost.crt')
-      ..usePrivateKey('test/hub/localhost.key');
-
-    final socket = useSsl
-        ? await io.SecureServerSocket.bind(serveAddress, _configPort, context)
+    final socket = securityContext != null
+        ? await io.SecureServerSocket.bind(
+            serveAddress, _configPort, securityContext)
         : await io.ServerSocket.bind(serveAddress, _configPort);
 
     _server = HttpServer(socket, handleRequest, _onError, _onStreamError);
