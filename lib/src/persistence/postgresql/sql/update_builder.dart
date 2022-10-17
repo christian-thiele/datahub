@@ -45,6 +45,7 @@ class UpdateBuilder implements SqlBuilder {
       substitutionValues.addAll(filterResult.b);
     }
 
-    return Tuple(buffer.toString(), substitutionValues);
+    return Tuple(buffer.toString(),
+        substitutionValues.map((k, v) => MapEntry(k, SqlBuilder.toSqlData(v))));
   }
 }

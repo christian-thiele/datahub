@@ -29,6 +29,7 @@ class DeleteBuilder implements SqlBuilder {
       values.addAll(filterResult.b);
     }
 
-    return Tuple(buffer.toString(), values);
+    return Tuple(buffer.toString(),
+        values.map((k, v) => MapEntry(k, SqlBuilder.toSqlData(v))));
   }
 }

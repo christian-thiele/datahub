@@ -87,6 +87,7 @@ class SelectBuilder implements SqlBuilder {
       buffer.write(' LIMIT $_limit');
     }
 
-    return Tuple(buffer.toString(), values);
+    return Tuple(buffer.toString(),
+        values.map((k, v) => MapEntry(k, SqlBuilder.toSqlData(v))));
   }
 }
