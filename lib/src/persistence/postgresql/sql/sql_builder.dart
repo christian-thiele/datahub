@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
@@ -309,6 +310,8 @@ abstract class SqlBuilder {
     if (e.c is Uint8List) {
       // in SqlBuilder.toSqlData Uint8List objects are converted to hex strings
       return "decode(@${e.b}, 'hex')";
+    } else if (e.c is List || e.c is Map<String, dynamic>) {
+      return '@${e.b}::jsonb';
     } else {
       return '@${e.b}';
     }
@@ -338,6 +341,10 @@ abstract class SqlBuilder {
     // in SqlBuilder.substitutionLiteral this is then decoded again
     if (value is Uint8List) {
       return value.toHexString();
+    }
+
+    if (value is List || value is Map<String, dynamic>) {
+      return jsonEncode(value);
     }
 
     return value;
