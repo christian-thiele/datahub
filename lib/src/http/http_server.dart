@@ -3,9 +3,11 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
 import 'package:datahub/src/http/http_response.dart';
 import 'package:datahub/src/http/server_socket_adapter.dart';
+import 'package:datahub/utils.dart';
 import 'package:http2/http2.dart' as http2;
 
 import 'http_connection.dart';
@@ -24,7 +26,6 @@ class HttpServer {
       ServerSocketAdapter(_serverSocket.address, _serverSocket.port);
 
   late final io.HttpServer _http1;
-  final _http2 = StreamController<http2.ServerTransportStream>();
 
   HttpServer(
     this._serverSocket,
@@ -260,7 +261,7 @@ class HttpServer {
   }
 
   void _socketDone() async {
-    await Future.wait([_http1.close(), _http2.close()]);
+    await _http1.close();
   }
 
   /// Closes the [HttpServer] and its [io.ServerSocket].

@@ -19,8 +19,8 @@ import 'api_response.dart';
 import 'route.dart';
 
 class ApiService extends BaseService {
-  late final _configAddress = config<String?>('address');
-  late final _configPort = config<int?>('port') ?? 8080;
+  late final address = config<String?>('address');
+  late final port = config<int?>('port') ?? 8080;
   late final HttpServer _server;
 
   final String basePath;
@@ -41,14 +41,12 @@ class ApiService extends BaseService {
 
   @override
   Future<void> initialize() async {
-    final serveAddress = nullOrWhitespace(_configAddress)
-        ? io.InternetAddress.anyIPv4
-        : _configAddress;
+    final serveAddress =
+        nullOrWhitespace(address) ? io.InternetAddress.anyIPv4 : address;
 
     final socket = securityContext != null
-        ? await io.SecureServerSocket.bind(
-            serveAddress, _configPort, securityContext)
-        : await io.ServerSocket.bind(serveAddress, _configPort);
+        ? await io.SecureServerSocket.bind(serveAddress, port, securityContext)
+        : await io.ServerSocket.bind(serveAddress, port);
 
     _server = HttpServer(socket, handleRequest, _onError, _onStreamError);
   }

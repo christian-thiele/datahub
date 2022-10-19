@@ -32,6 +32,7 @@ class ServerResourceStreamController<T extends TransferObjectBase> {
     _resourceSubscription = resourceStream.listen(
       (event) {
         try {
+          //TODO patch instead of set
           _controller.add(ResourceTransportMessage(
               ResourceTransportMessageType.set,
               utf8.encode(jsonEncode(event))));

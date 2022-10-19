@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:boost/boost.dart';
@@ -7,142 +6,42 @@ import 'package:datahub/services.dart';
 
 import 'base_service.dart';
 
-/// Hosts services and provides dependency injection.
+/// Convenience method for injecting services.
 ///
-/// There can only be one ServiceHost in an application.
-/// Use this code in your main function:
+/// See [ServiceHost.resolve].
+TService resolve<TService>() => ServiceHost.resolve<TService>();
+
+/// Base class for ServiceHosts.
 ///
-/// ```
-/// await ServiceHost([() => ServiceA(), () => ServiceB()]).run();
-/// ```
-///
-/// This should not be confused with the IoC container provided
-/// by the client library `cl_appbase`. While providing a similar
-/// pattern for dependency injection, this class also controls the
-/// execution of the application itself, providing a framework for
-/// services to live in.
-class ServiceHost {
-  final _runTimeCompleter = Completer();
+/// See:
+///   [ApplicationHost]
+///   [TestHost]
+abstract class ServiceHost {
   late final List<BaseService Function()> _factories;
   final List<BaseService> _services = [];
-  bool _isInShutdown = false;
+  Completer? _shutdownCompleter;
 
-  // catches CTRL+C and shuts down gracefully
-  final bool catchSignal;
   final bool failWithServices;
-  final Function? onInitialized;
 
   static ServiceHost? _applicationHost;
 
-  ServiceHost._(
-    List<BaseService Function()> factories,
-    this.catchSignal,
-    this.failWithServices,
+  ServiceHost(
+    List<BaseService Function()> factories, {
+    this.failWithServices = true,
     LogBackend? logBackend,
-    this.onInitialized,
-    List<String> args,
-    Map<String, dynamic> config,
-  ) : assert(_applicationHost == null) {
+    List<String> args = const <String>[],
+    Map<String, dynamic> config = const <String, dynamic>{},
+  }) {
     _factories = <BaseService Function()>[
       () => LogService(logBackend ?? ConsoleLogBackend()),
       () => ConfigService(config, args),
       SchedulerService.new,
       KeyService.new,
-      ...factories
+      ...factories,
     ];
   }
 
-  /// Creates a [ServiceHost] instance.
-  ///
-  /// [catchSignal] listens to CTRL+C in command line and shuts down services gracefully.
-  /// [failWithServices] service hosts terminates the app if a single service fails to initialize.
-  /// [logBackend] initializes LogService with custom backend.
-  /// [onInitialized] is called when service initialization is done.
-  /// Feed the command line arguments from the applications main function into
-  /// [args] for the [ConfigService] to detect configuration arguments.
-  /// [config] provides default configuration values to the [ConfigService].
-  factory ServiceHost(
-    List<BaseService Function()> factories, {
-    bool catchSignal = true,
-    bool failWithServices = true,
-    LogBackend? logBackend,
-    Function? onInitialized,
-    List<String> args = const <String>[],
-    Map<String, dynamic> config = const <String, dynamic>{},
-  }) {
-    return _applicationHost = ServiceHost._(
-      factories,
-      catchSignal,
-      failWithServices,
-      logBackend,
-      onInitialized,
-      args,
-      config,
-    );
-  }
-
-  /// Runs the application.
-  ///
-  /// All services will be initialized in the order they are
-  /// supplied.
-  ///
-  /// When [catchSignal] is true and termination is requested by CTRL+C or
-  /// as soon as [cancel] is triggered, all services will be shut down and
-  /// this future will complete.
-  Future<void> run([CancellationToken? cancel]) async {
-    final stopwatch = Stopwatch()..start();
-    for (final factory in _factories) {
-      BaseService? service;
-      try {
-        service = factory();
-        await service.initialize();
-        _services.add(service);
-      } catch (e, stack) {
-        if (service == null) {
-          _onError('Error while creating service instance.', e, stack,
-              failWithServices);
-        } else {
-          _onError(
-              'Error while initializing service instance of ${service.runtimeType}.',
-              e,
-              stack,
-              failWithServices);
-        }
-
-        if (failWithServices) {
-          await _shutdown();
-          exit(1);
-        }
-      }
-    }
-
-    if (catchSignal) {
-      ProcessSignal.sigint.watch().listen((signal) {
-        if (_isInShutdown) {
-          exit(0);
-        } else {
-          _shutdown();
-        }
-      });
-    }
-
-    cancel?.attach(_shutdown);
-    stopwatch.stop();
-
-    tryResolveService<LogService>()?.info(
-      'Initialization done in ${stopwatch.elapsed}.',
-      sender: 'DataHub',
-    );
-
-    onInitialized?.call();
-
-    await _runTimeCompleter.future;
-
-    _applicationHost = null;
-    if (catchSignal) {
-      exit(0);
-    }
-  }
+  bool get isInShutdown => _shutdownCompleter != null;
 
   TService resolveService<TService>() {
     return tryResolveService<TService>() ??
@@ -165,12 +64,39 @@ class ServiceHost {
     return _applicationHost!.tryResolveService<TService>();
   }
 
-  Future<void> _shutdown() async {
-    if (_isInShutdown) {
-      return;
+  Future<void> initialize() async {
+    _applicationHost = this;
+    for (final factory in _factories) {
+      BaseService? service;
+      try {
+        service = factory();
+        await service.initialize();
+        _services.add(service);
+      } catch (e, stack) {
+        if (service == null) {
+          _onError('Error while creating service instance.', e, stack,
+              failWithServices);
+        } else {
+          _onError(
+              'Error while initializing service instance of ${service.runtimeType}.',
+              e,
+              stack,
+              failWithServices);
+        }
+
+        if (failWithServices) {
+          rethrow;
+        }
+      }
+    }
+  }
+
+  Future<void> shutdown() async {
+    if (_shutdownCompleter != null) {
+      return _shutdownCompleter!.future;
     }
 
-    _isInShutdown = true;
+    _shutdownCompleter = Completer();
 
     for (final service in _services) {
       try {
@@ -180,7 +106,10 @@ class ServiceHost {
       }
     }
 
-    _runTimeCompleter.complete();
+    _services.clear();
+    _shutdownCompleter!.complete();
+    _shutdownCompleter = null;
+    _applicationHost = null;
   }
 
   void _onError(
@@ -194,8 +123,3 @@ class ServiceHost {
     }
   }
 }
-
-/// Convenience method for injecting services.
-///
-/// See [ServiceHost.resolve].
-TService resolve<TService>() => ServiceHost.resolve<TService>();

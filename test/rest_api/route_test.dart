@@ -24,9 +24,9 @@ final pattern4 = '/path/to/{stuff}/and/*';
 final pattern5 = '/path/to/{stuff}/and/*/';
 final pattern6 = '/path/to/{stuff}/and/{optionalParam?}';
 final pattern7 = '/path/to/{stuff}/and/{optionalParam?}/';
-final pattern8 = 'path/to/{stuff}/and/{optionalParam?}/more';
+final pattern8 = '/path/to/{stuff}/and/{optionalParam?}/more';
 final pattern9 = '/path/to/{stuff}/and/{optionalParam?}/*';
-final patternX = '*';
+final patternX = '/*';
 final invalid1 = '/invalid/path/{stuff}/and/*/no';
 final invalid2 = '/*invalid/path/{stuff}/and/*/no';
 
@@ -161,7 +161,8 @@ void _testIsWildcard() {
     Tuple(pattern6, false),
     Tuple(pattern7, false),
     Tuple(pattern8, false),
-    Tuple(pattern9, true)
+    Tuple(pattern9, true),
+    Tuple(patternX, true),
   ];
   for (final test in wildcardTests) {
     final pattern = RoutePattern(test.a);

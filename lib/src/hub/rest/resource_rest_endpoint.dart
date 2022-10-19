@@ -43,8 +43,9 @@ class ResourceRestEndpoint extends ApiEndpoint {
         _logService.verbose(
             'ResourceStream #${controller.id} started with resource path "${request.route.url}".');
         return ByteStreamResponse(
-            controller.stream.transform(ResourceTransportWriteTransformer()),
-            0);
+          controller.stream.transform(ResourceTransportWriteTransformer()),
+          null,
+        );
       }
     }
 

@@ -17,18 +17,30 @@ void main() {
 Future<void> _testHttp11() async {
   final httpClient = await HttpClient.http11(uri);
   final client = RestClient(httpClient);
-  await _testClient(client);
+  try {
+    await _testClient(client);
+  } finally {
+    await client.close();
+  }
 }
 
 Future<void> _testHttp2() async {
   final httpClient = await HttpClient.http2(uri);
   final client = RestClient(httpClient);
-  await _testClient(client);
+  try {
+    await _testClient(client);
+  } finally {
+    await client.close();
+  }
 }
 
 Future<void> _testConnect() async {
   final client = await RestClient.connect(uri);
-  await _testClient(client);
+  try {
+    await _testClient(client);
+  } finally {
+    await client.close();
+  }
 }
 
 Future<void> _testClient(RestClient client) async {

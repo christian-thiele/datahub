@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:datahub/datahub.dart';
 import 'package:dart_amqp/dart_amqp.dart';
 

@@ -29,6 +29,10 @@
   - added JWT class, KeyService for public key caching
 - TransferEncoding
   - rework of codec system
+- ServiceHost
+  - ServiceHost is now ApplicationHost
+  - added TestHost
+    - with test methods for unit testing
 
 ## 0.15.2
 - ApiService

@@ -318,4 +318,6 @@ class RestClient {
 
     throw ApiError.invalidType(TResponse);
   }
+
+  Future<void> close() async => await _httpClient.close();
 }

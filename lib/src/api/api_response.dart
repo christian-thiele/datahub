@@ -149,7 +149,7 @@ class ByteStreamResponse extends ApiResponse {
   final ContentDisposition disposition;
   final String? fileName;
   final Stream<List<int>> _dataStream;
-  final int length;
+  final int? length;
 
   ByteStreamResponse(
     this._dataStream,
@@ -165,7 +165,7 @@ class ByteStreamResponse extends ApiResponse {
 
   @override
   Map<String, List<String>> getHeaders() => {
-        HttpHeaders.contentLength: [length.toString()],
+        if (length != null) HttpHeaders.contentLength: [length.toString()],
         HttpHeaders.contentType: [contentType],
         if (nullOrEmpty(fileName))
           'content-disposition': ['${disposition.name}'],

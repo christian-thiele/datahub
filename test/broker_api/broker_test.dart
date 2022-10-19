@@ -1,28 +1,17 @@
-import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
+import 'package:datahub/src/test/test_host.dart';
 import 'package:test/test.dart';
 
 import '../dto/test_dto.dart';
 import 'example_api.dart';
 
 void main() {
-  test(
-    'Test ExampleApi',
-    _testExampleApi,
-    timeout: Timeout(Duration(minutes: 5)),
-    skip: true,
-  );
-}
-
-Future<void> _testExampleApi() async {
-  final token = CancellationToken();
-  final serviceHost = ServiceHost(
+  final host = TestHost(
     [
       () => AmqpBrokerService('testBrokerConfig'),
       () => ExampleApiImplService(),
       () => ExampleApiClient(),
     ],
-    catchSignal: false,
     config: {
       'testBrokerConfig': {
         'host': 'localhost',
@@ -30,7 +19,11 @@ Future<void> _testExampleApi() async {
         'password': 'guest'
       }
     },
-    onInitialized: () async {
+  );
+
+  test(
+    'Test ExampleApi',
+    host.test(() async {
       final client = resolve<ExampleApiClient>();
       client.doSomething(5);
       final result = await client.getSomeString(TestDto(
@@ -85,9 +78,8 @@ Future<void> _testExampleApi() async {
             (e as ApiRequestException).message, contains('This did not work.'));
         expect(e.statusCode, equals(20));
       }
-
-      token.cancel();
-    },
+    }),
+    timeout: Timeout(Duration(minutes: 5)),
+    skip: true,
   );
-  await serviceHost.run(token);
 }
