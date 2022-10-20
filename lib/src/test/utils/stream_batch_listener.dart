@@ -46,6 +46,8 @@ class StreamBatchListener<T> {
     }
   }
 
+  bool get hasNext => _queue.isNotEmpty;
+
   void cancel() => _subscription.cancel();
 }
 

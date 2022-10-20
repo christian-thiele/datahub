@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:datahub/api.dart';
-import 'package:datahub/hub.dart';
+import 'package:datahub/broker.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/rest_client.dart';
 
@@ -43,6 +43,14 @@ class TestHost extends ServiceHost {
       } finally {
         await client.close();
       }
+    });
+  }
+
+  Future<void> Function() eventTest<T extends EventHubService>(
+      FutureOr<void> Function(T hub) body) {
+    return test(() async {
+      final hub = resolve<T>();
+      await body(hub);
     });
   }
 }
