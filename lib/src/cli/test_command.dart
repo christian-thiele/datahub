@@ -54,35 +54,14 @@ class TestCommand extends CliCommand {
         '--network=test_default',
         '$projectName:test',
         'dart',
-        'test',
-        '--reporter=json'
+        'test'
       ];
 
+      stdout.writeln('\n');
       final proc = await Process.start(executable, args);
-      final lines = proc.stdout.transform(LineTransformer());
-      final tests = <int, Test>{};
-      await for (final line in lines) {
-        try {
-          final data = jsonDecode(line);
-          switch (data['type']) {
-            case 'testStart':
-              tests[data['testID']] =
-                  Test(data['testID'], data['name'], null, null);
-              break;
-            case 'testDone':
-              tests[data['testID']] =
-                  tests[data['testID']]!.done(data['result'] == 'success');
-          }
-        } catch (_) {
-          //probably log
-        }
-      }
-
-      final exitCode = await proc.exitCode;
-      if (exitCode > 0) {
-        throw CliException(
-            'Call "$executable ${args.join(' ')}" failed with exit code $exitCode.');
-      }
+      await proc.stdout.pipe(stdout);
+      await proc.exitCode;
+      stdout.writeln('\n');
     });
 
     composeProcess.kill(ProcessSignal.sigint);
