@@ -29,11 +29,12 @@ abstract class CliCommand extends Command<void> {
     stdout.writeln();
   }
 
-  Future<void> step(String stepName, FutureOr<void> Function() delegate) async {
+  Future<T> step<T>(String stepName, FutureOr<T> Function() delegate) async {
     stdout.write('  \u23F3   $stepName');
     try {
-      await delegate();
+      final result = await delegate();
       stdout.write('\u001b[1000D  \u2713   $stepName\n');
+      return result;
     } catch (e) {
       stdout.write('\u001b[1000D  \u{1F4A5}  $stepName\n');
       rethrow;

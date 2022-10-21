@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'cli_command.dart';
+import 'steps.dart';
 import 'utils.dart';
 
 class BuildCommand extends CliCommand {
@@ -28,38 +29,12 @@ class BuildCommand extends CliCommand {
     stdout.write('Building $projectName ($projectVersion)...\n\n');
 
     if (argResults!['debug'] as bool) {
-      await step('Run code generator.', () async {
-        await dart(
-          'run build_runner build --delete-conflicting-outputs',
-          verbose: verbose,
-        );
-      });
-
-      await step(
-        'Building debug docker image.',
-        () async {
-          await requireFile('Dockerfile.debug');
-          final dockerArgs = buildDockerArgs(argResults!.rest);
-          await docker(
-            'build -t $projectName:debug -f Dockerfile.debug$dockerArgs .',
-            verbose: verbose,
-          );
-        },
-      );
-
+      await codegenStep();
+      await buildDebugStep(argResults!.rest, 'debug');
       stdout.writeln('\nBuilt debug image: $projectName:debug');
     } else {
-      await step(
-        'Building release docker image.',
-        () async {
-          await requireFile('Dockerfile');
-          final dockerArgs = buildDockerArgs(argResults!.rest);
-          await docker(
-            'build -t $projectName:latest$dockerArgs .',
-            verbose: verbose,
-          );
-        },
-      );
+      await buildReleaseStep(argResults!.rest, 'latest');
+
       await step(
         'Adding version tag.',
         () async {

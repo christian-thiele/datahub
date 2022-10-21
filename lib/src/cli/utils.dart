@@ -1,5 +1,8 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
+import 'package:boost/boost.dart';
 import 'package:yaml/yaml.dart';
 
 import 'cli_exception.dart';
@@ -89,6 +92,12 @@ Future<void> requireFile(String file) async {
   }
 }
 
+Future<void> requireDir(String dir) async {
+  if (!await Directory(dir).exists()) {
+    throw CliException('Directory "$dir" not found.');
+  }
+}
+
 String buildDockerArgs(List<String> args) {
   final buffer = StringBuffer();
   final regex = RegExp(r'^([^=]+)=(.*)$');
@@ -99,4 +108,28 @@ String buildDockerArgs(List<String> args) {
     buffer.write(' --build-arg $arg');
   }
   return buffer.toString();
+}
+
+class LineTransformer extends StreamTransformerBase<List<int>, String> {
+  String? _current = '';
+  final _controller = StreamController<String>();
+
+  @override
+  Stream<String> bind(Stream<List<int>> stream) {
+    stream.transform(utf8.decoder).listen(
+      (event) {
+        final lines = '${_current ?? ''}$event'.split('\n');
+        for (final l in lines.take(lines.length - 1)) {
+          _controller.add(l);
+        }
+        _current = lines.last;
+      },
+      onDone: () {
+        _current?.apply(_controller.add);
+        _controller.close();
+      },
+      onError: _controller.addError,
+    );
+    return _controller.stream;
+  }
 }

@@ -33,6 +33,8 @@
   - ServiceHost is now ApplicationHost
   - added TestHost
     - with test methods for unit testing
+- CLI
+  - added test command
 
 ## 0.15.2
 - ApiService
