@@ -25,11 +25,10 @@ class TestCommand extends CliCommand {
   @override
   Future<void> runCommand() async {
     final projectName = await readName();
-    final projectVersion = argResults!['version'] ?? await readVersion();
 
     await requireFile('test/docker-compose.yml');
 
-    stdout.write('Running tests for $projectName ($projectVersion)...\n\n');
+    stdout.write('Running tests for $projectName...\n\n');
 
     await codegenStep();
 
