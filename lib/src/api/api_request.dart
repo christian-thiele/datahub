@@ -83,6 +83,6 @@ class ApiRequest {
     }
   }
 
-  ApiRequest withSession(Session session) =>
+  ApiRequest withSession(Session? session) =>
       ApiRequest(method, route, headers, queryParams, bodyData, session);
 }

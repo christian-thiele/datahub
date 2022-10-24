@@ -14,7 +14,6 @@ abstract class AuthProvider extends Middleware {
       throw ApiRequestException.unauthorized();
     }
 
-    //TODO put session into request before calling next
-    return await next(request);
+    return await next(request.withSession(session));
   }
 }
