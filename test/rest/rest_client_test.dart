@@ -57,8 +57,5 @@ Future<void> _testClient(RestClient client) async {
   final stream = await client.getObject<Stream<List<int>>>('/drip',
       query: {'numbytes': '5', 'duration': '1'});
   stream.throwOnError();
-  print('-> Received response.');
-  await for (final chunk in stream.data) {
-    print('Received ${chunk.length} byte(s).');
-  }
+  expect(await stream.data.expand((element) => element).toList(), hasLength(5));
 }

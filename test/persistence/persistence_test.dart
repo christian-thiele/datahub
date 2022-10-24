@@ -3,7 +3,6 @@ import 'dart:typed_data';
 import 'package:boost/boost.dart';
 
 import 'package:datahub/datahub.dart';
-import 'package:postgres/postgres.dart';
 import 'package:test/test.dart';
 
 import '../loremipsum.dart';
@@ -13,26 +12,16 @@ import 'dao/blog_daos/user_dao.dart';
 
 import '../utils/message_matcher.dart';
 
-const String host = '127.0.0.1';
+const String host = 'postgres';
 const int port = 5432;
-const String database = 'postgres';
-const String user = 'postgres';
-const String password = 'mysecretpassword';
+const String database = 'test_db';
+const String user = 'testuser';
+const String password = 'secretpassword';
 
 void main() async {
-  String? skip;
-  try {
-    final connection = PostgreSQLConnection(host, port, database,
-        username: user, password: password);
-    await connection.open();
-    await connection.close();
-  } catch (e) {
-    skip = 'No SQL Server running.';
-  }
-
   group('PostgreSQL', () {
     test('basic orm features', _testScheme);
-  }, skip: skip);
+  });
 }
 
 Future _testScheme() async {

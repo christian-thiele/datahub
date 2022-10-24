@@ -6,8 +6,9 @@ class NotificationHub extends EventHubService {
   @override
   String get exchange => 'test_notification';
 
-  late final notificationSend = event<Notification>('test.notification.send');
+  late final notificationSend =
+      event('test.notification.send', bean: NotificationTransferBean);
 
   late final notificationReceive =
-      event<Notification>('test.notification.receive');
+      event('test.notification.receive', bean: NotificationTransferBean);
 }

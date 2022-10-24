@@ -1,5 +1,6 @@
 /// Annotation for Broker API interface contracts.
-/// //TODO documentation
+
+@deprecated
 class BrokerInterface {
   final String queueName;
   final bool durable;

@@ -20,7 +20,7 @@ class TestCommand extends CliCommand {
   String get name => 'test';
 
   @override
-  String get invocation => '${super.invocation} [docker build-args]';
+  String get invocation => '${super.invocation} [dart test args]';
 
   @override
   Future<void> runCommand() async {
@@ -32,7 +32,7 @@ class TestCommand extends CliCommand {
 
     await codegenStep();
 
-    await buildDebugStep(argResults!.rest, 'test');
+    await buildDebugStep([], 'test');
 
     final composeProcess =
         await step('Creating docker-compose environment.', () async {
@@ -47,26 +47,27 @@ class TestCommand extends CliCommand {
       return result;
     });
 
-    await step('Running tests.', () async {
+    final process = await step('Starting test container.', () async {
       final executable = 'docker';
       final args = [
         'run',
         '--network=test_default',
         '$projectName:test',
         'dart',
-        'test'
+        'test',
+        ...argResults!.rest,
       ];
 
-      stdout.writeln('\n');
-      final proc = await Process.start(executable, args);
-      await proc.stdout.pipe(stdout);
-      await proc.exitCode;
-      stdout.writeln('\n');
+      return await Process.start(executable, args);
     });
 
-    composeProcess.kill(ProcessSignal.sigint);
+    stdout.writeln('\n');
+    await stdout.addStream(process.stdout);
+    await stderr.addStream(process.stderr);
+    final exitCode = await process.exitCode;
 
-    stdout.writeln('\nTest run complete.');
+    composeProcess.kill();
+    exit(exitCode);
   }
 }
 

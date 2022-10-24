@@ -1,3 +1,4 @@
+import 'package:datahub/broker.dart';
 import 'package:datahub/test.dart';
 import 'package:test/test.dart';
 
@@ -6,10 +7,20 @@ import 'lib/notification_hub.dart';
 import 'lib/notification_hub_consumer.dart';
 
 void main() {
-  final host = TestHost([
-    NotificationHub.new,
-    NotificationHubConsumer.new,
-  ]);
+  final host = TestHost(
+    [
+      () => AmqpBrokerService('rabbit'),
+      NotificationHub.new,
+      NotificationHubConsumer.new,
+    ],
+    config: {
+      'rabbit': {
+        'host': 'rabbit',
+        'user': 'testuser',
+        'password': 'secretpassword',
+      },
+    },
+  );
 
   group('Event Hub', () {
     test('Simple Transfer', host.eventTest<NotificationHub>((hub) async {
@@ -22,7 +33,7 @@ void main() {
       hub.notificationSend.publish(Notification('Hello', 'Other text', true));
       await Future.delayed(Duration(seconds: 1));
       expect(await listener.next,
-          predicate<Notification>((n) => n.text == 'Echo: Other text'));
+          predicate<Notification>((n) => n.text == 'ECHO: Other text'));
     }));
   });
 }

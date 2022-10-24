@@ -4,8 +4,9 @@
 ///
 /// When param [brokerInterface] is omitted, it is assumed that the annotated
 /// class also serves as BrokerInterface.
+
+@deprecated
 class BrokerApi {
-  //TODO maybe we do not need this param and can detect from "extends ..."
   final Type? brokerInterface;
   final bool concurrent;
 

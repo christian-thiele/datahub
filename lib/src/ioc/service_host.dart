@@ -98,7 +98,7 @@ abstract class ServiceHost {
 
     _shutdownCompleter = Completer();
 
-    for (final service in _services) {
+    for (final service in _services.reversed) {
       try {
         await service.shutdown();
       } catch (e, stack) {

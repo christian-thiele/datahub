@@ -35,6 +35,7 @@
     - with test methods for unit testing
 - CLI
   - added test command
+- S3Service, MinioService
 
 ## 0.15.2
 - ApiService

@@ -10,7 +10,6 @@ import 'package:datahub/utils.dart';
 import 'broker_service.dart';
 import 'consumer_exception.dart';
 
-//TODO handle reconnects (channel based and connection based)
 abstract class BaseBrokerApiService extends BaseService {
   final _log = resolve<LogService>();
   late final BrokerService _brokerService;

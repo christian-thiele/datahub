@@ -32,3 +32,5 @@ build/
 pubspec.lock
 *.g.dart
 ci_publish.sh
+
+Dockerfile.debug
