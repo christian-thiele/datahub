@@ -10,7 +10,7 @@ class HubEvent<T> {
 
   HubEvent(this._hub, this.topic, {this.bean});
 
-  void publish(T event) => _hub.publish(topic, event);
+  Future<void> publish(T event) => _hub.publish(topic, event);
 
   Stream<T> get stream => _hub.subscribe<T>(topic, bean: bean);
 }
