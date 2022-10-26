@@ -85,7 +85,7 @@ class TestCommand extends CliCommand {
         '--network=${argResults!['network']}',
         if (argResults!['mount']) '--mount',
         if (argResults!['mount'])
-          'type=bind,source=\\"${Directory.current.absolute.path}\\",target=\\"/app\\",readonly',
+          'type=bind,source=${Directory.current.absolute.path.replaceAll('\\', '/')},target=/app/,readonly',
         '$projectName:test',
         'dart',
         'test',
