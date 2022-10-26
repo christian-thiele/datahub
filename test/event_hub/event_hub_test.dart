@@ -27,11 +27,9 @@ void main() {
       final listener = StreamBatchListener(hub.notificationReceive.stream);
       hub.notificationSend
           .publish(Notification('Hello', 'Some text here', false));
-      await Future.delayed(Duration(seconds: 1));
-      expect(listener.hasNext, isFalse);
-
       hub.notificationSend.publish(Notification('Hello', 'Other text', true));
       await Future.delayed(Duration(seconds: 1));
+      expect(listener.hasNext, isFalse);
       expect(await listener.next,
           predicate<Notification>((n) => n.text == 'ECHO: Other text'));
     }));

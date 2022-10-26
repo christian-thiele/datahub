@@ -1,15 +1,39 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:datahub/src/cli/steps.dart';
 
 import 'cli_command.dart';
-import 'cli_exception.dart';
 import 'utils.dart';
 
 class TestCommand extends CliCommand {
-  TestCommand();
+  TestCommand() {
+    argParser.addFlag(
+      'build',
+      defaultsTo: false,
+      help: 'Builds the debug image before running tests.',
+    );
+    argParser.addFlag(
+      'codegen',
+      defaultsTo: false,
+      help: 'Runs code generator before building / running tests.',
+    );
+    argParser.addFlag(
+      'compose',
+      defaultsTo: true,
+      help: 'Starts the docker-compose environment automatically.',
+    );
+    argParser.addFlag(
+      'mount',
+      defaultsTo: true,
+      help: 'Mounts the code inside the debug container.',
+    );
+    argParser.addOption(
+      'network',
+      defaultsTo: 'test_default',
+      help: 'Specifies the docker network the test container is attached to.',
+    );
+  }
 
   @override
   String get description =>
@@ -30,28 +54,38 @@ class TestCommand extends CliCommand {
 
     stdout.write('Running tests for $projectName...\n\n');
 
-    await codegenStep();
+    if (argResults!['codegen']) {
+      await codegenStep();
+    }
 
-    await buildDebugStep([], 'test');
+    if (argResults!['build']) {
+      await buildDebugStep([], 'test');
+    }
 
-    final composeProcess =
-        await step('Creating docker-compose environment.', () async {
-      final result = await Process.start(
-        'docker-compose',
-        ['-f', 'test/docker-compose.yml', 'up'],
-      );
+    Process? composeProcess;
+    if (argResults!['compose']) {
+      composeProcess =
+          await step('Creating docker-compose environment.', () async {
+        final result = await Process.start(
+          'docker-compose',
+          ['-f', 'test/docker-compose.yml', 'up'],
+        );
 
-      // TODO find out when containers are up
-      await Future.delayed(Duration(seconds: 3));
+        // TODO find out when containers are up
+        await Future.delayed(Duration(seconds: 3));
 
-      return result;
-    });
+        return result;
+      });
+    }
 
     final process = await step('Starting test container.', () async {
       final executable = 'docker';
       final args = [
         'run',
-        '--network=test_default',
+        '--network=${argResults!['network']}',
+        if (argResults!['mount']) '--mount',
+        if (argResults!['mount'])
+          'type=bind,source="${Directory.current.absolute.toString()}",target="/app",readonly',
         '$projectName:test',
         'dart',
         'test',
@@ -66,7 +100,7 @@ class TestCommand extends CliCommand {
     await stderr.addStream(process.stderr);
     final exitCode = await process.exitCode;
 
-    composeProcess.kill();
+    composeProcess?.kill();
     exit(exitCode);
   }
 }
