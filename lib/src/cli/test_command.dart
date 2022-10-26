@@ -100,6 +100,7 @@ class TestCommand extends CliCommand {
       final executable = 'docker';
       final args = [
         'run',
+        '--rm',
         '--network=${argResults!['network']}',
         if (useVmService) '-p',
         if (useVmService) '$vmServicePort:$vmServicePort',
