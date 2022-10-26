@@ -13,6 +13,21 @@ class TestCommand extends CliCommand {
       defaultsTo: false,
       help: 'Builds the debug image before running tests.',
     );
+    argParser.addOption(
+      'vm_service_port',
+      help: 'The port on which the dart vm service listens on.',
+      defaultsTo: '8181',
+    );
+    argParser.addFlag(
+      'enable_vm_service',
+      defaultsTo: false,
+      help: 'Enables the dart vm service.',
+    );
+    argParser.addFlag(
+      'pause_isolates_on_start',
+      defaultsTo: false,
+      help: 'Pauses all dart isolates until a debugger attaches.',
+    );
     argParser.addFlag(
       'codegen',
       defaultsTo: false,
@@ -78,16 +93,23 @@ class TestCommand extends CliCommand {
       });
     }
 
+    final useVmService = argResults!['enable_vm_service'];
+    final vmServicePort = argResults!['vm_service_port'];
+
     final process = await step('Starting test container.', () async {
       final executable = 'docker';
       final args = [
         'run',
         '--network=${argResults!['network']}',
+        if (useVmService) '-p $vmServicePort:$vmServicePort',
         if (argResults!['mount']) '--mount',
         if (argResults!['mount'])
-          'type=bind,source=${Directory.current.absolute.path.replaceAll('\\', '/')},target=/app/,readonly',
+          'type=bind,source=${Directory.current.absolute.path.replaceAll('\\', '/')},target=/app',
         '$projectName:test',
         'dart',
+        if (useVmService) '--enable-vm-service=$vmServicePort/0.0.0.0',
+        if (argResults!['pause_isolates_on_start']) '--pause_isolates_on_start',
+        'run',
         'test',
         ...argResults!.rest,
       ];
