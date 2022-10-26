@@ -3,6 +3,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:boost/boost.dart';
 import 'package:dart_amqp/dart_amqp.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
@@ -16,7 +17,7 @@ abstract class EventHubService extends BaseService {
   final _log = resolve<LogService>();
   late final BrokerService _brokerService;
   final _channels = <Channel>[];
-  Channel? _publishChannel;
+  late final Lazy<Channel> _publishChannel;
 
   String get exchange;
 
@@ -32,16 +33,16 @@ abstract class EventHubService extends BaseService {
       throw Exception('No BrokerService found in ServiceHost.');
     }
     _brokerService = service;
+    _publishChannel = Lazy(() async => await _brokerService.openChannel()
+      ..apply(_channels.add));
   }
 
   HubEvent<T> event<T>(String topic, {TransferBean<T>? bean}) =>
       HubEvent<T>(this, topic, bean: bean);
 
-  void publish<T>(String topic, T event) async {
-    if (_publishChannel == null) {
-      _channels.add(_publishChannel = await _brokerService.openChannel());
-    }
-    final ex = await _publishChannel!.exchange(exchange, ExchangeType.TOPIC);
+  Future<void> publish<T>(String topic, T event) async {
+    final channel = await _publishChannel.get();
+    final ex = await channel.exchange(exchange, ExchangeType.TOPIC);
     final encoded =
         (event is TransferObjectBase) ? event.toJson() : encodeTyped<T>(event);
 
