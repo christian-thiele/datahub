@@ -101,7 +101,8 @@ class TestCommand extends CliCommand {
       final args = [
         'run',
         '--network=${argResults!['network']}',
-        if (useVmService) '-p $vmServicePort:$vmServicePort',
+        if (useVmService) '-p',
+        if (useVmService) '$vmServicePort:$vmServicePort',
         if (argResults!['mount']) '--mount',
         if (argResults!['mount'])
           'type=bind,source=${Directory.current.absolute.path.replaceAll('\\', '/')},target=/app',
