@@ -138,9 +138,8 @@ class RoutePattern {
 
   /// Encodes url params into a path.
   String encode(Map<String, dynamic> values) {
-    //TODO add encode method for values, not just toString
     final stringValues =
-        values.map((key, value) => MapEntry(key, value.toString()));
+        values.map((key, value) => MapEntry(key, decodeTyped<String>(value)));
     return _segments.map((s) => s.encode(stringValues)).join();
   }
 
