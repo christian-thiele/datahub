@@ -4,11 +4,12 @@ import 'package:rxdart/rxdart.dart';
 import '../transport/resource_transport_stream.dart';
 import '../transport/server_resource_stream_controller.dart';
 
-typedef ResourceSelector<THub> = Resource Function(THub hub);
+typedef ResourceSelector<THub> = ResourceProvider Function(
+    HubProvider<THub> hub);
 
 class ResourceRestEndpoint extends ApiEndpoint {
   final _logService = resolve<LogService>();
-  final Resource _resource;
+  final ResourceProvider _resource;
   final _controllers = <ServerResourceStreamController>[];
 
   @override
@@ -18,7 +19,7 @@ class ResourceRestEndpoint extends ApiEndpoint {
 
   static ResourceRestEndpoint forHubResource<THub>(
           ResourceSelector<THub> selector) =>
-      ResourceRestEndpoint(selector(resolve<HubProvider<THub>>() as THub));
+      ResourceRestEndpoint(selector(resolve<HubProvider<THub>>()));
 
   static List<ResourceRestEndpoint> allOf<THub>() =>
       resolve<HubProvider<THub>>()
@@ -33,8 +34,8 @@ class ResourceRestEndpoint extends ApiEndpoint {
           .contains(Mime.datahubResourceStream)) {
         final controller = ServerResourceStreamController(
           _resource
-              .getStream(request.route.routeParams)
-              .shareValueSeeded(await _resource.get(request.route.routeParams)),
+              .getStream(request)
+              .shareValueSeeded(await _resource.get(request)),
           _removeController,
           uuid(),
           request.session?.expiration ?? Rx.never(),
@@ -49,14 +50,14 @@ class ResourceRestEndpoint extends ApiEndpoint {
       }
     }
 
-    return await _resource.get(request.route.routeParams);
+    return await _resource.get(request);
   }
 
   @override
   Future put(ApiRequest request) async {
-    if (_resource is MutableResource) {
+    if (_resource is MutableResourceProvider) {
       final body = await request.getBody(bean: _resource.bean);
-      await (_resource as MutableResource).set(body, request.route.routeParams);
+      await (_resource as MutableResourceProvider).set(request, body);
     } else {
       throw ApiRequestException.methodNotAllowed();
     }

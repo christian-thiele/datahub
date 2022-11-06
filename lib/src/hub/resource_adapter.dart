@@ -3,9 +3,10 @@ import 'dart:async';
 import 'package:datahub/datahub.dart';
 import 'package:datahub/src/hub/resource.dart';
 
-class ResourceAdapter<T extends TransferObjectBase> extends Resource<T> {
-  final Future<T> Function(Map<String, String> params) _get;
-  final Stream<T> Function(Map<String, String> params) _getStream;
+class ResourceAdapter<T extends TransferObjectBase>
+    extends ResourceProvider<T> {
+  final Future<T> Function(ApiRequest request) _get;
+  final Stream<T> Function(ApiRequest request) _getStream;
 
   ResourceAdapter(
     super.routePattern,
@@ -15,17 +16,15 @@ class ResourceAdapter<T extends TransferObjectBase> extends Resource<T> {
   );
 
   @override
-  Future<T> get([Map<String, String> params = const {}]) async =>
-      await _get(params);
+  Future<T> get(ApiRequest request) async => await _get(request);
 
   @override
-  Stream<T> getStream([Map<String, String> params = const {}]) =>
-      _getStream(params);
+  Stream<T> getStream(ApiRequest request) => _getStream(request);
 }
 
 class MutableResourceAdapter<T extends TransferObjectBase>
-    extends ResourceAdapter<T> implements MutableResource<T> {
-  final Future<void> Function(T value, Map<String, String> params) _set;
+    extends ResourceAdapter<T> implements MutableResourceProvider<T> {
+  final Future<void> Function(ApiRequest request, T value) _set;
 
   MutableResourceAdapter(
     super.routePattern,
@@ -36,6 +35,5 @@ class MutableResourceAdapter<T extends TransferObjectBase>
   );
 
   @override
-  Future<void> set(T value, [Map<String, String> params = const {}]) async =>
-      _set(value, params);
+  Future<void> set(ApiRequest request, T value) async => _set(request, value);
 }

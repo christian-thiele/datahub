@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/ioc.dart';
 
 import 'resource.dart';
 
@@ -14,5 +14,5 @@ abstract class HubProvider<T> extends BaseService {
     assert(this is T, 'HubProvider<$T> must implement $T.');
   }
 
-  List<Resource> get resources;
+  List<ResourceProvider> get resources;
 }
