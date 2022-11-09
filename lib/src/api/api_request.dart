@@ -83,6 +83,22 @@ class ApiRequest {
     }
   }
 
+  /// Returns the current session of type [T].
+  ///
+  /// Use [AuthProvider] to populate the request session object.
+  ///
+  /// If there is no active session matching type [T], this will throw an
+  /// [ApiRequestException.unauthorized]. If in this case a null return value
+  /// is preferred instead, simply set a nullable type for [T] and no exception
+  /// will be thrown.
+  T getSession<T extends Session>() {
+    if (session is T) {
+      return session as T;
+    } else {
+      throw ApiRequestException.unauthorized();
+    }
+  }
+
   ApiRequest withSession(Session? session) =>
       ApiRequest(method, route, headers, queryParams, bodyData, session);
 }

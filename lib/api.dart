@@ -16,6 +16,11 @@ export 'src/api/authentication/jwt/jwt.dart';
 export 'src/api/authentication/jwt/jwt_auth_provider.dart';
 export 'src/api/authentication/jwt/jwt_session.dart';
 
+export 'src/api/authentication/basic_auth/basic_auth_provider.dart';
+export 'src/api/authentication/basic_auth/basic_auth_session.dart';
+export 'src/api/authentication/bearer_token/bearer_auth_session.dart';
+export 'src/api/authentication/bearer_token/bearer_token_auth_provider.dart';
+
 export 'src/api/hub/api_resource.dart';
 export 'src/api/hub/static_list_api_resource.dart';
 

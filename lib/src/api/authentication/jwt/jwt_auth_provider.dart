@@ -15,11 +15,11 @@ class JWTAuthProvider extends AuthProvider {
     this.issuer,
     this.audience,
     this.publicKey,
-    super.requireAuthentication = true,
+    super.requireAuthorization = true,
   });
 
   @override
-  Future<Session?> authenticateRequest(ApiRequest request) async {
+  Future<Session?> authorizeRequest(ApiRequest request) async {
     final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
     if (token != null) {
       final jwt = JWT(token, prefix: prefix);

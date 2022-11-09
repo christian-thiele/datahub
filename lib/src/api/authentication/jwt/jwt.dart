@@ -79,7 +79,7 @@ class JWT extends BearerAuth {
           'Unsupported signing algorithm "$alg".');
     }
 
-    if (iat?.isBefore(DateTime.now()) == true) {
+    if (iat?.isAfter(DateTime.now()) == true) {
       throw ApiRequestException.unauthorized('Invalid issue timestamp.');
     }
 
