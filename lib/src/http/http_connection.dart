@@ -8,8 +8,12 @@ import 'package:http2/src/connection_preface.dart';
 enum HttpVersion { HTTP11, HTTP2 }
 
 class HttpConnection {
-  static void detectProtocol(io.Socket socket, void Function(io.Socket) http1,
-      void Function(io.Socket) http2) {
+  static void detectProtocol(
+    io.Socket socket,
+    void Function(io.Socket) http1,
+    void Function(io.Socket) http2,
+    Function onError,
+  ) {
     readConnectionPreface(socket).then((value) {
       switch (value.b) {
         case HttpVersion.HTTP11:
@@ -19,7 +23,7 @@ class HttpConnection {
           http2(DetachedSocket(socket, value.a));
           break;
       }
-    });
+    }).catchError(onError);
   }
 
   static bool startsWithHttp2Preface(List<int> data) {

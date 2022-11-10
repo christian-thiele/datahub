@@ -48,7 +48,8 @@ class ApiService extends BaseService {
         ? await io.SecureServerSocket.bind(serveAddress, port, securityContext)
         : await io.ServerSocket.bind(serveAddress, port);
 
-    _server = HttpServer(socket, handleRequest, _onError, _onStreamError);
+    _server = HttpServer(socket, handleRequest, _onSocketError,
+        _onProtocolError, _onStreamError);
   }
 
   Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
@@ -95,9 +96,18 @@ class ApiService extends BaseService {
     }
   }
 
-  void _onError(dynamic e, StackTrace? trace) {
+  void _onSocketError(dynamic e, StackTrace? trace) {
     resolve<LogService>().error(
       'Error while listening to socket.',
+      sender: 'DataHub',
+      error: e,
+      trace: trace,
+    );
+  }
+
+  void _onProtocolError(dynamic e, StackTrace? trace) {
+    resolve<LogService>().warn(
+      'Error during protocol negotiation.',
       sender: 'DataHub',
       error: e,
       trace: trace,

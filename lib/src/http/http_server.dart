@@ -20,6 +20,7 @@ class HttpServer {
   final dynamic _serverSocket;
   final HttpRequestHandler requestHandler;
   final void Function(dynamic error, StackTrace stack) onSocketError;
+  final void Function(dynamic error, StackTrace stack) onProtocolError;
   final void Function(dynamic error, StackTrace stack) onStreamError;
 
   late final _http1Adapter =
@@ -31,6 +32,7 @@ class HttpServer {
     this._serverSocket,
     this.requestHandler,
     this.onSocketError,
+    this.onProtocolError,
     this.onStreamError,
   ) {
     if (_serverSocket is! io.ServerSocket &&
@@ -64,6 +66,7 @@ class HttpServer {
             socket,
             _http1Adapter.add,
             _handleHttp2Socket,
+            onProtocolError,
           );
         }
       },
