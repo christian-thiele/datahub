@@ -8,13 +8,36 @@ const _prefixGroup = '_prefix';
 const _keyGroup = '_key';
 const _optionalGroup = '_optional';
 
+const _specialChars = [
+  '-',
+  '.',
+  '_',
+  '~',
+  '!',
+  '\$',
+  '&',
+  "'",
+  '(',
+  ')',
+  '+',
+  ',',
+  ';',
+  '=',
+  ':',
+  '@',
+  '%'
+];
+
+const _segmentChars =
+    "[\\w\\-\\.\\_\\~\\!\\\$\\&\\'\\(\\)\\+\\,\\;\\=\\:\\@\\%]";
+
 // placeholder detector regex
 final RegExp _plExp = RegExp(
-    '^(?<$_prefixGroup>[\\w\\.-]*){((?<$_keyGroup>[\\w-]+)(?<$_optionalGroup>\\??))}\$');
+    '^(?<$_prefixGroup>$_segmentChars*){((?<$_keyGroup>[\\w-]+)(?<$_optionalGroup>\\??))}\$');
 
 // route pattern validation regex
 final RegExp _vrExp = RegExp(
-    '^(\\/([\\w\\\\.-]+|[\\w\\\\.-]*((?<!\\\\){([\\w-]+)\\??})))*(\\/\\*?)?\/?\$');
+    '^(\\/($_segmentChars+|$_segmentChars*((?<!\\\\){([\\w-]+)\\??})))*(\\/\\*?)?\/?\$');
 
 /// Represents a route pattern against which request paths will be matched.
 ///
@@ -227,7 +250,7 @@ class _PLSegment extends _Segment {
 
   @override
   String toMatchExp() {
-    final keyRegex = '(?<$key>\\\$?[\\w\\-\\.\\%]+)';
+    final keyRegex = '(?<$key>$_segmentChars+)';
     if (optional) {
       if (prefix.isEmpty) {
         return '(\\/$keyRegex)?';
@@ -255,14 +278,14 @@ class _WildcardSegment extends _Segment {
   const _WildcardSegment() : super('*');
 
   @override
-  String toMatchExp() => '(?<$_wildcardGroup>(\\/(\\\$?[\\w\\.-]*))*)';
+  String toMatchExp() => '(?<$_wildcardGroup>(\\/($_segmentChars*))*)';
 
   @override
   String encode(Map<String, String> params) => '';
 }
 
 String _regexEscape(String source) {
-  return source.replaceAll('\\', '\\\\').replaceAll('.', '\\.');
+  return _specialChars.fold(source, (s, c) => s.replaceAll(c, '\\$c'));
 }
 
 /// Represents a path which has been matched with a [RoutePattern].
