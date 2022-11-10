@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:datahub/datahub.dart';
+import 'package:path/path.dart';
 import 'package:pointycastle/pointycastle.dart';
 
 import 'cache_key.dart';
@@ -34,8 +35,11 @@ class KeyService extends BaseService {
     }
 
     final issuerClient = await RestClient.connect(issuer);
+    final issuerBasePath = issuer.path.endsWith('/')
+        ? issuer.path.substring(0, issuer.path.length - 1)
+        : issuer.path;
     final openIdConfig = await issuerClient.getObject<Map<String, dynamic>>(
-      '/.well-known/openid-configuration',
+      '$issuerBasePath/.well-known/openid-configuration',
     )
       ..throwOnError();
 
