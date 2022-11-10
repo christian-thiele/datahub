@@ -20,18 +20,16 @@ class JWTAuthProvider extends AuthProvider {
 
   @override
   Future<Session?> authorizeRequest(ApiRequest request) async {
-    final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
-    if (token != null) {
-      final jwt = JWT(token, prefix: prefix);
-      await jwt.verify(
+    final auth = JWT.fromRequest(request, prefix: prefix);
+    if (auth != null) {
+      await auth.verify(
         issuer: issuer,
         audience: audience,
         publicKey: publicKey,
       );
-
-      return JWTSession(jwt);
+      return JWTSession(auth);
+    } else {
+      return null;
     }
-
-    return null;
   }
 }

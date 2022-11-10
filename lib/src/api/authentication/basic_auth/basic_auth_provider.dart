@@ -9,19 +9,18 @@ abstract class BasicAuthProvider extends AuthProvider {
 
   BasicAuthProvider(
     super.internal, {
-    this.prefix = 'Bearer ',
+    this.prefix = 'Basic ',
     super.requireAuthorization = true,
   });
 
   @override
   Future<Session?> authorizeRequest(ApiRequest request) async {
-    final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
-    if (token != null) {
-      final auth = BasicAuth.fromRequest(request, prefix: prefix);
-      return getSession(auth);
+    final auth = BasicAuth.fromRequest(request, prefix: prefix);
+    if (auth != null) {
+      return await getSession(auth);
+    } else {
+      return null;
     }
-
-    return null;
   }
 
   Future<BasicAuthSession> getSession(BasicAuth auth);

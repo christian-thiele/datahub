@@ -16,13 +16,12 @@ abstract class BearerTokenAuthProvider extends AuthProvider {
 
   @override
   Future<Session?> authorizeRequest(ApiRequest request) async {
-    final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
-    if (token != null) {
-      final auth = BearerAuth.fromAuthorizationHeader(token, prefix: prefix);
-      return getSession(auth);
+    final auth = BearerAuth.fromRequest(request, prefix: prefix);
+    if (auth != null) {
+      return await getSession(auth);
+    } else {
+      return null;
     }
-
-    return null;
   }
 
   Future<BearerAuthSession> getSession(BearerAuth auth);

@@ -8,20 +8,20 @@ class BearerAuth extends HttpAuth {
 
   BearerAuth(this.token, {this.prefix = 'Bearer '});
 
-  factory BearerAuth.fromAuthorizationHeader(String token,
+  static BearerAuth? fromAuthorizationHeader(String token,
       {String prefix = 'Basic '}) {
-    if (token.length > prefix.length) {
-      return BearerAuth(token.substring(prefix.length));
+    if (token.length > prefix.length && token.startsWith(prefix)) {
+      return BearerAuth(token.substring(prefix.length), prefix: prefix);
     } else {
-      throw ApiRequestException.unauthorized('Missing token.');
+      return null;
     }
   }
 
-  factory BearerAuth.fromRequest(ApiRequest request,
+  static BearerAuth? fromRequest(ApiRequest request,
       {String prefix = 'Basic '}) {
     final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
     if (nullOrWhitespace(token)) {
-      throw ApiRequestException.unauthorized();
+      return null;
     }
 
     return BearerAuth.fromAuthorizationHeader(token!, prefix: prefix);

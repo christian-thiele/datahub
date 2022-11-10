@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:pointycastle/pointycastle.dart';
 
@@ -48,6 +49,24 @@ class JWT extends BearerAuth {
     final signature = stripBase64Padding(base64UrlEncode(rsaSignature.bytes));
 
     return JWT('$bodyPart.$signature');
+  }
+
+  static JWT? fromAuthorizationHeader(String token,
+      {String prefix = 'Bearer '}) {
+    if (token.length > prefix.length && token.startsWith(prefix)) {
+      return JWT(token.substring(prefix.length), prefix: prefix);
+    } else {
+      return null;
+    }
+  }
+
+  static JWT? fromRequest(ApiRequest request, {String prefix = 'Bearer '}) {
+    final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
+    if (nullOrWhitespace(token)) {
+      return null;
+    }
+
+    return JWT.fromAuthorizationHeader(token!, prefix: prefix);
   }
 
   /// Verify a signed JWT.
