@@ -2,7 +2,6 @@
 import 'dart:io';
 
 import 'package:datahub/datahub.dart';
-import 'package:datahub/src/ioc/application_host.dart';
 
 void main(List<String> args) async {
   final host = ApplicationHost(

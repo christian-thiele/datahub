@@ -7,8 +7,6 @@ import 'package:postgres/postgres.dart' as postgres;
 
 import 'postgresql_database_context.dart';
 
-const metaTable = '_datahub_meta';
-
 class PostgreSQLDatabaseConnection extends DatabaseConnection {
   final postgres.PostgreSQLConnection _connection;
 
@@ -39,7 +37,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     final transactionFuture = _connection.transaction((connection) async {
       connectionCompleter.complete(connection);
       await delegateCompleter.future;
-    });
+    }).catchError(connectionCompleter.completeError);
 
     final context = PostgreSQLDatabaseContext(
       adapter as PostgreSQLDatabaseAdapter,

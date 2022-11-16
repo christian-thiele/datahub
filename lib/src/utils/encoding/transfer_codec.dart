@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
 
 import 'codec_exception.dart';
+import 'encoding.dart';
 
 part '_codecs.dart';
 

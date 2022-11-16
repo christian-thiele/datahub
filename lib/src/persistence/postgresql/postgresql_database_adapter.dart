@@ -9,6 +9,8 @@ import 'sql/sql.dart';
 
 //TODO factor out postgreSQL related code to separate package
 
+const metaTable = '_datahub_meta';
+
 /// [DatabaseAdapter] implementation for PostgreSQL databases.
 class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
   static const schemaVersionKey = 'schema_version';

@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io' as io;
-import 'package:http/http.dart';
 import 'package:http2/http2.dart' as http2;
 import 'package:boost/boost.dart';
 

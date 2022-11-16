@@ -2,9 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/rest_client.dart';
+import 'package:datahub/transfer_object.dart';
+import 'package:datahub/utils.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../transport/resource_transport_message.dart';

@@ -1,8 +1,5 @@
-import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
-
-import 'basic_auth_session.dart';
 
 abstract class BasicAuthProvider extends AuthProvider {
   final String prefix;

@@ -1,9 +1,5 @@
-import 'package:boost/boost.dart';
-
 import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
-
-import 'bearer_auth_session.dart';
 
 abstract class BearerTokenAuthProvider extends AuthProvider {
   final String prefix;

@@ -1,6 +1,4 @@
-import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
-import 'package:datahub/http.dart';
 import 'package:pointycastle/pointycastle.dart';
 
 class JWTAuthProvider extends AuthProvider {

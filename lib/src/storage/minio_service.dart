@@ -32,24 +32,31 @@ class MinioService extends S3Service {
     );
   }
 
+  @override
   Future<bool> bucketExists(String bucket) async =>
       await _minio.bucketExists(bucket);
 
+  @override
   Future<List<Bucket>> listBuckets() async => await _minio.listBuckets();
 
+  @override
   Future<void> makeBucket(String bucket, [String? region]) async =>
       await _minio.makeBucket(bucket, region);
 
+  @override
   Future<void> removeBucket(String bucket) async =>
       await _minio.removeBucket(bucket);
 
+  @override
   Stream<ListObjectsResult> listObjects(String bucket,
           [String? prefix, bool recursive = false]) =>
       _minio.listObjects(bucket, recursive: recursive);
 
+  @override
   Future<void> getObject(String bucket, String object) async =>
       await _minio.getObject(bucket, object);
 
+  @override
   Future<String> putObject(String bucket, String object, Stream<List<int>> data,
           {int? size,
           int? chunkSize,
@@ -65,12 +72,15 @@ class MinioService extends S3Service {
         onProgress: onProgress,
       );
 
+  @override
   Future<void> removeObject(String bucket, String object) async =>
       await _minio.removeObject(bucket, object);
 
+  @override
   Future<void> removeObjects(String bucket, List<String> objects) async =>
       await _minio.removeObjects(bucket, objects);
 
+  @override
   Future<StatObjectResult> statObject(String bucket, String object) async =>
       await _minio.statObject(bucket, object);
 }

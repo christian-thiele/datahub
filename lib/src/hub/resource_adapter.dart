@@ -1,7 +1,9 @@
 import 'dart:async';
 
-import 'package:datahub/datahub.dart';
-import 'package:datahub/src/hub/resource.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/transfer_object.dart';
+
+import 'resource.dart';
 
 class ResourceAdapter<T extends TransferObjectBase>
     extends ResourceProvider<T> {

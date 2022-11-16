@@ -13,7 +13,7 @@ class NotificationHubConsumer extends HubConsumerService<NotificationHub> {
 
   FutureOr<void> _sendNotification(Notification event) async {
     if (event.receive) {
-      hub.notificationReceive
+      await hub.notificationReceive
           .publish(event.copyWith(text: 'ECHO: ${event.text}'));
     }
   }

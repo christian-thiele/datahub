@@ -25,9 +25,10 @@ void main() {
   group('Event Hub', () {
     test('Simple Transfer', host.eventTest<NotificationHub>((hub) async {
       final listener = StreamBatchListener(hub.notificationReceive.stream);
-      hub.notificationSend
+      await hub.notificationSend
           .publish(Notification('Hello', 'Some text here', false));
-      hub.notificationSend.publish(Notification('Hello', 'Other text', true));
+      await hub.notificationSend
+          .publish(Notification('Hello', 'Other text', true));
       await Future.delayed(Duration(seconds: 1));
       expect(listener.hasNext, isFalse);
       expect(await listener.next,
