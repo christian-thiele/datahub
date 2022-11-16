@@ -17,7 +17,7 @@ import 'package:datahub/persistence.dart';
 ///   [CRUDRepository]
 abstract class Repository extends BaseService {
   late final DatabaseAdapter _adapter;
-  late final DatabaseConnection _connection;
+  late DatabaseConnection _connection;
 
   Repository(super.config);
 
@@ -39,6 +39,9 @@ abstract class Repository extends BaseService {
 
   Future<T> transaction<T>(
       Future<T> Function(DatabaseContext context) delegate) async {
+    if (!_connection.isOpen) {
+      _connection = await _adapter.openConnection();
+    }
     return await _connection.runTransaction(delegate);
   }
 }

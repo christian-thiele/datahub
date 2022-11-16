@@ -33,11 +33,21 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     final connectionCompleter =
         Completer<postgres.PostgreSQLExecutionContext>();
     final delegateCompleter = Completer();
+    final transactionCompleter = Completer();
 
-    final transactionFuture = _connection.transaction((connection) async {
-      connectionCompleter.complete(connection);
-      await delegateCompleter.future;
-    }).catchError(connectionCompleter.completeError);
+    unawaited(_connection
+        .transaction((connection) async {
+          connectionCompleter.complete(connection);
+          await delegateCompleter.future;
+        })
+        .then((_) => transactionCompleter.complete())
+        .catchError((e, stack) {
+          if (!connectionCompleter.isCompleted) {
+            connectionCompleter.completeError(e, stack);
+          } else {
+            transactionCompleter.completeError(e, stack);
+          }
+        }));
 
     final context = PostgreSQLDatabaseContext(
       adapter as PostgreSQLDatabaseAdapter,
@@ -50,7 +60,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
       rethrow;
     } finally {
       delegateCompleter.complete();
-      await transactionFuture;
+      await transactionCompleter.future;
     }
   }
 }
