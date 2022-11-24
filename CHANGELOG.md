@@ -16,6 +16,8 @@
   - added any, first, count, mutate operations to CRUDRepository
   - added context parameter to all CRUDRepository methods to allow compositing
 - Broker
+  - AmqpBrokerService
+    - added heartbeat period support (dart_ampq ^0.2.3)
   - added EventHubs
   - Utils
     - added MIME type / extension mapper

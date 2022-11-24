@@ -8,9 +8,10 @@ import 'broker_service.dart';
 ///
 /// Configuration values:
 ///   `host`: Broker connection host
-///   `port`: Broker connection port (optional)
+///   `port`: Broker connection port (optional, default 5672)
 ///   `user`: Username for authentication at broker
 ///   `password`: Password for authentication at broker
+///   `heartbeatPeriod`: Milliseconds between heartbeats (optional, default 5000)
 class AmqpBrokerService extends BrokerService {
   final _logService = resolve<LogService>();
 
@@ -18,6 +19,7 @@ class AmqpBrokerService extends BrokerService {
   late final _configPort = config<int?>('port') ?? 5672;
   late final _configUser = config<String>('user');
   late final _configPassword = config<String>('password');
+  late final _heartbeatPeriod = config<int?>('heartbeatPeriod') ?? 5000;
 
   late final Client _client;
 
@@ -28,6 +30,9 @@ class AmqpBrokerService extends BrokerService {
     final settings = ConnectionSettings(
       host: _configHost,
       port: _configPort,
+      tuningSettings: TuningSettings(
+        heartbeatPeriod: Duration(milliseconds: _heartbeatPeriod),
+      ),
       authProvider: PlainAuthenticator(
         _configUser,
         _configPassword,
