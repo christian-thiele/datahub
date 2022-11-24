@@ -33,6 +33,7 @@ abstract class EventHubService extends BaseService {
       throw Exception('No BrokerService found in ServiceHost.');
     }
     _brokerService = service;
+    //TODO reconnect on channel disconnect
     _publishChannel = Lazy(() async => await _brokerService.openChannel()
       ..apply(_channels.add));
   }
