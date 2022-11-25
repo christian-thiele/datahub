@@ -12,7 +12,7 @@ class EchoEndpoint extends ApiEndpoint {
 
   @override
   Future post(ApiRequest request) async {
-    return await request.getJsonBody();
+    return await request.getBody();
   }
 
   @override

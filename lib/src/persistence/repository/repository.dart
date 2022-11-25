@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:datahub/datahub.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/persistence.dart';
 
@@ -42,6 +45,27 @@ abstract class Repository extends BaseService {
     if (!_connection.isOpen) {
       _connection = await _adapter.openConnection();
     }
-    return await _connection.runTransaction(delegate);
+    try {
+      return await _connection.runTransaction(delegate);
+    } on SocketException catch (e, stack) {
+      resolve<LogService?>()?.warn(
+        'Socket exception in transaction. Retrying...',
+        error: e,
+        trace: stack,
+      );
+
+      try {
+        await _connection.close();
+      } catch (e, stack) {
+        resolve<LogService?>()?.warn(
+          'Could not close connection.',
+          error: e,
+          trace: stack,
+        );
+      }
+
+      _connection = await _adapter.openConnection();
+      return await _connection.runTransaction(delegate);
+    }
   }
 }

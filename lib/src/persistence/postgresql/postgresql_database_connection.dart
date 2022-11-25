@@ -20,47 +20,50 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   @override
   Future<void> close() async => await _connection.close();
 
-  // This weird pattern is necessary to preserve the stack trace of exceptions
-  // thrown inside of [delegate]. The PostgreSQLConnection.transaction method
-  // does not rethrow exceptions but stores them an throws them again, which
-  // creates a new stack trace starting from here, which hides the source of
-  // the error and can make debugging difficult. By using Completers to keep
-  // the execution of delegate outside of the transaction method,
-  // we can rethrow exceptions easily.
   @override
   Future<T> runTransaction<T>(
       Future<T> Function(DatabaseContext context) delegate) async {
-    final connectionCompleter =
-        Completer<postgres.PostgreSQLExecutionContext>();
-    final delegateCompleter = Completer();
-    final transactionCompleter = Completer();
-
-    unawaited(_connection
-        .transaction((connection) async {
-          connectionCompleter.complete(connection);
-          await delegateCompleter.future;
-        })
-        .then((_) => transactionCompleter.complete())
-        .catchError((e, stack) {
-          if (!connectionCompleter.isCompleted) {
-            connectionCompleter.completeError(e, stack);
-          } else {
-            transactionCompleter.completeError(e, stack);
-          }
-        }));
-
-    final context = PostgreSQLDatabaseContext(
-      adapter as PostgreSQLDatabaseAdapter,
-      await connectionCompleter.future,
+    final completer = Completer<Box<T>>();
+    runZonedGuarded(
+      () {
+        _connection
+            .transaction((c) async {
+              final context = PostgreSQLDatabaseContext(
+                  adapter as PostgreSQLDatabaseAdapter, c);
+              return await delegate(context);
+            })
+            .then((r) => completer.complete(Box<T>.value(r)))
+            .catchError(
+                (e, stack) => completer.complete(Box<T>.error(e, stack)));
+      },
+      (error, stack) {
+        resolve<LogService?>()?.warn(
+          'Unhandled error in postgres package.',
+          error: error,
+          trace: stack,
+        );
+      },
     );
+    return await (await completer.future).value;
+  }
+}
 
-    try {
-      return await delegate(context);
-    } catch (e) {
-      rethrow;
-    } finally {
-      delegateCompleter.complete();
-      await transactionCompleter.future;
+class Box<T> {
+  final dynamic error;
+  final StackTrace? stack;
+  final T? _value;
+
+  Box.error(this.error, this.stack) : _value = null;
+
+  Box.value(this._value)
+      : error = null,
+        stack = null;
+
+  Future<T> get value {
+    if (error != null) {
+      return Future<T>.error(error, stack);
+    } else {
+      return Future<T>.value(_value);
     }
   }
 }

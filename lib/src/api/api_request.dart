@@ -22,20 +22,20 @@ class ApiRequest {
     this.session,
   );
 
-  /// Returns a Uint8List of the body data.
+  /// Returns a [Uint8List] of the body data.
   ///
   /// Useful for small size bodies. For large amounts of data use
   /// [bodyData] stream instead.
   Future<Uint8List> getByteBody() async =>
       Uint8List.fromList(await bodyData.expand((element) => element).toList());
 
-  /// Returns a String representation of the body data.
+  /// Returns a [String] representation of the body data.
   ///
   /// Useful for small size bodies. For large amounts of data use
   /// [bodyData] stream instead.
   Future<String> getTextBody() async => utf8.decode(await getByteBody());
 
-  /// Returns a Map<String, dynamic> representation of json body data.
+  /// Returns a [Map<String, dynamic>] representation of json body data.
   ///
   /// Useful for small size bodies. For large amounts of data use
   /// [bodyData] stream instead.
@@ -47,22 +47,51 @@ class ApiRequest {
     }
   }
 
+  /// Returns a [List] representation of json body data.
+  ///
+  /// Useful for small size bodies. For large amounts of data use
+  /// [bodyData] stream instead.
+  Future<List> getJsonListBody() async {
+    try {
+      return JsonDecoder().convert(await getTextBody()) as List;
+    } catch (_) {
+      throw ApiRequestException.badRequest('Invalid body data.');
+    }
+  }
+
   /// Returns decoded body data.
   ///
   /// Useful for receiving transfer objects.
+  /// Allowed types are: [String], [Map<String, dynamic>], [List<dynamic>],
+  /// [Uint8List], [Stream<Uint8List>], [dynamic].
+  ///
+  /// If T is dynamic, the body data will be returned as json (Map or List).
   Future<T> getBody<T>({TransferBean<T>? bean}) async {
     try {
-      final json = await getJsonBody();
       if (bean != null) {
-        return bean.toObject(json);
+        return bean.toObject(await getJsonBody());
+      } else if (T == String) {
+        return await getTextBody() as T;
+      } else if (T == Map<String, dynamic>) {
+        return await getJsonBody() as T;
+      } else if (T == Uint8List) {
+        return await getByteBody() as T;
+      } else if (T == List<dynamic>) {
+        return await getJsonListBody() as T;
+      } else if (T == Stream<Uint8List>) {
+        return bodyData as T;
+      } else if (T == Stream<List<int>>) {
+        return bodyData as T;
+      } else if (T == dynamic) {
+        return jsonDecode(await getTextBody());
       }
-
-      return decodeTyped<T>(json);
     } on CodecException catch (e) {
       throw ApiRequestException.badRequest(e.message);
     } catch (_) {
       throw ApiRequestException.badRequest('Invalid body data.');
     }
+
+    throw ApiError.invalidType(T);
   }
 
   /// Returns the named query parameter.

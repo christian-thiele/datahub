@@ -25,7 +25,7 @@ abstract class EventHubService extends BaseService {
 
   @override
   Future<void> initialize() async {
-    final service = ServiceHost.tryResolve<BrokerService>();
+    final service = resolve<BrokerService?>();
     if (service == null) {
       _log.e('A BrokerService is required to start the EventHubService. '
           'Try providing a BrokerService implementation before this '

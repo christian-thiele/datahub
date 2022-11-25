@@ -17,6 +17,16 @@ void main() {
         .postObject<Map<String, dynamic>>('/echo', {'success': true});
     expect(response, isSuccess);
     expect(response, hasBody(equals({'success': true})));
+
+    final response2 = await client.postObject<List<dynamic>>('/echo', [
+      {'success': true}
+    ]);
+    expect(response2, isSuccess);
+    expect(
+        response2,
+        hasBody(equals([
+          {'success': true}
+        ])));
   }), timeout: Timeout.none);
 
   test('PATCH /echo', host.apiTest((client) async {

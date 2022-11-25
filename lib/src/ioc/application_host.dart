@@ -66,7 +66,7 @@ class ApplicationHost extends ServiceHost {
     cancel?.attach(shutdown);
     stopwatch.stop();
 
-    tryResolveService<LogService>()?.info(
+    resolveService<LogService?>()?.info(
       'Initialization done in ${stopwatch.elapsed}.',
       sender: 'DataHub',
     );

@@ -5,6 +5,7 @@ import 'package:datahub/api.dart';
 import 'package:datahub/broker.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/rest_client.dart';
+import 'package:test/expect.dart';
 
 class TestHost extends ServiceHost {
   TestHost(
@@ -15,13 +16,24 @@ class TestHost extends ServiceHost {
   });
 
   Future<void> Function() test<T extends ApiService>(
-      FutureOr<void> Function() body) {
+      [FutureOr<void> Function()? body]) {
     return () async {
-      await initialize();
       try {
-        await body();
+        await initialize();
+      } catch (_) {
+        fail('TestHost does not initialize.');
+      }
+
+      try {
+        if (body != null) {
+          await runAsService(body);
+        }
       } finally {
-        await shutdown();
+        try {
+          await shutdown();
+        } catch (_) {
+          fail('TestHost does shutdown gracefully.');
+        }
       }
     };
   }
