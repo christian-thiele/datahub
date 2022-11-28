@@ -49,7 +49,7 @@ abstract class ApiEndpoint extends RequestHandler {
       return ApiResponse.dynamic(result);
     } on ApiRequestException catch (e) {
       // catch exceptions here to allow middleware to handle result
-      return TextResponse.plain(e.message, statusCode: e.statusCode);
+      return e.toResponse();
     } catch (e, stack) {
       resolve<LogService>().error(
         'Error while handling request to "${request.route}".',
