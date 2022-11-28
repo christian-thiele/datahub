@@ -13,6 +13,7 @@ abstract class DatabaseContext {
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
+    bool forUpdate = false,
   });
 
   Future<TDao?> queryId<TDao, TPrimaryKey>(
@@ -29,6 +30,7 @@ abstract class DatabaseContext {
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
+    bool forUpdate = false,
   });
 
   /// Returns primary key of inserted object.
@@ -80,6 +82,7 @@ extension DatabaseContextUtils on DatabaseContext {
     List<QuerySelect> distinct = const <QuerySelect>[],
     Sort sort = Sort.empty,
     int offset = 0,
+    bool forUpdate = false,
   }) async {
     final result = await query<TDao>(
       source,
@@ -88,6 +91,7 @@ extension DatabaseContextUtils on DatabaseContext {
       sort: sort,
       offset: offset,
       limit: 1,
+      forUpdate: forUpdate,
     );
 
     return result.firstOrNull;
