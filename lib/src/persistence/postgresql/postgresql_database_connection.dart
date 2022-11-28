@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:boost/boost.dart';
+
 import 'package:datahub/datahub.dart';
 
 // ignore: import_of_legacy_library_into_null_safe
@@ -23,39 +25,49 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
   @override
   Future<T> runTransaction<T>(
       Future<T> Function(DatabaseContext context) delegate) async {
-    final completer = Completer<Box<T>>();
-    runZonedGuarded(
-      () {
-        _connection
-            .transaction((c) async {
-              final context = PostgreSQLDatabaseContext(
-                  adapter as PostgreSQLDatabaseAdapter, c);
-              return await delegate(context);
-            })
-            .then((r) => completer.complete(Box<T>.value(r)))
-            .catchError(
-                (e, stack) => completer.complete(Box<T>.error(e, stack)));
-      },
-      (error, stack) {
-        resolve<LogService?>()?.warn(
-          'Unhandled error in postgres package.',
-          error: error,
-          trace: stack,
-        );
-      },
-    );
+    if (Zone.current[#postgresTransactionConnection] == _connection &&
+        Zone.current[#postgresTransactionContext] != null) {
+      final context = await (Zone.current[#postgresTransactionContext]
+              as Completer<DatabaseContext>)
+          .future;
+      return await delegate(context);
+    }
+
+    final completer = Completer<_Box<T>>();
+    final contextCompleter = Completer<DatabaseContext>();
+    runZonedGuarded(() {
+      _connection
+          .transaction((c) async {
+            final context = PostgreSQLDatabaseContext(
+                adapter as PostgreSQLDatabaseAdapter, c);
+            contextCompleter.complete(context);
+            return await delegate(context);
+          })
+          .then((r) => completer.complete(_Box<T>.value(r)))
+          .catchError(
+              (e, stack) => completer.complete(_Box<T>.error(e, stack)));
+    }, (error, stack) {
+      resolve<LogService?>()?.warn(
+        'Unhandled error in postgres package.',
+        error: error,
+        trace: stack,
+      );
+    }, zoneValues: {
+      #postgresTransactionConnection: _connection,
+      #postgresTransactionContext: contextCompleter
+    });
     return await (await completer.future).value;
   }
 }
 
-class Box<T> {
+class _Box<T> {
   final dynamic error;
   final StackTrace? stack;
   final T? _value;
 
-  Box.error(this.error, this.stack) : _value = null;
+  _Box.error(this.error, this.stack) : _value = null;
 
-  Box.value(this._value)
+  _Box.value(this._value)
       : error = null,
         stack = null;
 

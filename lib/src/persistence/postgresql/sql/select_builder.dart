@@ -12,6 +12,7 @@ class SelectBuilder implements SqlBuilder {
   List<QuerySelect>? _distinct;
   int _limit = -1;
   int _offset = 0;
+  bool _forUpdate = false;
 
   SelectBuilder(this.from);
 
@@ -37,6 +38,10 @@ class SelectBuilder implements SqlBuilder {
 
   void orderBy(Sort sort) {
     _sort = sort;
+  }
+
+  void forUpdate(bool value) {
+    _forUpdate = value;
   }
 
   @override
@@ -85,6 +90,10 @@ class SelectBuilder implements SqlBuilder {
 
     if (_limit > -1) {
       buffer.write(' LIMIT $_limit');
+    }
+
+    if (_forUpdate) {
+      buffer.write(' FOR UPDATE');
     }
 
     return Tuple(buffer.toString(),

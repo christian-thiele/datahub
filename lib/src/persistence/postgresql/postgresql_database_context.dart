@@ -83,6 +83,7 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
+    bool forUpdate = false,
   }) async {
     final from = SelectFrom.fromQuerySource(_adapter.schema.name, bean);
     final result = await querySql(SelectBuilder(from)
@@ -91,7 +92,8 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
       ..where(filter)
       ..orderBy(sort)
       ..offset(offset)
-      ..limit(limit));
+      ..limit(limit)
+      ..forUpdate(forUpdate));
 
     return result.map((r) => bean.map(r)).whereNotNull.toList();
   }
@@ -99,13 +101,15 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
   @override
   Future<TDao?> queryId<TDao, TPrimaryKey>(
     PrimaryKeyDataBean<TDao, TPrimaryKey> bean,
-    TPrimaryKey id,
-  ) async {
+    TPrimaryKey id, {
+    bool forUpdate = false,
+  }) async {
     final primaryKey = bean.primaryKeyField;
 
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    final result = await querySql(
-        SelectBuilder(from)..where(Filter.equals(primaryKey, id)));
+    final result = await querySql(SelectBuilder(from)
+      ..where(Filter.equals(primaryKey, id))
+      ..forUpdate(forUpdate));
 
     return result.map((r) => bean.map(r)).firstOrNull;
   }
@@ -214,6 +218,7 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
+    bool forUpdate = false,
   }) async {
     final from = SelectFrom.fromQuerySource(_adapter.schema.name, source);
     final results = await querySql(SelectBuilder(from)
@@ -221,7 +226,8 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
       ..orderBy(sort)
       ..offset(offset)
       ..limit(limit)
-      ..select(select));
+      ..select(select)
+      ..forUpdate(forUpdate));
     return results.map((e) => QueryResult.merge(e)).toList();
   }
 

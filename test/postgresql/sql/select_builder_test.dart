@@ -137,6 +137,16 @@ void main() {
         '"schema"."different"."abc" WHERE LOWER("fake"."fieldX") = LOWER(\'valueX\')',
       ),
     );
+
+    test(
+      'Select for update',
+      _test(
+        SelectBuilder(schemaTable)
+          ..where(Filter.equals(fieldX, 'valueX'))
+          ..forUpdate(true),
+        'SELECT * FROM "schema"."table" WHERE "fake"."fieldX" = \'valueX\' FOR UPDATE',
+      ),
+    );
   });
 }
 
