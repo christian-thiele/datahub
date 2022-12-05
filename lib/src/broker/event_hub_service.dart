@@ -5,13 +5,15 @@ import 'dart:convert';
 
 import 'package:boost/boost.dart';
 import 'package:dart_amqp/dart_amqp.dart';
+import 'package:datahub/broker.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
+import 'package:datahub/src/broker/hub_event.dart';
 import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';
 
 import 'broker_service.dart';
-import 'hub_event.dart';
+import 'hub_event_socket.dart';
 
 abstract class EventHubService extends BaseService {
   final _log = resolve<LogService>();
@@ -38,8 +40,8 @@ abstract class EventHubService extends BaseService {
       ..apply(_channels.add));
   }
 
-  HubEvent<T> event<T>(String topic, {TransferBean<T>? bean}) =>
-      HubEvent<T>(this, topic, bean: bean);
+  HubEventSocket<T> event<T>(String topic, {TransferBean<T>? bean}) =>
+      HubEventSocket<T>(this, topic, bean: bean);
 
   Future<void> publish<T>(String topic, T event) async {
     final channel = await _publishChannel.get();
@@ -50,20 +52,31 @@ abstract class EventHubService extends BaseService {
     ex.publish(encoded, topic);
   }
 
-  Stream<T> subscribe<T>(String topic,
-      {String? queue, TransferBean<T>? bean}) async* {
+  /// Subscribes to a topic of an EventHub.
+  ///
+  /// Consider using [HubConsumerService.listen] or [HubEventSocket.stream]
+  /// instead.
+  ///
+  /// Subscribing twice inside of the same service (even across instances)
+  /// will result in competing consumers. The service is identified via
+  /// the config value `datahub.serviceName`.
+  Stream<HubEvent<T>> subscribe<T>(String topic,
+      {TransferBean<T>? bean}) async* {
     final channel = await _brokerService.openChannel();
     _channels.add(channel);
+    final queueName =
+        '$exchange.${resolve<ConfigService>().serviceName}.$topic';
     final ex = await channel.exchange(exchange, ExchangeType.TOPIC);
-    final q = await ex.bindQueueConsumer(queue ?? '', [topic], noAck: false);
-    final controller = StreamController<T>();
+    final q = await ex.bindQueueConsumer(queueName, [topic], noAck: false);
+    final controller = StreamController<HubEvent<T>>();
     q.listen(
       (message) {
-        if (bean != null) {
-          controller.add(bean.toObject(jsonDecode(message.payloadAsString)));
-        } else {
-          controller.add(decodeTyped<T>(message.payloadAsJson));
-        }
+        controller.add(HubEvent(
+          bean?.toObject(jsonDecode(message.payloadAsString)) ??
+              decodeTyped<T>(message.payloadAsJson),
+          message.ack,
+          message.reject,
+        ));
       },
       onError: controller.addError,
       onDone: controller.close,

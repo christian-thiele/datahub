@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:datahub/datahub.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/persistence.dart';
+import 'package:datahub/services.dart';
 
 /// Base class for repository services.
 ///

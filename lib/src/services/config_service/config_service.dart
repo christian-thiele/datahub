@@ -32,6 +32,13 @@ class ConfigService extends BaseService {
   @override
   late final Environment environment;
 
+  /// The services identifier.
+  ///
+  /// The value of this is determined by the config value "datahub.serviceName".
+  /// The default value will be a uuid. It is recommended to always set a
+  /// service name as some features of DataHub will depend on it.
+  late final String serviceName;
+
   ConfigService(Map<String, dynamic> defaultConfig, this.arguments) {
     _merge(_configMap, defaultConfig);
   }
@@ -208,6 +215,18 @@ class ConfigService extends BaseService {
         );
       } else {
         environment = Environment.dev;
+      }
+
+      if (datahubConfig['serviceName'] != null) {
+        serviceName = datahubConfig['serviceName'];
+      } else {
+        serviceName = uuid();
+        _log.warn(
+          'No serviceName set. The name of this service will be '
+          '"$serviceName".\nIt is recommended to set this config value as '
+          'some DataHub features will depend on it.',
+          sender: 'DataHub',
+        );
       }
 
       final logConfig = datahubConfig['log'];

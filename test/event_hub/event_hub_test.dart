@@ -14,6 +14,9 @@ void main() {
       NotificationHubConsumer.new,
     ],
     config: {
+      'datahub': {
+        'serviceName': 'unit-test',
+      },
       'rabbit': {
         'host': 'rabbit',
         'user': 'testuser',
@@ -27,12 +30,17 @@ void main() {
       final listener = StreamBatchListener(hub.notificationReceive.stream);
       await hub.notificationSend
           .publish(Notification('Hello', 'Some text here', false));
+      await Future.delayed(Duration(milliseconds: 100));
+      expect(listener.hasNext, isFalse);
       await hub.notificationSend
           .publish(Notification('Hello', 'Other text', true));
-      await Future.delayed(Duration(seconds: 1));
-      expect(listener.hasNext, isFalse);
-      expect(await listener.next,
-          predicate<Notification>((n) => n.text == 'ECHO: Other text'));
+      await Future.delayed(Duration(milliseconds: 100));
+      expect(listener.hasNext, isTrue);
+
+      expect(
+          await listener.next,
+          predicate<HubEvent<Notification>>(
+              (n) => n.data.text == 'ECHO: Other text'));
     }));
   });
 }

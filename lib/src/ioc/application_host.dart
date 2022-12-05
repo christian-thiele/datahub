@@ -66,10 +66,18 @@ class ApplicationHost extends ServiceHost {
     cancel?.attach(shutdown);
     stopwatch.stop();
 
-    resolveService<LogService?>()?.info(
-      'Initialization done in ${stopwatch.elapsed}.',
-      sender: 'DataHub',
-    );
+    final configService = resolve<ConfigService?>();
+    if (configService != null) {
+      resolveService<LogService?>()?.info(
+        'Initialized ${configService.serviceName} in ${stopwatch.elapsed}.',
+        sender: 'DataHub',
+      );
+    } else {
+      resolveService<LogService?>()?.info(
+        'Initialisation done in ${stopwatch.elapsed}.',
+        sender: 'DataHub',
+      );
+    }
 
     onInitialized?.call();
 
