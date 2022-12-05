@@ -1,8 +1,7 @@
-import 'package:datahub/broker.dart';
-import 'package:datahub/src/broker/hub_event.dart';
 import 'package:datahub/transfer_object.dart';
 
 import 'event_hub_service.dart';
+import 'hub_event.dart';
 
 //TODO docs
 class HubEventSocket<T> {

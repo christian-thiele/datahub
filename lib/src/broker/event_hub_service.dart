@@ -5,14 +5,13 @@ import 'dart:convert';
 
 import 'package:boost/boost.dart';
 import 'package:dart_amqp/dart_amqp.dart';
-import 'package:datahub/broker.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
-import 'package:datahub/src/broker/hub_event.dart';
 import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';
 
 import 'broker_service.dart';
+import 'hub_event.dart';
 import 'hub_event_socket.dart';
 
 abstract class EventHubService extends BaseService {

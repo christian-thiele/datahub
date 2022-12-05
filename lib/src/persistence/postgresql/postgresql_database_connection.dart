@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:boost/boost.dart';
-
 import 'package:datahub/datahub.dart';
 
 // ignore: import_of_legacy_library_into_null_safe
