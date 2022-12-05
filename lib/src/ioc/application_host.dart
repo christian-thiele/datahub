@@ -66,7 +66,7 @@ class ApplicationHost extends ServiceHost {
     cancel?.attach(shutdown);
     stopwatch.stop();
 
-    final configService = resolve<ConfigService?>();
+    final configService = resolveService<ConfigService?>();
     if (configService != null) {
       resolveService<LogService?>()?.info(
         'Initialized ${configService.serviceName} in ${stopwatch.elapsed}.',
