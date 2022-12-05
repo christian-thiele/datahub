@@ -5,8 +5,11 @@ import 'package:datahub/http.dart';
 import 'package:datahub/utils.dart';
 
 class RestResponse<TResult> {
-  final Uri requestUrl;
-  final int statusCode;
+  final HttpResponse response;
+
+  Uri get requestUrl => response.requestUrl;
+
+  int get statusCode => response.statusCode;
   final TResult? _data;
 
   bool get hasData => _data != null;
@@ -14,9 +17,7 @@ class RestResponse<TResult> {
   TResult get data =>
       _data ?? (throw ApiException('Response does not contain data.'));
 
-  RestResponse(HttpResponse response, this._data)
-      : requestUrl = response.requestUrl,
-        statusCode = response.statusCode;
+  RestResponse(this.response, this._data);
 
   void throwOnError() {
     if (statusCode >= 400) {

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' as io;
+import 'dart:math';
 import 'package:boost/boost.dart';
 
 import 'package:datahub/ioc.dart';
@@ -53,47 +54,54 @@ class ApiService extends BaseService {
   }
 
   Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
-    try {
-      final handler = _findRequestHandler(httpRequest.path);
-      final path = httpRequest.path.startsWith(basePath)
-          ? httpRequest.path.substring(basePath.length)
-          : '';
+    return await runZoned(
+      () async {
+        try {
+          final handler = _findRequestHandler(httpRequest.path);
+          final path = httpRequest.path.startsWith(basePath)
+              ? httpRequest.path.substring(basePath.length)
+              : '';
 
-      final route = (handler is ApiEndpoint)
-          ? handler.routePattern.decode(path)
-          : Route(RoutePattern.any, path, {}, path);
+          final route = (handler is ApiEndpoint)
+              ? handler.routePattern.decode(path)
+              : Route(RoutePattern.any, path, {}, path);
 
-      //TODO cookies
+          //TODO cookies
 
-      final request = ApiRequest(
-        httpRequest.method,
-        route,
-        httpRequest.headers,
-        httpRequest.queryParams,
-        httpRequest.bodyData,
-        null,
-      );
+          final request = ApiRequest(
+            httpRequest.method,
+            route,
+            httpRequest.headers,
+            httpRequest.queryParams,
+            httpRequest.bodyData,
+            null,
+          );
 
-      final response =
-          await (middleware?.call(handler) ?? handler).handleRequest(request);
+          final response = await (middleware?.call(handler) ?? handler)
+              .handleRequest(request);
 
-      return response.toHttpResponse(httpRequest.requestUri);
-    } on ApiRequestException catch (e) {
-      // Exceptions should have been handled by ApiEndpoint, this is just
-      // to make sure
-      return e.toResponse().toHttpResponse(httpRequest.requestUri);
-    } catch (e, stack) {
-      // Exceptions should have been handled by ApiEndpoint, this is just
-      // to make sure
-      if (resolve<ConfigService>().environment == Environment.dev) {
-        return DebugResponse(e, stack, 500)
-            .toHttpResponse(httpRequest.requestUri);
-      } else {
-        return TextResponse.plain('500 - Internal Server Error',
-                statusCode: 500)
-            .toHttpResponse(httpRequest.requestUri);
-      }
-    }
+          return response.toHttpResponse(httpRequest.requestUri);
+        } on ApiRequestException catch (e) {
+          // Exceptions should have been handled by ApiEndpoint, this is just
+          // to make sure
+          return e.toResponse().toHttpResponse(httpRequest.requestUri);
+        } catch (e, stack) {
+          // Exceptions should have been handled by ApiEndpoint, this is just
+          // to make sure
+          if (resolve<ConfigService>().environment == Environment.dev) {
+            return DebugResponse(e, stack, 500)
+                .toHttpResponse(httpRequest.requestUri);
+          } else {
+            return TextResponse.plain('500 - Internal Server Error',
+                    statusCode: 500)
+                .toHttpResponse(httpRequest.requestUri);
+          }
+        }
+      },
+      zoneValues: {
+        #apiRequestId: _generateRequestId(),
+      },
+    );
   }
 
   void _onSocketError(dynamic e, StackTrace? trace) {
@@ -152,6 +160,12 @@ class ApiService extends BaseService {
             .firstOrNullWhere((element) => element.routePattern.match(path)) ??
         ErrorRequestHandler(ApiRequestException.notFound(
             'Resource \"$absolutePath\" not found.'));
+  }
+
+  static String _generateRequestId() {
+    final r = Random();
+    return Iterable.generate(4, (_) => r.nextInt(255).toRadixString(16))
+        .join(':');
   }
 
   @override

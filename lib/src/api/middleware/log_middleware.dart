@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:datahub/datahub.dart';
 
 import 'request_handler.dart';
@@ -17,7 +19,7 @@ class LogMiddleware extends Middleware {
     // Pre-Handler
     final stopwatch = Stopwatch()..start();
     final log = verbose ? _logService.v : _logService.i;
-    log('${request.method.name}: ${request.route}', sender: 'DataHub');
+    log('${request.method.name} ${request.route}', sender: 'DataHub');
 
     final result = await next(request);
 
@@ -32,6 +34,7 @@ class LogMiddleware extends Middleware {
       log('${result.statusCode}: ${request.route} (${stopwatch.elapsedMilliseconds} ms)',
           sender: 'DataHub');
     }
+
     return result;
   }
 }

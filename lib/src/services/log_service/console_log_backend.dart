@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:intl/intl.dart';
@@ -39,6 +40,17 @@ class ConsoleLogBackend extends LogBackend {
 
     stdout.write(_severityPrefix(message.severity));
     stdout.write(' ');
+
+    final pathInfo = [
+      message.sender,
+      Zone.current[#apiRequestId],
+      //TODO other log path segments
+    ];
+
+    for (final entry in pathInfo) {
+      stdout.write(_brackets(entry, null));
+    }
+
     stdout.write(message.message.replaceAll('\n', '\n$_indent'));
 
     if (message.exception != null) {
@@ -100,5 +112,10 @@ class ConsoleLogBackend extends LogBackend {
       default:
         return '[UNKNOWN ]';
     }
+  }
+
+  String _brackets(String text, int? length) {
+    length ??= text.length;
+    return '[' + text.substring(0, length).padRight(length) + ']';
   }
 }
