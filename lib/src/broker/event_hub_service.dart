@@ -59,29 +59,34 @@ abstract class EventHubService extends BaseService {
   /// Subscribing twice inside of the same service (even across instances)
   /// will result in competing consumers. The service is identified via
   /// the config value `datahub.serviceName`.
-  Stream<HubEvent<T>> subscribe<T>(String topic,
-      {TransferBean<T>? bean}) async* {
-    final channel = await _brokerService.openChannel();
-    _channels.add(channel);
-    final queueName =
-        '$exchange.${resolve<ConfigService>().serviceName}.$topic';
-    final ex = await channel.exchange(exchange, ExchangeType.TOPIC);
-    final q = await ex.bindQueueConsumer(queueName, [topic], noAck: false);
+  Stream<HubEvent<T>> subscribe<T>(String topic, {TransferBean<T>? bean}) {
     final controller = StreamController<HubEvent<T>>();
-    q.listen(
-      (message) {
-        controller.add(HubEvent(
-          bean?.toObject(jsonDecode(message.payloadAsString)) ??
-              decodeTyped<T>(message.payloadAsJson),
-          message.ack,
-          message.reject,
-        ));
-      },
-      onError: controller.addError,
-      onDone: controller.close,
-    );
-    controller.onCancel = q.cancel;
-    yield* controller.stream;
+    controller.onListen = () async {
+      try {
+        final channel = await _brokerService.openChannel();
+        _channels.add(channel);
+        final queueName =
+            '$exchange.${resolve<ConfigService>().serviceName}.$topic';
+        final ex = await channel.exchange(exchange, ExchangeType.TOPIC);
+        final q = await ex.bindQueueConsumer(queueName, [topic], noAck: false);
+        q.listen(
+          (message) {
+            controller.add(HubEvent(
+              bean?.toObject(jsonDecode(message.payloadAsString)) ??
+                  decodeTyped<T>(message.payloadAsJson),
+              message.ack,
+              message.reject,
+            ));
+          },
+          onError: controller.addError,
+          onDone: controller.close,
+        );
+        controller.onCancel = q.cancel;
+      } catch (e, stack) {
+        controller.addError(e, stack);
+      }
+    };
+    return controller.stream;
   }
 
   @override
