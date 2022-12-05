@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:boost/boost.dart';
 import 'package:intl/intl.dart';
 
 import 'log_backend.dart';
@@ -19,8 +20,6 @@ class ConsoleLogBackend extends LogBackend {
   static const _colorYellow = '\u001b[33m';
   static const _colorCyan = '\u001b[36m';
 
-  static const _indent = '                               ';
-
   int _logLevel = 0;
 
   @override
@@ -31,38 +30,46 @@ class ConsoleLogBackend extends LogBackend {
 
     final color = _severityColor(message.severity);
 
-    stdout.write(_timestampString(message.timestamp));
-    stdout.write(' ');
+    var prefixLength = 0;
+    void writePrefix(String val) {
+      prefixLength += val.length;
+      stdout.write(val);
+    }
+
+    writePrefix(_timestampString(message.timestamp));
+    writePrefix(' ');
 
     if (color != null) {
       stdout.write(color);
     }
 
-    stdout.write(_severityPrefix(message.severity));
-    stdout.write(' ');
+    writePrefix(_severityPrefix(message.severity));
+    writePrefix(' ');
 
     final pathInfo = [
-      message.sender,
       Zone.current[#apiRequestId],
+      message.sender,
       //TODO other log path segments
     ];
 
-    for (final entry in pathInfo) {
-      stdout.write(_brackets(entry, null));
+    for (final entry in pathInfo.whereNotNull) {
+      writePrefix(_brackets(entry.toString(), null));
+      writePrefix(' ');
     }
 
-    stdout.write(message.message.replaceAll('\n', '\n$_indent'));
+    final indent = ' ' * prefixLength;
+    stdout.write(message.message.replaceAll('\n', '\n$indent'));
 
     if (message.exception != null) {
       stdout.write('\n');
-      stdout.write(_indent);
+      stdout.write(indent);
       stdout.write(message.exception);
     }
 
     if (message.trace != null) {
       stdout.write('\n');
-      stdout.write(_indent);
-      stdout.write(message.trace.toString().replaceAll('\n', '\n$_indent'));
+      stdout.write(indent);
+      stdout.write(message.trace.toString().replaceAll('\n', '\n$indent'));
     }
 
     if (color != null) {
