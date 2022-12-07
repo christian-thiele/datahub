@@ -282,6 +282,10 @@ abstract class SqlBuilder {
       return '(${value.map(escapeValue).join(', ')})';
     }
 
+    if (value is Enum) {
+      return escapeValue(value.name);
+    }
+
     return '\'${value.toString().replaceAll('\'', '\'\'')}\''; //TODO other escape things
   }
 
