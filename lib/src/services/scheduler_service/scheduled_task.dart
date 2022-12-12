@@ -1,18 +1,21 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
+import 'package:datahub/utils.dart';
 
 typedef Task = FutureOr<void> Function();
 
 class ScheduledTask {
+  final int taskId;
   final Task task;
   final Schedule schedule;
   final OverlapBehaviour overlap;
   Timer? _timer;
   bool _running = false;
 
-  ScheduledTask(this.task, this.schedule, this.overlap) {
+  ScheduledTask(this.task, this.taskId, this.schedule, this.overlap) {
     _startNext();
   }
 
@@ -39,13 +42,26 @@ class ScheduledTask {
       }
     }
     _running = true;
-    try {
-      await task();
-    } catch (e, stack) {
-      resolve<LogService>().e('Scheduled execution threw exception:',
-          error: e, trace: stack, sender: 'DataHub');
-    } finally {
-      _running = false;
-    }
+    unawaited(runZonedGuarded(
+      () async {
+        try {
+          await task();
+        } finally {
+          _running = false;
+        }
+      },
+      (error, stack) {
+        resolve<LogService>().e(
+          'Scheduled execution threw exception:',
+          error: error,
+          trace: stack,
+          sender: 'Scheduler',
+        );
+      },
+      zoneValues: {
+        #schedulerExecutionId:
+            'ST:${taskId.toString().padLeft(2, '0')}:${randomHexId(2)}'
+      },
+    ));
   }
 }

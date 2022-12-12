@@ -35,11 +35,11 @@ abstract class Repository extends BaseService {
 
   Future<DatabaseAdapter> initializeAdapter();
 
-  @override
-  Future<void> shutdown() async {
-    await _connection.close();
-  }
-
+  /// Executes [delegate] inside of a database transaction.
+  ///
+  /// If [transaction] is called from inside of another [transaction]'s delegate,
+  /// the parent transaction / database context will be forwarded so
+  /// methods using [transaction] can be combined into larger transactions.
   Future<T> transaction<T>(
       Future<T> Function(DatabaseContext context) delegate) async {
     if (!_connection.isOpen) {
@@ -67,5 +67,10 @@ abstract class Repository extends BaseService {
       _connection = await _adapter.openConnection();
       return await _connection.runTransaction(delegate);
     }
+  }
+
+  @override
+  Future<void> shutdown() async {
+    await _connection.close();
   }
 }

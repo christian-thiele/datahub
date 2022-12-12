@@ -3,7 +3,6 @@ import 'package:datahub/transfer_object.dart';
 import 'event_hub_service.dart';
 import 'hub_event.dart';
 
-//TODO docs
 class HubEventSocket<T> {
   final EventHubService _hub;
   final String topic;
@@ -22,5 +21,6 @@ class HubEventSocket<T> {
   /// Subscribing twice inside of the same service (even across instances)
   /// will result in competing consumers. The service is identified via
   /// the config value `datahub.serviceName`.
-  Stream<HubEvent<T>> get stream => _hub.subscribe<T>(topic, bean: bean);
+  Stream<HubEvent<T>> getStream({int? prefetch}) =>
+      _hub.subscribe<T>(topic, bean: bean, prefetch: prefetch);
 }

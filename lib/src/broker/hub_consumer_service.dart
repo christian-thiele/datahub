@@ -6,7 +6,15 @@ import 'package:datahub/services.dart';
 import 'event_hub_service.dart';
 import 'hub_event_socket.dart';
 
-//TODO docs
+/// A service consuming and processing EventHub events.
+///
+/// To listen to events of a specific socket override the
+/// [initialize] method and call [listen] with the socket and a handler
+/// as arguments. The member field [hub] provides the instance of the
+/// specified hub type from the current service scope.
+///
+/// See:
+///   [EventHubService]
 abstract class HubConsumerService<THub extends EventHubService>
     extends BaseService {
   final _log = resolve<LogService>();
@@ -22,9 +30,11 @@ abstract class HubConsumerService<THub extends EventHubService>
   /// the config value `datahub.serviceName`.
   void listen<TEvent>(
     HubEventSocket<TEvent> hubSocket,
-    FutureOr<void> Function(TEvent event) listener,
-  ) {
-    _subscriptions.add(hubSocket.stream.listen((event) async {
+    FutureOr<void> Function(TEvent event) listener, {
+    int? prefetch,
+  }) {
+    _subscriptions
+        .add(hubSocket.getStream(prefetch: prefetch).listen((event) async {
       try {
         await listener(event.data);
         event.ack();

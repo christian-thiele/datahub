@@ -1,5 +1,3 @@
-// TODO put eventHubEndpoint as property of dto then publish with autodetected topic subscribe according to bean
-// TODO docs
 import 'dart:async';
 import 'dart:convert';
 
@@ -43,12 +41,22 @@ abstract class EventHubService extends BaseService {
       HubEventSocket<T>(this, topic, bean: bean);
 
   Future<void> publish<T>(String topic, T event) async {
-    final channel = await _publishChannel.get();
-    final ex = await channel.exchange(exchange, ExchangeType.TOPIC);
     final encoded =
         (event is TransferObjectBase) ? event.toJson() : encodeTyped<T>(event);
 
-    ex.publish(encoded, topic);
+    try {
+      await _publishChannel
+          .get()
+          .then((c) => c.exchange(exchange, ExchangeType.TOPIC))
+          .then((ex) => ex.publish(encoded, topic));
+    } on StateError catch (e, stack) {
+      _log.warn('Amqp channel state error, reconnecting.',
+          error: e, trace: stack);
+      await _publishChannel
+          .get()
+          .then((c) => c.exchange(exchange, ExchangeType.TOPIC))
+          .then((ex) => ex.publish(encoded, topic));
+    }
   }
 
   /// Subscribes to a topic of an EventHub.
@@ -59,12 +67,16 @@ abstract class EventHubService extends BaseService {
   /// Subscribing twice inside of the same service (even across instances)
   /// will result in competing consumers. The service is identified via
   /// the config value `datahub.serviceName`.
-  Stream<HubEvent<T>> subscribe<T>(String topic, {TransferBean<T>? bean}) {
+  Stream<HubEvent<T>> subscribe<T>(String topic,
+      {TransferBean<T>? bean, int? prefetch}) {
     final controller = StreamController<HubEvent<T>>();
     controller.onListen = () async {
       try {
-        final channel = await _brokerService.openChannel();
+        final channel = await _brokerService
+            .openChannel()
+            .then((c) => c.qos(prefetch, prefetch));
         _channels.add(channel);
+
         final queueName =
             '$exchange.${resolve<ConfigService>().serviceName}.$topic';
         final ex = await channel.exchange(exchange, ExchangeType.TOPIC);

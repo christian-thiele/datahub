@@ -13,7 +13,7 @@ class SchedulerService extends BaseService {
   //TODO possibility to cancel task
   void schedule(Task task, Schedule schedule,
       {OverlapBehaviour overlap = OverlapBehaviour.concurrent}) {
-    _tasks.add(ScheduledTask(task, schedule, overlap));
+    _tasks.add(ScheduledTask(task, _tasks.length + 1, schedule, overlap));
   }
 
   @override

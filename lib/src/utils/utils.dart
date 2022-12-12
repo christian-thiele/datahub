@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:boost/boost.dart';
 import 'package:uuid/uuid.dart';
 
@@ -121,4 +123,10 @@ String addBase64Padding(String value) {
 
 String stripBase64Padding(String value) {
   return value.replaceAll(RegExp(r'=+$'), '');
+}
+
+String randomHexId(int parts) {
+  final r = Random();
+  return Iterable.generate(
+      parts, (_) => r.nextInt(255).toRadixString(16).padLeft(2, '0')).join(':');
 }

@@ -164,8 +164,8 @@ class ApiService extends BaseService {
 
   static String _generateRequestId() {
     final r = Random();
-    return Iterable.generate(4, (_) => r.nextInt(255).toRadixString(16))
-        .join(':');
+    return Iterable.generate(
+        4, (_) => r.nextInt(255).toRadixString(16).padLeft(2, '0')).join(':');
   }
 
   @override

@@ -48,6 +48,7 @@ class ConsoleLogBackend extends LogBackend {
 
     final pathInfo = [
       Zone.current[#apiRequestId],
+      Zone.current[#schedulerExecutionId],
       message.sender,
       //TODO other log path segments
     ];
