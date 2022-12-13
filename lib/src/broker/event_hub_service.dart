@@ -50,6 +50,7 @@ abstract class EventHubService extends BaseService {
           .then((c) => c.exchange(exchange, ExchangeType.TOPIC))
           .then((ex) => ex.publish(encoded, topic));
     } on StateError catch (e, stack) {
+      _publishChannel.invalidate();
       _log.warn('Amqp channel state error, reconnecting.',
           error: e, trace: stack);
       await _publishChannel

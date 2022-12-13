@@ -42,7 +42,8 @@ void main() {
     test(
       'Select filter eq enum',
       _test(
-        SelectBuilder(schemaTable)..where(Filter.equals(fieldX, TestEnum.something)),
+        SelectBuilder(schemaTable)
+          ..where(Filter.equals(fieldX, TestEnum.something)),
         'SELECT * FROM "schema"."table" WHERE "fake"."fieldX" = \'something\'',
       ),
     );

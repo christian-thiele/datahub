@@ -1,3 +1,7 @@
+## 0.16.1
+- EventHubService
+  - fixed bad state channel reconnect
+
 ## 0.16.0
 - Added HttpClient / HttpServer as multi-version HTTP implementations
 - ApiService
