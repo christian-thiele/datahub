@@ -19,7 +19,7 @@ class AmqpBrokerService extends BrokerService {
   late final _configPort = config<int?>('port') ?? 5672;
   late final _configUser = config<String>('user');
   late final _configPassword = config<String>('password');
-  late final _heartbeatPeriod = config<int?>('heartbeatPeriod') ?? 5000;
+  late final _heartbeatPeriod = config<int?>('heartbeatPeriod') ?? 3000;
 
   late final Client _client;
 

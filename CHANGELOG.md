@@ -1,3 +1,11 @@
+## 0.16.2
+- EventHubService
+  - fixed error handling
+- AmqpBrokerService
+  - default heartbeat period 3 seconds
+- CLI
+  - fixed docker compose command
+
 ## 0.16.1
 - EventHubService
   - fixed bad state channel reconnect

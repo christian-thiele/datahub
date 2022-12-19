@@ -33,26 +33,67 @@ abstract class HubConsumerService<THub extends EventHubService>
     FutureOr<void> Function(TEvent event) listener, {
     int? prefetch,
   }) {
-    _subscriptions
-        .add(hubSocket.getStream(prefetch: prefetch).listen((event) async {
-      try {
-        await listener(event.data);
-        event.ack();
-      } catch (e, stack) {
-        event.reject(true);
-        _log.e(
-          'Could not process event.',
-          error: e,
-          trace: stack,
+    late StreamSubscription sub;
+    sub = hubSocket.getStream(prefetch: prefetch).listen(
+          (event) async {
+            try {
+              await listener(event.data);
+              event.ack();
+            } on StateError catch (e, stack) {
+              _log.error(
+                'Could not sent ack.',
+                error: e,
+                trace: stack,
+              );
+            } catch (e, stack) {
+              event.reject(true);
+              _log.e(
+                'Could not process event.',
+                error: e,
+                trace: stack,
+              );
+            }
+          },
+          cancelOnError: true,
+          onDone: () {
+            _log.warn('done?');
+          },
+          onError: (e, stack) async {
+            _log.warn(
+              'HubSocket subscription failed, restarting.',
+              error: e,
+              trace: stack,
+            );
+            try {
+              await sub.cancel().timeout(Duration(seconds: 30));
+            } catch (e, stack) {
+              _log.error(
+                'Could not cancel subscription.',
+                error: e,
+                trace: stack,
+              );
+            }
+            _subscriptions.remove(sub);
+            await Future.delayed(const Duration(seconds: 3));
+            listen(hubSocket, listener, prefetch: prefetch);
+          },
         );
-      }
-    }));
+    _subscriptions.add(sub);
   }
 
   @override
   Future<void> shutdown() async {
     for (final sub in _subscriptions) {
-      await sub.cancel();
+      try {
+        await sub.cancel();
+      } catch (e, stack) {
+        _log.error(
+          'Could not cancel subscription.',
+          error: e,
+          trace: stack,
+        );
+      }
     }
+    _subscriptions.clear();
   }
 }

@@ -36,7 +36,7 @@ class TestCommand extends CliCommand {
     argParser.addFlag(
       'compose',
       defaultsTo: true,
-      help: 'Starts the docker-compose environment automatically.',
+      help: 'Starts the docker compose environment automatically.',
     );
     argParser.addFlag(
       'mount',
@@ -80,10 +80,10 @@ class TestCommand extends CliCommand {
     Process? composeProcess;
     if (argResults!['compose']) {
       composeProcess =
-          await step('Creating docker-compose environment.', () async {
+          await step('Creating docker compose environment.', () async {
         final result = await Process.start(
-          'docker-compose',
-          ['-f', 'test/docker-compose.yml', 'up'],
+          'docker',
+          ['compose', '-f', 'test/docker-compose.yml', 'up'],
         );
 
         // TODO find out when containers are up

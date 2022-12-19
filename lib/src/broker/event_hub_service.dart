@@ -49,10 +49,9 @@ abstract class EventHubService extends BaseService {
           .get()
           .then((c) => c.exchange(exchange, ExchangeType.TOPIC))
           .then((ex) => ex.publish(encoded, topic));
-    } on StateError catch (e, stack) {
+    } catch (e, stack) {
       _publishChannel.invalidate();
-      _log.warn('Amqp channel state error, reconnecting.',
-          error: e, trace: stack);
+      _log.warn('Amqp channel error, reconnecting.', error: e, trace: stack);
       await _publishChannel
           .get()
           .then((c) => c.exchange(exchange, ExchangeType.TOPIC))
@@ -73,9 +72,8 @@ abstract class EventHubService extends BaseService {
     final controller = StreamController<HubEvent<T>>();
     controller.onListen = () async {
       try {
-        final channel = await _brokerService
-            .openChannel()
-            .then((c) => c.qos(prefetch, prefetch));
+        final channel =
+            await _brokerService.openChannel().then((c) => c.qos(0, prefetch));
         _channels.add(channel);
 
         final queueName =
