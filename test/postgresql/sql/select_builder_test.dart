@@ -17,6 +17,8 @@ class TableDataBean extends DataBean<void> {
   void mapValues(Map<String, dynamic> data) => null;
 }
 
+enum TestEnum { something, test }
+
 void main() {
   final fieldX = DataField(FieldType.String, 'fake', 'fieldX');
   final schemaTable = SelectFromTable('schema', 'table');

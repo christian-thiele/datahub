@@ -27,11 +27,12 @@ void main() {
 
   group('Event Hub', () {
     test('Simple Transfer', host.eventTest<NotificationHub>((hub) async {
-      final listener = StreamBatchListener(hub.notificationReceive.stream);
+      final listener =
+          StreamBatchListener(hub.notificationReceive.getStream(prefetch: 3));
       await hub.notificationSend
           .publish(Notification('Hello', 'Some text here', false));
       await Future.delayed(Duration(milliseconds: 100));
-      expect(listener.hasNext, isFalse);
+      expect(listener.hasNext, isTrue);
       await hub.notificationSend
           .publish(Notification('Hello', 'Other text', true));
       await Future.delayed(Duration(milliseconds: 100));
