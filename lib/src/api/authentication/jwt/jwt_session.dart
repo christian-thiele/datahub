@@ -1,10 +1,13 @@
-import 'package:datahub/src/api/authentication/session.dart';
 import 'package:rxdart/rxdart.dart';
 
-import 'jwt.dart';
+import 'package:datahub/api.dart';
 
 class JWTSession extends Session {
   final JWT token;
+
+  String get subject =>
+      token.sub ??
+      (throw ApiRequestException.unauthorized('Invalid authorization.'));
 
   JWTSession(this.token);
 
@@ -19,4 +22,7 @@ class JWTSession extends Session {
       return Rx.never();
     }
   }
+
+  /// Accesses jwt payload values.
+  dynamic operator [](String key) => token.payload[key];
 }

@@ -92,8 +92,8 @@ class ApiService extends BaseService {
             return DebugResponse(e, stack, 500)
                 .toHttpResponse(httpRequest.requestUri);
           } else {
-            return TextResponse.plain('500 - Internal Server Error',
-                    statusCode: 500)
+            return ApiRequestException.internalError('Internal Server Error')
+                .toResponse()
                 .toHttpResponse(httpRequest.requestUri);
           }
         }

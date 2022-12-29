@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/utils.dart';
@@ -28,6 +30,11 @@ class ApiRequestException extends ApiException {
     return message!;
   }
 
-  ApiResponse toResponse() =>
-      TextResponse.plain(message, statusCode: statusCode);
+  ApiResponse toResponse() {
+    final requestId = Zone.current[#apiRequestId];
+    return JsonResponse({
+      'errorMessage': message,
+      if (requestId is String) 'requestId': requestId,
+    }, statusCode);
+  }
 }

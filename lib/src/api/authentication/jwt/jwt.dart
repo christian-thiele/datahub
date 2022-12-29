@@ -20,6 +20,8 @@ class JWT extends BearerAuth {
 
   String? get aud => payload['aud'];
 
+  String? get sub => payload['sub'];
+
   DateTime? get iat => payload['iat'] == null
       ? null
       : DateTime.fromMillisecondsSinceEpoch((payload['iat'] as int) * 1000);

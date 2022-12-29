@@ -1,3 +1,9 @@
+## 0.16.3
+- ApiService
+  - ApiRequestException default error response json
+- JWTSession
+  - convenience accessors to JWT payload
+
 ## 0.16.2
 - EventHubService
   - fixed error handling
