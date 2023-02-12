@@ -25,9 +25,11 @@ abstract class HubConsumerService<THub extends EventHubService>
 
   /// Subscribes to a HubEventSocket.
   ///
+  /// TODO docs ephemeral
   /// Subscribing twice inside of the same service (even across instances)
   /// will result in competing consumers. The service is identified via
   /// the config value `datahub.serviceName`.
+
   void listen<TEvent>(
     HubEventSocket<TEvent> hubSocket,
     FutureOr<void> Function(TEvent event) listener, {

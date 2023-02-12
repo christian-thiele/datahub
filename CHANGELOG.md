@@ -1,3 +1,7 @@
+## 0.17.0
+- EventHubService
+  - EphemeralHubEventSocket
+
 ## 0.16.3
 - ApiService
   - ApiRequestException default error response json

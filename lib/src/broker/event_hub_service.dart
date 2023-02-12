@@ -37,8 +37,14 @@ abstract class EventHubService extends BaseService {
       ..apply(_channels.add));
   }
 
+  /// TODO DOCS
   HubEventSocket<T> event<T>(String topic, {TransferBean<T>? bean}) =>
       HubEventSocket<T>(this, topic, bean: bean);
+
+  /// TODO DOCS
+  EphemeralHubEventSocket<T> ephemeral<T>(String topic,
+          {TransferBean<T>? bean}) =>
+      EphemeralHubEventSocket<T>(this, topic, bean: bean);
 
   Future<void> publish<T>(String topic, T event) async {
     final encoded =
