@@ -1,3 +1,7 @@
+## 0.17.0
+- EventHubService
+  - EphemeralHubEventSocket
+
 ## 0.16.4
 - ApiEndpoint
   - minor error handling fix

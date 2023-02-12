@@ -11,4 +11,7 @@ class NotificationHub extends EventHubService {
 
   late final notificationReceive =
       event('test.notification.receive', bean: NotificationTransferBean);
+
+  late final notificationProcessed =
+      ephemeral('test.notification.processed', bean: NotificationTransferBean);
 }
