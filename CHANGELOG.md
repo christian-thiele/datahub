@@ -1,7 +1,10 @@
+## 0.17.0
+- EventHubService
+  - EphemeralHubEventSocket
+
 ## 0.16.5
 - TransferCodec, TransferBean
   - added debug property "name" for error messages
-
 
 ## 0.16.4
 - ApiEndpoint
