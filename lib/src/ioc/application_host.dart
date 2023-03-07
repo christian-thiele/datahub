@@ -9,8 +9,6 @@ import 'package:datahub/datahub.dart';
 /// This class also controls the execution of the application itself,
 /// providing a framework for services to live in.
 ///
-/// There can only be one ServiceHost in an application.
-///
 /// Use this code in your main function:
 ///
 /// ```
