@@ -27,7 +27,7 @@ dependencies:
 
 dev_dependencies:
   build_runner: ^2.2.0
-  datahub_codegen: ^0.16.2
+  datahub_codegen: ^0.17.0-dev.1
   pedantic: ^1.11.0
 
 false_secrets:
