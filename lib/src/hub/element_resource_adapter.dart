@@ -3,14 +3,14 @@ import 'dart:async';
 import 'package:datahub/api.dart';
 import 'package:datahub/transfer_object.dart';
 
-import 'resource.dart';
+import 'element_resource.dart';
 
-class ResourceAdapter<T extends TransferObjectBase>
-    extends ResourceProvider<T> {
+class ElementResourceAdapter<T extends TransferObjectBase>
+    extends ElementResourceProvider<T> {
   final Future<T> Function(ApiRequest request) _get;
   final Stream<T> Function(ApiRequest request) _getStream;
 
-  ResourceAdapter(
+  ElementResourceAdapter(
     super.routePattern,
     super.bean,
     this._get,
@@ -24,11 +24,12 @@ class ResourceAdapter<T extends TransferObjectBase>
   Stream<T> getStream(ApiRequest request) => _getStream(request);
 }
 
-class MutableResourceAdapter<T extends TransferObjectBase>
-    extends ResourceAdapter<T> implements MutableResourceProvider<T> {
+class MutableElementResourceAdapter<T extends TransferObjectBase>
+    extends ElementResourceAdapter<T>
+    implements MutableElementResourceProvider<T> {
   final Future<void> Function(ApiRequest request, T value) _set;
 
-  MutableResourceAdapter(
+  MutableElementResourceAdapter(
     super.routePattern,
     super.bean,
     super._get,

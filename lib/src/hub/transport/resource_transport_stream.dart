@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
-import 'resource_transport_exception.dart';
 
+import 'resource_transport_exception.dart';
 import 'resource_transport_message.dart';
 
 class ResourceTransportReadTransformer
@@ -57,7 +57,8 @@ class ResourceTransportReadTransformer
           final payload =
               buffer.sublist(_MessageHead.transportHeaderLength, targetLength);
           buffer.removeRange(0, targetLength);
-          _controller.add(ResourceTransportMessage(_header!.type, payload));
+          _controller.add(ResourceTransportMessage(
+              _header!.resourceType, _header!.messageType, payload));
           _header = null;
         }
       }
@@ -86,7 +87,8 @@ class ResourceTransportWriteTransformer
   List<int> _encodeMessage(ResourceTransportMessage event) {
     final buffer =
         Uint8List(_MessageHead.transportHeaderLength + event.payload.length);
-    _MessageHead(event.type, event.payload.length).write(buffer, 0);
+    _MessageHead(event.resourceType, event.messageType, event.payload.length)
+        .write(buffer, 0);
     buffer.setRange(
         _MessageHead.transportHeaderLength, buffer.length, event.payload);
     return buffer;
@@ -95,20 +97,23 @@ class ResourceTransportWriteTransformer
 
 class _MessageHead {
   static const transportPreface = [0x44, 0x48, 0x52];
-  static const transportVersion = 0x01;
+  static const transportVersion = 0x02;
   static const transportHeaderLength = 16;
 
-  final ResourceTransportMessageType type;
+  final ResourceTransportResourceType resourceType;
+  final ResourceTransportMessageType messageType;
   final int payloadLength;
 
-  _MessageHead(this.type, this.payloadLength);
+  _MessageHead(this.resourceType, this.messageType, this.payloadLength);
 
   factory _MessageHead.read(ByteData data) {
-    final type = _byteToType(data.getUint8(4));
-    // 5-7 reserved
+    final resourceType =
+        ResourceTransportResourceType.fromByte(data.getUint8(4));
+    final messageType = ResourceTransportMessageType.fromByte(data.getUint8(5));
+    // 6-7 reserved
     final payloadLength = data.getUint32(8, Endian.big);
     // 12-15 padding
-    return _MessageHead(type, payloadLength);
+    return _MessageHead(resourceType, messageType, payloadLength);
   }
 
   void write(Uint8List buffer, int offset) {
@@ -118,33 +123,10 @@ class _MessageHead {
     buffer.setRange(offset, offset + 3, transportPreface);
     final data = ByteData.sublistView(buffer);
     data.setUint8(offset + 3, transportVersion);
-    data.setUint8(offset + 4, _typeToByte(type));
+    data.setUint8(offset + 4, resourceType.byte);
+    data.setUint8(offset + 5, messageType.byte);
     // 5-7 reserved
     data.setUint32(offset + 8, payloadLength, Endian.big);
     // 12-15 padding
-  }
-
-  static int _typeToByte(ResourceTransportMessageType type) {
-    switch (type) {
-      case ResourceTransportMessageType.set:
-        return 0x00;
-      case ResourceTransportMessageType.patch:
-        return 0x01;
-      case ResourceTransportMessageType.delete:
-        return 0xFF;
-    }
-  }
-
-  static ResourceTransportMessageType _byteToType(int byte) {
-    switch (byte) {
-      case 0x00:
-        return ResourceTransportMessageType.set;
-      case 0x01:
-        return ResourceTransportMessageType.patch;
-      case 0xFF:
-        return ResourceTransportMessageType.delete;
-      default:
-        throw ResourceTransportException('Invalid operation byte.');
-    }
   }
 }

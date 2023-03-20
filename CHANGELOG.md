@@ -1,6 +1,9 @@
 ## 0.17.0
 - EventHubService
   - EphemeralHubEventSocket
+- Resource Hub
+  - CollectionResource
+  - Resource Refactor (ElementResource)
 
 ## 0.16.3
 - ApiService

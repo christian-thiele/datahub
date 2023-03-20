@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:datahub/datahub.dart';
 import 'package:datahub/src/test/matchers.dart';
 import 'package:datahub/src/test/test_host.dart';
@@ -26,7 +28,7 @@ void main() {
       expect(initial.data.text, 'initial');
 
       final setResponse =
-          await client.putObject('/memo', Memo('changed', DateTime.now()));
+          await client.putObject('/memo', Memo(1, 'changed', DateTime.now()));
       expect(setResponse, isSuccess);
       expect(setResponse, isNot(hasBody()));
 
@@ -47,10 +49,42 @@ void main() {
         predicate<Memo>((p0) => p0.text == 'initial'),
       );
 
-      await hub.memo.set(Memo('changed', DateTime.now()));
+      await hub.memo.set(Memo(1, 'changed', DateTime.now()));
       expect(
         await listener.next,
         predicate<Memo>((p0) => p0.text == 'changed'),
+      );
+
+      final todoListener = StreamBatchListener(hub.todos.getWindow(5, 10));
+      final event1 = await todoListener.next;
+      expect(
+        event1,
+        predicate<CollectionState<Memo, int>>((p0) {
+          return p0.windowOffset == 5 &&
+              p0.windowLength == 10 &&
+              p0.window.length == p0.windowLength;
+        }),
+      );
+      final event2 = await todoListener.next;
+      expect(
+        event2,
+        predicate<CollectionState<Memo, int>>((p0) {
+          return p0.windowOffset == 6 &&
+              p0.windowLength == 10 &&
+              p0.window.length == p0.windowLength;
+        }),
+      );
+      expect(event2.window.map((e) => e.id),
+          orderedEquals(event1.window.map((e) => e.id)));
+      final event3 = await todoListener.next;
+      expect(
+        event3,
+        predicate<CollectionState<Memo, int>>((p0) {
+          return p0.windowOffset == 6 &&
+              p0.windowLength == 9 &&
+              p0.window.length == p0.windowLength &&
+              p0.window.first.id != event2.window.first.id;
+        }),
       );
     }));
   });
