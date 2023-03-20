@@ -1,4 +1,5 @@
 import 'package:datahub/datahub.dart';
+import 'package:datahub/src/hub/collection_resource.dart';
 
 import 'memo.dart';
 import 'memo_hub.dart';
@@ -26,5 +27,22 @@ class MemoHubProviderImpl extends MemoHubProvider {
     resolve<LogService>().d(
         'METHOD: ${request.method} ACCEPT: ${request.headers[HttpHeaders.accept]}');
     _repo.setMemo(value);
+  }
+
+  @override
+  Stream<CollectionEvent<Memo, int>> getTodosWindow(
+      ApiRequest request, int offset, int length) async* {
+    final current = List.generate(
+      length,
+      (index) => Memo(offset + index, uuid(),
+          DateTime.now().subtract(Duration(seconds: length - offset))),
+    );
+
+    yield CollectionInitEvent(100, offset, current);
+    await Future.delayed(Duration(seconds: 1));
+    yield CollectionAlignEvent(101, offset + 1);
+    await Future.delayed(Duration(seconds: 1));
+    yield CollectionRemoveEvent(100, offset);
+    await Future.delayed(Duration(seconds: 60));
   }
 }

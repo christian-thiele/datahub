@@ -1,23 +1,20 @@
 import 'dart:async';
-import 'dart:convert';
-
-import 'package:datahub/transfer_object.dart';
 
 import 'resource_transport_message.dart';
 
-class ServerResourceStreamController<T extends TransferObjectBase> {
+abstract class ServerTransportStreamController<T> {
   final String id;
   final Stream<T> resourceStream;
   StreamSubscription? _resourceSubscription;
   late final StreamSubscription _expirationSubscription;
-  final void Function(ServerResourceStreamController) _onDone;
+  final void Function(ServerTransportStreamController) _onDone;
 
   late final _controller = StreamController<ResourceTransportMessage>(
     onListen: _onListen,
     onCancel: _onCancel,
   );
 
-  ServerResourceStreamController(
+  ServerTransportStreamController(
     this.resourceStream,
     this._onDone,
     this.id,
@@ -30,24 +27,27 @@ class ServerResourceStreamController<T extends TransferObjectBase> {
 
   void _onListen() {
     _resourceSubscription = resourceStream.listen(
-      (event) {
-        try {
-          //TODO patch instead of set
-          _controller.add(ResourceTransportMessage(
-              ResourceTransportMessageType.set,
-              utf8.encode(jsonEncode(event))));
-        } catch (e) {
-          //TODO error handling (encoding)
-        }
-      },
-      onError: (e, stack) {
-        //TODO error handling
-        _onCancel();
-      },
-      onDone: () {
-        _onCancel();
-      },
+      _onDataInternal,
+      onError: _onError,
+      onDone: _onCancel,
     );
+  }
+
+  void _onDataInternal(T data) {
+    try {
+      onData(data);
+    } catch (e, stack) {
+      _onError(e, stack);
+    }
+  }
+
+  void onData(T data);
+
+  void emit(ResourceTransportMessage message) => _controller.add(message);
+
+  FutureOr<void> _onError(dynamic e, StackTrace stack) async {
+    //TODO error handling
+    await _onCancel();
   }
 
   FutureOr<void> _onCancel() async {
