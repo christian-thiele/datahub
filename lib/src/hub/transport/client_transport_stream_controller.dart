@@ -1,37 +1,39 @@
 import 'dart:async';
-import 'dart:convert';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/rest_client.dart';
-import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';
 import 'package:rxdart/rxdart.dart';
 
 import '../transport/resource_transport_message.dart';
 import '../transport/resource_transport_stream.dart';
 
-class ClientResourceStreamController<T extends TransferObjectBase> {
+abstract class ClientTransportStreamController<T> {
   final RestClient
       _client; //TODO replace this with interface for other transport protocols
-  final TransferBean<T> bean;
   final RoutePattern routePattern;
   final Map<String, String> params;
+  final Map<String, String> query;
 
-  late final _subject = BehaviorSubject<T>(
+  late final subject = BehaviorSubject<T>(
     onListen: _connect,
     onCancel: _disconnect,
   );
 
-  bool get isConnected => _subject.hasListener;
+  bool get isConnected => subject.hasListener;
 
-  T? get current => _subject.valueOrNull;
+  T? get current => subject.valueOrNull;
 
-  Stream<T> get stream => _subject.stream;
+  Stream<T> get stream => subject.stream;
 
-  ClientResourceStreamController(
-      this._client, this.routePattern, this.params, this.bean);
+  ClientTransportStreamController(
+    this._client,
+    this.routePattern,
+    this.params,
+    this.query,
+  );
 
   final _connectSemaphore = Semaphore();
   StreamSubscription? _currentSubscription;
@@ -42,6 +44,7 @@ class ClientResourceStreamController<T extends TransferObjectBase> {
         if (_currentSubscription == null) {
           final streamResponse = await _client.getObject<Stream<List<int>>>(
             routePattern.encode(params),
+            query: query,
             headers: {
               HttpHeaders.accept: [Mime.datahubResourceStream]
             },
@@ -50,49 +53,29 @@ class ClientResourceStreamController<T extends TransferObjectBase> {
           _currentSubscription = streamResponse.data
               .transform(ResourceTransportReadTransformer())
               .listen(
-                _onData,
+                _onDataInternal,
                 onDone: _connectionDone,
                 onError: _connectionError,
               );
         }
       });
     } catch (e, stack) {
-      if (_subject.hasListener) {
-        _subject.addError(e, stack);
-        await _subject.close();
+      if (subject.hasListener) {
+        subject.addError(e, stack);
+        await subject.close();
       }
     }
   }
 
-  void _onData(ResourceTransportMessage message) {
+  void _onDataInternal(ResourceTransportMessage message) {
     try {
-      switch (message.type) {
-        case ResourceTransportMessageType.set:
-          _subject.add(bean.toObject(jsonDecode(utf8.decode(message.payload))));
-          break;
-        case ResourceTransportMessageType.patch:
-          if (_subject.hasValue) {
-            final patchData = jsonDecode(utf8.decode(message.payload));
-            //TODO better patch method (maybe integrate in transfer object generator?)
-            final cacheData = _subject.value.toJson() as Map<String, dynamic>;
-            cacheData.addAll(patchData);
-            _subject.add(bean.toObject(cacheData));
-          } else {
-            // what to do? cannot patch...
-          }
-          break;
-        case ResourceTransportMessageType.delete:
-          if (_subject.hasValue) {
-            _subject.addError(
-                ApiRequestException.notFound('The resource was removed.'));
-            _subject.close();
-          }
-          break;
-      }
+      onData(message);
     } catch (e, stack) {
-      _subject.addError(e, stack);
+      subject.addError(e, stack);
     }
   }
+
+  void onData(ResourceTransportMessage message);
 
   FutureOr<void> _disconnect() async {
     await _connectSemaphore.runLocked(() async {
@@ -103,15 +86,15 @@ class ClientResourceStreamController<T extends TransferObjectBase> {
   }
 
   void _connectionDone() {
-    if (_subject.hasListener) {
+    if (subject.hasListener) {
       _connect();
     }
   }
 
   void _connectionError(dynamic e, StackTrace stack) {
-    if (_subject.hasListener) {
-      _subject.addError(e, stack);
-      _subject.close();
+    if (subject.hasListener) {
+      subject.addError(e, stack);
+      subject.close();
     }
   }
 }

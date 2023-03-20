@@ -7,5 +7,8 @@ part 'memo_hub.g.dart';
 @Hub()
 abstract class MemoHub {
   @HubResource('/memo')
-  MutableResource<Memo> get memo;
+  MutableElementResource<Memo> get memo;
+
+  @HubResource('/todos')
+  CollectionResource<Memo, int> get todos;
 }
