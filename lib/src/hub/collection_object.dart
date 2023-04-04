@@ -1,5 +1,6 @@
 import 'package:datahub/datahub.dart';
 
+//TODO obsolete !?
 class CollectionObject<T extends TransferObjectBase<Object>>
     extends TransferObjectBase<void> {
   final TransferBean<T> elementBean;
