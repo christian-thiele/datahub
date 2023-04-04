@@ -62,8 +62,8 @@ abstract class ApiEndpoint extends RequestHandler {
       if (resolve<ConfigService>().environment == Environment.dev) {
         return DebugResponse(e, stack, 500);
       } else {
-        return TextResponse.plain('500 - Internal Server Error',
-            statusCode: 500);
+        return ApiRequestException.internalError('Internal Server Error')
+            .toResponse();
       }
     }
   }

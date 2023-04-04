@@ -1,3 +1,9 @@
+## 0.16.4
+- ApiEndpoint
+  - minor error handling fix
+- Filter
+  - isIn empty list fix
+
 ## 0.16.3
 - ApiService
   - ApiRequestException default error response json

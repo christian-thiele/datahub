@@ -27,6 +27,14 @@ abstract class SqlBuilder {
           break;
       }
     } else if (filter is CompareFilter) {
+      // special case: isIn empty list (produces error, always false anyway)
+      if (filter.type == CompareType.isIn &&
+          filter.right is ValueExpression &&
+          (filter.right as ValueExpression).value is Iterable &&
+          ((filter.right as ValueExpression).value as Iterable).isEmpty) {
+        return Tuple('FALSE', {});
+      }
+
       // for case Contains, case insensitivity is solved by using ILIKE,
       // no need for LOWER
       if (filter.caseSensitive ||
@@ -279,6 +287,9 @@ abstract class SqlBuilder {
     }
 
     if (value is Iterable) {
+      if (value.isEmpty) {
+        throw PersistenceException('Invalid postgres value: (empty list)');
+      }
       return '(${value.map(escapeValue).join(', ')})';
     }
 
