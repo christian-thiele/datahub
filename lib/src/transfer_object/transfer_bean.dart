@@ -1,7 +1,7 @@
 abstract class TransferBean<T> {
   const TransferBean();
   Map<String, dynamic> toMap(T transferObject);
-  T toObject(Map<String, dynamic> data);
+  T toObject(Map<String, dynamic> data, {String? name});
 }
 
 /// Bean for use with simple Map<String, dynamic> objects.
@@ -13,5 +13,6 @@ class MapTransferBean extends TransferBean<Map<String, dynamic>> {
       transferObject;
 
   @override
-  Map<String, dynamic> toObject(Map<String, dynamic> data) => data;
+  Map<String, dynamic> toObject(Map<String, dynamic> data, {String? name}) =>
+      data;
 }

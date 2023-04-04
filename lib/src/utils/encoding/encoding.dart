@@ -2,27 +2,36 @@ import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub/utils.dart';
 
-T decodeTyped<T>(dynamic raw, {TransferCodec<T>? codec}) {
+/// Decodes a typed value from its transfer representation. (JSON)
+///
+/// [codec] can be used to override the default codec for type [T].
+/// [name] is used in error messages for debugging purposes.
+T decodeTyped<T>(dynamic raw, {TransferCodec<T>? codec, String? name}) {
   if (raw is T) {
     return raw;
   }
 
   if (raw == null) {
-    throw CodecException.typeMismatch(T, raw.runtimeType);
+    throw CodecException.typeMismatch(T, raw.runtimeType, name);
   }
 
   codec ??= TransferCodec.find<T>();
   if (codec != null) {
-    return (codec as dynamic).decode(raw) as T;
+    return (codec as dynamic).decode(raw, name: name) as T;
   }
 
   throw ApiError.invalidType(T);
 }
 
+/// Encodes a typed value to its transfer representation. (JSON)
+///
+/// [codec] can be used to override the default codec for type [T].
+/// [name] is used in error messages for debugging purposes.
 dynamic encodeTyped<T>(T value, {TransferCodec<T>? codec}) {
   if (value == null) {
     if (!TypeCheck<T>().isNullable) {
-      throw CodecException.typeMismatch(T, value.runtimeType);
+      // this should not be possible
+      throw CodecException.typeMismatch(T, value.runtimeType, null);
     }
 
     return null;
@@ -45,28 +54,32 @@ dynamic encodeList<T extends List<E>?, E>(T value, dynamic Function(E) encode) {
   return value?.map(encode).toList();
 }
 
-T decodeListTyped<T extends List<E>?, E>(dynamic raw) {
+T decodeListTyped<T extends List<E>?, E>(dynamic raw, {String? name}) {
   if (raw is T) {
     return raw;
   } else if (raw is List) {
     final codec = TransferCodec.find<E>();
-    return decodeList<T, E>(raw, (e) => decodeTyped<E>(e, codec: codec));
+    return decodeList<T, E>(
+        raw, (e, n) => decodeTyped<E>(e, codec: codec, name: n),
+        name: name);
   } else if (TypeCheck<T>().isNullable && raw == null) {
     return null as T;
   } else if (raw is List && raw.isEmpty) {
     return <E>[] as T;
   } else {
-    throw CodecException.typeMismatch(T, raw.runtimeType);
+    throw CodecException.typeMismatch(T, raw.runtimeType, name);
   }
 }
 
-T decodeList<T extends List<E>?, E>(dynamic raw, E Function(dynamic) decode) {
+T decodeList<T extends List<E>?, E>(
+    dynamic raw, E Function(dynamic, String?) decode,
+    {String? name}) {
   if (raw is List) {
-    return raw.map(decode).toList() as T;
+    return raw.mapIndexed((e, i) => decode(e, '$name[$i]')).toList() as T;
   } else if (TypeCheck<T>().isNullable && raw == null) {
     return raw?.map(decode).toList() as T;
   } else {
-    throw CodecException.typeMismatch(T, raw.runtimeType);
+    throw CodecException.typeMismatch(T, raw.runtimeType, name);
   }
 }
 
@@ -84,45 +97,49 @@ dynamic encodeMap<T extends Map<String, V>?, V>(
   return value?.map((key, value) => MapEntry(key, encode(value)));
 }
 
-T decodeMapTyped<T extends Map<String, V>?, V>(dynamic raw) {
+T decodeMapTyped<T extends Map<String, V>?, V>(dynamic raw, {String? name}) {
   if (raw is T) {
     return raw;
   } else if (raw is Map<String, dynamic>) {
     final codec = TransferCodec.find<V>();
-    return raw.map(
-            (key, value) => MapEntry(key, decodeTyped<V>(value, codec: codec)))
-        as T;
+    return raw.map((key, value) => MapEntry(
+        key,
+        decodeTyped<V>(value,
+            codec: codec, name: name?.apply((n) => '$n.$key')))) as T;
   } else if (TypeCheck<T>().isNullable && raw == null) {
     return null as T;
   } else if (raw is Map && raw.isEmpty) {
     return <String, V>{} as T;
   } else {
-    throw CodecException.typeMismatch(T, raw.runtimeType);
+    throw CodecException.typeMismatch(T, raw.runtimeType, name);
   }
 }
 
 T decodeMap<T extends Map<String, V>?, V>(
-    dynamic raw, V Function(dynamic) decode) {
+    dynamic raw, V Function(dynamic, String?) decode,
+    {String? name}) {
   if (raw is Map<String, dynamic>) {
-    return raw.map((key, value) => MapEntry(key, decode(value))) as T;
+    return raw.map((key, value) =>
+        MapEntry(key, decode(value, name?.apply((n) => '$n.$key')))) as T;
   } else if (TypeCheck<T>().isNullable && raw == null) {
     return null as T;
   } else {
-    throw CodecException.typeMismatch(T, raw.runtimeType);
+    throw CodecException.typeMismatch(T, raw.runtimeType, name);
   }
 }
 
-T decodeEnum<T extends Enum>(dynamic raw, List<T> values) {
+T decodeEnum<T extends Enum>(dynamic raw, List<T> values, {String? name}) {
   if (raw is String) {
     return findEnum(raw, values);
   } else if (raw is T) {
     return raw;
   } else {
-    throw ApiError.invalidType(T);
+    throw CodecException.typeMismatch(T, raw.runtimeType, name);
   }
 }
 
-T? decodeEnumNullable<T extends Enum>(dynamic raw, List<T> values) {
+T? decodeEnumNullable<T extends Enum>(dynamic raw, List<T> values,
+    {String? name}) {
   if (raw is String) {
     return findEnum(raw, values);
   } else if (raw is T) {
@@ -130,6 +147,6 @@ T? decodeEnumNullable<T extends Enum>(dynamic raw, List<T> values) {
   } else if (raw == null) {
     return null;
   } else {
-    throw ApiError.invalidType(T);
+    throw CodecException.typeMismatch(T, raw.runtimeType, name);
   }
 }

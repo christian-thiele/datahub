@@ -9,8 +9,8 @@ import 'encoding.dart';
 part '_codecs.dart';
 
 class TransferCodec<T> extends TypeCheck<T> {
-  final dynamic Function(T) encode;
-  final T Function(Object) decode;
+  final dynamic Function(T value) encode;
+  final T Function(Object value, {String? name}) decode;
 
   const TransferCodec(this.encode, this.decode);
 
