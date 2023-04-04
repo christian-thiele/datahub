@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/transfer_object.dart';
 
 import 'event_hub_service.dart';
@@ -56,5 +57,6 @@ class EphemeralHubEventSocket<T> extends _HubSocket<T> {
   Stream<HubEvent<T>> getStream(String subTopic, {int? prefetch}) =>
       _hub.subscribe<T>(_topic(subTopic), bean: bean, prefetch: prefetch);
 
-  String _topic(String subTopic) => topic + '.' + subTopic;
+  String _topic(String subTopic) =>
+      [topic, subTopic].where((e) => !nullOrEmpty(subTopic)).join('.');
 }
