@@ -4,6 +4,8 @@
 - Resource Hub
   - CollectionResource
   - Resource Refactor (ElementResource)
+- LogService
+  - refactored LogLevel enum
 
 ## 0.16.5
 - TransferCodec, TransferBean

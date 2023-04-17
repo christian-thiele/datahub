@@ -5,6 +5,7 @@ import 'package:boost/boost.dart';
 import 'package:intl/intl.dart';
 
 import 'log_backend.dart';
+import 'log_level.dart';
 import 'log_message.dart';
 
 /// The default [LogBackend] implementation.
@@ -20,15 +21,15 @@ class ConsoleLogBackend extends LogBackend {
   static const _colorYellow = '\u001b[33m';
   static const _colorCyan = '\u001b[36m';
 
-  int _logLevel = 0;
+  LogLevel _logLevel = LogLevel.debug;
 
   @override
   void publish(LogMessage message) {
-    if (_logLevel > message.severity) {
+    if (_logLevel.level > message.level.level) {
       return;
     }
 
-    final color = _severityColor(message.severity);
+    final color = _severityColor(message.level);
 
     var prefixLength = 0;
     void writePrefix(String val) {
@@ -43,7 +44,7 @@ class ConsoleLogBackend extends LogBackend {
       stdout.write(color);
     }
 
-    writePrefix(_severityPrefix(message.severity));
+    writePrefix(_severityPrefix(message.level));
     writePrefix(' ');
 
     final pathInfo = [
@@ -80,19 +81,19 @@ class ConsoleLogBackend extends LogBackend {
   }
 
   @override
-  void setLogLevel(int level) => _logLevel = level;
+  void setLogLevel(LogLevel level) => _logLevel = level;
 
-  String? _severityColor(int severity) {
+  String? _severityColor(LogLevel severity) {
     switch (severity) {
-      case LogMessage.debug:
+      case LogLevel.debug:
         return _colorGreen;
-      case LogMessage.verbose:
+      case LogLevel.verbose:
         return _colorCyan;
-      case LogMessage.warning:
+      case LogLevel.warning:
         return _colorYellow;
-      case LogMessage.error:
+      case LogLevel.error:
         return _colorRed;
-      case LogMessage.critical:
+      case LogLevel.critical:
         return _colorBrightRed;
       default:
         return null;
@@ -103,19 +104,19 @@ class ConsoleLogBackend extends LogBackend {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(timestamp);
   }
 
-  String _severityPrefix(int severity) {
+  String _severityPrefix(LogLevel severity) {
     switch (severity) {
-      case LogMessage.debug:
+      case LogLevel.debug:
         return '[DEBUG   ]';
-      case LogMessage.verbose:
+      case LogLevel.verbose:
         return '[VERBOSE ]';
-      case LogMessage.info:
+      case LogLevel.info:
         return '[INFO    ]';
-      case LogMessage.warning:
+      case LogLevel.warning:
         return '[WARNING ]';
-      case LogMessage.error:
+      case LogLevel.error:
         return '[ERROR   ]';
-      case LogMessage.critical:
+      case LogLevel.critical:
         return '[CRITICAL]';
       default:
         return '[UNKNOWN ]';

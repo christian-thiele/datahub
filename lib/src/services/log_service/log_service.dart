@@ -34,7 +34,7 @@ class LogService extends BaseService {
 
   LogService(this._backend) : super('datahub');
 
-  void setLogLevel(LogLevel level) => _backend.setLogLevel(level.toSeverity());
+  void setLogLevel(LogLevel level) => _backend.setLogLevel(level);
 
   void d(String message, {String? sender}) => debug(message, sender: sender);
 
@@ -57,7 +57,7 @@ class LogService extends BaseService {
         DateTime.now(),
         sender,
         message,
-        LogMessage.debug,
+        LogLevel.debug,
         null,
         null,
       ),
@@ -70,7 +70,7 @@ class LogService extends BaseService {
         DateTime.now(),
         sender,
         message,
-        LogMessage.verbose,
+        LogLevel.verbose,
         null,
         null,
       ),
@@ -83,7 +83,7 @@ class LogService extends BaseService {
         DateTime.now(),
         sender,
         message,
-        LogMessage.info,
+        LogLevel.info,
         null,
         null,
       ),
@@ -97,7 +97,7 @@ class LogService extends BaseService {
         DateTime.now(),
         sender,
         message,
-        LogMessage.warning,
+        LogLevel.warning,
         error,
         trace,
       ),
@@ -111,7 +111,7 @@ class LogService extends BaseService {
         DateTime.now(),
         sender,
         message,
-        LogMessage.error,
+        LogLevel.error,
         error,
         trace,
       ),
@@ -125,7 +125,7 @@ class LogService extends BaseService {
         DateTime.now(),
         sender,
         message,
-        LogMessage.critical,
+        LogLevel.critical,
         error,
         trace,
       ),

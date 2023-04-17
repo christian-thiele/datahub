@@ -1,15 +1,10 @@
-class LogMessage {
-  static const debug = 0;
-  static const verbose = 1;
-  static const info = 2;
-  static const warning = 3;
-  static const error = 4;
-  static const critical = 5;
+import 'log_level.dart';
 
+class LogMessage {
   final DateTime timestamp;
   final String? sender;
   final String message;
-  final int severity;
+  final LogLevel level;
   final dynamic exception;
   final StackTrace? trace;
 
@@ -17,7 +12,7 @@ class LogMessage {
     this.timestamp,
     this.sender,
     this.message,
-    this.severity,
+    this.level,
     this.exception,
     this.trace,
   );
