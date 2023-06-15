@@ -4,6 +4,7 @@ import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 
 import 'event_hub_service.dart';
+import 'hub_event.dart';
 import 'hub_event_socket.dart';
 
 /// A service consuming and processing EventHub events.
@@ -25,61 +26,103 @@ abstract class HubConsumerService<THub extends EventHubService>
 
   /// Subscribes to a HubEventSocket.
   ///
-  /// TODO docs ephemeral
   /// Subscribing twice inside of the same service (even across instances)
   /// will result in competing consumers. The service is identified via
   /// the config value `datahub.serviceName`.
-
   void listen<TEvent>(
     HubEventSocket<TEvent> hubSocket,
     FutureOr<void> Function(TEvent event) listener, {
     int? prefetch,
   }) {
+    final stream = hubSocket.getStream(prefetch: prefetch);
+    _listenStream(
+      stream,
+      listener,
+      prefetch,
+      () => listen(
+        hubSocket,
+        listener,
+        prefetch: prefetch,
+      ),
+    );
+  }
+
+  /// Subscribes to an EphemeralHubEventSocket.
+  ///
+  /// Subscribing twice inside of the same service (even across instances)
+  /// will result in both consumers receiving the all events emitted during
+  /// their lifetime.
+  void listenEphemeral<TEvent>(
+    EphemeralHubEventSocket<TEvent> hubSocket,
+    FutureOr<void> Function(TEvent event) listener, {
+    String? subTopic,
+    int? prefetch,
+  }) {
+    final stream = hubSocket.getStream(subTopic ?? '', prefetch: prefetch);
+    _listenStream(
+      stream,
+      listener,
+      prefetch,
+      () => listenEphemeral(
+        hubSocket,
+        listener,
+        subTopic: subTopic,
+        prefetch: prefetch,
+      ),
+    );
+  }
+
+  void _listenStream<TEvent>(
+    Stream<HubEvent<TEvent>> stream,
+    FutureOr<void> Function(TEvent event) listener,
+    int? prefetch,
+    void Function() reconnect,
+  ) {
     late StreamSubscription sub;
-    sub = hubSocket.getStream(prefetch: prefetch).listen(
-          (event) async {
-            try {
-              await listener(event.data);
-              event.ack();
-            } on StateError catch (e, stack) {
-              _log.error(
-                'Could not sent ack.',
-                error: e,
-                trace: stack,
-              );
-            } catch (e, stack) {
-              event.reject(true);
-              _log.e(
-                'Could not process event.',
-                error: e,
-                trace: stack,
-              );
-            }
-          },
-          cancelOnError: true,
-          onDone: () {
-            _log.warn('done?');
-          },
-          onError: (e, stack) async {
-            _log.warn(
-              'HubSocket subscription failed, restarting.',
-              error: e,
-              trace: stack,
-            );
-            try {
-              await sub.cancel().timeout(Duration(seconds: 30));
-            } catch (e, stack) {
-              _log.error(
-                'Could not cancel subscription.',
-                error: e,
-                trace: stack,
-              );
-            }
-            _subscriptions.remove(sub);
-            await Future.delayed(const Duration(seconds: 3));
-            listen(hubSocket, listener, prefetch: prefetch);
-          },
+    sub = stream.listen(
+      (event) async {
+        try {
+          await listener(event.data);
+          event.ack();
+        } on StateError catch (e, stack) {
+          _log.error(
+            'Could not sent ack.',
+            error: e,
+            trace: stack,
+          );
+        } catch (e, stack) {
+          event.reject(true);
+          _log.e(
+            'Could not process event.',
+            error: e,
+            trace: stack,
+          );
+        }
+      },
+      cancelOnError: true,
+      onDone: () {
+        _log.warn('done?');
+      },
+      onError: (e, stack) async {
+        _log.warn(
+          'HubSocket subscription failed, restarting.',
+          error: e,
+          trace: stack,
         );
+        try {
+          await sub.cancel().timeout(Duration(seconds: 30));
+        } catch (e, stack) {
+          _log.error(
+            'Could not cancel subscription.',
+            error: e,
+            trace: stack,
+          );
+        }
+        _subscriptions.remove(sub);
+        await Future.delayed(const Duration(seconds: 3));
+        reconnect();
+      },
+    );
     _subscriptions.add(sub);
   }
 
