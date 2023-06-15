@@ -4,6 +4,12 @@
 - Resource Hub
   - CollectionResource
   - Resource Refactor (ElementResource)
+- LogService
+  - refactored LogLevel enum
+
+## 0.16.5
+- TransferCodec, TransferBean
+  - added debug property "name" for error messages
 
 ## 0.16.4
 - ApiEndpoint

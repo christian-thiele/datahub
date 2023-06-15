@@ -8,30 +8,30 @@ int _encodeDuration(Duration e) => e.inMilliseconds;
 
 String _encodeUint8List(Uint8List e) => base64Encode(e);
 
-String _decodeString(Object e) {
+String _decodeString(Object e, {String? name}) {
   if (e is String || e is num || e is bool) {
     return e.toString();
   } else {
-    throw CodecException.typeMismatch(String, e.runtimeType);
+    throw CodecException.typeMismatch(String, e.runtimeType, name);
   }
 }
 
-double _decodeDouble(Object e) {
+double _decodeDouble(Object e, {String? name}) {
   return double.tryParse(e.toString()) ??
-      (throw CodecException.typeMismatch(double, e.runtimeType));
+      (throw CodecException.typeMismatch(double, e.runtimeType, name));
 }
 
-int _decodeInt(Object e) {
+int _decodeInt(Object e, {String? name}) {
   return int.tryParse(e.toString()) ??
-      (throw CodecException.typeMismatch(int, e.runtimeType));
+      (throw CodecException.typeMismatch(int, e.runtimeType, name));
 }
 
-num _decodeNum(Object e) {
+num _decodeNum(Object e, {String? name}) {
   return num.tryParse(e.toString()) ??
-      (throw CodecException.typeMismatch(num, e.runtimeType));
+      (throw CodecException.typeMismatch(num, e.runtimeType, name));
 }
 
-bool _decodeBool(Object e) {
+bool _decodeBool(Object e, {String? name}) {
   if (e is num) {
     return e > 0;
   }
@@ -43,26 +43,26 @@ bool _decodeBool(Object e) {
     return false;
   }
 
-  throw CodecException.typeMismatch(bool, e.runtimeType);
+  throw CodecException.typeMismatch(bool, e.runtimeType, name);
 }
 
-DateTime _decodeDateTime(Object e) {
+DateTime _decodeDateTime(Object e, {String? name}) {
   if (e is int) {
     return DateTime.fromMillisecondsSinceEpoch(e);
   }
 
   return DateTime.tryParse(e.toString()) ??
-      (throw CodecException.typeMismatch(DateTime, e.runtimeType));
+      (throw CodecException.typeMismatch(DateTime, e.runtimeType, name));
 }
 
-Duration _decodeDuration(Object e) {
+Duration _decodeDuration(Object e, {String? name}) {
   return int.tryParse(e.toString())
           ?.apply((millis) => Duration(milliseconds: millis)) ??
-      (throw CodecException.typeMismatch(Duration, e.runtimeType));
+      (throw CodecException.typeMismatch(Duration, e.runtimeType, name));
 }
 
-Uint8List _decodeUint8List(Object e) {
+Uint8List _decodeUint8List(Object e, {String? name}) {
   return e is String
       ? base64Decode(e)
-      : (throw CodecException.typeMismatch(Uint8List, e.runtimeType));
+      : (throw CodecException.typeMismatch(Uint8List, e.runtimeType, name));
 }
