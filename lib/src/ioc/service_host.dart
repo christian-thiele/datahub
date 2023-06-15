@@ -26,10 +26,10 @@ abstract class ServiceHost extends ServiceResolver {
     Map<String, dynamic> config = const <String, dynamic>{},
   }) {
     _factories = <BaseService Function()>[
-      () => LogService(logBackend ?? ConsoleLogBackend()),
       () => ConfigService(config, args),
       SchedulerService.new,
       KeyService.new,
+      () => LogService(logBackend ?? ConsoleLogBackend()),
       ...factories,
     ];
   }

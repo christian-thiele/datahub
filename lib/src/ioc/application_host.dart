@@ -77,7 +77,9 @@ class ApplicationHost extends ServiceHost {
       );
     }
 
-    onInitialized?.call();
+    if (onInitialized != null) {
+      runAsService(() => onInitialized!());
+    }
 
     await _runTimeCompleter.future;
 
