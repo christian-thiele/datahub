@@ -26,6 +26,10 @@ class CollectionSizeTransferBean extends TransferBean<CollectionSize> {
       transferObject.toJson();
 
   @override
-  CollectionSize toObject(Map<String, dynamic> data) =>
-      CollectionSize(size: decodeTyped<int>(data['size']));
+  CollectionSize toObject(Map<String, dynamic> data, {String? name}) =>
+      CollectionSize(
+          size: decodeTyped<int>(
+        data['size'],
+        name: name != null ? '$name.size' : 'size',
+      ));
 }

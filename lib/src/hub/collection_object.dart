@@ -41,14 +41,15 @@ class CollectionObjectTransferBean<T extends TransferObjectBase<Object>>
       transferObject.toJson();
 
   @override
-  CollectionObject<T> toObject(Map<String, dynamic> data) =>
+  CollectionObject<T> toObject(Map<String, dynamic> data, {String? name}) =>
       CollectionObject<T>(
         elementBean,
         offset: decodeTyped<int>(data['offset']),
         size: decodeTyped<int>(data['size']),
         elements: decodeList(
           data['elements'],
-          (p0) => elementBean.toObject(p0),
+          (p0, s) => elementBean.toObject(p0, name: s),
+          name: name != null ? '$name.elements' : 'elements',
         ),
       );
 }

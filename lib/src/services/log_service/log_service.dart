@@ -36,22 +36,80 @@ class LogService extends BaseService {
 
   void setLogLevel(LogLevel level) => _backend.setLogLevel(level);
 
-  void d(String message, {String? sender}) => debug(message, sender: sender);
+  void d(
+    String message, {
+    String? sender,
+    Map<String, dynamic> meta = const {},
+  }) =>
+      debug(
+        message,
+        sender: sender,
+        meta: meta,
+      );
 
-  void v(String message, {String? sender}) => verbose(message, sender: sender);
+  void v(
+    String message, {
+    String? sender,
+    Map<String, dynamic> meta = const {},
+  }) =>
+      verbose(
+        message,
+        sender: sender,
+        meta: meta,
+      );
 
-  void i(String message, {String? sender}) => info(message, sender: sender);
+  void i(
+    String message, {
+    String? sender,
+    Map<String, dynamic> meta = const {},
+  }) =>
+      info(
+        message,
+        sender: sender,
+        meta: meta,
+      );
 
-  void w(String message, {String? sender, dynamic error, StackTrace? trace}) =>
-      warn(message, sender: sender, error: error, trace: trace);
+  void w(String message,
+          {String? sender,
+          dynamic error,
+          StackTrace? trace,
+          Map<String, dynamic> meta = const {}}) =>
+      warn(
+        message,
+        sender: sender,
+        error: error,
+        trace: trace,
+        meta: meta,
+      );
 
-  void e(String message, {String? sender, dynamic error, StackTrace? trace}) =>
-      this.error(message, sender: sender, error: error, trace: trace);
+  void e(String message,
+          {String? sender,
+          dynamic error,
+          StackTrace? trace,
+          Map<String, dynamic> meta = const {}}) =>
+      this.error(
+        message,
+        sender: sender,
+        error: error,
+        trace: trace,
+        meta: meta,
+      );
 
-  void c(String message, {String? sender, dynamic error, StackTrace? trace}) =>
-      critical(message, sender: sender, error: error, trace: trace);
+  void c(String message,
+          {String? sender,
+          dynamic error,
+          StackTrace? trace,
+          Map<String, dynamic> meta = const {}}) =>
+      critical(
+        message,
+        sender: sender,
+        error: error,
+        trace: trace,
+        meta: meta,
+      );
 
-  void debug(String message, {String? sender}) {
+  void debug(String message,
+      {String? sender, Map<String, dynamic> meta = const {}}) {
     _backend.publish(
       LogMessage(
         DateTime.now(),
@@ -60,11 +118,13 @@ class LogService extends BaseService {
         LogLevel.debug,
         null,
         null,
+        meta,
       ),
     );
   }
 
-  void verbose(String message, {String? sender}) {
+  void verbose(String message,
+      {String? sender, Map<String, dynamic> meta = const {}}) {
     _backend.publish(
       LogMessage(
         DateTime.now(),
@@ -73,11 +133,13 @@ class LogService extends BaseService {
         LogLevel.verbose,
         null,
         null,
+        meta,
       ),
     );
   }
 
-  void info(String message, {String? sender}) {
+  void info(String message,
+      {String? sender, Map<String, dynamic> meta = const {}}) {
     _backend.publish(
       LogMessage(
         DateTime.now(),
@@ -86,12 +148,16 @@ class LogService extends BaseService {
         LogLevel.info,
         null,
         null,
+        meta,
       ),
     );
   }
 
   void warn(String message,
-      {String? sender, dynamic error, StackTrace? trace}) {
+      {String? sender,
+      dynamic error,
+      StackTrace? trace,
+      Map<String, dynamic> meta = const {}}) {
     _backend.publish(
       LogMessage(
         DateTime.now(),
@@ -100,12 +166,16 @@ class LogService extends BaseService {
         LogLevel.warning,
         error,
         trace,
+        meta,
       ),
     );
   }
 
   void error(String message,
-      {String? sender, dynamic error, StackTrace? trace}) {
+      {String? sender,
+      dynamic error,
+      StackTrace? trace,
+      Map<String, dynamic> meta = const {}}) {
     _backend.publish(
       LogMessage(
         DateTime.now(),
@@ -114,12 +184,16 @@ class LogService extends BaseService {
         LogLevel.error,
         error,
         trace,
+        meta,
       ),
     );
   }
 
   void critical(String message,
-      {String? sender, dynamic error, StackTrace? trace}) {
+      {String? sender,
+      dynamic error,
+      StackTrace? trace,
+      Map<String, dynamic> meta = const {}}) {
     _backend.publish(
       LogMessage(
         DateTime.now(),
@@ -128,6 +202,7 @@ class LogService extends BaseService {
         LogLevel.critical,
         error,
         trace,
+        meta,
       ),
     );
   }

@@ -7,6 +7,7 @@ class LogMessage {
   final LogLevel level;
   final dynamic exception;
   final StackTrace? trace;
+  final Map<String, dynamic> meta;
 
   LogMessage(
     this.timestamp,
@@ -15,5 +16,6 @@ class LogMessage {
     this.level,
     this.exception,
     this.trace,
+    this.meta,
   );
 }

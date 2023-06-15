@@ -6,6 +6,7 @@
   - Resource Refactor (ElementResource)
 - LogService
   - refactored LogLevel enum
+  - added meta map to LogMessage (Watchtower)
 
 ## 0.16.5
 - TransferCodec, TransferBean
