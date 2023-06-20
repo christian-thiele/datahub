@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:boost/boost.dart';
+
 import 'base_service.dart';
 
 /// Convenience method for injecting services.
@@ -26,4 +28,6 @@ abstract class ServiceResolver {
   }
 
   TService resolveService<TService extends BaseService?>();
+
+  Notifier get servicesReady;
 }

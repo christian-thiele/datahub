@@ -14,6 +14,7 @@ import 'base_service.dart';
 abstract class ServiceHost extends ServiceResolver {
   late final List<BaseService Function()> _factories;
   final List<BaseService> _services = [];
+  final servicesReady = Notifier();
   Completer? _shutdownCompleter;
 
   final bool failWithServices;
@@ -61,6 +62,8 @@ abstract class ServiceHost extends ServiceResolver {
           }
         }
       }
+
+      servicesReady.notify();
     });
   }
 

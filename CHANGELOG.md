@@ -7,6 +7,8 @@
 - LogService
   - refactored LogLevel enum
   - added meta map to LogMessage (Watchtower)
+- ServiceResolver
+  - servicesReady notifier
 
 ## 0.16.5
 - TransferCodec, TransferBean
