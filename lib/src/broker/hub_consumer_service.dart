@@ -58,7 +58,7 @@ abstract class HubConsumerService<THub extends EventHubService>
     String? subTopic,
     int? prefetch,
   }) {
-    final stream = hubSocket.getStream(subTopic ?? '', prefetch: prefetch);
+    final stream = hubSocket.getStream(subTopic ?? '*', prefetch: prefetch);
     _listenStream(
       stream,
       listener,
