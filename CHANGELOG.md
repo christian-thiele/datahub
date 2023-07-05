@@ -9,6 +9,8 @@
   - added meta map to LogMessage (Watchtower)
 - ServiceResolver
   - servicesReady notifier
+- ApiRequest
+  - getParam supports List query parameters
 
 ## 0.16.5
 - TransferCodec, TransferBean

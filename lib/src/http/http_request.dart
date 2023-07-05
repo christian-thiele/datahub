@@ -14,7 +14,7 @@ class HttpRequest {
   final Stream<List<int>> bodyData;
 
   String get path => nullOrWhitespace(requestUri.path) ? '/' : requestUri.path;
-  Map<String, String> get queryParams => requestUri.queryParameters;
+  Map<String, List<String>> get queryParams => requestUri.queryParametersAll;
 
   Encoding? get charset => getEncodingFromHeaders(headers);
 

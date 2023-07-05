@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';
@@ -9,7 +10,7 @@ class ApiRequest {
   final ApiRequestMethod method;
   final Route route;
   final Map<String, List<String>> headers;
-  final Map<String, String> queryParams;
+  final Map<String, List<String>> queryParams;
   final Stream<List<int>> bodyData;
   final Session? session;
 
@@ -105,7 +106,11 @@ class ApiRequest {
   /// are [String], [int], [double], [bool], [DateTime], [Duration] or [Uint8List].
   T getParam<T>(String name) {
     try {
-      return decodeTyped<T>(queryParams[name]);
+      if (TypeCheck<T>().isSubtypeOf<List?>()) {
+        return decodeTyped<T>(queryParams[name]);
+      } else {
+        return decodeTyped<T>(queryParams[name]?.lastOrNull);
+      }
     } on CodecException catch (_) {
       throw ApiRequestException.badRequest(
           'Missing or malformed query parameter: $name');

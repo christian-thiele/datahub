@@ -51,6 +51,13 @@ DateTime _decodeDateTime(Object e, {String? name}) {
     return DateTime.fromMillisecondsSinceEpoch(e);
   }
 
+  if (e is String) {
+    final parsed = int.tryParse(e)?.apply(DateTime.fromMillisecondsSinceEpoch);
+    if (parsed != null) {
+      return parsed;
+    }
+  }
+
   return DateTime.tryParse(e.toString()) ??
       (throw CodecException.typeMismatch(DateTime, e.runtimeType, name));
 }
