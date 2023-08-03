@@ -30,13 +30,13 @@ enum ResourceTransportMessageType {
   align(0x03),
 
   /// collection resource: add element inside window
-  add(0x03),
+  add(0x04),
 
   /// collection resource: remove element inside window
-  remove(0x04),
+  remove(0x05),
 
   /// collection resource: update element
-  update(0x05),
+  update(0x06),
 
   /// resource not available anymore
   delete(0xFF);

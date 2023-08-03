@@ -43,7 +43,7 @@ Future<void> _lineTransformerTest() async {
     '\ni ',
     'guess'
   ].map(utf8.encode))
-      .transform(LineTransformer());
+      .transform<String>(LineTransformer());
 
   expect(stream, emitsInOrder(['some stuff', 'and ', 'more lines', 'i guess']));
 

@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:yaml/yaml.dart';
@@ -110,7 +111,7 @@ String buildDockerArgs(List<String> args) {
   return buffer.toString();
 }
 
-class LineTransformer extends StreamTransformerBase<List<int>, String> {
+class LineTransformer extends StreamTransformerBase<Uint8List, String> {
   String? _current = '';
   final _controller = StreamController<String>();
 

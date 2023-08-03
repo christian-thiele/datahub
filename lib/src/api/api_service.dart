@@ -7,8 +7,6 @@ import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:datahub/http.dart';
 
-import 'authentication/auth_provider.dart';
-
 import 'middleware/error_request_handler.dart';
 import 'middleware/middleware.dart';
 import 'middleware/request_handler.dart';
@@ -27,14 +25,12 @@ class ApiService extends BaseService {
   final String basePath;
   final List<ApiEndpoint> endpoints;
   final MiddlewareBuilder? middleware;
-  final AuthProvider? authProvider;
   final io.SecurityContext? securityContext;
 
   ApiService(
     String? config,
     this.endpoints, {
     this.middleware,
-    this.authProvider,
     String? apiBasePath,
     this.securityContext,
   })  : basePath = _sanitizeBasePath(apiBasePath),
