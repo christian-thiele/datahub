@@ -45,7 +45,7 @@ class ClientCollectionResourceStreamController<
         final data =
             jsonDecode(utf8.decode(message.payload.skip(16).toList())) as List;
         subject.add(CollectionState(collectionLength, windowOffset,
-            data.map((e) => bean.toObject(e)).toList()));
+            data.map<T>((e) => bean.toObject(e)).toList()));
         break;
       case ResourceTransportMessageType.align:
         final collectionLength = bytes.getInt64(0);
@@ -57,7 +57,7 @@ class ClientCollectionResourceStreamController<
         final dataOffset = bytes.getInt64(8);
         final data = jsonDecode(utf8.decode(message.payload.skip(16).toList()));
         subject.add(subject.value.add(collectionLength, dataOffset,
-            data.map((e) => bean.toObject(e)).toList()));
+            data.map<T>((e) => bean.toObject(e)).toList()));
         break;
       case ResourceTransportMessageType.remove:
         final collectionLength = bytes.getInt64(0);
