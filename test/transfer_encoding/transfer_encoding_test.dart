@@ -92,10 +92,10 @@ void _encodeBool() {
 }
 
 void _encodeDateTime() {
-  expect(encodeTyped<DateTime>(DateTime(2022, 06, 15)),
-      equals(DateTime(2022, 06, 15).toIso8601String()));
-  expect(encodeTyped<DateTime?>(DateTime(1999, 12, 31)),
-      equals(DateTime(1999, 12, 31).toIso8601String()));
+  expect(encodeTyped<DateTime>(DateTime.utc(2022, 06, 15)),
+      equals(DateTime.utc(2022, 06, 15).toIso8601String()));
+  expect(encodeTyped<DateTime?>(DateTime.utc(1999, 12, 31)),
+      equals(DateTime.utc(1999, 12, 31).toIso8601String()));
   expect(encodeTyped<DateTime?>(null), equals(null));
 }
 
@@ -146,45 +146,45 @@ void _encodeListInt() {
 void _encodeListDateTime() {
   expect(
     encodeListTyped<List<DateTime>, DateTime>([
-      DateTime(2022, 12, 10),
-      DateTime(2020, 2, 5),
-      DateTime(1999, 2, 3),
+      DateTime.utc(2022, 12, 10),
+      DateTime.utc(2020, 2, 5),
+      DateTime.utc(1999, 2, 3),
     ]),
     equals([
-      DateTime(2022, 12, 10).toIso8601String(),
-      DateTime(2020, 2, 5).toIso8601String(),
-      DateTime(1999, 2, 3).toIso8601String(),
+      DateTime.utc(2022, 12, 10).toIso8601String(),
+      DateTime.utc(2020, 2, 5).toIso8601String(),
+      DateTime.utc(1999, 2, 3).toIso8601String(),
     ]),
   );
   expect(
     encodeListTyped<List<DateTime?>, DateTime?>([
-      DateTime(2022, 12, 10),
-      DateTime(2020, 2, 5),
-      DateTime(1999, 2, 3),
+      DateTime.utc(2022, 12, 10),
+      DateTime.utc(2020, 2, 5),
+      DateTime.utc(1999, 2, 3),
     ]),
     equals([
-      DateTime(2022, 12, 10).toIso8601String(),
-      DateTime(2020, 2, 5).toIso8601String(),
-      DateTime(1999, 2, 3).toIso8601String(),
+      DateTime.utc(2022, 12, 10).toIso8601String(),
+      DateTime.utc(2020, 2, 5).toIso8601String(),
+      DateTime.utc(1999, 2, 3).toIso8601String(),
     ]),
   );
   expect(
     encodeListTyped<List<DateTime?>, DateTime?>([
-      DateTime(2022, 12, 10),
+      DateTime.utc(2022, 12, 10),
       null,
-      DateTime(1999, 2, 3),
+      DateTime.utc(1999, 2, 3),
     ]),
     equals([
-      DateTime(2022, 12, 10).toIso8601String(),
+      DateTime.utc(2022, 12, 10).toIso8601String(),
       null,
-      DateTime(1999, 2, 3).toIso8601String(),
+      DateTime.utc(1999, 2, 3).toIso8601String(),
     ]),
   );
   expect(encodeListTyped<List<DateTime>, DateTime>([]), equals([]));
   expect(encodeListTyped<List<DateTime?>?, DateTime?>(null), equals(null));
   expect(encodeListTyped<List<DateTime>?, DateTime?>(null), equals(null));
-  expect(encodeListTyped<List<DateTime>, DateTime?>([DateTime(2022, 12, 10)]),
-      equals([DateTime(2022, 12, 10).toIso8601String()]));
+  expect(encodeListTyped<List<DateTime>, DateTime?>([DateTime.utc(2022, 12, 10)]),
+      equals([DateTime.utc(2022, 12, 10).toIso8601String()]));
 }
 
 void _encodeListUint8List() {
@@ -257,31 +257,31 @@ void _encodeMapInt() {
 void _encodeMapDateTime() {
   expect(
     encodeMapTyped<Map<String, DateTime>, DateTime>({
-      'key1': DateTime(2022, 12, 2),
-      'key2': DateTime(2023, 15, 2, 12, 2, 4),
+      'key1': DateTime.utc(2022, 12, 2),
+      'key2': DateTime.utc(2023, 15, 2, 12, 2, 4),
     }),
     equals({
-      'key1': DateTime(2022, 12, 2).toIso8601String(),
-      'key2': DateTime(2023, 15, 2, 12, 2, 4).toIso8601String(),
+      'key1': DateTime.utc(2022, 12, 2).toIso8601String(),
+      'key2': DateTime.utc(2023, 15, 2, 12, 2, 4).toIso8601String(),
     }),
   );
   expect(
     encodeMapTyped<Map<String, DateTime>?, DateTime>({
-      'key1': DateTime(2022, 12, 2),
-      'key2': DateTime(2023, 15, 2, 12, 2, 4),
+      'key1': DateTime.utc(2022, 12, 2),
+      'key2': DateTime.utc(2023, 15, 2, 12, 2, 4),
     }),
     equals({
-      'key1': DateTime(2022, 12, 2).toIso8601String(),
-      'key2': DateTime(2023, 15, 2, 12, 2, 4).toIso8601String(),
+      'key1': DateTime.utc(2022, 12, 2).toIso8601String(),
+      'key2': DateTime.utc(2023, 15, 2, 12, 2, 4).toIso8601String(),
     }),
   );
   expect(
     encodeMapTyped<Map<String, DateTime?>, DateTime?>({
-      'key1': DateTime(2022, 12, 2),
+      'key1': DateTime.utc(2022, 12, 2),
       'key2': null,
     }),
     equals({
-      'key1': DateTime(2022, 12, 2).toIso8601String(),
+      'key1': DateTime.utc(2022, 12, 2).toIso8601String(),
       'key2': null,
     }),
   );
@@ -456,6 +456,7 @@ void _decodeBool() {
 }
 
 void _decodeDateTime() {
+  //TODO tests for local datetime (problematic on different machines)
   expect(
       decodeTyped<DateTime>(DateTime(2022, 10, 10, 20, 10).toIso8601String()),
       equals(DateTime(2022, 10, 10, 20, 10)));

@@ -6,9 +6,10 @@ String _encodeDateTime(DateTime e) {
   if (e.isUtc) {
     return e.toIso8601String();
   } else {
-    return e.toIso8601String() +
-        e.timeZoneOffset.inHours.toString().padLeft(2, '0') +
-        ':' +
+    final prefix = e.timeZoneOffset.isNegative ? '-' : '+';
+    return e.toIso8601String() + prefix +
+        (e.timeZoneOffset.inHours.abs().toString().padLeft(2, '0'))
+        + ':' +
         (e.timeZoneOffset.inMinutes % 60).toString().padLeft(2, '0');
   }
 }
