@@ -2,7 +2,16 @@ part of 'transfer_codec.dart';
 
 T _pass<T>(T e) => e;
 
-String _encodeDateTime(DateTime e) => e.toIso8601String();
+String _encodeDateTime(DateTime e) {
+  if (e.isUtc) {
+    return e.toIso8601String();
+  } else {
+    return e.toIso8601String() +
+        e.timeZoneOffset.inHours.toString().padLeft(2, '0') +
+        ':' +
+        (e.timeZoneOffset.inMinutes % 60).toString().padLeft(2, '0');
+  }
+}
 
 int _encodeDuration(Duration e) => e.inMilliseconds;
 

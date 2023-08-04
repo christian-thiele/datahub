@@ -11,6 +11,8 @@
   - servicesReady notifier
 - ApiRequest
   - getParam supports List query parameters
+- TransferCodec
+  - always encode DateTime with time zone
 
 ## 0.16.5
 - TransferCodec, TransferBean
