@@ -3,8 +3,8 @@ import 'dart:math';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/services.dart';
-import 'package:datahub/src/ioc/service_resolver.dart';
 
+import 'service_resolver.dart';
 import 'base_service.dart';
 
 /// Base class for ServiceHosts.
@@ -14,6 +14,7 @@ import 'base_service.dart';
 abstract class ServiceHost extends ServiceResolver {
   late final List<BaseService Function()> _factories;
   final List<BaseService> _services = [];
+  @override
   final servicesReady = Notifier();
   Completer? _shutdownCompleter;
 

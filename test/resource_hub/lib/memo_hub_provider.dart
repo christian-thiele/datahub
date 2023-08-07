@@ -1,5 +1,4 @@
 import 'package:datahub/datahub.dart';
-import 'package:datahub/src/hub/collection_resource.dart';
 
 import 'memo.dart';
 import 'memo_hub.dart';
