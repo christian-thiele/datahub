@@ -42,7 +42,7 @@ class TestHost extends ServiceHost {
       FutureOr<void> Function(RestClient client) body) {
     return test(() async {
       final api = resolve<T>();
-      final client = await RestClient.connectHttp2(
+      final client = RestClient.connectHttp2(
         Uri(
           scheme: 'http',
           host: InternetAddress.loopbackIPv4.host,
