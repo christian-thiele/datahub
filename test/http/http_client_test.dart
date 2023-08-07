@@ -16,12 +16,12 @@ void main() {
 }
 
 Future<void> _testHttp11() async {
-  final httpClient = await HttpClient.http11(website);
+  final httpClient = HttpClient.http11(website);
   await _testClient(httpClient);
 }
 
 Future<void> _testHttp2() async {
-  final httpClient = await HttpClient.http2(website);
+  final httpClient = HttpClient.http2(website);
   await _testClient(httpClient);
 }
 
@@ -45,3 +45,5 @@ Future<void> _testClient(HttpClient httpClient) async {
   expect(response.requestUrl, equals(website));
   expect(content.length, greaterThan(10));
 }
+
+//TODO test auto-reconnet of http2 client

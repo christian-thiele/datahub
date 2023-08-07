@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io' as io;
+import 'package:boost/boost.dart';
 import 'package:http/http.dart' as http;
 import 'package:http2/http2.dart' as http2;
 
@@ -9,47 +10,28 @@ import 'utils.dart';
 
 abstract class HttpClient {
   final Uri address;
+
   bool get isHttp2;
 
   HttpClient(this.address);
 
-  static Future<HttpClient> http11(Uri address,
-      {io.SecurityContext? securityContext}) async {
-    return _Http11Client(address, securityContext);
-  }
+  static HttpClient http11(Uri address,
+          {io.SecurityContext? securityContext}) =>
+      _Http11Client(address, securityContext);
 
-  static Future<HttpClient> http2(
+  static HttpClient http2(
     Uri address, {
     io.SecurityContext? securityContext,
     bool Function(io.X509Certificate certificate)? onBadCertificate,
     Duration? timeout,
-  }) async {
-    var useSSL = address.scheme == 'https';
-    if (useSSL) {
-      var secureSocket = await io.SecureSocket.connect(
-        address.host,
-        address.port,
-        supportedProtocols: ['h2'],
-        onBadCertificate: onBadCertificate,
-        context: securityContext,
-        timeout: timeout,
+  }) =>
+      _Http2Client(
+        address,
+        securityContext,
+        onBadCertificate,
+        timeout,
+        null,
       );
-
-      if (secureSocket.selectedProtocol != 'h2') {
-        throw Exception('Host does not support http2.');
-      }
-
-      return _Http2Client(address, secureSocket);
-    } else {
-      var socket = await io.Socket.connect(
-        address.host,
-        address.port,
-        timeout: timeout,
-      );
-
-      return _Http2Client(address, socket);
-    }
-  }
 
   static Future<HttpClient> autodetect(
     Uri address, {
@@ -73,7 +55,13 @@ abstract class HttpClient {
           return _Http11Client(address, securityContext);
         }
 
-        return _Http2Client(address, secureSocket);
+        return _Http2Client(
+          address,
+          securityContext,
+          onBadCertificate,
+          timeout,
+          secureSocket,
+        );
       } catch (e) {
         return _Http11Client(address, securityContext);
       }
@@ -128,21 +116,88 @@ class _Http11Client extends HttpClient {
 }
 
 class _Http2Client extends HttpClient {
-  final io.Socket socket;
-  final http2.ClientTransportConnection connection;
+  final io.SecurityContext? securityContext;
+  final bool Function(io.X509Certificate certificate)? onBadCertificate;
+  final Duration? timeout;
+  io.SecureSocket? initialSocket;
+  Future<void> Function()? _disconnect;
+
+  late final _connection = Lazy<http2.ClientTransportConnection>(
+    _connect,
+    reinitializeOnError: true,
+    reinitializeOnValue: (connection) => !connection.isOpen,
+  );
+
   @override
   final bool isHttp2 = true;
 
-  _Http2Client(super.address, this.socket)
-      : connection = http2.ClientTransportConnection.viaSocket(
-          socket,
-          settings: http2.ClientSettings(
-            allowServerPushes: false,
-          ),
-        );
+  _Http2Client(
+    super.address,
+    this.securityContext,
+    this.onBadCertificate,
+    this.timeout,
+    this.initialSocket,
+  );
+
+  Future<http2.ClientTransportConnection> _connect() async {
+    final useSSL = address.scheme == 'https';
+    if (useSSL) {
+      var secureSocket = initialSocket ??
+          await io.SecureSocket.connect(
+            address.host,
+            address.port,
+            supportedProtocols: ['h2'],
+            onBadCertificate: onBadCertificate,
+            context: securityContext,
+            timeout: timeout,
+          );
+
+      initialSocket = null;
+
+      if (secureSocket.selectedProtocol != 'h2') {
+        throw Exception('Host does not support http2.');
+      }
+
+      final connection = http2.ClientTransportConnection.viaSocket(
+        secureSocket,
+        settings: http2.ClientSettings(
+          allowServerPushes: false,
+        ),
+      );
+
+      _disconnect = () async {
+        await connection.terminate();
+        await secureSocket.close();
+      };
+
+      return connection;
+    } else {
+      var socket = await io.Socket.connect(
+        address.host,
+        address.port,
+        timeout: timeout,
+      );
+
+      final connection = http2.ClientTransportConnection.viaSocket(
+        socket,
+        settings: http2.ClientSettings(
+          allowServerPushes: false,
+        ),
+      );
+
+      _disconnect = () async {
+        await connection.terminate();
+        await socket.close();
+      };
+
+      return connection;
+    }
+  }
 
   @override
   Future<HttpResponse> request(HttpRequest httpRequest) async {
+    final connection = await _connection.get();
+
     final path = httpRequest.requestUri.hasQuery
         ? httpRequest.path + '?' + httpRequest.requestUri.query
         : httpRequest.path;
@@ -227,8 +282,5 @@ class _Http2Client extends HttpClient {
   }
 
   @override
-  Future<void> close() async {
-    await connection.terminate();
-    await socket.close();
-  }
+  Future<void> close() async => await _disconnect?.call();
 }

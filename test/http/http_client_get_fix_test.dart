@@ -30,7 +30,7 @@ void main() {
     testHost.test(() async {
       final uri = Uri.parse('http://localhost:8080/');
 
-      final restClient = await RestClient.connectHttp11(uri);
+      final restClient = RestClient.connectHttp11(uri);
       final response = await restClient.getObject<Map<String, dynamic>>(
         '/',
         headers: {

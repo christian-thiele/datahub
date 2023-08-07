@@ -15,7 +15,7 @@ void main() {
 }
 
 Future<void> _testHttp11() async {
-  final httpClient = await HttpClient.http11(uri);
+  final httpClient = HttpClient.http11(uri);
   final client = RestClient(httpClient);
   try {
     await _testClient(client);
@@ -25,7 +25,7 @@ Future<void> _testHttp11() async {
 }
 
 Future<void> _testHttp2() async {
-  final httpClient = await HttpClient.http2(uri);
+  final httpClient = HttpClient.http2(uri);
   final client = RestClient(httpClient);
   try {
     await _testClient(client);

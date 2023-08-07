@@ -42,7 +42,7 @@ Future<void> _lineTransformerTest() async {
     ' stuff\nand \nmore lines',
     '\ni ',
     'guess'
-  ].map(utf8.encode))
+  ].map<List<int>>(utf8.encode))
       .transform<String>(LineTransformer());
 
   expect(stream, emitsInOrder(['some stuff', 'and ', 'more lines', 'i guess']));
@@ -52,7 +52,7 @@ Future<void> _lineTransformerTest() async {
     ' stuff\nand \nmore lines',
     '\ni ',
     'guess\n'
-  ].map(utf8.encode))
+  ].map<List<int>>(utf8.encode))
       .transform(LineTransformer());
 
   expect(stream2,

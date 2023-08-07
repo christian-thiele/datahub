@@ -13,6 +13,8 @@
   - getParam supports List query parameters
 - TransferCodec
   - always encode DateTime with time zone
+- HttpClient
+  - HTTP/2.0 client can reconnect if connection was lost
 
 ## 0.16.5
 - TransferCodec, TransferBean

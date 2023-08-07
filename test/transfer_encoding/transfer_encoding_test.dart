@@ -183,7 +183,8 @@ void _encodeListDateTime() {
   expect(encodeListTyped<List<DateTime>, DateTime>([]), equals([]));
   expect(encodeListTyped<List<DateTime?>?, DateTime?>(null), equals(null));
   expect(encodeListTyped<List<DateTime>?, DateTime?>(null), equals(null));
-  expect(encodeListTyped<List<DateTime>, DateTime?>([DateTime.utc(2022, 12, 10)]),
+  expect(
+      encodeListTyped<List<DateTime>, DateTime?>([DateTime.utc(2022, 12, 10)]),
       equals([DateTime.utc(2022, 12, 10).toIso8601String()]));
 }
 

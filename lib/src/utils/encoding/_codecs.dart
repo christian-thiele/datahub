@@ -7,9 +7,10 @@ String _encodeDateTime(DateTime e) {
     return e.toIso8601String();
   } else {
     final prefix = e.timeZoneOffset.isNegative ? '-' : '+';
-    return e.toIso8601String() + prefix +
-        (e.timeZoneOffset.inHours.abs().toString().padLeft(2, '0'))
-        + ':' +
+    return e.toIso8601String() +
+        prefix +
+        (e.timeZoneOffset.inHours.abs().toString().padLeft(2, '0')) +
+        ':' +
         (e.timeZoneOffset.inMinutes % 60).toString().padLeft(2, '0');
   }
 }
