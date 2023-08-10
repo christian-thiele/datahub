@@ -69,21 +69,21 @@ void main() {
         predicate<CollectionWindowState<Memo, int>>((p0) {
           return p0.windowOffset == 6 &&
               p0.windowLength == 10 &&
-              p0.window.length == p0.windowLength;
+              p0.items.length == p0.windowLength;
         }),
       );
-      expect(event2.window.map((e) => e.id),
-          orderedEquals(event1.window.map((e) => e.id)));
+      expect(event2.items.map((e) => e.id),
+          orderedEquals(event1.items.map((e) => e.id)));
       final event3 = await todoListener.next;
       expect(
         event3,
         predicate<CollectionWindowState<Memo, int>>((p0) {
           return p0.windowOffset == 6 &&
               p0.windowLength == 9 &&
-              p0.window.length == p0.windowLength &&
-              p0.window.first.id != event2.window.first.id;
+              p0.items.length == p0.windowLength &&
+              p0.items.first.id != event2.items.first.id;
         }),
       );
-    }));
+    }), timeout: Timeout.none);
   });
 }

@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:datahub/api.dart';
+import 'package:datahub/collection.dart';
 import 'package:datahub/hub.dart';
 import 'package:datahub/rest_client.dart';
 import 'package:datahub/src/collection/collection_window_state.dart';
@@ -99,7 +100,9 @@ class _ReactiveCollectionMapper<
     return CollectionWindowState(
       state.length,
       state.windowOffset,
-      await Stream.fromIterable(state.window).asyncMap(mapper).toList(),
+      await Stream.fromIterable(state.window)
+          .asyncMap((o) async => OrderedData(o.order, await mapper(o.data)))
+          .toList(),
     );
   }
 }

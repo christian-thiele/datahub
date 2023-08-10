@@ -4,11 +4,18 @@ abstract class CollectionWindowEvent<Item extends TransferObjectBase<Id>, Id> {
   CollectionWindowEvent();
 }
 
+class OrderedData<Item> {
+  final int order;
+  final Item data;
+
+  OrderedData(this.order, this.data);
+}
+
 class CollectionInitEvent<Item extends TransferObjectBase<Id>, Id>
     extends CollectionWindowEvent<Item, Id> {
   final int collectionLength;
   final int windowOffset;
-  final List<Item> data;
+  final List<OrderedData<Item>> data;
 
   CollectionInitEvent(
     this.collectionLength,
@@ -28,10 +35,9 @@ class CollectionAlignEvent<Item extends TransferObjectBase<Id>, Id>
 class CollectionAddEvent<Item extends TransferObjectBase<Id>, Id>
     extends CollectionWindowEvent<Item, Id> {
   final int collectionLength;
-  final int dataOffset;
-  final List<Item> data;
+  final List<OrderedData<Item>> data;
 
-  CollectionAddEvent(this.collectionLength, this.dataOffset, this.data);
+  CollectionAddEvent(this.collectionLength, this.data);
 }
 
 class CollectionRemoveEvent<Item extends TransferObjectBase<Id>, Id>
@@ -44,7 +50,7 @@ class CollectionRemoveEvent<Item extends TransferObjectBase<Id>, Id>
 
 class CollectionUpdateEvent<Item extends TransferObjectBase<Id>, Id>
     extends CollectionWindowEvent<Item, Id> {
-  final Item element;
+  final OrderedData<Item> element;
 
   CollectionUpdateEvent(this.element);
 }

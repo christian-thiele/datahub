@@ -1,8 +1,6 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/collection.dart';
 import 'package:datahub/transfer_object.dart';
-import 'package:datahub/utils.dart';
-
-import '../hub/transport/resource_transport_exception.dart';
 
 class CollectionWindowState<Item extends TransferObjectBase<Id>, Id> {
   /// The total length of the collection.
@@ -18,7 +16,9 @@ class CollectionWindowState<Item extends TransferObjectBase<Id>, Id> {
   int get windowLength => window.length;
 
   /// The current window of the collection.
-  final List<Item> window;
+  final List<OrderedData<Item>> window;
+
+  Iterable<Item> get items => window.map((e) => e.data);
 
   CollectionWindowState(
     this.length,
@@ -40,7 +40,7 @@ class CollectionWindowState<Item extends TransferObjectBase<Id>, Id> {
     } else if (event is CollectionAlignEvent<Item, Id>) {
       return align(event.collectionLength, event.windowOffset);
     } else if (event is CollectionAddEvent<Item, Id>) {
-      return add(event.collectionLength, event.dataOffset, event.data);
+      return add(event.collectionLength, event.data);
     } else if (event is CollectionUpdateEvent<Item, Id>) {
       return update(event.element);
     } else if (event is CollectionRemoveEvent<Item, Id>) {
@@ -51,28 +51,26 @@ class CollectionWindowState<Item extends TransferObjectBase<Id>, Id> {
   }
 
   CollectionWindowState<Item, Id> add(
-      int collectionLength, int dataOffset, List<Item> elements) {
-    if (isInWindow(dataOffset)) {
-      final updated = window.toList()
-        ..insertAll(dataOffset - windowOffset, elements);
-      return CollectionWindowState(collectionLength, windowOffset, updated);
-    } else {
-      throw ApiError(
-          'Position is outside of window. Window will be misaligned.');
-    }
+      int collectionLength, List<OrderedData<Item>> elements) {
+    final updated = window.followedBy(elements).toList()
+      ..sortBy((item) => item
+          .order); //TODO performance, could be inserted without sorting everything
+    return CollectionWindowState(collectionLength, windowOffset, updated);
   }
 
-  CollectionWindowState<Item, Id> update(Item element) {
+  CollectionWindowState<Item, Id> update(OrderedData<Item> element) {
     // maybe this is not necessary? but if element is in list multiple times,
     // it just might be
+    ///TODO what if new order pushes it out of the window? maybe server should check for that and call remove instead
     final updated = window.toList()
-      ..replaceWhere((e) => e.getId() == element.getId(), element);
+      ..replaceWhere((e) => e.data.getId() == element.data.getId(), element)
+      ..sortBy((item) => item.order);
 
     return CollectionWindowState(length, windowOffset, updated);
   }
 
   CollectionWindowState<Item, Id> remove(int collectionLength, Id id) {
-    final updated = window.toList()..removeWhere((e) => e.getId() == id);
+    final updated = window.toList()..removeWhere((e) => e.data.getId() == id);
     return CollectionWindowState(collectionLength, windowOffset, updated);
   }
 

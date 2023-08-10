@@ -33,8 +33,10 @@ class MemoHubProviderImpl extends MemoHubProvider {
       ApiRequest request, int offset, int length) async* {
     final current = List.generate(
       length,
-      (index) => Memo(offset + index, uuid(),
-          DateTime.now().subtract(Duration(seconds: length - offset))),
+      (index) => OrderedData(
+          10 + index * 2,
+          Memo(offset + index, uuid(),
+              DateTime.now().subtract(Duration(seconds: length - offset)))),
     );
 
     yield CollectionInitEvent(100, offset, current);

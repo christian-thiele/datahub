@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/collection.dart';
+import 'package:datahub/src/hub/transport/ordered_data_codec.dart';
 import 'package:datahub/transfer_object.dart';
 
 import 'client_transport_stream_controller.dart';
@@ -40,15 +41,15 @@ class ClientCollectionResourceStreamController<
 
     _initialized = true;
 
-    final bytes = ByteData.sublistView(message.payload.asUint8List());
+    final payload = message.payload.asUint8List();
+    final bytes = ByteData.sublistView(payload);
     switch (message.messageType) {
       case ResourceTransportMessageType.init:
         final collectionLength = bytes.getInt64(0);
         final windowOffset = bytes.getInt64(8);
-        final data =
-            jsonDecode(utf8.decode(message.payload.skip(16).toList())) as List;
-        subject.add(CollectionInitEvent(collectionLength, windowOffset,
-            data.map<T>((e) => bean.toObject(e)).toList()));
+        final data = OrderedDataCodec.decode(
+            payload.getRange(16, payload.length).toList(), bean);
+        subject.add(CollectionInitEvent(collectionLength, windowOffset, data));
         break;
       case ResourceTransportMessageType.align:
         final collectionLength = bytes.getInt64(0);
@@ -57,10 +58,9 @@ class ClientCollectionResourceStreamController<
         break;
       case ResourceTransportMessageType.add:
         final collectionLength = bytes.getInt64(0);
-        final dataOffset = bytes.getInt64(8);
-        final data = jsonDecode(utf8.decode(message.payload.skip(16).toList()));
-        subject.add(CollectionAddEvent(collectionLength, dataOffset,
-            data.map<T>((e) => bean.toObject(e)).toList()));
+        final data = OrderedDataCodec.decode(
+            payload.getRange(8, payload.length).toList(), bean);
+        subject.add(CollectionAddEvent(collectionLength, data));
         break;
       case ResourceTransportMessageType.remove:
         final collectionLength = bytes.getInt64(0);
@@ -69,9 +69,8 @@ class ClientCollectionResourceStreamController<
         subject.add(CollectionRemoveEvent(collectionLength, id));
         break;
       case ResourceTransportMessageType.update:
-        final object =
-            bean.toObject(jsonDecode(utf8.decode(message.payload.toList())));
-        subject.add(CollectionUpdateEvent(object));
+        final data = OrderedDataCodec.decode(payload, bean);
+        subject.add(CollectionUpdateEvent(data.single));
         break;
       case ResourceTransportMessageType.delete:
         subject.addError(
