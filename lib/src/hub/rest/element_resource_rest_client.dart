@@ -14,10 +14,18 @@ class ElementResourceRestClient<T extends TransferObjectBase>
   final RestClient client;
 
   @override
-  final Map<String, String> routeParams;
+  final Map<String, String> defaultParams;
+
+  @override
+  final Map<String, List<String>> defaultQuery;
 
   ElementResourceRestClient(
-      this.client, super.routePattern, super.bean, this.routeParams);
+    this.client,
+    super.routePattern,
+    super.bean, {
+    this.defaultParams = const {},
+    this.defaultQuery = const {},
+  });
 }
 
 class MutableElementResourceRestClient<T extends TransferObjectBase>
@@ -27,18 +35,31 @@ class MutableElementResourceRestClient<T extends TransferObjectBase>
   final RestClient client;
 
   @override
-  final Map<String, String> routeParams;
+  final Map<String, String> defaultParams;
+  @override
+  final Map<String, List<String>> defaultQuery;
 
   //TODO short-circuit flag (don't wait for stream to update when calling set, fake new value on streams)
 
   MutableElementResourceRestClient(
-      this.client, super.routePattern, super.bean, this.routeParams);
+    this.client,
+    super.routePattern,
+    super.bean, {
+    this.defaultParams = const {},
+    this.defaultQuery = const {},
+  });
 
   @override
-  Future<void> set(T value) async {
+  Future<void> set(
+    T value, {
+    Map<String, String> params = const {},
+    Map<String, List<String>> query = const {},
+  }) async {
     final response = await client.putObject<void>(
-      routePattern.encode(routeParams),
+      routePattern.pattern,
       value,
+      urlParams: {...defaultParams, ...params},
+      query: {...defaultQuery, ...query},
     );
     response.throwOnError();
   }
@@ -48,7 +69,9 @@ mixin _ImmutableElementResourceMethods<T extends TransferObjectBase>
     on ElementResourceClient<T> {
   RestClient get client;
 
-  Map<String, String> get routeParams;
+  Map<String, String> get defaultParams;
+
+  Map<String, List<String>> get defaultQuery;
 
   //TODO force-get flag (don't reuse controllers current value on get)
 
@@ -56,11 +79,14 @@ mixin _ImmutableElementResourceMethods<T extends TransferObjectBase>
 
   ClientElementResourceStreamController<T> _getController(
     Map<String, String> params,
-    Map<String, String> query,
+    Map<String, List<String>> query,
   ) {
     //TODO this could create more problems than it solves
-    final existing = _streamControllers.firstOrNullWhere((p0) =>
-        p0.params.entriesEqual(params) && p0.params.entriesEqual(query));
+    final existing = _streamControllers.firstOrNullWhere(
+      (p0) =>
+          deepMapEquality(p0.params, params) &&
+          deepMapEquality(p0.query, query),
+    );
 
     if (existing != null) {
       return existing;
@@ -74,14 +100,22 @@ mixin _ImmutableElementResourceMethods<T extends TransferObjectBase>
   }
 
   @override
-  Future<T> get({Map<String, String> query = const {}}) async {
-    final controller = _getController(routeParams, query);
+  Future<T> get({
+    Map<String, String> params = const {},
+    Map<String, List<String>> query = const {},
+  }) async {
+    final controller = _getController(
+      {...defaultParams, ...params},
+      {...defaultQuery, ...query},
+    );
     if (controller.current != null) {
       return controller.current!;
     }
 
     final response = await client.getObject(
-      routePattern.encode(routeParams),
+      routePattern.pattern,
+      urlParams: {...defaultParams, ...params},
+      query: {...defaultQuery, ...query},
       bean: bean,
     );
 
@@ -90,7 +124,13 @@ mixin _ImmutableElementResourceMethods<T extends TransferObjectBase>
   }
 
   @override
-  Stream<T> getStream({Map<String, String> query = const {}}) {
-    return _getController(routeParams, query).stream;
+  Stream<T> getStream({
+    Map<String, String> params = const {},
+    Map<String, List<String>> query = const {},
+  }) {
+    return _getController(
+      {...defaultParams, ...params},
+      {...defaultQuery, ...query},
+    ).stream;
   }
 }

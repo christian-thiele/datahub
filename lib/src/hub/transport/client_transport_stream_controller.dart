@@ -5,7 +5,6 @@ import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/rest_client.dart';
 import 'package:datahub/utils.dart';
-import 'package:rxdart/rxdart.dart';
 
 import '../transport/resource_transport_message.dart';
 import '../transport/resource_transport_stream.dart';
@@ -15,16 +14,14 @@ abstract class ClientTransportStreamController<T> {
       _client; //TODO replace this with interface for other transport protocols
   final RoutePattern routePattern;
   final Map<String, String> params;
-  final Map<String, String> query;
+  final Map<String, List<String>> query;
 
-  late final subject = BehaviorSubject<T>(
+  late final subject = StreamController<T>.broadcast(
     onListen: _connect,
     onCancel: _disconnect,
   );
 
   bool get isConnected => subject.hasListener;
-
-  T? get current => subject.valueOrNull;
 
   Stream<T> get stream => subject.stream;
 
@@ -81,13 +78,20 @@ abstract class ClientTransportStreamController<T> {
     await _connectSemaphore.runLocked(() async {
       if (_currentSubscription != null) {
         await _currentSubscription!.cancel();
+        _currentSubscription = null;
       }
     });
   }
 
-  void _connectionDone() {
-    if (subject.hasListener) {
-      _connect();
+  void _connectionDone() async {
+    try {
+      await _disconnect();
+      if (subject.hasListener) {
+        _connect();
+      }
+    } catch (e, stack) {
+      subject.addError(e, stack);
+      await subject.close();
     }
   }
 

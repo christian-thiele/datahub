@@ -57,7 +57,7 @@ void main() {
       final event1 = await todoListener.next;
       expect(
         event1,
-        predicate<CollectionState<Memo, int>>((p0) {
+        predicate<CollectionWindowState<Memo, int>>((p0) {
           return p0.windowOffset == 5 &&
               p0.windowLength == 10 &&
               p0.window.length == p0.windowLength;
@@ -66,7 +66,7 @@ void main() {
       final event2 = await todoListener.next;
       expect(
         event2,
-        predicate<CollectionState<Memo, int>>((p0) {
+        predicate<CollectionWindowState<Memo, int>>((p0) {
           return p0.windowOffset == 6 &&
               p0.windowLength == 10 &&
               p0.window.length == p0.windowLength;
@@ -77,7 +77,7 @@ void main() {
       final event3 = await todoListener.next;
       expect(
         event3,
-        predicate<CollectionState<Memo, int>>((p0) {
+        predicate<CollectionWindowState<Memo, int>>((p0) {
           return p0.windowOffset == 6 &&
               p0.windowLength == 9 &&
               p0.window.length == p0.windowLength &&

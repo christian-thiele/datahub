@@ -29,7 +29,7 @@ class MemoHubProviderImpl extends MemoHubProvider {
   }
 
   @override
-  Stream<CollectionEvent<Memo, int>> getTodosWindow(
+  Stream<CollectionWindowEvent<Memo, int>> getTodosWindow(
       ApiRequest request, int offset, int length) async* {
     final current = List.generate(
       length,

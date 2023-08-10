@@ -9,14 +9,14 @@ import 'package:datahub/utils.dart';
 
 import '../collection_resource.dart';
 import '../transport/resource_transport_stream.dart';
-import '../transport/server_collection_stream_controller.dart';
+import '../transport/server_collection_resource_stream_controller.dart';
 import '../transport/server_transport_stream_controller.dart';
 import 'resource_rest_endpoint.dart';
 
 class CollectionResourceRestEndpoint extends ResourceRestEndpoint {
   final _logService = resolve<LogService>();
   final CollectionResourceProvider _resource;
-  final _controllers = <ServerCollectionStreamController>[];
+  final _controllers = <ServerCollectionResourceStreamController>[];
 
   @override
   RoutePattern get routePattern => _resource.routePattern;
@@ -32,7 +32,7 @@ class CollectionResourceRestEndpoint extends ResourceRestEndpoint {
         final offset = request.getParam<int>('offset');
         final length = request.getParam<int>('length');
 
-        final controller = ServerCollectionStreamController(
+        final controller = ServerCollectionResourceStreamController(
           _resource.getWindow(request, offset, length),
           _removeController,
           uuid(),

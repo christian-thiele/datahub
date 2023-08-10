@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
+import 'package:datahub/collection.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';
@@ -13,6 +14,7 @@ import 'rest_response.dart';
 class RestClient {
   final HttpClient _httpClient;
   HttpAuth? auth;
+
   bool get isHttp2 => _httpClient.isHttp2;
 
   RestClient(
@@ -80,7 +82,7 @@ class RestClient {
   Future<RestResponse<TResponse>> getObject<TResponse>(
     String endpoint, {
     Map<String, dynamic> urlParams = const {},
-    Map<String, String?> query = const {},
+    Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
     TransferBean<TResponse>? bean,
   }) async {
@@ -97,7 +99,7 @@ class RestClient {
   Future<RestResponse<List<TResponse>>> getList<TResponse>(
     String endpoint, {
     Map<String, dynamic> urlParams = const {},
-    Map<String, String?> query = const {},
+    Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
     TransferBean<TResponse>? bean,
   }) async {
@@ -115,7 +117,7 @@ class RestClient {
     String endpoint,
     dynamic object, {
     Map<String, dynamic> urlParams = const {},
-    Map<String, String?> query = const {},
+    Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
     TransferBean<TResponse>? bean,
   }) async {
@@ -134,7 +136,7 @@ class RestClient {
     String endpoint,
     dynamic object, {
     Map<String, dynamic> urlParams = const {},
-    Map<String, String?> query = const {},
+    Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
     TransferBean<TResponse>? bean,
   }) async {
@@ -153,7 +155,7 @@ class RestClient {
     String endpoint,
     dynamic object, {
     Map<String, dynamic> urlParams = const {},
-    Map<String, String?> query = const {},
+    Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
     TransferBean<TResponse>? bean,
   }) async {
@@ -174,7 +176,7 @@ class RestClient {
     String endpoint, {
     dynamic body,
     Map<String, dynamic> urlParams = const {},
-    Map<String, String?> query = const {},
+    Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
     TransferBean<TResponse>? bean,
   }) async {
@@ -192,7 +194,7 @@ class RestClient {
   Future<RestResponse<void>> delete(
     String endpoint, {
     Map<String, dynamic> urlParams = const {},
-    Map<String, String?> query = const {},
+    Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
   }) async {
     return await request<void, void>(
@@ -209,7 +211,7 @@ class RestClient {
     RoutePattern endpoint,
     Map<String, dynamic> urlParams, {
     Map<String, List<String>> headers = const {},
-    Map<String, String?> query = const {},
+    Map<String, List<String>> query = const {},
     dynamic body,
     TransferBean<TData>? bean,
   }) async {

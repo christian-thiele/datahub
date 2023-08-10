@@ -1,39 +1,46 @@
 import 'dart:async';
 
+import 'package:datahub/collection.dart';
 import 'package:datahub/hub.dart';
 import 'package:datahub/rest_client.dart';
 import 'package:datahub/transfer_object.dart';
 
 import '../transport/client_collection_resource_stream_controller.dart';
 
-class CollectionResourceRestClient<T extends TransferObjectBase<TId>, TId>
-    extends CollectionResourceClient<T, TId> with _ImmutableResourceMethods {
+class CollectionResourceRestClient<Item extends TransferObjectBase<Id>, Id>
+    extends CollectionResourceClient<Item, Id> with _ImmutableResourceMethods {
   @override
   final RestClient client;
 
   @override
-  final Map<String, String> routeParams;
+  final Map<String, String> defaultParams;
+
+  @override
+  final Map<String, List<String>> defaultQuery;
 
   CollectionResourceRestClient(
     this.client,
     super.routePattern,
-    super.bean,
-    this.routeParams,
-  );
+    super.bean, {
+    this.defaultParams = const {},
+    this.defaultQuery = const {},
+  });
 }
 
-mixin _ImmutableResourceMethods<T extends TransferObjectBase<TId>, TId>
-    on CollectionResourceClient<T, TId> {
+mixin _ImmutableResourceMethods<Item extends TransferObjectBase<Id>, Id>
+    on CollectionResourceClient<Item, Id> {
   RestClient get client;
 
-  Map<String, String> get routeParams;
+  Map<String, String> get defaultParams;
+
+  Map<String, List<String>> get defaultQuery;
 
   final _streamControllers =
-      <ClientCollectionResourceStreamController<T, TId>>[];
+      <ClientCollectionResourceStreamController<Item, Id>>[];
 
-  ClientCollectionResourceStreamController<T, TId> _getController(
-      Map<String, String> params, Map<String, String> query) {
-    final controller = ClientCollectionResourceStreamController<T, TId>(
+  ClientCollectionResourceStreamController<Item, Id> _getController(
+      Map<String, String> params, Map<String, List<String>> query) {
+    final controller = ClientCollectionResourceStreamController<Item, Id>(
       client,
       routePattern,
       params,
@@ -45,11 +52,20 @@ mixin _ImmutableResourceMethods<T extends TransferObjectBase<TId>, TId>
   }
 
   @override
-  Stream<CollectionState<T, TId>> getWindow(int offset, int length,
-          {CollectionState? previous, Map<String, String> query = const {}}) =>
-      _getController(routeParams, {
+  Stream<CollectionWindowState<Item, Id>> getWindow(
+    int offset,
+    int length, {
+    CollectionWindowState<Item, Id>? previous,
+    Map<String, String> params = const {},
+    Map<String, List<String>> query = const {},
+  }) =>
+      _getController({
+        ...defaultParams,
+        ...params,
+      }, {
+        ...defaultQuery,
         ...query,
-        'offset': offset.toString(),
-        'length': length.toString(),
-      }).stream;
+        'offset': [offset.toString()],
+        'length': [length.toString()],
+      }).stream.transform(CollectionWindowStateStreamTransformer());
 }

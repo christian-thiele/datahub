@@ -2,16 +2,17 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
+import 'package:datahub/collection.dart';
 import 'package:datahub/transfer_object.dart';
 
-import '../collection_resource.dart';
 import 'resource_transport_exception.dart';
 import 'resource_transport_message.dart';
 import 'server_transport_stream_controller.dart';
 
-class ServerCollectionStreamController<T extends TransferObjectBase<TId>, TId>
-    extends ServerTransportStreamController<CollectionEvent<T, TId>> {
-  ServerCollectionStreamController(
+class ServerCollectionResourceStreamController<
+        T extends TransferObjectBase<TId>, TId>
+    extends ServerTransportStreamController<CollectionWindowEvent<T, TId>> {
+  ServerCollectionResourceStreamController(
     super.resourceStream,
     super.onDone,
     super.id,
@@ -19,7 +20,7 @@ class ServerCollectionStreamController<T extends TransferObjectBase<TId>, TId>
   );
 
   @override
-  void onData(CollectionEvent<T, TId> event) {
+  void onData(CollectionWindowEvent<T, TId> event) {
     if (event is CollectionInitEvent<T, TId>) {
       final payload = jsonEncode(event.data).apply(utf8.encode);
       final data = Uint8List(16 + payload.length);

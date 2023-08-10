@@ -15,11 +15,17 @@ abstract class ElementResourceClient<T extends TransferObjectBase>
   ElementResourceClient(super.routePattern, super.bean);
 
   /// Fetches the value of the resource once.
-  Future<T> get();
+  Future<T> get({
+    Map<String, String> params = const {},
+    Map<String, List<String>> query = const {},
+  });
 
   /// Subscribes to the resource and emits the value
   /// every time it updates.
-  Stream<T> getStream();
+  Stream<T> getStream({
+    Map<String, String> params = const {},
+    Map<String, List<String>> query = const {},
+  });
 }
 
 abstract class MutableElementResourceClient<T extends TransferObjectBase>
@@ -27,7 +33,11 @@ abstract class MutableElementResourceClient<T extends TransferObjectBase>
   MutableElementResourceClient(super.routePattern, super.bean);
 
   /// Pushes a new value to the resource.
-  Future<void> set(T value);
+  Future<void> set(
+    T value, {
+    Map<String, String> params = const {},
+    Map<String, List<String>> query = const {},
+  });
 }
 
 abstract class ElementResourceProvider<T extends TransferObjectBase>

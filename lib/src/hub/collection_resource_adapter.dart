@@ -1,13 +1,14 @@
 import 'dart:async';
 
 import 'package:datahub/api.dart';
+import 'package:datahub/collection.dart';
 import 'package:datahub/transfer_object.dart';
 
 import 'collection_resource.dart';
 
 class CollectionResourceAdapter<T extends TransferObjectBase<TId>, TId>
     extends CollectionResourceProvider<T, TId> {
-  final Stream<CollectionEvent<T, TId>> Function(
+  final Stream<CollectionWindowEvent<T, TId>> Function(
       ApiRequest request, int offset, int length) _getWindow;
 
   CollectionResourceAdapter(
@@ -17,7 +18,7 @@ class CollectionResourceAdapter<T extends TransferObjectBase<TId>, TId>
   );
 
   @override
-  Stream<CollectionEvent<T, TId>> getWindow(
+  Stream<CollectionWindowEvent<T, TId>> getWindow(
           ApiRequest request, int offset, int length) =>
       _getWindow(request, offset, length);
 }

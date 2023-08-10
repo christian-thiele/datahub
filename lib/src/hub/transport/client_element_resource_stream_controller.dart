@@ -10,6 +10,9 @@ import 'resource_transport_exception.dart';
 class ClientElementResourceStreamController<T extends TransferObjectBase>
     extends ClientTransportStreamController<T> {
   final TransferBean<T> bean;
+  T? _current;
+
+  T? get current => _current;
 
   ClientElementResourceStreamController(
     super.client,
@@ -28,25 +31,24 @@ class ClientElementResourceStreamController<T extends TransferObjectBase>
 
     switch (message.messageType) {
       case ResourceTransportMessageType.set:
-        subject.add(bean.toObject(jsonDecode(utf8.decode(message.payload))));
+        subject.add(
+            _current = bean.toObject(jsonDecode(utf8.decode(message.payload))));
         break;
       case ResourceTransportMessageType.patch:
-        if (subject.hasValue) {
+        if (_current != null) {
           final patchData = jsonDecode(utf8.decode(message.payload));
           //TODO better patch method (maybe integrate in transfer object generator?)
-          final cacheData = subject.value.toJson() as Map<String, dynamic>;
+          final cacheData = _current!.toJson() as Map<String, dynamic>;
           cacheData.addAll(patchData);
-          subject.add(bean.toObject(cacheData));
+          subject.add(_current = bean.toObject(cacheData));
         } else {
           // what to do? cannot patch...
         }
         break;
       case ResourceTransportMessageType.delete:
-        if (subject.hasValue) {
-          subject.addError(
-              ApiRequestException.notFound('The resource was removed.'));
-          subject.close();
-        }
+        subject.addError(
+            ApiRequestException.notFound('The resource was removed.'));
+        subject.close();
         break;
       default:
         throw ResourceTransportException(

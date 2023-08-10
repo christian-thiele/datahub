@@ -128,9 +128,8 @@ class HttpServer {
       final requestCompleter = Completer<HttpRequest>();
       final terminated = CancellationToken();
 
-      stream.onTerminated = (_) {
-        terminated.cancel();
-      };
+      stream.outgoingMessages.done.then((_) => terminated.cancel());
+      stream.onTerminated = (_) => terminated.cancel();
 
       stream.incomingMessages.listen(
         (event) async {

@@ -130,3 +130,65 @@ String randomHexId(int parts) {
   return Iterable.generate(
       parts, (_) => r.nextInt(255).toRadixString(16).padLeft(2, '0')).join(':');
 }
+
+bool deepListEquality<T>(List<T> list1, List<T> list2) {
+  if (list1 == list2) {
+    return true;
+  }
+
+  if (list1.length != list2.length) {
+    return false;
+  }
+
+  for (var i = 0; i < list1.length; i++) {
+    if (list1[i] == list2[i]) {
+      continue;
+    } else if (list1[i] is List && list2[i] is List) {
+      if (deepListEquality(list1[i] as List, list2[i] as List)) {
+        continue;
+      } else {
+        return false;
+      }
+    } else if (list1[i] is Map<String, dynamic> &&
+        list2[i] is Map<String, dynamic>) {
+      if (deepMapEquality(list1[i] as Map, list2[i] as Map)) {
+        continue;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+bool deepMapEquality<T>(Map<T, dynamic> map1, Map<T, dynamic> map2) {
+  if (map1.length != map2.length) {
+    return false;
+  }
+
+  for (final key in map1.keys) {
+    if (map1[key] == map2[key]) {
+      continue;
+    } else if (map1[key] is List && map2[key] is List) {
+      if (deepListEquality(map1[key], map2[key])) {
+        continue;
+      } else {
+        return false;
+      }
+    } else if (map1[key] is Map<String, dynamic> &&
+        map2[key] is Map<String, dynamic>) {
+      if (deepMapEquality(map1[key], map2[key])) {
+        continue;
+      } else {
+        return false;
+      }
+    } else {
+      return false;
+    }
+  }
+
+  return true;
+}

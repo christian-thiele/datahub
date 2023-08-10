@@ -54,8 +54,10 @@ Future<void> _testClient(RestClient client) async {
   expect(dto.data.slideshow.date, equals('date of publication'));
   expect(dto.data.slideshow.title, equals('Sample Slide Show'));
 
-  final stream = await client.getObject<Stream<List<int>>>('/drip',
-      query: {'numbytes': '5', 'duration': '1'});
+  final stream = await client.getObject<Stream<List<int>>>('/drip', query: {
+    'numbytes': ['5'],
+    'duration': ['1']
+  });
   stream.throwOnError();
   expect(await stream.data.expand((element) => element).toList(), hasLength(5));
 }
