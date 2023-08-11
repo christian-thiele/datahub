@@ -28,7 +28,8 @@ class UpdateBuilder implements SqlBuilder {
         .toList();
 
     buffer.write('UPDATE ');
-    buffer.write(from.sql);
+    final fromSql = from.buildSql();
+    buffer.write(fromSql.a);
     buffer.write(' SET ');
     buffer.write(values
         .map((e) => '${e.a} = ${SqlBuilder.substitutionLiteral(e)}')

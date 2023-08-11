@@ -1,4 +1,5 @@
 import 'package:datahub/datahub.dart';
+import 'package:datahub/src/persistence/query/sub_query.dart';
 import 'package:test/test.dart';
 
 import 'package:datahub/src/persistence/postgresql/sql/sql.dart';
@@ -99,63 +100,27 @@ void main() {
     );
   });
 
-  group('JoinedSelectSource', () {
+  group('SubQuery', () {
     test(
-      'Join other',
+      'Select with total row_number()',
       _test(
-        SelectBuilder(
-          JoinedSelectFrom(
-            schemaTable,
-            [TableJoin(otherTable, 'id', CompareType.equals, 'main_id', true)],
-          ),
-        ),
-        'SELECT * FROM "schema"."table" JOIN "schema"."other" ON "schema"."table"."id" = "schema"."other"."main_id"',
-      ),
-    );
-
-    test(
-      'Join other filter eq string',
-      _test(
-        SelectBuilder(
-          JoinedSelectFrom(
-            schemaTable,
-            [TableJoin(otherTable, 'id', CompareType.equals, 'main_id', true)],
-          ),
-        )
-          ..where(Filter.equals(fieldX, 'valueX'))
-          ..select([WildcardSelect(bean: TableDataBean())]),
-        'SELECT "table".* FROM "schema"."table" JOIN "schema"."other" ON "schema"."table"."id" = '
-        '"schema"."other"."main_id" WHERE "fake"."fieldX" = \'valueX\'',
-      ),
-    );
-
-    test(
-      'Join multiple',
-      _test(
-        SelectBuilder(
-          JoinedSelectFrom(
-            schemaTable,
+        SelectBuilder(SelectFrom.fromQuerySource(
+          'schema',
+          SubQuery(
+            TableDataBean(),
             [
-              TableJoin(otherTable, 'id', CompareType.equals, 'main_id', true),
-              TableJoin(otherTable2, 'xyz', CompareType.lessThan, 'abc', false),
+              WildcardSelect(),
+              ExpressionSelect(
+                CustomSqlExpression('row_number() OVER (order by something)'),
+                'num',
+              ),
             ],
+            alias: 'sub',
+            filter: Filter.equals(fieldX, 'valueY')
           ),
-        )..where(CompareFilter(
-            fieldX, CompareType.equals, ValueExpression('valueX'),
-            caseSensitive: false)),
-        'SELECT * FROM "schema"."table" JOIN "schema"."other" ON "schema"."table"."id" = '
-        '"schema"."other"."main_id" LEFT JOIN "schema"."different" ON "schema"."table"."xyz" < '
-        '"schema"."different"."abc" WHERE LOWER("fake"."fieldX") = LOWER(\'valueX\')',
-      ),
-    );
-
-    test(
-      'Select for update',
-      _test(
-        SelectBuilder(schemaTable)
-          ..where(Filter.equals(fieldX, 'valueX'))
-          ..forUpdate(true),
-        'SELECT * FROM "schema"."table" WHERE "fake"."fieldX" = \'valueX\' FOR UPDATE',
+        ))
+          ..where(Filter.equals(fieldX, 'valueX')),
+        'SELECT * FROM (SELECT *, row_number() OVER (order by something) AS "num" FROM "schema"."table" WHERE "fake"."fieldX" = \'valueY\') "sub" WHERE "fake"."fieldX" = \'valueX\'',
       ),
     );
   });

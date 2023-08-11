@@ -1,8 +1,10 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub/src/persistence/postgresql/sql/sql.dart';
+import 'package:datahub/src/persistence/query/sub_query.dart';
 
 abstract class SelectFrom {
-  String get sql;
+  Tuple<String, Map<String, dynamic>> buildSql();
 
   static SelectFrom fromQuerySource(String schemaName, QuerySource source) {
     if (source is DataBean) {
@@ -24,6 +26,8 @@ abstract class SelectFrom {
             )
             .toList(),
       );
+    } else if (source is SubQuery) {
+      return SelectFromSubQuery(schemaName, source);
     } else {
       throw Exception(
           'PostgreSQL implementation does not support QuerySource of type ${source.runtimeType}.');
@@ -38,7 +42,8 @@ class SelectFromTable extends SelectFrom {
   SelectFromTable(this.schemaName, this.tableName);
 
   @override
-  String get sql => '"$schemaName"."$tableName"';
+  Tuple<String, Map<String, dynamic>> buildSql() =>
+      Tuple('"$schemaName"."$tableName"', const {});
 }
 
 class TableJoin {
@@ -56,10 +61,12 @@ class TableJoin {
     this.innerJoin,
   );
 
-  String getJoinSql(SelectFromTable main) =>
-      ' ${innerJoin ? '' : 'LEFT '}JOIN ${table.sql} ON '
-      '${main.sql}.${SqlBuilder.escapeName(onMainField)} $_compareSql '
-      '${table.sql}.${SqlBuilder.escapeName(onJoinField)}';
+  Tuple<String, Map<String, dynamic>> getJoinSql(SelectFromTable main) => Tuple(
+        ' ${innerJoin ? '' : 'LEFT '}JOIN ${table.buildSql().a} ON '
+        '${main.buildSql().a}.${SqlBuilder.escapeName(onMainField)} $_compareSql '
+        '${table.buildSql().a}.${SqlBuilder.escapeName(onJoinField)}',
+        const {},
+      );
 
   //TODO use filterSql here instead to allow more complex joins
   String get _compareSql {
@@ -91,7 +98,35 @@ class JoinedSelectFrom extends SelectFrom {
   JoinedSelectFrom(this.main, this.joins);
 
   @override
-  String get sql {
-    return main.sql + joins.map((j) => j.getJoinSql(main)).join();
+  Tuple<String, Map<String, dynamic>> buildSql() {
+    return Tuple(
+        main.buildSql().a + joins.map((j) => j.getJoinSql(main).a).join(), {});
+  }
+}
+
+class SelectFromSubQuery extends SelectFrom {
+  final String schemaName;
+  final SubQuery query;
+
+  SelectFromSubQuery(this.schemaName, this.query);
+
+  Tuple<String, Map<String, dynamic>> buildSelect() {
+    final from = SelectFrom.fromQuerySource(schemaName, query.source);
+    return (SelectBuilder(from)
+          ..where(query.filter)
+          ..orderBy(query.sort)
+          ..offset(query.offset)
+          ..limit(query.limit)
+          ..select(query.select))
+        .buildSql();
+  }
+
+  @override
+  Tuple<String, Map<String, dynamic>> buildSql() {
+    final select = buildSelect();
+    return Tuple(
+      '(${select.a}) ${SqlBuilder.escapeName(query.alias)}',
+      select.b,
+    );
   }
 }

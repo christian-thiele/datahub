@@ -185,9 +185,9 @@ abstract class SqlBuilder {
               'AVG(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
       }
     } else if (select is ExpressionSelect) {
+      final expression = expressionSql(select.expression);
       return Tuple(
-          '${expressionSql(select.expression)} AS ${escapeName(select.alias)}',
-          {});
+          '${expression.a} AS ${escapeName(select.alias)}', expression.b);
     } else {
       throw PersistenceException('PostgreSQL implementation does not '
           'support aggregate type ${select.runtimeType}.');

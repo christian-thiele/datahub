@@ -19,7 +19,9 @@ class DeleteBuilder implements SqlBuilder {
     final buffer = StringBuffer('DELETE FROM ');
     final values = <String, dynamic>{};
 
-    buffer.write(from.sql);
+    final fromSql = from.buildSql();
+    buffer.write(fromSql.a);
+    values.addAll(fromSql.b);
 
     if (!_filter.isEmpty) {
       buffer.write(' WHERE ');

@@ -65,8 +65,10 @@ class SelectBuilder implements SqlBuilder {
       buffer.write('* ');
     }
 
+    final fromSql = from.buildSql();
     buffer.write('FROM ');
-    buffer.write(from.sql);
+    buffer.write(fromSql.a);
+    values.addAll(fromSql.b);
 
     if (!_filter.isEmpty) {
       buffer.write(' WHERE ');

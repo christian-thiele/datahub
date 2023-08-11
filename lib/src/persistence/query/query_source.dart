@@ -3,7 +3,7 @@ import 'package:datahub/persistence.dart';
 
 /// Defining a common base class among query sources.
 ///
-/// A QuerySource is either a [BaseDataBean] or a [JoinedQuerySource]
+/// A QuerySource is either a [BaseDataBean], a [JoinedQuerySource] or a [SubQuery].
 abstract class QuerySource<T> {
   const QuerySource();
 
