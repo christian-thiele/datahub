@@ -14,6 +14,7 @@ export 'src/persistence/query/sort.dart';
 export 'src/persistence/query/query_result.dart';
 export 'src/persistence/query/query_select.dart';
 export 'src/persistence/query/query_source.dart';
+export 'src/persistence/query/sub_query.dart';
 
 export 'src/persistence/migration/migrator.dart';
 
