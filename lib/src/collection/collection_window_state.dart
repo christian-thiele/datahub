@@ -34,16 +34,16 @@ class CollectionWindowState<Item extends TransferObjectBase<Id>, Id> {
 
   Iterable<Item> get items => window.map((e) => e.data);
 
+  bool isInWindow(int order) =>
+      (lowerBound < order || windowOffset == 0) && upperBound > order;
+
   //TODO min max is probably not necessary performance-wise because window should be sorted
   CollectionWindowState(
     this.length,
     this.windowOffset,
     this.window,
-  )   : lowerBound = window.min((x) => x.order).order,
-        upperBound = window.max((x) => x.order).order;
-
-  bool isInWindow(int position) =>
-      position >= windowOffset && position < (windowOffset + length);
+  )   : lowerBound = window.isNotEmpty ? window.min((x) => x.order).order : 0,
+        upperBound = window.isNotEmpty ? window.max((x) => x.order).order : 0;
 
   CollectionWindowState<Item, Id> mutate(
       CollectionWindowEvent<Item, Id> event) {
