@@ -12,6 +12,20 @@ class CollectionWindowState<Item extends TransferObjectBase<Id>, Id> {
   /// The current windows offset inside the collection.
   final int windowOffset;
 
+  /// Window order bound.
+  ///
+  /// Order bound is used to find out if an item is inside or outside
+  /// of a window. The lower bound is equal to the window offset only if items
+  /// are sorted by their index.
+  final int lowerBound;
+
+  /// Window order bound.
+  ///
+  /// Order bound is used to find out if an item is inside or outside
+  /// of a window. The lower bound is equal to the window offset only if items
+  /// are sorted by their index.
+  final int upperBound;
+
   /// The current windows size.
   int get windowLength => window.length;
 
@@ -20,11 +34,13 @@ class CollectionWindowState<Item extends TransferObjectBase<Id>, Id> {
 
   Iterable<Item> get items => window.map((e) => e.data);
 
+  //TODO min max is probably not necessary performance-wise because window should be sorted
   CollectionWindowState(
     this.length,
     this.windowOffset,
     this.window,
-  );
+  )   : lowerBound = window.min((x) => x.order).order,
+        upperBound = window.max((x) => x.order).order;
 
   bool isInWindow(int position) =>
       position >= windowOffset && position < (windowOffset + length);
