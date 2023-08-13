@@ -44,6 +44,8 @@ class HttpServer {
       (socket) {
         socket.setOption(io.SocketOption.tcpNoDelay, true);
         if (socket is io.SecureSocket) {
+          _logService.debug(
+              'Incoming secure connection with selected protocol ${socket.selectedProtocol}.');
           // ALPN first
           switch (socket.selectedProtocol) {
             case 'h2':
@@ -81,6 +83,7 @@ class HttpServer {
 
   Future<void> _handleHttp1Request(io.HttpRequest request) async {
     try {
+      _logService.debug('Handling HTTP/1.1 request.');
       var result = await requestHandler(HttpRequest.http1(request));
 
       result.headers.entries
@@ -124,6 +127,7 @@ class HttpServer {
 
   void _handleHttp2Stream(http2.ServerTransportStream stream) async {
     try {
+      _logService.debug('Handling HTTP/2 stream.');
       final dataController = StreamController<List<int>>();
       final requestCompleter = Completer<HttpRequest>();
       final terminated = CancellationToken();
