@@ -8,6 +8,7 @@ import 'utils.dart';
 class BuildCommand extends CliCommand {
   BuildCommand() {
     argParser.addFlag('debug', abbr: 'd', help: 'Build a debug image.');
+    argParser.addFlag('codegen', abbr: 'c', help: 'Run codegen before building debug image.', defaultsTo: true);
     argParser.addOption('version', help: 'Override package version.');
   }
 
@@ -29,7 +30,9 @@ class BuildCommand extends CliCommand {
     stdout.write('Building $projectName ($projectVersion)...\n\n');
 
     if (argResults!['debug'] as bool) {
-      await codegenStep();
+      if (argResults!['codegen'] as bool) {
+        await codegenStep();
+      }
       await buildDebugStep(argResults!.rest, 'debug');
       stdout.writeln('\nBuilt debug image: $projectName:debug');
     } else {

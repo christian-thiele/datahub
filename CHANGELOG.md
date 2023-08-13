@@ -17,6 +17,8 @@
   - HTTP/2.0 client can reconnect if connection was lost
 - Persistence
   - SubQuery as new QuerySource type
+- CLI
+  - added --codegen / --no-codegen flag to build command
 
 ## 0.16.5
 - TransferCodec, TransferBean
