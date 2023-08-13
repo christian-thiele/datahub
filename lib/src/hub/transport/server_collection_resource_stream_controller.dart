@@ -46,7 +46,7 @@ class ServerCollectionResourceStreamController<
       ));
     } else if (event is CollectionAddEvent<T, TId>) {
       final payload = OrderedDataCodec.encode(event.data);
-      final data = Uint8List(16 + payload.length);
+      final data = Uint8List(8 + payload.length);
       final byteData = ByteData.sublistView(data);
       byteData.setInt64(0, event.collectionLength);
       data.setRange(8, 8 + payload.length, payload);
