@@ -15,11 +15,11 @@ abstract class ServerTransportStreamController<T> {
   );
 
   ServerTransportStreamController(
-    this.resourceStream,
-    this._onDone,
-    this.id,
-    Stream<void> expiration,
-  ) {
+      this.resourceStream,
+      this._onDone,
+      this.id,
+      Stream<void> expiration,
+      ) {
     _expirationSubscription = expiration.listen((_) => _onCancel());
   }
 
@@ -47,12 +47,19 @@ abstract class ServerTransportStreamController<T> {
 
   FutureOr<void> _onError(dynamic e, StackTrace stack) async {
     //TODO error handling
-    await _onCancel();
+    if (_controller.hasListener) {
+      await _controller.close();
+    }
+    await _resourceSubscription?.cancel();
+    await _expirationSubscription.cancel();
+    _onDone(this);
   }
 
   FutureOr<void> _onCancel() async {
-    await _controller.close();
-    await _resourceSubscription?.cancel();
+    if (_controller.hasListener) {
+      await _controller.close();
+    }
+
     await _expirationSubscription.cancel();
     _onDone(this);
   }
