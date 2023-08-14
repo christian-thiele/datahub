@@ -1,9 +1,14 @@
 import 'dart:async';
+import 'dart:typed_data';
+
+import 'package:datahub/datahub.dart';
 
 import 'resource_transport_message.dart';
 
 abstract class ServerTransportStreamController<T> {
+  final LogService _logService = resolve<LogService>();
   final String id;
+  final ResourceTransportResourceType resourceType;
   final Stream<T> resourceStream;
   StreamSubscription? _resourceSubscription;
   late final StreamSubscription _expirationSubscription;
@@ -18,6 +23,7 @@ abstract class ServerTransportStreamController<T> {
     this.resourceStream,
     this._onDone,
     this.id,
+    this.resourceType,
     Stream<void> expiration,
   ) {
     _expirationSubscription = expiration.listen((_) => _onCancel());
@@ -46,7 +52,31 @@ abstract class ServerTransportStreamController<T> {
   void emit(ResourceTransportMessage message) => _controller.add(message);
 
   FutureOr<void> _onError(dynamic e, StackTrace stack) async {
-    //TODO error handling
+    if (e is ApiRequestException) {
+      _logService
+          .info('ApiRequestException in resource window stream: ${e.message}');
+
+      try {
+        emit(ResourceTransportMessage(
+          resourceType,
+          ResourceTransportMessageType.exception,
+          await e.toResponse().getData().fold(<int>[], (p, e) => p..addAll(e)),
+        ));
+      } catch (e, stack) {
+        _logService.error(
+          'Could not send exception transport message.',
+          error: e,
+          trace: stack,
+        );
+      }
+    } else {
+      _logService.error(
+        'Exception in resource window stream.',
+        error: e,
+        trace: stack,
+      );
+    }
+
     if (_controller.hasListener) {
       await _controller.close();
     }

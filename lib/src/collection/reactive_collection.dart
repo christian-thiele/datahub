@@ -1,11 +1,12 @@
 import 'dart:async';
 
 import 'package:datahub/api.dart';
-import 'package:datahub/collection.dart';
 import 'package:datahub/hub.dart';
 import 'package:datahub/rest_client.dart';
-import 'package:datahub/src/collection/collection_window_state.dart';
 import 'package:datahub/transfer_object.dart';
+
+import 'collection_window_event.dart';
+import 'collection_window_state.dart';
 
 typedef WindowDelegate<Item extends TransferObjectBase<Id>, Id>
     = Stream<CollectionWindowState<Item, Id>> Function(

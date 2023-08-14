@@ -39,7 +39,10 @@ enum ResourceTransportMessageType {
   update(0x06),
 
   /// resource not available anymore
-  delete(0xFF);
+  delete(0x07),
+
+  /// high level request exception
+  exception(0xFF);
 
   const ResourceTransportMessageType(this.byte);
 
