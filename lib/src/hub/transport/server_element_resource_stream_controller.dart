@@ -11,6 +11,7 @@ class ServerElementResourceStreamController<T extends TransferObjectBase>
     super.resourceStream,
     super.onDone,
     super.id,
+    super.resourceType,
     super.expiration,
   );
 

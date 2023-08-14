@@ -17,6 +17,7 @@ class ServerCollectionResourceStreamController<
     super.resourceStream,
     super.onDone,
     super.id,
+    super.resourceType,
     super.expiration,
   );
 

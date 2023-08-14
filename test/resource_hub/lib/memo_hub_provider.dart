@@ -15,10 +15,11 @@ class MemoHubProviderImpl extends MemoHubProvider {
   }
 
   @override
-  Stream<Memo> getMemoStream(ApiRequest request) {
+  Stream<Memo> getMemoStream(ApiRequest request) async* {
     resolve<LogService>().d(
         'METHOD: ${request.method} ACCEPT: ${request.headers[HttpHeaders.accept]}');
-    return _repo.memo;
+    yield _repo.current;
+    yield* _repo.memo;
   }
 
   @override

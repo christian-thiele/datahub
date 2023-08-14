@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:datahub/datahub.dart';
 import 'package:datahub/src/test/matchers.dart';
 import 'package:datahub/src/test/test_host.dart';
@@ -35,6 +37,10 @@ void main() {
       expect(changed, hasBody());
       expect(changed.data.text, 'changed');
     }));
+
+    test('Host', host.test(() async {
+      await Completer().future;
+    }), timeout: Timeout.none);
 
     test('Hub Client', host.apiTest((client) async {
       final hub = MemoHubClient(client);

@@ -1,4 +1,5 @@
 import 'dart:io' as io;
+import 'package:datahub/src/hub/transport/resource_transport_message.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'package:datahub/api.dart';
@@ -36,6 +37,7 @@ class CollectionResourceRestEndpoint extends ResourceRestEndpoint {
           _resource.getWindow(request, offset, length),
           _removeController,
           uuid(),
+          ResourceTransportResourceType.collection,
           request.session?.expiration ?? Rx.never(),
         );
         _controllers.add(controller);

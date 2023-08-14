@@ -1,3 +1,4 @@
+import 'package:datahub/src/hub/transport/resource_transport_message.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'package:datahub/api.dart';
@@ -33,6 +34,7 @@ class ElementResourceRestEndpoint extends ResourceRestEndpoint {
               .shareValueSeeded(await _resource.get(request)),
           _removeController,
           uuid(),
+          ResourceTransportResourceType.simple,
           request.session?.expiration ?? Rx.never(),
         );
         _controllers.add(controller);
