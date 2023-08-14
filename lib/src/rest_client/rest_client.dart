@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
-import 'package:datahub/collection.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';

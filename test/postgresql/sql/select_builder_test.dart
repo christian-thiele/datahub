@@ -1,5 +1,4 @@
 import 'package:datahub/datahub.dart';
-import 'package:datahub/src/persistence/query/sub_query.dart';
 import 'package:test/test.dart';
 
 import 'package:datahub/src/persistence/postgresql/sql/sql.dart';
