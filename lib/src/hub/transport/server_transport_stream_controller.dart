@@ -15,11 +15,11 @@ abstract class ServerTransportStreamController<T> {
   );
 
   ServerTransportStreamController(
-      this.resourceStream,
-      this._onDone,
-      this.id,
-      Stream<void> expiration,
-      ) {
+    this.resourceStream,
+    this._onDone,
+    this.id,
+    Stream<void> expiration,
+  ) {
     _expirationSubscription = expiration.listen((_) => _onCancel());
   }
 

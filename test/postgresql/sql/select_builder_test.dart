@@ -106,17 +106,16 @@ void main() {
         SelectBuilder(SelectFrom.fromQuerySource(
           'schema',
           SubQuery(
-            TableDataBean(),
-            [
-              WildcardSelect(),
-              ExpressionSelect(
-                CustomSqlExpression('row_number() OVER (order by something)'),
-                'num',
-              ),
-            ],
-            alias: 'sub',
-            filter: Filter.equals(fieldX, 'valueY')
-          ),
+              TableDataBean(),
+              [
+                WildcardSelect(),
+                ExpressionSelect(
+                  CustomSqlExpression('row_number() OVER (order by something)'),
+                  'num',
+                ),
+              ],
+              alias: 'sub',
+              filter: Filter.equals(fieldX, 'valueY')),
         ))
           ..where(Filter.equals(fieldX, 'valueX')),
         'SELECT * FROM (SELECT *, row_number() OVER (order by something) AS "num" FROM "schema"."table" WHERE "fake"."fieldX" = \'valueY\') "sub" WHERE "fake"."fieldX" = \'valueX\'',

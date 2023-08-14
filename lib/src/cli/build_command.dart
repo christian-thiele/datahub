@@ -8,7 +8,10 @@ import 'utils.dart';
 class BuildCommand extends CliCommand {
   BuildCommand() {
     argParser.addFlag('debug', abbr: 'd', help: 'Build a debug image.');
-    argParser.addFlag('codegen', abbr: 'c', help: 'Run codegen before building debug image.', defaultsTo: true);
+    argParser.addFlag('codegen',
+        abbr: 'c',
+        help: 'Run codegen before building debug image.',
+        defaultsTo: true);
     argParser.addOption('version', help: 'Override package version.');
   }
 
