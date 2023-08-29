@@ -10,7 +10,7 @@ class TestCommand extends CliCommand {
   TestCommand() {
     argParser.addFlag(
       'build',
-      defaultsTo: false,
+      defaultsTo: true,
       help: 'Builds the debug image before running tests.',
     );
     argParser.addOption(

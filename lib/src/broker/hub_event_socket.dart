@@ -54,8 +54,8 @@ class EphemeralHubEventSocket<T> extends HubSocket<T> {
   /// and will never be recorded for services that are not currently listening.
   ///
   /// Queues are configured with an auto-assigned name and autoDelete = true.
-  Stream<HubEvent<T>> getStream(String subTopic, {int? prefetch}) =>
-      _hub.subscribe<T>(_topic(subTopic), bean: bean, prefetch: prefetch);
+  Stream<HubEvent<T>> getStream(String subTopic, {int? prefetch}) => _hub
+      .subscribePrivate<T>(_topic(subTopic), bean: bean, prefetch: prefetch);
 
   String _topic(String subTopic) =>
       [topic, subTopic].where((e) => !nullOrEmpty(subTopic)).join('.');

@@ -1,10 +1,11 @@
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:dart_amqp/dart_amqp.dart';
+import 'package:datahub/src/broker/amqp/amqp_broker_channel.dart';
 
-import 'broker_service.dart';
+import '../broker_service.dart';
 
-/// Implements [BrokerService] as an AMQP client.
+/// Implements [BrokerService] as an AMQP client using dart_amqp lib.
 ///
 /// Configuration values:
 ///   `host`: Broker connection host
@@ -44,7 +45,9 @@ class AmqpBrokerService extends BrokerService {
   }
 
   @override
-  Future<Channel> openChannel() async => await _client.channel();
+  Future<AmqpBrokerChannel> openChannel({int? prefetch}) async =>
+      AmqpBrokerChannel(
+          await _client.channel().then((c) => c.qos(0, prefetch)));
 
   @override
   Future<void> shutdown() async {

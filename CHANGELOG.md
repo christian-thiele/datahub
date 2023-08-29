@@ -19,6 +19,8 @@
   - SubQuery as new QuerySource type
 - CLI
   - added --codegen / --no-codegen flag to build command
+- Broker
+  - abstraction for amqp broker implementation to provide more stable framework
 
 ## 0.16.5
 - TransferCodec, TransferBean

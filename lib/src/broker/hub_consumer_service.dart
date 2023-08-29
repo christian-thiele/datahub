@@ -50,7 +50,7 @@ abstract class HubConsumerService<THub extends EventHubService>
   /// Subscribes to an EphemeralHubEventSocket.
   ///
   /// Subscribing twice inside of the same service (even across instances)
-  /// will result in both consumers receiving the all events emitted during
+  /// will result in both consumers receiving all events emitted during
   /// their lifetime.
   void listenEphemeral<TEvent>(
     EphemeralHubEventSocket<TEvent> hubSocket,
@@ -91,7 +91,7 @@ abstract class HubConsumerService<THub extends EventHubService>
             trace: stack,
           );
         } catch (e, stack) {
-          event.reject(true);
+          event.reject(requeue: true);
           _log.e(
             'Could not process event.',
             error: e,

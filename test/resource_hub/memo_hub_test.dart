@@ -38,10 +38,6 @@ void main() {
       expect(changed.data.text, 'changed');
     }));
 
-    test('Host', host.test(() async {
-      await Completer().future;
-    }), timeout: Timeout.none);
-
     test('Hub Client', host.apiTest((client) async {
       final hub = MemoHubClient(client);
       final initial = await hub.memo.get();

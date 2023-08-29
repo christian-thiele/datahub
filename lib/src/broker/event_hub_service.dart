@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:boost/boost.dart';
-import 'package:dart_amqp/dart_amqp.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
+import 'package:datahub/src/broker/broker_channel.dart';
+import 'package:datahub/src/broker/broker_exchange.dart';
 import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';
 
@@ -15,8 +16,8 @@ import 'hub_event_socket.dart';
 abstract class EventHubService extends BaseService {
   final _log = resolve<LogService>();
   late final BrokerService _brokerService;
-  final _channels = <Channel>[];
-  late final Lazy<Channel> _publishChannel;
+  final _channels = <BrokerChannel>[];
+  late final Lazy<BrokerChannel> _publishChannel;
 
   String get exchange;
 
@@ -32,7 +33,6 @@ abstract class EventHubService extends BaseService {
       throw Exception('No BrokerService found in ServiceHost.');
     }
     _brokerService = service;
-    //TODO reconnect on channel disconnect
     _publishChannel = Lazy(() async => await _brokerService.openChannel()
       ..apply(_channels.add));
   }
@@ -53,14 +53,15 @@ abstract class EventHubService extends BaseService {
     try {
       await _publishChannel
           .get()
-          .then((c) => c.exchange(exchange, ExchangeType.TOPIC))
-          .then((ex) => ex.publish(encoded, topic));
+          .then((c) => c.declareExchange(exchange, BrokerExchangeType.topic))
+          .then((ex) => ex.publish(
+              utf8.encode(jsonEncode(encoded)).asUint8List(), topic));
     } catch (e, stack) {
       _publishChannel.invalidate();
       _log.warn('Amqp channel error, reconnecting.', error: e, trace: stack);
       await _publishChannel
           .get()
-          .then((c) => c.exchange(exchange, ExchangeType.TOPIC))
+          .then((c) => c.declareExchange(exchange, BrokerExchangeType.topic))
           .then((ex) => ex.publish(encoded, topic));
     }
   }
@@ -78,27 +79,59 @@ abstract class EventHubService extends BaseService {
     final controller = StreamController<HubEvent<T>>();
     controller.onListen = () async {
       try {
-        final channel =
-            await _brokerService.openChannel().then((c) => c.qos(0, prefetch));
+        final channel = await _brokerService.openChannel(prefetch: prefetch);
         _channels.add(channel);
 
         final queueName =
             '$exchange.${resolve<ConfigService>().serviceName}.$topic';
-        final ex = await channel.exchange(exchange, ExchangeType.TOPIC);
-        final q = await ex.bindQueueConsumer(queueName, [topic], noAck: false);
-        q.listen(
-          (message) {
-            controller.add(HubEvent(
-              bean?.toObject(jsonDecode(message.payloadAsString)) ??
-                  decodeTyped<T>(message.payloadAsJson),
-              message.ack,
-              message.reject,
-            ));
-          },
-          onError: controller.addError,
-          onDone: controller.close,
-        );
-        controller.onCancel = q.cancel;
+        final ex =
+            await channel.declareExchange(exchange, BrokerExchangeType.topic);
+        final q = await ex.declareAndBindQueue(queueName, [topic]);
+
+        await controller.addStream(q.getConsumer(noAck: false).map((message) {
+          return HubEvent(
+            bean?.toObject(jsonDecode(utf8.decode(message.payload))) ??
+                decodeTyped<T>(jsonDecode(utf8.decode(message.payload))),
+            message.ack,
+            message.reject,
+          );
+        }));
+      } catch (e, stack) {
+        controller.addError(e, stack);
+      }
+    };
+    return controller.stream;
+  }
+
+  /// Subscribes to a topic of an EventHub.
+  ///
+  /// Consider using [HubConsumerService.listen] or [HubEventSocket.stream]
+  /// instead.
+  ///
+  /// Subscribing twice inside of the same service and across instances
+  /// will result in both consumers receiving all events emitted during
+  /// their lifetime.
+  Stream<HubEvent<T>> subscribePrivate<T>(String topic,
+      {TransferBean<T>? bean, int? prefetch}) {
+    //TODO reduce duplicate code with subscribe
+    final controller = StreamController<HubEvent<T>>();
+    controller.onListen = () async {
+      try {
+        final channel = await _brokerService.openChannel(prefetch: prefetch);
+        _channels.add(channel);
+
+        final ex =
+            await channel.declareExchange(exchange, BrokerExchangeType.topic);
+        final q = await ex.declareAndBindPrivateQueue([topic]);
+
+        await controller.addStream(q.getConsumer(noAck: false).map((message) {
+          return HubEvent(
+            bean?.toObject(jsonDecode(utf8.decode(message.payload))) ??
+                decodeTyped<T>(jsonDecode(utf8.decode(message.payload))),
+            message.ack,
+            message.reject,
+          );
+        }));
       } catch (e, stack) {
         controller.addError(e, stack);
       }
