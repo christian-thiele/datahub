@@ -15,10 +15,14 @@ abstract class ClientTransportStreamController<T> {
   final RoutePattern routePattern;
   final Map<String, String> params;
   final Map<String, List<String>> query;
+  final void Function(ClientTransportStreamController) onCanceled;
 
   late final subject = StreamController<T>.broadcast(
     onListen: _connect,
-    onCancel: _disconnect,
+    onCancel: () {
+      _disconnect();
+      onCanceled(this);
+    },
   );
 
   bool get isConnected => subject.hasListener;
@@ -30,6 +34,7 @@ abstract class ClientTransportStreamController<T> {
     this.routePattern,
     this.params,
     this.query,
+    this.onCanceled,
   );
 
   final _connectSemaphore = Semaphore();
@@ -88,10 +93,13 @@ abstract class ClientTransportStreamController<T> {
       await _disconnect();
       if (subject.hasListener) {
         _connect();
+      } else {
+        onCanceled(this);
       }
     } catch (e, stack) {
       subject.addError(e, stack);
       await subject.close();
+      onCanceled(this);
     }
   }
 
@@ -99,6 +107,7 @@ abstract class ClientTransportStreamController<T> {
     if (subject.hasListener) {
       subject.addError(e, stack);
       subject.close();
+      onCanceled(this);
     }
   }
 }

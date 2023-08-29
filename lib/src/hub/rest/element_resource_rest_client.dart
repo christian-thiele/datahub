@@ -93,7 +93,13 @@ mixin _ImmutableElementResourceMethods<T extends TransferObjectBase>
     }
 
     final controller = ClientElementResourceStreamController(
-        client, routePattern, params, query, bean);
+      client,
+      routePattern,
+      params,
+      query,
+      (c) => _streamControllers.remove(c),
+      bean,
+    );
     _streamControllers.add(controller);
 
     return controller;

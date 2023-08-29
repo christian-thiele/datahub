@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:datahub/collection.dart';
 import 'package:datahub/hub.dart';
 import 'package:datahub/rest_client.dart';
+import 'package:datahub/src/hub/transport/client_transport_stream_controller.dart';
 import 'package:datahub/transfer_object.dart';
 
 import '../transport/client_collection_resource_stream_controller.dart';
@@ -45,6 +46,7 @@ mixin _ImmutableResourceMethods<Item extends TransferObjectBase<Id>, Id>
       routePattern,
       params,
       query,
+      _onCanceled,
       bean,
     );
     _streamControllers.add(controller);
@@ -68,4 +70,7 @@ mixin _ImmutableResourceMethods<Item extends TransferObjectBase<Id>, Id>
         'offset': [offset.toString()],
         'length': [length.toString()],
       }).stream.transform(CollectionWindowStateStreamTransformer());
+
+  void _onCanceled(ClientTransportStreamController controller) =>
+      _streamControllers.remove(controller);
 }

@@ -19,6 +19,7 @@ class ClientElementResourceStreamController<T extends TransferObjectBase>
     super.routePattern,
     super.params,
     super.query,
+    super.onCanceled,
     this.bean,
   );
 

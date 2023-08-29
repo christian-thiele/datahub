@@ -22,6 +22,7 @@ class ClientCollectionResourceStreamController<
     super.routePattern,
     super.params,
     super.query,
+    super.onCanceled,
     this.bean,
   );
 
