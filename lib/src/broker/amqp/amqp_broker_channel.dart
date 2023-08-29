@@ -12,7 +12,8 @@ class AmqpBrokerChannel extends BrokerChannel {
   AmqpBrokerChannel(this._channel);
 
   @override
-  Future<BrokerExchange> declareExchange(String name, BrokerExchangeType type) async {
+  Future<BrokerExchange> declareExchange(
+      String name, BrokerExchangeType type) async {
     final exchange = await _channel.exchange(name, type.toAmqp());
     return AmqpBrokerExchange(exchange, name, type);
   }
