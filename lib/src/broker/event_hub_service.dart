@@ -88,6 +88,11 @@ abstract class EventHubService extends BaseService {
             await channel.declareExchange(exchange, BrokerExchangeType.topic);
         final q = await ex.declareAndBindQueue(queueName, [topic]);
 
+        controller.onCancel = () async {
+          await channel.close();
+          _channels.remove(channel);
+        };
+
         await controller.addStream(q.getConsumer(noAck: false).map((message) {
           return HubEvent(
             bean?.toObject(jsonDecode(utf8.decode(message.payload))) ??
@@ -123,6 +128,12 @@ abstract class EventHubService extends BaseService {
         final ex =
             await channel.declareExchange(exchange, BrokerExchangeType.topic);
         final q = await ex.declareAndBindPrivateQueue([topic]);
+
+        controller.onCancel = () async {
+          await q.delete();
+          await channel.close();
+          _channels.remove(channel);
+        };
 
         await controller.addStream(q.getConsumer(noAck: false).map((message) {
           return HubEvent(

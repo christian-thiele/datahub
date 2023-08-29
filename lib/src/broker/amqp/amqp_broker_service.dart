@@ -21,6 +21,7 @@ class AmqpBrokerService extends BrokerService {
   late final _configUser = config<String>('user');
   late final _configPassword = config<String>('password');
   late final _heartbeatPeriod = config<int?>('heartbeatPeriod') ?? 3000;
+  late final _connectionName = config<String?>('connectionName');
 
   late final Client _client;
 
@@ -38,6 +39,7 @@ class AmqpBrokerService extends BrokerService {
         _configUser,
         _configPassword,
       ),
+      connectionName: _connectionName ?? resolve<ConfigService>().serviceName,
     );
 
     _client = Client(settings: settings);

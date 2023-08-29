@@ -6,4 +6,6 @@ abstract class BrokerQueue {
   BrokerQueue(this.name);
 
   Stream<BrokerMessage> getConsumer({bool noAck = true});
+
+  Future<void> delete({bool ifEmpty = false, bool ifUnused = false});
 }

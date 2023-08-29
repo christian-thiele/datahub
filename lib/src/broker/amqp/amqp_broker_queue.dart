@@ -47,4 +47,8 @@ class AmqpBrokerQueue extends BrokerQueue {
       await amqpQueue.unbind(amqpBrokerExchange.amqpExchange, topic);
     }
   }
+
+  Future<void> delete({bool ifEmpty = false, bool ifUnused = false}) async {
+    await amqpQueue.delete(ifEmpty: ifEmpty, ifUnused: ifUnused);
+  }
 }
