@@ -128,9 +128,11 @@ abstract class EventHubService extends BaseService {
         final ex =
             await channel.declareExchange(exchange, BrokerExchangeType.topic);
         final q = await ex.declareAndBindPrivateQueue([topic]);
+        _log.debug('Started private queue "${q.name}".');
 
         controller.onCancel = () async {
           await q.delete();
+          _log.debug('Deleted private queue "${q.name}".');
           await channel.close();
           _channels.remove(channel);
         };
