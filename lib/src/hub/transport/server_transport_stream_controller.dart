@@ -89,6 +89,7 @@ abstract class ServerTransportStreamController<T> {
       await _controller.close();
     }
 
+    await _resourceSubscription?.cancel();
     await _expirationSubscription.cancel();
     _onDone(this);
   }
