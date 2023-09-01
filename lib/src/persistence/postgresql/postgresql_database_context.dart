@@ -216,6 +216,7 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     Filter filter = Filter.empty,
     List<QuerySelect> distinct = const <QuerySelect>[],
     Sort sort = Sort.empty,
+    List<Expression> group = const <Expression>[],
     int offset = 0,
     int limit = -1,
     bool forUpdate = false,
@@ -227,6 +228,7 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
       ..offset(offset)
       ..limit(limit)
       ..select(select)
+      ..groupBy(group)
       ..forUpdate(forUpdate));
     return results.map((e) => QueryResult.merge(e)).toList();
   }

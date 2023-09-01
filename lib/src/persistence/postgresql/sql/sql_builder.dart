@@ -155,9 +155,9 @@ abstract class SqlBuilder {
         return selectSql(select.field);
       }
     } else if (select is AggregateSelect) {
-      if (select.type != AggregateType.count && select.select == null) {
+      if (select.type != AggregateType.count && select.expression == null) {
         throw PersistenceException(
-            'AggregateSelect of type ${select.type} requires an inner select.');
+            'AggregateSelect of type ${select.type} requires an inner expression.');
       }
 
       switch (select.type) {
@@ -165,22 +165,22 @@ abstract class SqlBuilder {
           return Tuple('COUNT(*) AS ${escapeName(select.alias)}', const {});
         case AggregateType.min:
           // dereference safe because of exception above
-          final inner = selectSql(select.select!);
+          final inner = expressionSql(select.expression!);
           return Tuple(
               'MIN(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
         case AggregateType.max:
           // dereference safe because of exception above
-          final inner = selectSql(select.select!);
+          final inner = expressionSql(select.expression!);
           return Tuple(
               'MAX(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
         case AggregateType.sum:
           // dereference safe because of exception above
-          final inner = selectSql(select.select!);
+          final inner = expressionSql(select.expression!);
           return Tuple(
               'SUM(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
         case AggregateType.avg:
           // dereference safe because of exception above
-          final inner = selectSql(select.select!);
+          final inner = expressionSql(select.expression!);
           return Tuple(
               'AVG(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
       }
@@ -339,6 +339,29 @@ abstract class SqlBuilder {
     } else if (expression is ValueExpression) {
       return Tuple(escapeValue(expression.value), {});
       // ignore: deprecated_member_use_from_same_package
+    } else if (expression is OperationExpression) {
+      late String operator;
+      switch (expression.type) {
+        case OperationType.add:
+          operator = '+';
+          break;
+        case OperationType.subtract:
+          operator = '-';
+          break;
+        case OperationType.multiply:
+          operator = '*';
+          break;
+        case OperationType.divide:
+          operator = '/';
+          break;
+        default:
+          throw PersistenceException('PostgreSQL implementation does not '
+              'support OperationExpression type ${expression.type}.');
+      }
+      final left = expressionSql(expression.left);
+      final right = expressionSql(expression.right);
+
+      return Tuple('(${left.a} $operator ${right.a})', {...left.b, ...right.b});
     } else if (expression is CustomSqlExpression) {
       return Tuple(expression.sqlExpression, {});
     } else {

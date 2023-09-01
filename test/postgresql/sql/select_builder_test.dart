@@ -97,6 +97,14 @@ void main() {
         'SELECT * FROM "schema"."table" WHERE "fake"."fieldX" = 20.12',
       ),
     );
+
+    test(
+      'Select group by add',
+      _test(
+        SelectBuilder(schemaTable)..groupBy([OperationExpression(fieldX, fieldX, OperationType.add)]),
+        'SELECT * FROM "schema"."table" GROUP BY ("fake"."fieldX" + "fake"."fieldX")',
+      ),
+    );
   });
 
   group('SubQuery', () {

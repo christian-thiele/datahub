@@ -102,6 +102,18 @@ class ValueExpression extends Expression {
       other is ValueExpression && value == other.value;
 }
 
+class OperationExpression extends Expression {
+  final Expression left;
+  final Expression right;
+  final OperationType type;
+
+  OperationExpression(this.left, this.right, this.type);
+}
+
+enum OperationType {
+  add, subtract, multiply, divide
+}
+
 @deprecated
 class CustomSqlExpression extends Expression {
   final String sqlExpression;

@@ -10,6 +10,7 @@ class SelectBuilder implements SqlBuilder {
   Sort _sort = Sort.empty;
   List<QuerySelect>? _select;
   List<QuerySelect>? _distinct;
+  List<Expression>? _group;
   int _limit = -1;
   int _offset = 0;
   bool _forUpdate = false;
@@ -40,6 +41,10 @@ class SelectBuilder implements SqlBuilder {
     _sort = sort;
   }
 
+  void groupBy(List<Expression> group) {
+    _group = group;
+  }
+
   void forUpdate(bool value) {
     _forUpdate = value;
   }
@@ -51,9 +56,11 @@ class SelectBuilder implements SqlBuilder {
 
     if (_distinct?.isNotEmpty ?? false) {
       buffer.write('DISTINCT ON (');
-      final selectResults = _distinct!.map((s) => SqlBuilder.selectSql(s));
+      final selectResults =
+          _distinct!.map((s) => SqlBuilder.selectSql(s)).toList();
       buffer.write(selectResults.map((e) => e.a).join(', '));
       buffer.write(') ');
+      selectResults.map((e) => e.b).forEach(values.addAll);
     }
 
     if (_select?.isNotEmpty ?? false) {
@@ -84,6 +91,13 @@ class SelectBuilder implements SqlBuilder {
       final sortResult = SqlBuilder.sortSql(_sort);
       buffer.write(sortResult.a);
       values.addAll(sortResult.b);
+    }
+
+    if (_group?.isNotEmpty ?? false) {
+      buffer.write(' GROUP BY ');
+      final groupResults = _group!.map((s) => SqlBuilder.expressionSql(s));
+      buffer.write(groupResults.map((e) => e.a).join(', '));
+      groupResults.map((e) => e.b).forEach(values.addAll);
     }
 
     if (_offset > 0) {

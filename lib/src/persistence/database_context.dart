@@ -28,6 +28,7 @@ abstract class DatabaseContext {
     List<QuerySelect> distinct = const <QuerySelect>[],
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
+    List<Expression> group = const <Expression>[],
     int offset = 0,
     int limit = -1,
     bool forUpdate = false,

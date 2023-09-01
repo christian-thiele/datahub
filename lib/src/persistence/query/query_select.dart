@@ -42,10 +42,10 @@ enum AggregateType { count, min, max, sum, avg }
 /// Select the result of an aggregation.
 class AggregateSelect extends QuerySelect {
   final AggregateType type;
-  final QuerySelect? select;
+  final Expression? expression;
   final String alias;
 
-  const AggregateSelect(this.type, this.alias, [this.select]);
+  const AggregateSelect(this.type, this.alias, [this.expression]);
 }
 
 class ExpressionSelect extends QuerySelect {
