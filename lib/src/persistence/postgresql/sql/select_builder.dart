@@ -85,19 +85,19 @@ class SelectBuilder implements SqlBuilder {
       values.addAll(filterResult.b);
     }
 
+    if (_group?.isNotEmpty ?? false) {
+      buffer.write(' GROUP BY ');
+      final groupResults = _group!.map((s) => SqlBuilder.expressionSql(s));
+      buffer.write(groupResults.map((e) => e.a).join(', '));
+      groupResults.map((e) => e.b).forEach(values.addAll);
+    }
+
     if (!_sort.isEmpty) {
       buffer.write(' ORDER BY ');
 
       final sortResult = SqlBuilder.sortSql(_sort);
       buffer.write(sortResult.a);
       values.addAll(sortResult.b);
-    }
-
-    if (_group?.isNotEmpty ?? false) {
-      buffer.write(' GROUP BY ');
-      final groupResults = _group!.map((s) => SqlBuilder.expressionSql(s));
-      buffer.write(groupResults.map((e) => e.a).join(', '));
-      groupResults.map((e) => e.b).forEach(values.addAll);
     }
 
     if (_offset > 0) {
