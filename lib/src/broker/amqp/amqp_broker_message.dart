@@ -9,7 +9,22 @@ class AmqpBrokerMessage extends BrokerMessage {
   @override
   Uint8List get payload => amqpMessage.payload ?? Uint8List(0);
 
-  AmqpBrokerMessage(this.amqpMessage);
+  AmqpBrokerMessage(this.amqpMessage)
+      : super(BrokerMessageProperties(
+          contentType: amqpMessage.properties?.contentType,
+          contentEncoding: amqpMessage.properties?.contentEncoding,
+          headers: amqpMessage.properties?.headers ?? {},
+          deliveryMode: amqpMessage.properties?.deliveryMode,
+          priority: amqpMessage.properties?.priority,
+          correlationId: amqpMessage.properties?.corellationId,
+          replyTo: amqpMessage.properties?.replyTo,
+          expiration: amqpMessage.properties?.expiration,
+          messageId: amqpMessage.properties?.messageId,
+          timestamp: amqpMessage.properties?.timestamp,
+          type: amqpMessage.properties?.type,
+          userId: amqpMessage.properties?.userId,
+          appId: amqpMessage.properties?.appId,
+        ));
 
   @override
   void ack() => amqpMessage.ack();

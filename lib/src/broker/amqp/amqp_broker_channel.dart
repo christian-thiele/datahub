@@ -7,19 +7,19 @@ import 'amqp_broker_exchange.dart';
 import 'utils.dart';
 
 class AmqpBrokerChannel extends BrokerChannel {
-  final amqp.Channel _channel;
+  final amqp.Channel amqpChannel;
 
-  AmqpBrokerChannel(this._channel);
+  AmqpBrokerChannel(this.amqpChannel);
 
   @override
   Future<BrokerExchange> declareExchange(
       String name, BrokerExchangeType type) async {
-    final exchange = await _channel.exchange(name, type.toAmqp());
+    final exchange = await amqpChannel.exchange(name, type.toAmqp());
     return AmqpBrokerExchange(exchange, name, type);
   }
 
   @override
   Future<void> close() async {
-    await _channel.close();
+    await amqpChannel.close();
   }
 }

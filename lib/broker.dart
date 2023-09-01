@@ -2,6 +2,9 @@
 library broker;
 
 export 'src/broker/broker_service.dart';
+export 'src/broker/broker_exchange.dart';
+export 'src/broker/broker_message.dart';
+export 'src/broker/broker_queue.dart';
 export 'src/broker/consumer_exception.dart';
 
 export 'src/broker/event_hub_service.dart';
