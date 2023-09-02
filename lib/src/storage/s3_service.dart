@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:datahub/datahub.dart';
+import 'package:minio/minio.dart';
 import 'package:minio/models.dart';
 
 abstract class S3Service extends BaseService {
@@ -13,7 +16,7 @@ abstract class S3Service extends BaseService {
   Stream<ListObjectsResult> listObjects(String bucket,
       [String? prefix, bool recursive = false]);
 
-  Future<void> getObject(String bucket, String object);
+  Future<MinioByteStream> getObject(String bucket, String object);
 
   Future<String> putObject(String bucket, String object, Stream<List<int>> data,
       {int? size,

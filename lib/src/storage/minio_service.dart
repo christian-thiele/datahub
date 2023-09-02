@@ -53,7 +53,7 @@ class MinioService extends S3Service {
       _minio.listObjects(bucket, recursive: recursive);
 
   @override
-  Future<void> getObject(String bucket, String object) async =>
+  Future<MinioByteStream> getObject(String bucket, String object) async =>
       await _minio.getObject(bucket, object);
 
   @override
