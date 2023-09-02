@@ -5,6 +5,8 @@ import 'package:minio/minio.dart';
 import 'package:minio/models.dart';
 
 abstract class S3Service extends BaseService {
+  S3Service([super.path]);
+
   Future<bool> bucketExists(String bucket);
 
   Future<List<Bucket>> listBuckets();

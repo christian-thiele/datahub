@@ -18,6 +18,8 @@ import 's3_service.dart';
 class MinioService extends S3Service {
   late final Minio _minio;
 
+  MinioService([super.path]);
+
   @override
   Future<void> initialize() async {
     _minio = Minio(
