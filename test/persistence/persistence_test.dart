@@ -69,7 +69,7 @@ void main() {
         });
       });
 
-      expect(adapter.poolAvailable, 2);
+      expect(adapter.poolAvailable, 3);
     }));
   });
 }
