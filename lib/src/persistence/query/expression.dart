@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/persistence.dart';
 
 /// Represents an expression that is either static or evaluated
 /// for every individual dataset and evaluates into a value.
@@ -110,9 +110,7 @@ class OperationExpression extends Expression {
   OperationExpression(this.left, this.right, this.type);
 }
 
-enum OperationType {
-  add, subtract, multiply, divide
-}
+enum OperationType { add, subtract, multiply, divide }
 
 @deprecated
 class CustomSqlExpression extends Expression {

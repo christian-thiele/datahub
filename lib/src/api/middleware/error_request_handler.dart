@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/api.dart';
 import 'package:datahub/src/api/middleware/request_handler.dart';
 
 /// Errors that happen outside of [RequestHandler]s, for example

@@ -3,10 +3,10 @@ import 'dart:async';
 import 'package:datahub/collection.dart';
 import 'package:datahub/hub.dart';
 import 'package:datahub/rest_client.dart';
-import 'package:datahub/src/hub/transport/client_transport_stream_controller.dart';
 import 'package:datahub/transfer_object.dart';
 
 import '../transport/client_collection_resource_stream_controller.dart';
+import '../transport/client_transport_stream_controller.dart';
 
 class CollectionResourceRestClient<Item extends TransferObjectBase<Id>, Id>
     extends CollectionResourceClient<Item, Id> with _ImmutableResourceMethods {

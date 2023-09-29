@@ -1,5 +1,5 @@
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
+
 import 'package:datahub/utils.dart';
 
 /// Decodes a typed value from its transfer representation. (JSON)

@@ -1,5 +1,12 @@
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/persistence.dart';
+
+import 'dao/base_dao.dart';
+
+import 'query/query_source.dart';
+import 'query/filter.dart';
+import 'query/sort.dart';
+import 'query/query_select.dart';
 
 /// Interface for performing operations / running queries on the database.
 ///

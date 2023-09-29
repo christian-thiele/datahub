@@ -1,5 +1,3 @@
-import 'package:datahub/datahub.dart';
-
 /// Annotation for dao fields.
 ///
 /// Valid types are String, int, double, bool, Uint8List and DateTime.

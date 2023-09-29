@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/persistence.dart';
 
 /// Provides an interface for migrating between schema versions.
 ///
@@ -6,10 +6,12 @@ import 'package:datahub/datahub.dart';
 /// the [DataSchema.migrate] method.
 abstract class Migrator {
   Future<void> addLayout(DataBean bean);
+
   Future<void> removeLayout(String name);
 
   //TODO maybe accept a function to generate default values for columns?
   Future<void> addField(DataBean bean, DataField field, dynamic initialValue);
+
   Future<void> removeField(DataBean bean, String fieldName);
 
   @Deprecated('This method assumes that the adapter supports SQL, '
@@ -17,5 +19,5 @@ abstract class Migrator {
       'when you know the adapter implementation you are using.')
   Future<void> customSql(String sql) => throw UnimplementedError();
 
-  //TODO more migration functionality
+//TODO more migration functionality
 }

@@ -48,6 +48,7 @@ class AmqpBrokerQueue extends BrokerQueue {
     }
   }
 
+  @override
   Future<void> delete({bool ifEmpty = false, bool ifUnused = false}) async {
     await amqpQueue.delete(ifEmpty: ifEmpty, ifUnused: ifUnused);
   }

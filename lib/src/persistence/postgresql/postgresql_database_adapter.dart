@@ -1,4 +1,7 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/persistence.dart';
+import 'package:datahub/postgresql.dart';
+import 'package:datahub/services.dart';
 import 'package:datahub/src/persistence/postgresql/postgresql_database_context.dart';
 
 // ignore: import_of_legacy_library_into_null_safe
@@ -12,67 +15,31 @@ import 'sql/sql.dart';
 const metaTable = '_datahub_meta';
 
 /// [DatabaseAdapter] implementation for PostgreSQL databases.
-class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
+class PostgreSQLDatabaseAdapter
+    extends DatabaseAdapter<PostgreSQLDatabaseConnection> {
   static const schemaVersionKey = 'schema_version';
 
-  final String host;
-  final int port;
-  final String databaseName;
-  final String? username;
-  final String? password;
-  final int timeoutInSeconds;
-  final int queryTimeoutInSeconds;
-  final String timeZone;
-  final bool useSSL;
-  final bool isUnixSocket;
+  late final host = config<String>('host');
+  late final port = config<int?>('port') ?? 5432;
+  late final databaseName = config<String>('database');
+  late final username = config<String?>('username');
+  late final password = config<String?>('password');
+  late final timeoutInSeconds = config<int?>('timeoutInSeconds') ?? 30;
+  late final queryTimeoutInSeconds =
+      config<int?>('queryTimeoutInSeconds') ?? 30;
+  late final timeZone = config<String?>('timeZone') ?? 'UTC';
+  late final useSSL = config<bool?>('useSsl') ?? false;
+  late final isUnixSocket = config<bool?>('isUnixSocket') ?? false;
+  late final ignoreMigration = config<bool?>('ignoreMigration') ?? false;
 
-  bool _initialized = false;
-
-  /// Parameters represent the constructor parameters of
-  /// [postgres.PostgreSQLConnection]
-  PostgreSQLDatabaseAdapter(
-      DataSchema schema, this.host, this.port, this.databaseName,
-      {this.username,
-      this.password,
-      this.timeoutInSeconds = 30,
-      this.queryTimeoutInSeconds = 30,
-      this.timeZone = 'UTC',
-      this.useSSL = false,
-      this.isUnixSocket = false})
-      : super(schema);
+  PostgreSQLDatabaseAdapter(super.path, super.schema);
 
   @override
-  Future<DatabaseConnection> openConnection() async {
-    if (!_initialized) {
-      throw PersistenceException('Schema not initialized.');
-    }
-
-    return await _connection();
-  }
-
-  Future<PostgreSQLDatabaseConnection> _connection() async {
-    final connection = postgres.PostgreSQLConnection(host, port, databaseName,
-        username: username,
-        password: password,
-        timeoutInSeconds: timeoutInSeconds,
-        queryTimeoutInSeconds: queryTimeoutInSeconds,
-        timeZone: timeZone,
-        useSSL: useSSL,
-        isUnixSocket: isUnixSocket);
-    await connection.open();
-
-    return PostgreSQLDatabaseConnection(this, connection);
-  }
-
-  @override
-  Future<void> initializeSchema({bool ignoreMigration = false}) async {
-    final connection = await _connection();
-
-    await connection.runTransaction((abstractContext) async {
-      final context = abstractContext as PostgreSQLDatabaseContext;
-
-      if (await _schemaExists(context)) {
-        if (!ignoreMigration) {
+  Future<void> initialize() async {
+    await super.initialize();
+    await useConnection((connection) async {
+      await connection.runTransaction((context) async {
+        if (await _schemaExists(context)) {
           String? versionString;
           try {
             versionString = await context.getMetaValue(schemaVersionKey);
@@ -90,6 +57,11 @@ class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
 
           final version = int.parse(versionString);
           if (version != schema.version) {
+            if (ignoreMigration) {
+              throw PersistenceException(
+                  'DataSchema version mismatch: $version != ${schema.version}.');
+            }
+
             resolve<LogService>().i(
                 'Migrating database schema from v$version to v${schema.version}.',
                 sender: 'DataHub');
@@ -99,26 +71,45 @@ class PostgreSQLDatabaseAdapter extends DatabaseAdapter {
             await context.setMetaValue(
                 schemaVersionKey, schema.version.toString());
           }
+        } else {
+          if (ignoreMigration) {
+            throw PersistenceException('Schema does not exist.');
+          }
+
+          await context.execute(RawSql('CREATE SCHEMA ${schema.name}'));
+
+          await context.execute(CreateTableBuilder(schema.name, metaTable)
+            ..fields.addAll([
+              PrimaryKey(FieldType.String, metaTable, 'key'),
+              DataField(FieldType.String, metaTable, 'value')
+            ]));
+
+          await context.setMetaValue(
+              schemaVersionKey, schema.version.toString());
+
+          // create scheme
+          for (final layout in schema.beans) {
+            await context
+                .execute(CreateTableBuilder.fromLayout(schema, layout));
+          }
         }
-      } else {
-        await context.execute(RawSql('CREATE SCHEMA ${schema.name}'));
-
-        await context.execute(CreateTableBuilder(schema.name, metaTable)
-          ..fields.addAll([
-            PrimaryKey(FieldType.String, metaTable, 'key'),
-            DataField(FieldType.String, metaTable, 'value')
-          ]));
-
-        await context.setMetaValue(schemaVersionKey, schema.version.toString());
-
-        // create scheme
-        for (final layout in schema.beans) {
-          await context.execute(CreateTableBuilder.fromLayout(schema, layout));
-        }
-      }
+      });
     });
+  }
 
-    _initialized = true;
+  @override
+  Future<PostgreSQLDatabaseConnection> openConnection() async {
+    final connection = postgres.PostgreSQLConnection(host, port, databaseName,
+        username: username,
+        password: password,
+        timeoutInSeconds: timeoutInSeconds,
+        queryTimeoutInSeconds: queryTimeoutInSeconds,
+        timeZone: timeZone,
+        useSSL: useSSL,
+        isUnixSocket: isUnixSocket);
+    await connection.open();
+
+    return PostgreSQLDatabaseConnection(this, connection);
   }
 
   Future<bool> _schemaExists(PostgreSQLDatabaseContext context) async {

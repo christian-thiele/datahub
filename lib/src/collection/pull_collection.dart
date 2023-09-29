@@ -1,6 +1,7 @@
 import 'dart:async';
 
-import 'package:datahub/datahub.dart';
+import 'package:datahub/rest_client.dart';
+import 'package:datahub/transfer_object.dart';
 
 typedef LengthDelegate = Future<int> Function(
   Map<String, dynamic> params,

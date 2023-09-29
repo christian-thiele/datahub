@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/persistence.dart';
 import 'package:datahub/src/persistence/postgresql/postgresql_database_context.dart';
 
 import 'sql/sql.dart';

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:datahub/ioc.dart';
 import 'package:datahub/persistence.dart';
 
 /// [Repository] implementation for basic CRUD operations.
@@ -19,11 +20,11 @@ import 'package:datahub/persistence.dart';
 ///   });
 /// }
 /// ```
-abstract class CRUDRepository<TDao extends PrimaryKeyDao<TDao, TPrimaryKey>,
-    TPrimaryKey> extends Repository {
+class CRUDRepository<TDao extends PrimaryKeyDao<TDao, TPrimaryKey>, TPrimaryKey>
+    extends Repository {
   final PrimaryKeyDataBean<TDao, TPrimaryKey> bean;
 
-  CRUDRepository(super.config, this.bean);
+  CRUDRepository(super.path, this.bean);
 
   /// Returns the object with primary key [id] or null
   /// if [id] does not exist.

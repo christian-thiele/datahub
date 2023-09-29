@@ -2,7 +2,13 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
+
+import 'package:datahub/api.dart';
+import 'package:datahub/http.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
+import 'package:datahub/utils.dart';
+
 import 'package:pointycastle/pointycastle.dart';
 
 class JWT extends BearerAuth {

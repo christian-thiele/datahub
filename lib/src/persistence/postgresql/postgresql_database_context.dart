@@ -1,5 +1,7 @@
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/persistence.dart';
+import 'package:datahub/postgresql.dart';
+
 import 'package:postgres/postgres.dart' as postgres;
 
 import 'sql/sql.dart';

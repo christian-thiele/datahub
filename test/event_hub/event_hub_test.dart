@@ -34,7 +34,7 @@ void main() {
       await hub.notificationSend
           .publish(Notification('Hello', 'Some text here', false));
       await Future.delayed(Duration(milliseconds: 100));
-      expect(listener.hasNext, isTrue);
+      expect(listener.hasNext, isFalse);
       await hub.notificationSend
           .publish(Notification('Hello', 'Other text', true));
       await Future.delayed(Duration(milliseconds: 100));

@@ -1,8 +1,10 @@
-import 'package:datahub/datahub.dart';
-
 //TODO pretty docs
 // - represents group of data layouts with name and version, analog to database schema
 // - can contain migrations between versions
+import 'package:datahub/ioc.dart';
+import 'package:datahub/persistence.dart';
+import 'package:datahub/services.dart';
+
 class DataSchema {
   final String name;
   final int version;

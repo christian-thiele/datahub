@@ -1,5 +1,6 @@
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/persistence.dart';
+
 import 'package:datahub/src/persistence/postgresql/sql/sql.dart';
 import 'package:datahub/src/persistence/query/sub_query.dart';
 

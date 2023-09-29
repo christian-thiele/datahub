@@ -1,4 +1,6 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/http.dart';
+import 'package:datahub/rest_client.dart';
 import 'package:test/expect.dart';
 
 class StatusCodeMatcher extends Matcher {

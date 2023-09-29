@@ -20,20 +20,16 @@ import 'package:datahub/services.dart';
 ///   [CRUDRepository]
 abstract class Repository extends BaseService {
   late final DatabaseAdapter _adapter;
-  late DatabaseConnection _connection;
 
-  Repository(super.config);
+  Repository(super.path);
 
   @override
   Future<void> initialize() async {
     _adapter = await initializeAdapter();
-    await _adapter.initializeSchema(
-      ignoreMigration: config<bool?>('ignoreMigration') ?? false,
-    );
-    _connection = await _adapter.openConnection();
   }
 
-  Future<DatabaseAdapter> initializeAdapter();
+  Future<DatabaseAdapter> initializeAdapter() async =>
+      resolve<DatabaseAdapter>();
 
   /// Executes [delegate] inside of a database transaction.
   ///
@@ -42,11 +38,10 @@ abstract class Repository extends BaseService {
   /// methods using [transaction] can be combined into larger transactions.
   Future<T> transaction<T>(
       Future<T> Function(DatabaseContext context) delegate) async {
-    if (!_connection.isOpen) {
-      _connection = await _adapter.openConnection();
-    }
     try {
-      return await _connection.runTransaction(delegate);
+      return await _adapter.useConnection((connection) async {
+        return await connection.runTransaction(delegate);
+      });
     } on SocketException catch (e, stack) {
       resolve<LogService?>()?.warn(
         'Socket exception in transaction. Retrying...',
@@ -54,23 +49,9 @@ abstract class Repository extends BaseService {
         trace: stack,
       );
 
-      try {
-        await _connection.close();
-      } catch (e, stack) {
-        resolve<LogService?>()?.warn(
-          'Could not close connection.',
-          error: e,
-          trace: stack,
-        );
-      }
-
-      _connection = await _adapter.openConnection();
-      return await _connection.runTransaction(delegate);
+      return await _adapter.useConnection((connection) async {
+        return await connection.runTransaction(delegate);
+      });
     }
-  }
-
-  @override
-  Future<void> shutdown() async {
-    await _connection.close();
   }
 }

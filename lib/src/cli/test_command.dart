@@ -40,7 +40,7 @@ class TestCommand extends CliCommand {
     );
     argParser.addFlag(
       'mount',
-      defaultsTo: true,
+      defaultsTo: false,
       help: 'Mounts the code inside the debug container.',
     );
     argParser.addOption(
@@ -113,6 +113,8 @@ class TestCommand extends CliCommand {
         if (argResults!['pause_isolates_on_start']) '--pause_isolates_on_start',
         'run',
         'test',
+        '-r',
+        'expanded',
         ...argResults!.rest,
       ];
 
@@ -124,7 +126,20 @@ class TestCommand extends CliCommand {
     await stderr.addStream(process.stderr);
     final exitCode = await process.exitCode;
 
-    composeProcess?.kill();
+    composeProcess?.kill(ProcessSignal.sigint);
+
+    if (argResults!['compose']) {
+      await step('Disposing docker compose environment.', () async {
+        final result = await Process.start(
+          'docker',
+          ['compose', '-f', 'test/docker-compose.yml', 'down'],
+        );
+        if (await result.exitCode > 0) {
+          throw Exception('Exit code ${await result.exitCode}.');
+        }
+      });
+    }
+
     exit(exitCode);
   }
 }

@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'expression.dart';
 
 /// Representing filter arguments in a uniform, abstract way.
 ///

@@ -101,7 +101,8 @@ void main() {
     test(
       'Select group by add',
       _test(
-        SelectBuilder(schemaTable)..groupBy([OperationExpression(fieldX, fieldX, OperationType.add)]),
+        SelectBuilder(schemaTable)
+          ..groupBy([OperationExpression(fieldX, fieldX, OperationType.add)]),
         'SELECT * FROM "schema"."table" GROUP BY ("fake"."fieldX" + "fake"."fieldX")',
       ),
     );

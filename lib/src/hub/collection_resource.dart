@@ -1,4 +1,7 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/collection.dart';
+import 'package:datahub/hub.dart';
+import 'package:datahub/transfer_object.dart';
 
 abstract class CollectionResource<Item extends TransferObjectBase<Id>, Id>
     extends Resource<Item> {

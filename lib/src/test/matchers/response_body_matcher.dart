@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/rest_client.dart';
 import 'package:test/test.dart';
 
 class ResponseBodyMatcher extends Matcher {

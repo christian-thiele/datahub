@@ -2,7 +2,8 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
 
 /// Hosts services and provides dependency injection.
 ///

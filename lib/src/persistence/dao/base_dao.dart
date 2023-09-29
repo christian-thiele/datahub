@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'data_bean.dart';
 
 abstract class BaseDao<TDao> {
   DataBean<TDao> get bean;

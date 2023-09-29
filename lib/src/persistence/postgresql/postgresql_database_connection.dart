@@ -1,10 +1,12 @@
 import 'dart:async';
 
-import 'package:datahub/datahub.dart';
-
 // ignore: import_of_legacy_library_into_null_safe
+import 'package:datahub/ioc.dart';
+import 'package:datahub/persistence.dart';
+import 'package:datahub/services.dart';
 import 'package:postgres/postgres.dart' as postgres;
 
+import 'postgresql_database_adapter.dart';
 import 'postgresql_database_context.dart';
 
 class PostgreSQLDatabaseConnection extends DatabaseConnection {
@@ -22,11 +24,11 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
 
   @override
   Future<T> runTransaction<T>(
-      Future<T> Function(DatabaseContext context) delegate) async {
+      Future<T> Function(PostgreSQLDatabaseContext context) delegate) async {
     if (Zone.current[#postgresTransactionConnection] == _connection &&
         Zone.current[#postgresTransactionContext] != null) {
       final context = await (Zone.current[#postgresTransactionContext]
-              as Completer<DatabaseContext>)
+              as Completer<PostgreSQLDatabaseContext>)
           .future;
       return await delegate(context);
     }

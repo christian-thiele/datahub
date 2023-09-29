@@ -43,6 +43,9 @@ class AmqpBrokerService extends BrokerService {
     );
 
     _client = Client(settings: settings);
+    _client.errorListener((error) {
+      _logService.error('Error in AMQP Broker Client.', error: error);
+    });
     _logService.verbose('AMQP Broker Service initialized.', sender: 'DataHub');
   }
 

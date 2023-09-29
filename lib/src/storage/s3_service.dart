@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:datahub/datahub.dart';
+import 'package:datahub/ioc.dart';
 import 'package:minio/minio.dart';
 import 'package:minio/models.dart';
 

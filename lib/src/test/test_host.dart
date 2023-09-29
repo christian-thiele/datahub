@@ -5,15 +5,28 @@ import 'package:datahub/api.dart';
 import 'package:datahub/broker.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/rest_client.dart';
+import 'package:datahub/services.dart';
 import 'package:test/expect.dart';
 
 class TestHost extends ServiceHost {
   TestHost(
-    super.factories, {
-    super.config,
-    super.args,
-    super.failWithServices,
-  });
+    List<BaseService Function()> factories, {
+    bool failWithServices = true,
+    List<String> args = const <String>[],
+    Map<String, dynamic> config = const <String, dynamic>{},
+  }) : super(
+          factories,
+          failWithServices: failWithServices,
+          args: args,
+          config: {
+            'datahub': {
+              'log': 'debug',
+              'environment': 'dev',
+              'serviceName': 'unit-test',
+            },
+            ...config,
+          },
+        );
 
   Future<void> Function() test<T extends ApiService>(
       [FutureOr<void> Function()? body]) {

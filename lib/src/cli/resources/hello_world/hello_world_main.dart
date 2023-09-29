@@ -1,6 +1,6 @@
 String createHelloWorldMain(String projectName) => '''import 'dart:io';
 
-import 'package:datahub/datahub.dart';
+
 import 'package:$projectName/$projectName.dart';
 
 void main(List<String> arguments) async {

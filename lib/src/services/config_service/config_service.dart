@@ -17,7 +17,7 @@ import 'package:datahub/transfer_object.dart';
 ///
 /// `datahub.environment` defines the service environment. See enum values in [Environment].
 ///
-/// Some built-in services like [LogService] or [KeyService] define their own#
+/// Some built-in services like [LogService] or [KeyService] define their own
 /// set of config values within the "datahub" config path.
 /// TODO more docs
 class ConfigService extends BaseService {

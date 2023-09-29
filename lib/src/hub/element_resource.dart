@@ -1,4 +1,6 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/hub.dart';
+import 'package:datahub/transfer_object.dart';
 
 abstract class ElementResource<T extends TransferObjectBase>
     extends Resource<T> {
