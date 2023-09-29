@@ -58,6 +58,18 @@ void main() {
 
       print('Pool ${adapter.poolAvailable} / ${adapter.poolSize}');
       await future;
+
+      expect(adapter.poolAvailable, 3);
+      await repo.transaction((context) async {
+        print((await repo.first())!.id);
+        expect(adapter.poolAvailable, 2);
+        await repo.transaction((context) async {
+          print((await repo.first())!.id);
+          expect(adapter.poolAvailable, 2);
+        });
+      });
+
+      expect(adapter.poolAvailable, 2);
     }));
   });
 }

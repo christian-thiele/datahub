@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:datahub/ioc.dart';
@@ -9,6 +10,7 @@ import 'package:datahub/utils.dart';
 /// TODO more docs
 abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
     extends BaseService {
+  final _adapterId = randomHexId(5);
   final DataSchema schema;
   final _pool = Pool<TConnection>();
 
@@ -30,38 +32,46 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
   Future<TResult> useConnection<TResult>(
       Future<TResult> Function(TConnection) delegate,
       {Duration? timeout}) async {
-    final connection = await _pool.take(timeout: timeout);
-    try {
-      return await delegate(connection);
-    } on SocketException catch (e, stack) {
-      resolve<LogService?>()?.error(
-        'SocketException while using database connection.',
-        error: e,
-        trace: stack,
-        sender: 'DataHub',
-      );
+    if (Zone.current['$_adapterId/connection'] is TConnection) {
+      return await delegate(Zone.current['$_adapterId/connection']);
+    }
 
+    final connection = await _pool.take(timeout: timeout);
+    return await runZoned(() async {
       try {
-        await connection.close();
-      } catch (e, stack) {
-        resolve<LogService?>()?.warn(
-          'Could not close connection.',
+        return await delegate(connection);
+      } on SocketException catch (e, stack) {
+        resolve<LogService?>()?.error(
+          'SocketException while using database connection.',
           error: e,
           trace: stack,
           sender: 'DataHub',
         );
+
+        try {
+          await connection.close();
+        } catch (e, stack) {
+          resolve<LogService?>()?.warn(
+            'Could not close connection.',
+            error: e,
+            trace: stack,
+            sender: 'DataHub',
+          );
+        }
+
+        resolve<LogService?>()?.debug(
+          'Creating new connection for pool.',
+          sender: 'DataHub',
+        );
+
+        _pool.give(await openConnection());
+
+        rethrow;
+      } finally {
+        _pool.give(connection);
       }
-
-      resolve<LogService?>()?.debug(
-        'Creating new connection for pool.',
-        sender: 'DataHub',
-      );
-
-      _pool.give(await openConnection());
-
-      rethrow;
-    } finally {
-      _pool.give(connection);
-    }
+    }, zoneValues: {
+      '$_adapterId/connection': connection,
+    });
   }
 }
