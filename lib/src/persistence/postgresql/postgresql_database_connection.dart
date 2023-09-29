@@ -34,7 +34,7 @@ class PostgreSQLDatabaseConnection extends DatabaseConnection {
     }
 
     final completer = Completer<_Box<T>>();
-    final contextCompleter = Completer<DatabaseContext>();
+    final contextCompleter = Completer<PostgreSQLDatabaseContext>();
     runZonedGuarded(() {
       _connection
           .transaction((c) async {
