@@ -11,6 +11,8 @@ services:
       - RABBITMQ_DEFAULT_USER=testuser
       - RABBITMQ_DEFAULT_PASS=secretpassword
   postgres:
+    ports:
+      - 5432:5432
     image: postgres:15
     environment:
       - POSTGRES_DB=test_db

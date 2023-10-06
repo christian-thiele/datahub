@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:boost/boost.dart';
 import 'package:datahub/services.dart';
 
+import 'isolated_host_configuration.dart';
 import 'service_resolver.dart';
 import 'base_service.dart';
 
@@ -14,22 +15,22 @@ import 'base_service.dart';
 abstract class ServiceHost extends ServiceResolver {
   late final List<BaseService Function()> _factories;
   final List<BaseService> _services = [];
+  final LogBackend _logBackend;
   @override
   final servicesReady = Notifier();
   Completer? _shutdownCompleter;
 
   final bool failWithServices;
 
-  ServiceHost(
-    List<BaseService Function()> factories, {
+  ServiceHost(List<BaseService Function()> factories, {
     this.failWithServices = true,
     LogBackend? logBackend,
     List<String> args = const <String>[],
     Map<String, dynamic> config = const <String, dynamic>{},
-  }) {
+  }) : _logBackend = logBackend ?? ConsoleLogBackend() {
     _factories = <BaseService Function()>[
-      () => LogService(logBackend ?? ConsoleLogBackend()),
-      () => ConfigService(config, args),
+          () => LogService(_logBackend),
+          () => ConfigService(config, args),
       SchedulerService.new,
       KeyService.new,
       ...factories,
@@ -52,7 +53,8 @@ abstract class ServiceHost extends ServiceResolver {
                 failWithServices);
           } else {
             _onError(
-                'Error while initializing service instance of ${service.runtimeType}.',
+                'Error while initializing service instance of ${service
+                    .runtimeType}.',
                 e,
                 stack,
                 failWithServices);
@@ -70,7 +72,9 @@ abstract class ServiceHost extends ServiceResolver {
 
   @override
   TService resolveService<TService extends BaseService?>() {
-    final service = _services.whereIs<TService>().firstOrNull;
+    final service = _services
+        .whereIs<TService>()
+        .firstOrNull;
     if (service is TService) {
       return service;
     } else {
@@ -115,8 +119,8 @@ abstract class ServiceHost extends ServiceResolver {
     }
   }
 
-  void _onError(
-      String msg, dynamic exception, StackTrace trace, bool critical) {
+  void _onError(String msg, dynamic exception, StackTrace trace,
+      bool critical) {
     final logService = resolveService<LogService?>();
     if (logService != null) {
       final method = critical ? logService.c : logService.e;
@@ -124,5 +128,11 @@ abstract class ServiceHost extends ServiceResolver {
     } else {
       print('$msg\n$e');
     }
+  }
+
+  @override
+  IsolatedHostConfiguration getIsolatedHostConfiguration() {
+    return IsolatedHostConfiguration(
+        resolveService<ConfigService>().getConfigMap(), _logBackend);
   }
 }

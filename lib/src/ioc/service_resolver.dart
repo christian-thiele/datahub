@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:boost/boost.dart';
+import 'package:datahub/src/ioc/isolated_host_configuration.dart';
 
 import 'base_service.dart';
 
@@ -30,4 +31,6 @@ abstract class ServiceResolver {
   TService resolveService<TService extends BaseService?>();
 
   Notifier get servicesReady;
+
+  IsolatedHostConfiguration getIsolatedHostConfiguration();
 }

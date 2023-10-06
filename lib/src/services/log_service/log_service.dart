@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:isolate';
+
 import 'package:datahub/ioc.dart';
 
 import 'log_backend.dart';
@@ -212,4 +215,13 @@ class LogService extends BaseService {
 
   @override
   Future<void> shutdown() async => await _backend.shutdown();
+
+  static Map<String, dynamic> currentPathInfo() {
+    return {
+      'isolate': Isolate.current.debugName,
+      'api_request_id': Zone.current[#apiRequestId],
+      'scheduler_execution_id': Zone.current[#schedulerExecutionId],
+      //TODO other log path segments
+    };
+  }
 }

@@ -42,4 +42,14 @@ class Pool<T> {
       _taken.remove(item);
     }
   }
+
+  T giveReserved(T item) {
+    _taken.add(item);
+    return item;
+  }
+
+  void remove(T item) {
+    _items.remove(item);
+    _taken.remove(item);
+  }
 }

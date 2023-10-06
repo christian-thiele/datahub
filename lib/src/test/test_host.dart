@@ -45,7 +45,7 @@ class TestHost extends ServiceHost {
         try {
           await shutdown();
         } catch (_) {
-          fail('TestHost does shutdown gracefully.');
+          fail('TestHost does not shutdown gracefully.');
         }
       }
     };

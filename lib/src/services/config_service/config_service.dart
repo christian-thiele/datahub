@@ -43,6 +43,8 @@ class ConfigService extends BaseService {
     _merge(_configMap, defaultConfig);
   }
 
+  Map<String, dynamic> getConfigMap() => _configMap; //TODO deep clone
+
   @override
   Future<void> initialize() async {
     for (final arg in arguments) {

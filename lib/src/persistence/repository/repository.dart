@@ -38,20 +38,8 @@ abstract class Repository extends BaseService {
   /// methods using [transaction] can be combined into larger transactions.
   Future<T> transaction<T>(
       Future<T> Function(DatabaseContext context) delegate) async {
-    try {
-      return await _adapter.useConnection((connection) async {
-        return await connection.runTransaction(delegate);
-      });
-    } on SocketException catch (e, stack) {
-      resolve<LogService?>()?.warn(
-        'Socket exception in transaction. Retrying...',
-        error: e,
-        trace: stack,
-      );
-
-      return await _adapter.useConnection((connection) async {
-        return await connection.runTransaction(delegate);
-      });
-    }
+    return await _adapter.useConnection((connection) async {
+      return await connection.runTransaction(delegate);
+    });
   }
 }

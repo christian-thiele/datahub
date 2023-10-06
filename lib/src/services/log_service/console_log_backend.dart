@@ -1,12 +1,10 @@
-import 'dart:async';
 import 'dart:io';
-
-import 'package:boost/boost.dart';
 import 'package:intl/intl.dart';
 
 import 'log_backend.dart';
 import 'log_level.dart';
 import 'log_message.dart';
+import 'log_service.dart';
 
 /// The default [LogBackend] implementation.
 ///
@@ -29,55 +27,58 @@ class ConsoleLogBackend extends LogBackend {
       return;
     }
 
+    final buffer = StringBuffer();
     final color = _severityColor(message.level);
 
     var prefixLength = 0;
     void writePrefix(String val) {
       prefixLength += val.length;
-      stdout.write(val);
+      buffer.write(val);
     }
 
     writePrefix(_timestampString(message.timestamp));
     writePrefix(' ');
 
     if (color != null) {
-      stdout.write(color);
+      buffer.write(color);
     }
 
     writePrefix(_severityPrefix(message.level));
     writePrefix(' ');
 
-    final pathInfo = [
-      Zone.current[#apiRequestId],
-      Zone.current[#schedulerExecutionId],
-      message.sender,
-      //TODO other log path segments
-    ];
+    final pathInfo = LogService.currentPathInfo();
 
-    for (final entry in pathInfo.whereNotNull) {
-      writePrefix(_brackets(entry.toString(), null));
-      writePrefix(' ');
+    for (final entry in pathInfo.entries) {
+      if (entry.value != null) {
+        if (entry.key == 'isolate' && entry.value == 'main') {
+          continue;
+        }
+        writePrefix(_brackets(entry.value.toString(), null));
+        writePrefix(' ');
+      }
     }
 
     final indent = ' ' * prefixLength;
-    stdout.write(message.message.replaceAll('\n', '\n$indent'));
+    buffer.write(message.message.replaceAll('\n', '\n$indent'));
 
     if (message.exception != null) {
-      stdout.write('\n');
-      stdout.write(indent);
-      stdout.write(message.exception);
+      buffer.write('\n');
+      buffer.write(indent);
+      buffer.write(message.exception);
     }
 
     if (message.trace != null) {
-      stdout.write('\n');
-      stdout.write(indent);
-      stdout.write(message.trace.toString().replaceAll('\n', '\n$indent'));
+      buffer.write('\n');
+      buffer.write(indent);
+      buffer.write(message.trace.toString().replaceAll('\n', '\n$indent'));
     }
 
     if (color != null) {
-      stdout.write(_colorReset);
+      buffer.write(_colorReset);
     }
-    stdout.write('\n');
+    buffer.write('\n');
+
+    stdout.write(buffer.toString());
   }
 
   @override

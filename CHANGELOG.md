@@ -22,6 +22,8 @@
   - added --codegen / --no-codegen flag to build command
 - Broker
   - abstraction for amqp broker implementation to provide more stable framework
+- ServiceHost
+  - IsolatedService / IsolatedHost
 
 ## 0.16.5
 - TransferCodec, TransferBean
