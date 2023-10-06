@@ -15,10 +15,11 @@ void main() {
     ],
     config: {
       'postgres': {
-        'host': 'postgres',
+        'host': 'localhost',
         'database': 'test_db',
         'username': 'testuser',
         'password': 'secretpassword',
+        'maxConnectionLifetime': 10,
       },
     },
   );
@@ -37,16 +38,17 @@ void main() {
 
       final repo = resolve<CRUDRepository<ArticleDao, int>>();
       final adapter = resolve<DatabaseAdapter>();
-      print('Pool ${adapter.poolAvailable} / ${adapter.poolSize}');
+      expect(adapter.poolAvailable, 3);
+      expect(adapter.poolSize, 3);
 
       Future<void> somethingStupid() async {
         await repo.transaction((context) async {
           print('Blocking transaction.');
-          print('Pool ${adapter.poolAvailable} / ${adapter.poolSize}');
+          expect(adapter.poolAvailable, 1);
           await Future.delayed(const Duration(seconds: 5));
-          print('Released transaction.');
         });
-        print('Pool ${adapter.poolAvailable} / ${adapter.poolSize}');
+        print('Released transaction.');
+        expect(adapter.poolAvailable, 3);
       }
 
       final future = somethingStupid();
@@ -56,8 +58,10 @@ void main() {
       final results = await repo.getAll();
       expect(results.length, greaterThan(0));
 
-      print('Pool ${adapter.poolAvailable} / ${adapter.poolSize}');
+      expect(adapter.poolAvailable, 2);
       await future;
+
+      await Future.delayed(const Duration(seconds: 10));
 
       expect(adapter.poolAvailable, 3);
       await repo.transaction((context) async {
@@ -70,6 +74,6 @@ void main() {
       });
 
       expect(adapter.poolAvailable, 3);
-    }));
+    }), timeout: Timeout.none);
   });
 }

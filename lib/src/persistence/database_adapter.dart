@@ -8,15 +8,22 @@ import 'package:datahub/utils.dart';
 
 /// Abstract class for connecting to a database.
 /// TODO more docs
+/// TODO docs config vars
 abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
     extends BaseService {
-  static const _backoffDuration = Duration(seconds: 3);
-
   final _adapterId = randomHexId(5);
   final DataSchema schema;
-  final _pool = Pool<TConnection>();
+
+  late final _pool = Pool<TConnection>(
+    targetPoolSize,
+    _create,
+    maxLifetime: Duration(seconds: maxConnectionLifetime),
+    checkIsLive: (c) => c.isOpen,
+  );
 
   late final targetPoolSize = config<int?>('poolSize') ?? 3;
+  late final maxConnectionLifetime =
+      config<int?>('maxConnectionLifetime') ?? 3600;
 
   int get poolSize => _pool.total;
 
@@ -28,9 +35,7 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
 
   @override
   Future<void> initialize() async {
-    for (var i = 0; i < targetPoolSize; i++) {
-      _pool.give(await openConnection());
-    }
+    await _pool.fill();
   }
 
   Future<TConnection> _create() async {
@@ -39,21 +44,7 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
       sender: 'DataHub',
     );
 
-    return _pool.giveReserved(await openConnection());
-  }
-
-  Future<TConnection> _take(Duration? timeout) async {
-    if (_pool.total < targetPoolSize) {
-      return await _create();
-    } else {
-      final connection = await _pool.take(timeout: timeout);
-      if (connection.isOpen) {
-        return connection;
-      } else {
-        _pool.remove(connection);
-        return await _create();
-      }
-    }
+    return await openConnection();
   }
 
   /// Provides a connection from the connection pool.
@@ -64,7 +55,7 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
       return await delegate(Zone.current['$_adapterId/connection']);
     }
 
-    final connection = await _take(timeout);
+    final connection = await _pool.take(timeout: timeout);
 
     try {
       return await runZoned(() async {

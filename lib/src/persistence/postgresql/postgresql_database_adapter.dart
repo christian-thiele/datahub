@@ -14,6 +14,7 @@ import 'sql/sql.dart';
 
 const metaTable = '_datahub_meta';
 
+//TODO docs for config
 /// [DatabaseAdapter] implementation for PostgreSQL databases.
 class PostgreSQLDatabaseAdapter
     extends DatabaseAdapter<PostgreSQLDatabaseConnection> {
@@ -99,14 +100,18 @@ class PostgreSQLDatabaseAdapter
 
   @override
   Future<PostgreSQLDatabaseConnection> openConnection() async {
-    final connection = postgres.PostgreSQLConnection(host, port, databaseName,
-        username: username,
-        password: password,
-        timeoutInSeconds: timeoutInSeconds,
-        queryTimeoutInSeconds: queryTimeoutInSeconds,
-        timeZone: timeZone,
-        useSSL: useSSL,
-        isUnixSocket: isUnixSocket);
+    final connection = postgres.PostgreSQLConnection(
+      host,
+      port,
+      databaseName,
+      username: username,
+      password: password,
+      timeoutInSeconds: timeoutInSeconds,
+      queryTimeoutInSeconds: queryTimeoutInSeconds,
+      timeZone: timeZone,
+      useSSL: useSSL,
+      isUnixSocket: isUnixSocket,
+    );
     await connection.open();
 
     return PostgreSQLDatabaseConnection(this, connection);
