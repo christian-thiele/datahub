@@ -1,6 +1,5 @@
 import 'dart:typed_data';
 
-import 'broker_message.dart';
 import 'broker_queue.dart';
 
 enum BrokerExchangeType { topic, fanOut, direct }

@@ -1,5 +1,4 @@
 import 'package:datahub/ioc.dart';
-import 'package:dart_amqp/dart_amqp.dart';
 
 import 'broker_channel.dart';
 
