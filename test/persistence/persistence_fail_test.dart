@@ -55,7 +55,6 @@ void main() {
         }
         print('Pool ${adapter.poolAvailable} / ${adapter.poolSize}');
       }
-
     }), timeout: Timeout.none);
   });
 }

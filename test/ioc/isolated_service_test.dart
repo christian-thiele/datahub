@@ -6,8 +6,6 @@ import 'package:test/scaffolding.dart';
 
 import 'lib/calculator_service.dart';
 
-
-
 void main() {
   final host = TestHost([
     CalculatorService.new,
