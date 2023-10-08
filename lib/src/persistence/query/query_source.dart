@@ -10,14 +10,14 @@ abstract class QuerySource<T> {
   T? map(List<QueryResult> results);
 }
 
-//TODO use filter objects for join
 class BeanJoin<TDao> {
   final DataBean<TDao> bean;
-  final DataField mainField;
-  final CompareType type;
-  final DataField beanField;
+  final Filter filter;
 
-  BeanJoin(this.bean, this.mainField, this.type, this.beanField);
+  BeanJoin(this.bean, this.filter);
+
+  BeanJoin.foreignKey(this.bean, DataField mainField, DataField beanField)
+      : filter = mainField.equals(beanField);
 }
 
 abstract class JoinedQuerySource {
@@ -63,12 +63,11 @@ class TupleJoinQuerySource<Ta, Tb> extends QuerySource<Tuple<Ta, Tb>>
   ///
   /// This enabled chaining of join() calls.
   TripleJoinQuerySource<Ta, Tb, Tc> join<Tc, TDao extends Tc>(
-      DataBean<TDao> other, DataField mainField, DataField otherField,
-      {CompareType type = CompareType.equals}) {
+      DataBean<TDao> other, Filter filter) {
     return TripleJoinQuerySource<Ta, Tb, Tc>(
       main,
       joinB,
-      BeanJoin<TDao>(other, mainField, type, otherField),
+      BeanJoin<TDao>(other, filter),
     );
   }
 }

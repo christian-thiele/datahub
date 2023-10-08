@@ -2,7 +2,6 @@ import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
 
 import 'package:datahub/src/persistence/postgresql/sql/sql.dart';
-import 'package:datahub/src/persistence/query/sub_query.dart';
 
 abstract class SelectFrom {
   Tuple<String, Map<String, dynamic>> buildSql();
@@ -19,9 +18,7 @@ abstract class SelectFrom {
             .map(
               (e) => TableJoin(
                 SelectFromTable(schemaName, e.bean.layoutName),
-                e.mainField.name,
-                e.type,
-                e.beanField.name,
+                e.filter,
                 (source as JoinedQuerySource).innerJoin,
               ),
             )
@@ -49,47 +46,20 @@ class SelectFromTable extends SelectFrom {
 
 class TableJoin {
   final SelectFromTable table;
-  final String onMainField;
-  final CompareType onCompare;
-  final String onJoinField;
+  final Filter filter;
   final bool innerJoin;
 
   TableJoin(
     this.table,
-    this.onMainField,
-    this.onCompare,
-    this.onJoinField,
+    this.filter,
     this.innerJoin,
   );
 
   Tuple<String, Map<String, dynamic>> getJoinSql(SelectFromTable main) => Tuple(
         ' ${innerJoin ? '' : 'LEFT '}JOIN ${table.buildSql().a} ON '
-        '${main.buildSql().a}.${SqlBuilder.escapeName(onMainField)} $_compareSql '
-        '${table.buildSql().a}.${SqlBuilder.escapeName(onJoinField)}',
+        '(${SqlBuilder.filterSql(filter)})',
         const {},
       );
-
-  //TODO use filterSql here instead to allow more complex joins
-  String get _compareSql {
-    switch (onCompare) {
-      case CompareType.equals:
-        return '=';
-      case CompareType.notEquals:
-        return '<>';
-      case CompareType.lessThan:
-        return '<';
-      case CompareType.lessOrEqual:
-        return '<=';
-      case CompareType.greaterThan:
-        return '>';
-      case CompareType.greaterOrEqual:
-        return '>=';
-      case CompareType.isIn:
-        return 'in';
-      default:
-        throw Exception('Invalid join compare type: $onCompare');
-    }
-  }
 }
 
 class JoinedSelectFrom extends SelectFrom {
