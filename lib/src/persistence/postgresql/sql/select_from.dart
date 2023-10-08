@@ -55,11 +55,14 @@ class TableJoin {
     this.innerJoin,
   );
 
-  Tuple<String, Map<String, dynamic>> getJoinSql(SelectFromTable main) => Tuple(
-        ' ${innerJoin ? '' : 'LEFT '}JOIN ${table.buildSql().a} ON '
-        '(${SqlBuilder.filterSql(filter)})',
-        const {},
-      );
+  Tuple<String, Map<String, dynamic>> getJoinSql(SelectFromTable main) {
+    final filterSql = SqlBuilder.filterSql(filter);
+    return Tuple(
+      ' ${innerJoin ? '' : 'LEFT '}JOIN ${table.buildSql().a} ON '
+      '(${filterSql.a})',
+      filterSql.b,
+    );
+  }
 }
 
 class JoinedSelectFrom extends SelectFrom {
