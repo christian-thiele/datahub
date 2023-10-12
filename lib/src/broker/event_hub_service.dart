@@ -62,7 +62,8 @@ abstract class EventHubService extends BaseService {
       await _publishChannel
           .get()
           .then((c) => c.declareExchange(exchange, BrokerExchangeType.topic))
-          .then((ex) => ex.publish(encoded, topic));
+          .then((ex) => ex.publish(
+              utf8.encode(jsonEncode(encoded)).asUint8List(), topic));
     }
   }
 
