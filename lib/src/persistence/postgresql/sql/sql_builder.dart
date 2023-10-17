@@ -3,8 +3,11 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
+import 'package:datahub/postgresql.dart';
 
 import 'package:postgres/postgres.dart';
+
+import '../type_registry.dart';
 
 abstract class SqlBuilder {
   /// Returns the sql string together with it's substitution values
@@ -41,11 +44,13 @@ abstract class SqlBuilder {
       if (filter.caseSensitive ||
           filter.type == CompareType.contains ||
           filter.right == ValueExpression(null)) {
-        final result = expressionSql(filter.left);
+        final result = expressionSql(filter.left).sqlTuple();
+        ;
         buffer.write(result.a);
         values.addAll(result.b);
       } else {
-        final result = expressionSql(filter.left);
+        final result = expressionSql(filter.left).sqlTuple();
+        ;
         buffer.write('LOWER(${result.a})');
         values.addAll(result.b);
       }
@@ -106,11 +111,13 @@ abstract class SqlBuilder {
         default:
           if (filter.caseSensitive ||
               filter.right == const ValueExpression(null)) {
-            final result = expressionSql(filter.right);
+            final result = expressionSql(filter.right).sqlTuple();
+            ;
             buffer.write(result.a);
             values.addAll(result.b);
           } else {
-            final result = expressionSql(filter.right);
+            final result = expressionSql(filter.right).sqlTuple();
+            ;
             buffer.write('LOWER(${result.a})');
             values.addAll(result.b);
           }
@@ -130,7 +137,8 @@ abstract class SqlBuilder {
   static Tuple<String, Map<String, dynamic>> sortSql(Sort sort) {
     final propertySorts = sort.linear();
     final result = propertySorts.map((e) {
-      final result = expressionSql(e.expression);
+      final result = expressionSql(e.expression).sqlTuple();
+      ;
       return Tuple('${result.a} ${e.ascending ? 'ASC' : 'DESC'}', result.b);
     }).toList();
     return Tuple(result.a.join(', '),
@@ -140,18 +148,16 @@ abstract class SqlBuilder {
   static Tuple<String, Map<String, dynamic>> selectSql(QuerySelect select) {
     if (select is WildcardSelect) {
       if (select.bean != null) {
-        return Tuple(escapeName(select.bean!.layoutName) + '.*', const {});
+        return (escapeName(select.bean!.layoutName) + '.*').sqlTuple();
       } else {
-        return const Tuple('*', {});
+        return '*'.sqlTuple();
       }
     } else if (select is DataField) {
-      return Tuple(fieldSql(select), const {});
+      return fieldSql(select).sqlTuple();
     } else if (select is FieldSelect) {
       if (select.alias != null) {
-        return Tuple(
-          '${fieldSql(select.field)} AS ${escapeName(select.alias!)}',
-          const {},
-        );
+        return '${fieldSql(select.field)} AS ${escapeName(select.alias!)}'
+            .sqlTuple();
       } else {
         return selectSql(select.field);
       }
@@ -163,87 +169,35 @@ abstract class SqlBuilder {
 
       switch (select.type) {
         case AggregateType.count:
-          return Tuple('COUNT(*) AS ${escapeName(select.alias)}', const {});
+          return 'COUNT(*) AS ${escapeName(select.alias)}'.sqlTuple();
         case AggregateType.min:
           // dereference safe because of exception above
-          final inner = expressionSql(select.expression!);
+          final inner = expressionSql(select.expression!).sqlTuple();
           return Tuple(
               'MIN(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
         case AggregateType.max:
           // dereference safe because of exception above
-          final inner = expressionSql(select.expression!);
+          final inner = expressionSql(select.expression!).sqlTuple();
           return Tuple(
               'MAX(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
         case AggregateType.sum:
           // dereference safe because of exception above
-          final inner = expressionSql(select.expression!);
+          final inner = expressionSql(select.expression!).sqlTuple();
           return Tuple(
               'SUM(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
         case AggregateType.avg:
           // dereference safe because of exception above
-          final inner = expressionSql(select.expression!);
+          final inner = expressionSql(select.expression!).sqlTuple();
           return Tuple(
               'AVG(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
       }
     } else if (select is ExpressionSelect) {
-      final expression = expressionSql(select.expression);
+      final expression = expressionSql(select.expression).sqlTuple();
       return Tuple(
           '${expression.a} AS ${escapeName(select.alias)}', expression.b);
     } else {
       throw PersistenceException('PostgreSQL implementation does not '
           'support aggregate type ${select.runtimeType}.');
-    }
-  }
-
-  static String typeSql(DataField field) {
-    switch (field.type) {
-      case FieldType.String:
-        return 'varchar(${field.length})';
-      case FieldType.Int:
-        if (field is PrimaryKey && field.autoIncrement) {
-          if (field.length == 32) {
-            return 'serial';
-          } else if (field.length == 64) {
-            return 'bigserial';
-          } else {
-            throw PersistenceException(
-                'PostgreSQL implementation does not support serial length ${field.length}.'
-                'Only 16, 32 or 64 allowed.)');
-          }
-        } else if (field.length == 16) {
-          return 'int2';
-        } else if (field.length == 32) {
-          return 'int4';
-        } else if (field.length == 64) {
-          return 'int8';
-        } else {
-          throw PersistenceException(
-              'PostgreSQL implementation does not support int length ${field.length}.'
-              'Only 16, 32 or 64 allowed.)');
-        }
-      case FieldType.Float:
-        if (field.length == 32) {
-          return 'real';
-        } else if (field.length == 64) {
-          return 'double precision';
-        } else {
-          throw PersistenceException(
-              'PostgreSQL implementation does not support float length ${field.length}.'
-              'Only 32 or 64 allowed.)');
-        }
-      case FieldType.Bool:
-        return 'boolean';
-      case FieldType.DateTime:
-        return 'timestamp with time zone'; //TODO with time zone variable?
-      case FieldType.Bytes:
-        return 'bytea';
-      case FieldType.Point:
-        return 'point';
-      case FieldType.Json:
-        return 'jsonb';
-      default:
-        throw PersistenceException(
-            'PostgreSQL implementation does not support data type ${field.type}.');
     }
   }
 
@@ -301,6 +255,7 @@ abstract class SqlBuilder {
     return '\'${value.toString().replaceAll('\'', '\'\'')}\''; //TODO other escape things
   }
 
+  @deprecated
   static Tuple<String, Map<String, dynamic>> escapeValueLike(Expression value) {
     if (value is ValueExpression) {
       if (value.value is DateTime) {
@@ -313,32 +268,14 @@ abstract class SqlBuilder {
       }
     }
 
-    return expressionSql(value);
+    return expressionSql(value).sqlTuple();
   }
 
-  /// Returns a substitution literal.
-  ///
-  /// Triple contains
-  /// a: field name
-  /// b: field substitution key
-  /// c: substituted value
-  static String substitutionLiteral(Triple<String, String, dynamic> e) {
-    if (e.c is Uint8List) {
-      // in SqlBuilder.toSqlData Uint8List objects are converted to hex strings
-      return "decode(@${e.b}, 'hex')";
-    } else if (e.c is List || e.c is Map<String, dynamic>) {
-      return '@${e.b}::jsonb';
-    } else {
-      return '@${e.b}';
-    }
-  }
-
-  static Tuple<String, Map<String, dynamic>> expressionSql(
-      Expression expression) {
+  static String expressionSql(Expression expression) {
     if (expression is DataField) {
-      return Tuple(fieldSql(expression), {});
+      return fieldSql(expression);
     } else if (expression is ValueExpression) {
-      return Tuple(escapeValue(expression.value), {});
+      return escapeValue(expression.value);
       // ignore: deprecated_member_use_from_same_package
     } else if (expression is OperationExpression) {
       late String operator;
@@ -362,15 +299,16 @@ abstract class SqlBuilder {
       final left = expressionSql(expression.left);
       final right = expressionSql(expression.right);
 
-      return Tuple('(${left.a} $operator ${right.a})', {...left.b, ...right.b});
+      return '($left $operator $right)';
     } else if (expression is CustomSqlExpression) {
-      return Tuple(expression.sqlExpression, {});
+      return expression.sqlExpression;
     } else {
       throw PersistenceException('PostgreSQL implementation does not '
           'support Expression type ${expression.runtimeType}.');
     }
   }
 
+  @deprecated
   static dynamic toSqlData(dynamic value) {
     if (value is Point) {
       return PgPoint(value.x, value.y);
@@ -399,4 +337,8 @@ class RawSql implements SqlBuilder {
   @override
   Tuple<String, Map<String, dynamic>> buildSql() =>
       Tuple(rawSql, substitutionValues);
+}
+
+extension _SqlTuple on String {
+  Tuple<String, Map<String, dynamic>> sqlTuple() => Tuple(this, const {});
 }

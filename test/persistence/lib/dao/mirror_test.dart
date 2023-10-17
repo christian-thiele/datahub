@@ -14,9 +14,13 @@ void _blogMirror() {
   expect(
     BlogDaoDataBean.fields,
     unorderedEquals([
-      PrimaryKey(FieldType.String, 'blog', 'key'),
-      ForeignKey(PrimaryKey(FieldType.Int, 'user', 'id'), 'blog', 'ownerId'),
-      DataField(FieldType.String, 'blog', 'displayName')
+      PrimaryKey(type: StringDataType(), layoutName: 'blog', name: 'key'),
+      ForeignKey(
+          foreignPrimaryKey: PrimaryKey(
+              type: SerialDataType(), layoutName: 'user', name: 'id'),
+          layoutName: 'blog',
+          name: 'ownerId'),
+      DataField(type: StringDataType(), layoutName: 'blog', name: 'displayName')
     ]),
   );
 
@@ -24,15 +28,28 @@ void _blogMirror() {
   expect(
     ArticleDaoDataBean.fields,
     unorderedEquals([
-      PrimaryKey(FieldType.Int, 'article', 'id'),
-      ForeignKey(PrimaryKey(FieldType.Int, 'user', 'id'), 'article', 'userId'),
+      PrimaryKey(type: IntDataType(), layoutName: 'article', name: 'id'),
       ForeignKey(
-          PrimaryKey(FieldType.String, 'blog', 'key'), 'article', 'blogKey'),
-      DataField(FieldType.String, 'article', 'title'),
-      DataField(FieldType.String, 'article', 'content'),
-      DataField(FieldType.Bytes, 'article', 'image'),
-      DataField(FieldType.DateTime, 'article', 'createdTimestamp'),
-      DataField(FieldType.DateTime, 'article', 'lastEditTimestamp')
+          foreignPrimaryKey:
+              PrimaryKey(type: IntDataType(), layoutName: 'user', name: 'id'),
+          layoutName: 'article',
+          name: 'userId'),
+      ForeignKey(
+          foreignPrimaryKey: PrimaryKey(
+              type: StringDataType(), layoutName: 'blog', name: 'key'),
+          layoutName: 'article',
+          name: 'blogKey'),
+      DataField(type: StringDataType(), layoutName: 'article', name: 'title'),
+      DataField(type: StringDataType(), layoutName: 'article', name: 'content'),
+      DataField(type: ByteDataType(), layoutName: 'article', name: 'image'),
+      DataField(
+          type: DateTimeDataType(),
+          layoutName: 'article',
+          name: 'createdTimestamp'),
+      DataField(
+          type: DateTimeDataType(),
+          layoutName: 'article',
+          name: 'lastEditTimestamp')
     ]),
   );
 
@@ -40,11 +57,13 @@ void _blogMirror() {
   expect(
     UserDaoDataBean.fields,
     unorderedEquals([
-      PrimaryKey(FieldType.Int, 'user', 'id'),
-      DataField(FieldType.Int, 'user', 'executionId'),
-      DataField(FieldType.String, 'user', 'username', length: 128),
-      DataField(FieldType.Point, 'user', 'location', nullable: true),
-      DataField(FieldType.Bytes, 'user', 'image'),
+      PrimaryKey(type: IntDataType(), layoutName: 'user', name: 'id'),
+      DataField(type: IntDataType(), layoutName: 'user', name: 'executionId'),
+      DataField(
+          type: StringDataType(length: 128),
+          layoutName: 'user',
+          name: 'username'),
+      DataField(type: ByteDataType(), layoutName: 'user', name: 'image'),
     ]),
   );
 }

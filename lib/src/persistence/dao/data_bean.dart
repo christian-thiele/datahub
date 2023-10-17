@@ -8,7 +8,7 @@ abstract class DataBean<TDao> extends QuerySource<TDao> {
 
   const DataBean();
 
-  Map<String, dynamic> unmap(TDao dao, {bool includePrimaryKey = false});
+  Map<DataField, dynamic> unmap(TDao dao, {bool includePrimaryKey = false});
 
   @override
   TDao? map(List<QueryResult> results) {
@@ -78,7 +78,7 @@ abstract class DataBean<TDao> extends QuerySource<TDao> {
 }
 
 abstract class PrimaryKeyDataBean<TDao, TPrimaryKey> extends DataBean<TDao> {
-  PrimaryKey get primaryKeyField;
+  PrimaryKey get primaryKey;
 
   const PrimaryKeyDataBean();
 }

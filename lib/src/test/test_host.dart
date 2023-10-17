@@ -5,7 +5,6 @@ import 'package:datahub/api.dart';
 import 'package:datahub/broker.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/rest_client.dart';
-import 'package:datahub/services.dart';
 import 'package:test/expect.dart';
 
 class TestHost extends ServiceHost {

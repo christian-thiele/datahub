@@ -9,8 +9,7 @@ abstract class Migrator {
 
   Future<void> removeLayout(String name);
 
-  //TODO maybe accept a function to generate default values for columns?
-  Future<void> addField(DataBean bean, DataField field, dynamic initialValue);
+  Future<void> addField(DataBean bean, DataField field, Expression initialValue);
 
   Future<void> removeField(DataBean bean, String fieldName);
 

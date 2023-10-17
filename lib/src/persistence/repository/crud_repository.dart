@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:datahub/ioc.dart';
 import 'package:datahub/persistence.dart';
 
 /// [Repository] implementation for basic CRUD operations.

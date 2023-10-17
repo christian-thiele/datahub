@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:datahub/datahub.dart';
 
-import 'isolated_host.dart';
 
 /// Base class for all isolated services.
 ///

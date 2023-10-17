@@ -1,13 +1,6 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
 
-import 'dao/base_dao.dart';
-
-import 'query/query_source.dart';
-import 'query/filter.dart';
-import 'query/sort.dart';
-import 'query/query_select.dart';
-
 /// Interface for performing operations / running queries on the database.
 ///
 /// A [DatabaseContext] is usually received by initiating a transaction
@@ -49,13 +42,13 @@ abstract class DatabaseContext {
   Future<void> updateId<TPrimaryKey>(
     PrimaryKeyDataBean<dynamic, TPrimaryKey> bean,
     TPrimaryKey id,
-    Map<String, dynamic> values,
+    Map<DataField, dynamic> values,
   );
 
   /// Returns number of affected rows.
   Future<int> updateWhere(
     QuerySource source,
-    Map<String, dynamic> values,
+    Map<DataField, dynamic> values,
     Filter filter,
   );
 

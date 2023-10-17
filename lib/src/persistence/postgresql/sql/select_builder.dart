@@ -88,8 +88,7 @@ class SelectBuilder implements SqlBuilder {
     if (_group?.isNotEmpty ?? false) {
       buffer.write(' GROUP BY ');
       final groupResults = _group!.map((s) => SqlBuilder.expressionSql(s));
-      buffer.write(groupResults.map((e) => e.a).join(', '));
-      groupResults.map((e) => e.b).forEach(values.addAll);
+      buffer.write(groupResults.join(', '));
     }
 
     if (!_sort.isEmpty) {

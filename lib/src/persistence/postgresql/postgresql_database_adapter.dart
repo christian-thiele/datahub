@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/persistence.dart';
 import 'package:datahub/postgresql.dart';
@@ -7,18 +8,31 @@ import 'package:datahub/src/persistence/postgresql/postgresql_database_context.d
 // ignore: import_of_legacy_library_into_null_safe
 import 'package:postgres/postgres.dart' as postgres;
 
+import 'postgresql_data_types.dart';
 import 'postgresql_database_migrator.dart';
 import 'sql/sql.dart';
+import 'type_registry.dart';
 
 //TODO factor out postgreSQL related code to separate package
 
 const metaTable = '_datahub_meta';
 
-//TODO docs for config
 /// [DatabaseAdapter] implementation for PostgreSQL databases.
+
+//TODO docs for config
 class PostgreSQLDatabaseAdapter
-    extends DatabaseAdapter<PostgreSQLDatabaseConnection> {
+    extends DatabaseAdapter<PostgreSQLDatabaseConnection>
+    implements TypeRegistry {
   static const schemaVersionKey = 'schema_version';
+
+  static const defaultDataTypes = <PostgresqlDataType>{
+    PostgresqlStringDataType(),
+    PostgresqlIntDataType(),
+    PostgresqlSerialDataType(),
+    PostgresqlBoolDataType(),
+    PostgresqlDoubleDataType(),
+    PostgresqlDateTimeDataType(),
+  };
 
   late final host = config<String>('host');
   late final port = config<int?>('port') ?? 5432;
@@ -33,7 +47,13 @@ class PostgreSQLDatabaseAdapter
   late final isUnixSocket = config<bool?>('isUnixSocket') ?? false;
   late final ignoreMigration = config<bool?>('ignoreMigration') ?? false;
 
-  PostgreSQLDatabaseAdapter(super.path, super.schema);
+  final _typeRegistry = <PostgresqlDataType>{};
+
+  PostgreSQLDatabaseAdapter(super.path, super.schema,
+      {List<PostgresqlDataType> types = const []}) {
+    _typeRegistry.addAll(types);
+    _typeRegistry.addAll(defaultDataTypes);
+  }
 
   @override
   Future<void> initialize() async {
@@ -66,7 +86,7 @@ class PostgreSQLDatabaseAdapter
             resolve<LogService>().i(
                 'Migrating database schema from v$version to v${schema.version}.',
                 sender: 'DataHub');
-            final migrator = PostgreSQLDatabaseMigrator(schema, context);
+            final migrator = PostgreSQLDatabaseMigrator(this, schema, context);
 
             await schema.migrate(migrator, version);
             await context.setMetaValue(
@@ -79,23 +99,34 @@ class PostgreSQLDatabaseAdapter
 
           await context.execute(RawSql('CREATE SCHEMA ${schema.name}'));
 
-          await context.execute(CreateTableBuilder(schema.name, metaTable)
+          await context.execute(CreateTableBuilder(this, schema.name, metaTable)
             ..fields.addAll([
-              PrimaryKey(FieldType.String, metaTable, 'key'),
-              DataField(FieldType.String, metaTable, 'value')
+              PrimaryKey(
+                  type: StringDataType(), layoutName: metaTable, name: 'key'),
+              DataField(
+                  type: StringDataType(), layoutName: metaTable, name: 'value')
             ]));
 
           await context.setMetaValue(
               schemaVersionKey, schema.version.toString());
 
-          // create scheme
+          // create schema
           for (final layout in schema.beans) {
             await context
-                .execute(CreateTableBuilder.fromLayout(schema, layout));
+                .execute(CreateTableBuilder.fromLayout(this, schema, layout));
           }
         }
       });
     });
+  }
+
+  @override
+  PostgresqlDataType findType<T, TDataType extends DataType<T>>(
+      DataType<T> dataType) {
+    return _typeRegistry
+            .firstOrNullWhere((e) => e is PostgresqlDataType<T, TDataType>) ??
+        (throw PersistenceException(
+            'No type factory registered for ${dataType.runtimeType} in adapter.'));
   }
 
   @override

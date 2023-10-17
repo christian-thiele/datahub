@@ -106,11 +106,9 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     TPrimaryKey id, {
     bool forUpdate = false,
   }) async {
-    final primaryKey = bean.primaryKeyField;
-
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
     final result = await querySql(SelectBuilder(from)
-      ..where(Filter.equals(primaryKey, id))
+      ..where(Filter.equals(bean.primaryKey, id))
       ..forUpdate(forUpdate));
 
     return result.map((r) => bean.map(r)).firstOrNull;
@@ -121,12 +119,10 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     PrimaryKeyDataBean<dynamic, TPrimaryKey> bean,
     TPrimaryKey id,
   ) async {
-    final primaryKey = bean.primaryKeyField;
-
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
     final result = await querySql(SelectBuilder(from)
-      ..select([primaryKey])
-      ..where(Filter.equals(primaryKey, id)));
+      ..select([bean.primaryKey])
+      ..where(Filter.equals(bean.primaryKey, id)));
 
     return result.isNotEmpty;
   }
@@ -135,18 +131,16 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
   Future<dynamic> insert<TDao extends BaseDao>(TDao entry) async {
     final bean = entry.bean;
 
-    final primaryKeyField =
-        bean is PrimaryKeyDataBean ? bean.primaryKeyField : null;
+    final primaryKey = bean is PrimaryKeyDataBean ? bean.primaryKey : null;
 
-    final returning = primaryKeyField != null
-        ? SqlBuilder.escapeName(primaryKeyField.name)
-        : null;
+    final returning =
+        primaryKey != null ? SqlBuilder.escapeName(primaryKey.name) : null;
 
-    final withPrimary = !(primaryKeyField?.autoIncrement ?? false);
+    final withPrimary = !(primaryKey?.type is SerialDataType);
 
     final data = bean.unmap(entry, includePrimaryKey: withPrimary);
     final result = await querySql(
-        InsertBuilder(_adapter.schema.name, entry.bean.layoutName)
+        InsertBuilder(_adapter, _adapter.schema.name, entry.bean.layoutName)
           ..values(data)
           ..returning(returning));
 
@@ -159,7 +153,7 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     final data = bean.unmap(object);
 
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    await execute(UpdateBuilder(from)
+    await execute(UpdateBuilder(_adapter, from)
       ..values(data)
       ..where(_pkFilter(bean, object.getPrimaryKey())));
   }
@@ -168,10 +162,10 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
   Future<void> updateId<TPrimaryKey>(
     PrimaryKeyDataBean<dynamic, TPrimaryKey> bean,
     TPrimaryKey id,
-    Map<String, dynamic> values,
+    Map<DataField, dynamic> values,
   ) async {
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    await execute(UpdateBuilder(from)
+    await execute(UpdateBuilder(_adapter, from)
       ..values(values)
       ..where(_pkFilter(bean, id)));
   }
@@ -179,11 +173,11 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
   @override
   Future<int> updateWhere(
     QuerySource source,
-    Map<String, dynamic> values,
+    Map<DataField, dynamic> values,
     Filter filter,
   ) async {
     final from = SelectFrom.fromQuerySource(_adapter.schema.name, source);
-    return await execute(UpdateBuilder(from)
+    return await execute(UpdateBuilder(_adapter, from)
       ..values(values)
       ..where(filter));
   }
@@ -247,7 +241,6 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     PrimaryKeyDataBean<dynamic, TPrimaryKey> layout,
     TPrimaryKey id,
   ) {
-    final primaryKey = layout.primaryKeyField;
-    return Filter.equals(primaryKey, id);
+    return Filter.equals(layout.primaryKey, id);
   }
 }

@@ -1,16 +1,23 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
+import 'package:datahub/src/persistence/postgresql/postgresql_data_types.dart';
 
 import 'sql_builder.dart';
 
 class AddFieldBuilder implements SqlBuilder {
   final String schemaName;
   final String tableName;
+  final PostgresqlDataType type;
   final DataField field;
   final dynamic initialValue;
 
-  AddFieldBuilder(this.schemaName, this.tableName, this.field,
-      {this.initialValue}) {
+  AddFieldBuilder(
+    this.schemaName,
+    this.tableName,
+    this.field,
+    this.type,
+    this.initialValue,
+  ) {
     if (!field.nullable && initialValue == null) {
       throw PersistenceException(
           'Cannot add non-nullable field without initial value!');
@@ -24,7 +31,7 @@ class AddFieldBuilder implements SqlBuilder {
     final colName = SqlBuilder.escapeName(field.name);
 
     final buffer = StringBuffer(
-        'ALTER TABLE $tableRef ADD COLUMN $colName ${SqlBuilder.typeSql(field)}');
+        'ALTER TABLE $tableRef ADD COLUMN $colName ${type.getTypeSql(field.type)}');
     final subs = <String, dynamic>{};
 
     if (field is PrimaryKey) {
@@ -32,9 +39,8 @@ class AddFieldBuilder implements SqlBuilder {
     }
 
     if (initialValue != null) {
-      //TODO use Expression for initialValue
-      buffer.write('; UPDATE $tableRef SET $colName = @init');
-      subs['init'] = initialValue;
+      final sql = SqlBuilder.expressionSql(initialValue);
+      buffer.write('; UPDATE $tableRef SET $colName = $sql');
     }
 
     if (field is! PrimaryKey && !field.nullable) {

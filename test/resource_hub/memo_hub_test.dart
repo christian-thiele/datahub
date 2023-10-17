@@ -1,4 +1,3 @@
-import 'dart:async';
 
 import 'package:datahub/datahub.dart';
 import 'package:datahub/src/test/matchers.dart';

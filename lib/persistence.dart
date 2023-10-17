@@ -7,6 +7,7 @@ export 'src/persistence/dao/data_bean.dart';
 export 'src/persistence/dao/base_dao.dart';
 export 'src/persistence/dao/dao_field.dart';
 export 'src/persistence/dao/dao_type.dart';
+export 'src/persistence/dao/data_type.dart';
 
 export 'src/persistence/query/expression.dart';
 export 'src/persistence/query/filter.dart';

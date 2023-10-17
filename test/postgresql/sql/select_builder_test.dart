@@ -11,7 +11,7 @@ class TableDataBean extends DataBean<void> {
   String get layoutName => 'table';
 
   @override
-  Map<String, dynamic> unmap(dao, {bool includePrimaryKey = false}) => {};
+  Map<DataField, dynamic> unmap(dao, {bool includePrimaryKey = false}) => {};
 
   @override
   void mapValues(Map<String, dynamic> data) => null;
@@ -20,7 +20,8 @@ class TableDataBean extends DataBean<void> {
 enum TestEnum { something, test }
 
 void main() {
-  final fieldX = DataField(FieldType.String, 'fake', 'fieldX');
+  final fieldX =
+      DataField(type: StringDataType(), layoutName: 'fake', name: 'fieldX');
   final schemaTable = SelectFromTable('schema', 'table');
   final otherTable = SelectFromTable('schema', 'other');
   final otherTable2 = SelectFromTable('schema', 'different');

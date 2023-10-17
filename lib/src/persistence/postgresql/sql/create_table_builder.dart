@@ -2,20 +2,25 @@
 //maybe even inheritance
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
+import 'package:datahub/postgresql.dart';
+import 'package:datahub/src/persistence/postgresql/postgresql_data_types.dart';
 
 import 'sql_builder.dart';
 
 class CreateTableBuilder implements SqlBuilder {
+  final PostgreSQLDatabaseAdapter adapter;
   final bool ifNotExists;
   final String schemaName;
   final String tableName;
   final List<DataField> fields = [];
 
-  CreateTableBuilder(this.schemaName, this.tableName,
+  CreateTableBuilder(this.adapter, this.schemaName, this.tableName,
       {this.ifNotExists = false});
 
-  factory CreateTableBuilder.fromLayout(DataSchema schema, DataBean bean) {
-    return CreateTableBuilder(schema.name, bean.layoutName, ifNotExists: true)
+  factory CreateTableBuilder.fromLayout(
+      PostgreSQLDatabaseAdapter adapter, DataSchema schema, DataBean bean) {
+    return CreateTableBuilder(adapter, schema.name, bean.layoutName,
+        ifNotExists: true)
       ..fields.addAll(bean.fields);
   }
 
@@ -38,14 +43,14 @@ class CreateTableBuilder implements SqlBuilder {
   }
 
   String _createFieldSql(DataField field) {
+    final type = adapter.findType(field.type);
     final buffer = StringBuffer(SqlBuilder.escapeName(field.name));
-    buffer.write(' ${SqlBuilder.typeSql(field)}');
+    buffer.write(' ${type.getTypeSql(field.type)}');
     if (field is PrimaryKey) {
       buffer.write(' PRIMARY KEY');
     } else if (!field.nullable) {
       buffer.write(' NOT NULL');
     }
-    //TODO foreign key?
     return buffer.toString();
   }
 }

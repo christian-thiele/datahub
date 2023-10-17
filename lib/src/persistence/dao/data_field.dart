@@ -1,61 +1,42 @@
 import 'package:datahub/persistence.dart';
 
-//TODO should be lowercase
-enum FieldType { String, Int, Float, Bool, DateTime, Bytes, Point, Json }
-
 /// Definition a data object field inside a [BaseDataBean].
 ///
 /// If [length] is not set, the default of the given type is used:
 /// String: 255
 /// Int: 32 (bit)
 /// Float: 64 (bit)
-class DataField extends Expression implements QuerySelect {
+class DataField<T> extends Expression implements QuerySelect {
   final String layoutName;
-  final FieldType type;
   final String name;
   final bool nullable;
-  final int length;
+  final DataType<T> type;
 
-  DataField(this.type, this.layoutName, this.name,
-      {this.nullable = false, int? length})
-      : length = length ?? getDefaultLength(type);
+  DataField({
+    required this.layoutName,
+    required this.name,
+    required this.type,
+    this.nullable = false,
+  });
 
   @override
   bool operator ==(Object other) {
-    if (other is DataField) {
-      return type == other.type &&
-          name == other.name &&
-          nullable == other.nullable &&
-          length == length;
+    if (other is DataField<T>) {
+      return name == other.name;
     }
 
     return false;
   }
-
-  static int getDefaultLength(FieldType type) {
-    switch (type) {
-      case FieldType.String:
-        return 255;
-      case FieldType.Int:
-        return 32;
-      case FieldType.Float:
-        return 64;
-      case FieldType.Bool:
-      case FieldType.DateTime:
-      case FieldType.Bytes:
-      case FieldType.Json:
-      default:
-        return 0;
-    }
-  }
 }
 
-class PrimaryKey extends DataField {
-  final bool autoIncrement;
-
-  PrimaryKey(FieldType type, String layoutName, String name,
-      {int length = 16, this.autoIncrement = false})
-      : super(type, layoutName, name, nullable: false, length: length);
+//TODO constraints instead of extending DataField ?
+class PrimaryKey<T> extends DataField<T> {
+  PrimaryKey({
+    required super.type,
+    required super.layoutName,
+    required super.name,
+    super.nullable = false,
+  });
 
   @override
   bool operator ==(Object other) {
@@ -66,13 +47,21 @@ class PrimaryKey extends DataField {
   }
 }
 
-class ForeignKey extends DataField {
-  PrimaryKey foreignPrimaryKey;
+//TODO constraints instead of extending DataField ?
+class ForeignKey<T> extends DataField<T> {
+  PrimaryKey<T> foreignPrimaryKey;
 
-  ForeignKey(this.foreignPrimaryKey, String layoutName, String name,
-      {bool nullable = false})
-      : super(foreignPrimaryKey.type, layoutName, name,
-            nullable: nullable, length: foreignPrimaryKey.length);
+  ForeignKey({
+    required this.foreignPrimaryKey,
+    required String layoutName,
+    required String name,
+    bool nullable = false,
+  }) : super(
+          type: foreignPrimaryKey.type,
+          layoutName: layoutName,
+          name: name,
+          nullable: nullable,
+        );
 
   @override
   bool operator ==(Object other) {
