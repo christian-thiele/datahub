@@ -1,7 +1,7 @@
-import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
 import 'package:datahub/src/persistence/postgresql/postgresql_data_types.dart';
 
+import 'param_sql.dart';
 import 'sql_builder.dart';
 
 class AddFieldBuilder implements SqlBuilder {
@@ -25,29 +25,27 @@ class AddFieldBuilder implements SqlBuilder {
   }
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
+  ParamSql buildSql() {
     final tableRef =
         '${SqlBuilder.escapeName(schemaName)}.${SqlBuilder.escapeName(tableName)}';
     final colName = SqlBuilder.escapeName(field.name);
 
-    final buffer = StringBuffer(
+    final sql = ParamSql(
         'ALTER TABLE $tableRef ADD COLUMN $colName ${type.getTypeSql(field.type)}');
-    final subs = <String, dynamic>{};
 
     if (field is PrimaryKey) {
-      buffer.write(' PRIMARY KEY');
+      sql.addSql(' PRIMARY KEY');
     }
 
     if (initialValue != null) {
-      final sql = SqlBuilder.expressionSql(initialValue);
-      buffer.write('; UPDATE $tableRef SET $colName = $sql');
+      sql.addSql('; UPDATE $tableRef SET $colName = ');
+      sql.add(SqlBuilder.expressionSql(initialValue));
     }
 
     if (field is! PrimaryKey && !field.nullable) {
-      buffer
-          .write('; ALTER TABLE $tableRef ALTER COLUMN $colName SET NOT NULL');
+      sql.addSql('; ALTER TABLE $tableRef ALTER COLUMN $colName SET NOT NULL');
     }
 
-    return Tuple(buffer.toString(), subs);
+    return sql;
   }
 }

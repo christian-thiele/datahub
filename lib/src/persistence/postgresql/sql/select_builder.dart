@@ -1,6 +1,6 @@
-import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
 
+import 'param_sql.dart';
 import 'select_from.dart';
 import 'sql_builder.dart';
 
@@ -50,68 +50,55 @@ class SelectBuilder implements SqlBuilder {
   }
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
-    final buffer = StringBuffer('SELECT ');
-    final values = <String, dynamic>{};
+  ParamSql buildSql() {
+    final sql = ParamSql('SELECT ');
 
     if (_distinct?.isNotEmpty ?? false) {
-      buffer.write('DISTINCT ON (');
-      final selectResults =
-          _distinct!.map((s) => SqlBuilder.selectSql(s)).toList();
-      buffer.write(selectResults.map((e) => e.a).join(', '));
-      buffer.write(') ');
-      selectResults.map((e) => e.b).forEach(values.addAll);
+      sql.addSql('DISTINCT ON ');
+      final selectResults = _distinct!.map((s) => SqlBuilder.selectSql(s));
+      sql.add(selectResults.joinSql(', ')..wrap());
+      sql.addSql(' ');
     }
 
     if (_select?.isNotEmpty ?? false) {
       final selectResults = _select!.map((s) => SqlBuilder.selectSql(s));
-      buffer.write(selectResults.map((e) => e.a).join(', '));
-      values.addEntries(selectResults.expand((s) => s.b.entries));
-      buffer.write(' ');
+      sql.add(selectResults.joinSql(', '));
+      sql.addSql(' ');
     } else {
-      buffer.write('* ');
+      sql.addSql('* ');
     }
 
-    final fromSql = from.buildSql();
-    buffer.write('FROM ');
-    buffer.write(fromSql.a);
-    values.addAll(fromSql.b);
+    sql.addSql('FROM ');
+    sql.add(from.buildSql());
 
     if (!_filter.isEmpty) {
-      buffer.write(' WHERE ');
-
-      final filterResult = SqlBuilder.filterSql(_filter);
-      buffer.write(filterResult.a);
-      values.addAll(filterResult.b);
+      sql.addSql(' WHERE ');
+      sql.add(SqlBuilder.filterSql(_filter));
     }
 
     if (_group?.isNotEmpty ?? false) {
-      buffer.write(' GROUP BY ');
+      sql.addSql(' GROUP BY ');
       final groupResults = _group!.map((s) => SqlBuilder.expressionSql(s));
-      buffer.write(groupResults.join(', '));
+      sql.add(groupResults.joinSql(', '));
     }
 
     if (!_sort.isEmpty) {
-      buffer.write(' ORDER BY ');
-
-      final sortResult = SqlBuilder.sortSql(_sort);
-      buffer.write(sortResult.a);
-      values.addAll(sortResult.b);
+      sql.addSql(' ORDER BY ');
+      sql.add(SqlBuilder.sortSql(_sort));
     }
 
     if (_offset > 0) {
-      buffer.write(' OFFSET $_offset');
+      sql.addSql(' OFFSET $_offset');
     }
 
     if (_limit > -1) {
-      buffer.write(' LIMIT $_limit');
+      sql.addSql(' LIMIT $_limit');
     }
 
     if (_forUpdate) {
-      buffer.write(' FOR UPDATE');
+      sql.addSql(' FOR UPDATE');
     }
 
-    return Tuple(buffer.toString(),
-        values.map((k, v) => MapEntry(k, SqlBuilder.toSqlData(v))));
+    return sql;
   }
 }

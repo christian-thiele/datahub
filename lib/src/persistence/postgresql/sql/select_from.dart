@@ -3,8 +3,10 @@ import 'package:datahub/persistence.dart';
 
 import 'package:datahub/src/persistence/postgresql/sql/sql.dart';
 
+import 'param_sql.dart';
+
 abstract class SelectFrom {
-  Tuple<String, Map<String, dynamic>> buildSql();
+  ParamSql buildSql();
 
   static SelectFrom fromQuerySource(String schemaName, QuerySource source) {
     if (source is DataBean) {
@@ -40,8 +42,7 @@ class SelectFromTable extends SelectFrom {
   SelectFromTable(this.schemaName, this.tableName);
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() =>
-      Tuple('"$schemaName"."$tableName"', const {});
+  ParamSql buildSql() => ParamSql('"$schemaName"."$tableName"');
 }
 
 class TableJoin {
@@ -55,13 +56,13 @@ class TableJoin {
     this.innerJoin,
   );
 
-  Tuple<String, Map<String, dynamic>> getJoinSql(SelectFromTable main) {
-    final filterSql = SqlBuilder.filterSql(filter);
-    return Tuple(
-      ' ${innerJoin ? '' : 'LEFT '}JOIN ${table.buildSql().a} ON '
-      '(${filterSql.a})',
-      filterSql.b,
-    );
+  ParamSql getJoinSql(SelectFromTable main) {
+    final joinType = '${innerJoin ? '' : 'LEFT '}JOIN';
+    final sql = ParamSql(' $joinType ');
+    sql.add(table.buildSql());
+    sql.addSql(' ON ');
+    sql.add(SqlBuilder.filterSql(filter));
+    return sql;
   }
 }
 
@@ -72,9 +73,11 @@ class JoinedSelectFrom extends SelectFrom {
   JoinedSelectFrom(this.main, this.joins);
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
-    return Tuple(
-        main.buildSql().a + joins.map((j) => j.getJoinSql(main).a).join(), {});
+  ParamSql buildSql() {
+    return ParamSql.combine([
+      main.buildSql(),
+      ...joins.map((j) => j.getJoinSql(main)),
+    ]);
   }
 }
 
@@ -84,7 +87,7 @@ class SelectFromSubQuery extends SelectFrom {
 
   SelectFromSubQuery(this.schemaName, this.query);
 
-  Tuple<String, Map<String, dynamic>> buildSelect() {
+  ParamSql buildSelect() {
     final from = SelectFrom.fromQuerySource(schemaName, query.source);
     return (SelectBuilder(from)
           ..where(query.filter)
@@ -96,11 +99,11 @@ class SelectFromSubQuery extends SelectFrom {
   }
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
+  ParamSql buildSql() {
     final select = buildSelect();
-    return Tuple(
-      '(${select.a}) ${SqlBuilder.escapeName(query.alias)}',
-      select.b,
-    );
+    final sql = ParamSql('(');
+    sql.add(select);
+    sql.addSql(') ${SqlBuilder.escapeName(query.alias)}');
+    return sql;
   }
 }

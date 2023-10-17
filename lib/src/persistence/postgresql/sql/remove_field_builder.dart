@@ -1,5 +1,4 @@
-import 'package:boost/boost.dart';
-
+import 'param_sql.dart';
 import 'sql_builder.dart';
 
 class RemoveFieldBuilder implements SqlBuilder {
@@ -10,11 +9,11 @@ class RemoveFieldBuilder implements SqlBuilder {
   RemoveFieldBuilder(this.schemaName, this.tableName, this.fieldName);
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
+  ParamSql buildSql() {
     final tableRef =
         '${SqlBuilder.escapeName(schemaName)}.${SqlBuilder.escapeName(tableName)}';
     final colName = SqlBuilder.escapeName(fieldName);
 
-    return Tuple('ALTER TABLE $tableRef DROP COLUMN $colName', {});
+    return ParamSql('ALTER TABLE $tableRef DROP COLUMN $colName');
   }
 }

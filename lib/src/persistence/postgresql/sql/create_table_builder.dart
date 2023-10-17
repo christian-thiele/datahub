@@ -4,6 +4,7 @@ import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
 import 'package:datahub/postgresql.dart';
 import 'package:datahub/src/persistence/postgresql/postgresql_data_types.dart';
+import 'package:datahub/src/persistence/postgresql/sql/param_sql.dart';
 
 import 'sql_builder.dart';
 
@@ -25,32 +26,33 @@ class CreateTableBuilder implements SqlBuilder {
   }
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
-    final buffer = StringBuffer('CREATE TABLE ');
+  ParamSql buildSql() {
+    final sql = ParamSql('CREATE TABLE ');
 
     if (ifNotExists) {
-      buffer.write('IF NOT EXISTS ');
+      sql.addSql('IF NOT EXISTS ');
     }
 
-    buffer.write(
+    sql.addSql(
         '${SqlBuilder.escapeName(schemaName)}.${SqlBuilder.escapeName(tableName)} (');
 
-    buffer.write(fields.map(_createFieldSql).join(','));
+    sql.add(fields.map(_createFieldSql).joinSql(','));
 
-    buffer.write(')');
+    sql.addSql(')');
 
-    return Tuple(buffer.toString(), {});
+    return sql;
   }
 
-  String _createFieldSql(DataField field) {
+  ParamSql _createFieldSql(DataField field) {
     final type = adapter.findType(field.type);
-    final buffer = StringBuffer(SqlBuilder.escapeName(field.name));
-    buffer.write(' ${type.getTypeSql(field.type)}');
+    final sql = ParamSql(SqlBuilder.escapeName(field.name));
+    sql.addSql(' ');
+    sql.add(type.getTypeSql(field.type));
     if (field is PrimaryKey) {
-      buffer.write(' PRIMARY KEY');
+      sql.addSql(' PRIMARY KEY');
     } else if (!field.nullable) {
-      buffer.write(' NOT NULL');
+      sql.addSql(' NOT NULL');
     }
-    return buffer.toString();
+    return sql;
   }
 }

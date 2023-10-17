@@ -141,6 +141,6 @@ dynamic Function() _test(SqlBuilder builder, String sql,
 void _expect(SqlBuilder builder, String sql,
     [Map<String, dynamic> substitutions = const {}]) {
   final result = builder.buildSql();
-  expect(result.a, equals(sql));
-  expect(result.b.entries, unorderedEquals(substitutions.entries));
+  expect(result.toString(), equals(sql));
+  expect(result.getSubstitutionValues(), unorderedEquals(substitutions.entries));
 }

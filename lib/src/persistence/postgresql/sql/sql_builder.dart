@@ -3,31 +3,27 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
-import 'package:datahub/postgresql.dart';
 
-import 'package:postgres/postgres.dart';
+import 'package:postgres/postgres_v3_experimental.dart';
 
-import '../type_registry.dart';
+import 'param_sql.dart';
 
 abstract class SqlBuilder {
   /// Returns the sql string together with it's substitution values
-  Tuple<String, Map<String, dynamic>> buildSql();
+  ParamSql buildSql();
 
-  static Tuple<String, Map<String, dynamic>> filterSql(Filter filter) {
-    final buffer = StringBuffer();
-    final values = <String, dynamic>{};
+  static ParamSql filterSql(Filter filter) {
+    final sql = ParamSql('');
 
     if (filter is FilterGroup) {
-      final results = filter.filters.map((e) => filterSql(e));
-      //TODO think about how to make substitution values unique
-      values.addEntries(results.expand((e) => e.b.entries));
+      final results = filter.filters.map((e) => filterSql(e)..wrap()).toList();
 
       switch (filter.type) {
         case FilterGroupType.And:
-          buffer.write(results.map((e) => '(${e.a})').join(' AND '));
+          sql.add(results.joinSql(' AND '));
           break;
         case FilterGroupType.Or:
-          buffer.write(results.map((e) => '(${e.a})').join(' OR '));
+          sql.add(results.joinSql(' OR '));
           break;
       }
     } else if (filter is CompareFilter) {
@@ -36,7 +32,7 @@ abstract class SqlBuilder {
           filter.right is ValueExpression &&
           (filter.right as ValueExpression).value is Iterable &&
           ((filter.right as ValueExpression).value as Iterable).isEmpty) {
-        return Tuple('FALSE', {});
+        return ParamSql('FALSE');
       }
 
       // for case Contains, case insensitivity is solved by using ILIKE,
@@ -44,120 +40,104 @@ abstract class SqlBuilder {
       if (filter.caseSensitive ||
           filter.type == CompareType.contains ||
           filter.right == ValueExpression(null)) {
-        final result = expressionSql(filter.left).sqlTuple();
-        ;
-        buffer.write(result.a);
-        values.addAll(result.b);
+        sql.add(expressionSql(filter.left));
       } else {
-        final result = expressionSql(filter.left).sqlTuple();
-        ;
-        buffer.write('LOWER(${result.a})');
-        values.addAll(result.b);
+        sql.addSql('LOWER');
+        sql.add(expressionSql(filter.left)..wrap());
       }
 
       switch (filter.type) {
         case CompareType.contains:
-          buffer.write(filter.caseSensitive ? ' LIKE ' : ' ILIKE ');
+          sql.addSql(filter.caseSensitive ? ' LIKE ' : ' ILIKE ');
           break;
         case CompareType.equals:
           // special cases when checking null
           if (filter.right == ValueExpression(null)) {
-            buffer.write(' IS ');
+            sql.addSql(' IS ');
           } else {
-            buffer.write(' = ');
+            sql.addSql(' = ');
           }
           break;
         case CompareType.notEquals:
           // special cases when checking null
           if (filter.right == ValueExpression(null)) {
-            buffer.write(' IS NOT ');
+            sql.addSql(' IS NOT ');
           } else {
-            buffer.write(' <> ');
+            sql.addSql(' <> ');
           }
           break;
         case CompareType.greaterThan:
-          buffer.write(' > ');
+          sql.addSql(' > ');
           break;
         case CompareType.lessThan:
-          buffer.write(' < ');
+          sql.addSql(' < ');
           break;
         case CompareType.greaterOrEqual:
-          buffer.write(' >= ');
+          sql.addSql(' >= ');
           break;
         case CompareType.lessOrEqual:
-          buffer.write(' <= ');
+          sql.addSql(' <= ');
           break;
         case CompareType.isIn:
-          buffer.write(' IN ');
+          sql.addSql(' IN ');
           break;
         default:
           throw PersistenceException(
               'PropertyCompareType not implemented: ${filter.type}');
       }
 
-      // TODO while we escape values, we don't need to worry about substitution values
-      // TODO but that's probably not the best way, lets think of some sort of system that
-      // TODO let's us use substitutions without clashing names
-      // @CTH by CTH: maybe provide a "namespace" to methods like this to avoid
-      // clashing names?
       switch (filter.type) {
         case CompareType.contains:
           // case insensitivity is solved by using ILIKE instead of LIKE,
           // no need for LOWER here
-          final result = escapeValueLike(filter.right);
-          buffer.write(result.a);
-          values.addAll(result.b);
+          sql.add(ParamSql("'%' || "));
+          sql.add(expressionSql(filter.right));
+          sql.add(ParamSql(" || '%'"));
           break;
         default:
           if (filter.caseSensitive ||
               filter.right == const ValueExpression(null)) {
-            final result = expressionSql(filter.right).sqlTuple();
-            ;
-            buffer.write(result.a);
-            values.addAll(result.b);
+            sql.add(expressionSql(filter.left));
           } else {
-            final result = expressionSql(filter.right).sqlTuple();
-            ;
-            buffer.write('LOWER(${result.a})');
-            values.addAll(result.b);
+            sql.addSql('LOWER');
+            sql.add(expressionSql(filter.left)..wrap());
           }
           break;
       }
       // ignore: deprecated_member_use_from_same_package
     } else if (filter is CustomSqlCondition) {
-      buffer.write(filter.sql);
+      sql.addSql(filter.sql);
     } else {
       throw PersistenceException('PostgreSQL implementation does not '
           'support filter type ${filter.runtimeType}.');
     }
 
-    return Tuple(buffer.toString(), values);
+    return sql;
   }
 
-  static Tuple<String, Map<String, dynamic>> sortSql(Sort sort) {
+  static ParamSql sortSql(Sort sort) {
     final propertySorts = sort.linear();
-    final result = propertySorts.map((e) {
-      final result = expressionSql(e.expression).sqlTuple();
-      ;
-      return Tuple('${result.a} ${e.ascending ? 'ASC' : 'DESC'}', result.b);
+    final results = propertySorts.map((e) {
+      final result = expressionSql(e.expression);
+      result.addSql(e.ascending ? ' ASC' : ' DESC');
+      return result;
     }).toList();
-    return Tuple(result.a.join(', '),
-        Map.fromEntries(result.b.expand((e) => e.entries)));
+    return results.joinSql(', ');
   }
 
-  static Tuple<String, Map<String, dynamic>> selectSql(QuerySelect select) {
+  static ParamSql selectSql(QuerySelect select) {
     if (select is WildcardSelect) {
       if (select.bean != null) {
-        return (escapeName(select.bean!.layoutName) + '.*').sqlTuple();
+        return ParamSql(escapeName(select.bean!.layoutName) + '.*');
       } else {
-        return '*'.sqlTuple();
+        return ParamSql('*');
       }
     } else if (select is DataField) {
-      return fieldSql(select).sqlTuple();
+      return fieldSql(select);
     } else if (select is FieldSelect) {
       if (select.alias != null) {
-        return '${fieldSql(select.field)} AS ${escapeName(select.alias!)}'
-            .sqlTuple();
+        return ParamSql(
+            '${fieldSql(select.field)} AS ${escapeName(select.alias!)}');
       } else {
         return selectSql(select.field);
       }
@@ -169,40 +149,45 @@ abstract class SqlBuilder {
 
       switch (select.type) {
         case AggregateType.count:
-          return 'COUNT(*) AS ${escapeName(select.alias)}'.sqlTuple();
+          return ParamSql('COUNT(*) AS ${escapeName(select.alias)}');
         case AggregateType.min:
+          final sql = ParamSql('MIN');
           // dereference safe because of exception above
-          final inner = expressionSql(select.expression!).sqlTuple();
-          return Tuple(
-              'MIN(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
+          sql.add(expressionSql(select.expression!)..wrap());
+          sql.addSql(' AS ${escapeName(select.alias)}');
+          return sql;
         case AggregateType.max:
+          final sql = ParamSql('MAX');
           // dereference safe because of exception above
-          final inner = expressionSql(select.expression!).sqlTuple();
-          return Tuple(
-              'MAX(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
+          sql.add(expressionSql(select.expression!)..wrap());
+          sql.addSql(' AS ${escapeName(select.alias)}');
+          return sql;
         case AggregateType.sum:
+          final sql = ParamSql('SUM');
           // dereference safe because of exception above
-          final inner = expressionSql(select.expression!).sqlTuple();
-          return Tuple(
-              'SUM(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
+          sql.add(expressionSql(select.expression!)..wrap());
+          sql.addSql(' AS ${escapeName(select.alias)}');
+          return sql;
         case AggregateType.avg:
+          final sql = ParamSql('AVG');
           // dereference safe because of exception above
-          final inner = expressionSql(select.expression!).sqlTuple();
-          return Tuple(
-              'AVG(${inner.a}) AS ${escapeName(select.alias)}', inner.b);
+          sql.add(expressionSql(select.expression!)..wrap());
+          sql.addSql(' AS ${escapeName(select.alias)}');
+          return sql;
       }
     } else if (select is ExpressionSelect) {
-      final expression = expressionSql(select.expression).sqlTuple();
-      return Tuple(
-          '${expression.a} AS ${escapeName(select.alias)}', expression.b);
+      final expression = expressionSql(select.expression);
+      expression.addSql(' AS ${escapeName(select.alias)}');
+      return expression;
     } else {
       throw PersistenceException('PostgreSQL implementation does not '
           'support aggregate type ${select.runtimeType}.');
     }
   }
 
-  static String fieldSql(DataField field) {
-    return '${escapeName(field.layoutName)}.${escapeName(field.name)}';
+  static ParamSql fieldSql(DataField field) {
+    return ParamSql(
+        '${escapeName(field.layoutName)}.${escapeName(field.name)}');
   }
 
   static String escapeName(String name) {
@@ -255,28 +240,12 @@ abstract class SqlBuilder {
     return '\'${value.toString().replaceAll('\'', '\'\'')}\''; //TODO other escape things
   }
 
-  @deprecated
-  static Tuple<String, Map<String, dynamic>> escapeValueLike(Expression value) {
-    if (value is ValueExpression) {
-      if (value.value is DateTime) {
-        // weird but who knows what kind of use case this has
-        // i would expect it to work like that...
-        return Tuple('\'%${value.value.toIso8601String()}%\'', {});
-      } else {
-        return Tuple('\'%${value.value.toString().replaceAll('\'', '\'\'')}%\'',
-            {}); //TODO other escape things
-      }
-    }
-
-    return expressionSql(value).sqlTuple();
-  }
-
-  static String expressionSql(Expression expression) {
+  static ParamSql expressionSql(Expression expression) {
     if (expression is DataField) {
       return fieldSql(expression);
     } else if (expression is ValueExpression) {
-      return escapeValue(expression.value);
-      // ignore: deprecated_member_use_from_same_package
+      return ParamSql.param(
+          expression.value, PgDataType.unknownType); //TODO shit...
     } else if (expression is OperationExpression) {
       late String operator;
       switch (expression.type) {
@@ -299,9 +268,16 @@ abstract class SqlBuilder {
       final left = expressionSql(expression.left);
       final right = expressionSql(expression.right);
 
-      return '($left $operator $right)';
+      final sql = ParamSql('(');
+      sql.add(left);
+      sql.addSql(' $operator ');
+      sql.addSql(' ');
+      sql.add(right);
+      sql.addSql(')');
+      return sql;
+      // ignore: deprecated_member_use_from_same_package
     } else if (expression is CustomSqlExpression) {
-      return expression.sqlExpression;
+      return ParamSql(expression.sqlExpression);
     } else {
       throw PersistenceException('PostgreSQL implementation does not '
           'support Expression type ${expression.runtimeType}.');
@@ -326,19 +302,4 @@ abstract class SqlBuilder {
 
     return value;
   }
-}
-
-class RawSql implements SqlBuilder {
-  final String rawSql;
-  final Map<String, dynamic> substitutionValues;
-
-  RawSql(this.rawSql, [this.substitutionValues = const {}]);
-
-  @override
-  Tuple<String, Map<String, dynamic>> buildSql() =>
-      Tuple(rawSql, substitutionValues);
-}
-
-extension _SqlTuple on String {
-  Tuple<String, Map<String, dynamic>> sqlTuple() => Tuple(this, const {});
 }

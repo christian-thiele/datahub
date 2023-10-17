@@ -37,6 +37,24 @@ void main() {
       );
 
       final repo = resolve<CRUDRepository<ArticleDao, int>>();
+      final id = await repo.create(article);
+      print('Created with id $id');
+
+      final results = await repo.getAll();
+      expect(results.length, greaterThan(0));
+    }), timeout: Timeout.none);
+    test('Pool behavior (PostgreSQL)', host.test(() async {
+      final article = ArticleDao(
+        userId: 1,
+        blogKey: 'abc',
+        content: 'abc123',
+        createdTimestamp: DateTime.now(),
+        image: Uint8List(0),
+        lastEditTimestamp: DateTime.now(),
+        title: 'Test',
+      );
+
+      final repo = resolve<CRUDRepository<ArticleDao, int>>();
       final adapter = resolve<DatabaseAdapter>();
       expect(adapter.poolAvailable, 3);
       expect(adapter.poolSize, 3);

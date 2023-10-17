@@ -10,6 +10,7 @@ import 'package:postgres/postgres.dart' as postgres;
 
 import 'postgresql_data_types.dart';
 import 'postgresql_database_migrator.dart';
+import 'sql/param_sql.dart';
 import 'sql/sql.dart';
 import 'type_registry.dart';
 
@@ -97,23 +98,30 @@ class PostgreSQLDatabaseAdapter
             throw PersistenceException('Schema does not exist.');
           }
 
-          await context.execute(RawSql('CREATE SCHEMA ${schema.name}'));
+          await context.execute(ParamSql('CREATE SCHEMA ')
+            ..addParam(schema.name, postgres.PostgreSQLDataType.text));
 
-          await context.execute(CreateTableBuilder(this, schema.name, metaTable)
-            ..fields.addAll([
-              PrimaryKey(
-                  type: StringDataType(), layoutName: metaTable, name: 'key'),
-              DataField(
-                  type: StringDataType(), layoutName: metaTable, name: 'value')
-            ]));
+          final createMetaTable =
+              CreateTableBuilder(this, schema.name, metaTable)
+                ..fields.addAll([
+                  PrimaryKey(
+                      type: StringDataType(),
+                      layoutName: metaTable,
+                      name: 'key'),
+                  DataField(
+                      type: StringDataType(),
+                      layoutName: metaTable,
+                      name: 'value')
+                ]);
+          await context.execute(createMetaTable.buildSql());
 
           await context.setMetaValue(
               schemaVersionKey, schema.version.toString());
 
           // create schema
           for (final layout in schema.beans) {
-            await context
-                .execute(CreateTableBuilder.fromLayout(this, schema, layout));
+            await context.execute(
+                CreateTableBuilder.fromLayout(this, schema, layout).buildSql());
           }
         }
       });
@@ -149,10 +157,11 @@ class PostgreSQLDatabaseAdapter
   }
 
   Future<bool> _schemaExists(PostgreSQLDatabaseContext context) async {
-    final result = await context.querySql(RawSql(
-        'SELECT schema_name FROM information_schema.schemata '
-        'WHERE schema_name = @name;',
-        {'name': schema.name}));
+    final result = await context.querySql(
+      ParamSql('SELECT schema_name FROM information_schema.schemata '
+          'WHERE schema_name = ')
+        ..addParam(schema.name, postgres.PostgreSQLDataType.text),
+    );
     return result.isNotEmpty;
   }
 }

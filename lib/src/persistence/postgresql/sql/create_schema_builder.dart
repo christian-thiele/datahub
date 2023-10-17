@@ -1,5 +1,6 @@
-import 'package:boost/boost.dart';
+import 'package:postgres/postgres.dart';
 
+import 'param_sql.dart';
 import 'sql_builder.dart';
 
 class CreateSchemaBuilder implements SqlBuilder {
@@ -8,7 +9,9 @@ class CreateSchemaBuilder implements SqlBuilder {
   CreateSchemaBuilder(this.schemaName);
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
-    return Tuple('CREATE SCHEMA @name', {'name': schemaName});
+  ParamSql buildSql() {
+    final sql = ParamSql('CREATE SCHEMA ');
+    sql.addParam(schemaName, PostgreSQLDataType.text);
+    return sql;
   }
 }

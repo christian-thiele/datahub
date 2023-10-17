@@ -2,6 +2,7 @@ import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 
 import '../type_registry.dart';
+import 'param_sql.dart';
 import 'sql_builder.dart';
 
 class InsertBuilder implements SqlBuilder {
@@ -22,26 +23,24 @@ class InsertBuilder implements SqlBuilder {
   }
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
-    final buffer = StringBuffer();
+  ParamSql buildSql() {
+    final sql = ParamSql('');
     final values = _values.entries.map((e) {
       final fieldName = SqlBuilder.escapeName(e.key.name);
       final type = typeRegistry.findType(e.key.type);
-      final value = type.toPostgresValue(e.value);
+      final value = type.toPostgresValue(e.key.type, e.value);
       return Tuple(fieldName, value);
     }).toList();
 
-    buffer.write('INSERT INTO $schemaName.$tableName '
-        '(${values.map((e) => e.a).join(', ')}) '
-        'VALUES (${values.map((e) => e.b).join(', ')})');
+    sql.addSql('INSERT INTO $schemaName.$tableName (');
+    sql.addSql(values.map((e) => e.a).join(', ')); //TODO maybe params too?
+    sql.addSql(') VALUES (');
+    sql.add(values.map((e) => e.b).joinSql(', '));
 
     if (_returning != null) {
-      buffer.write(' RETURNING $_returning');
+      sql.addSql(' RETURNING $_returning');
     }
 
-    return Tuple(
-        buffer.toString(),
-        Map.fromEntries(
-            values.map((e) => MapEntry(e.b, SqlBuilder.toSqlData(e.b)))));
+    return sql;
   }
 }

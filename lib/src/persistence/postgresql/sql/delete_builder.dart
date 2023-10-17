@@ -1,6 +1,7 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
 
+import 'param_sql.dart';
 import 'select_from.dart';
 import 'sql_builder.dart';
 
@@ -15,23 +16,15 @@ class DeleteBuilder implements SqlBuilder {
   }
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
-    final buffer = StringBuffer('DELETE FROM ');
-    final values = <String, dynamic>{};
-
-    final fromSql = from.buildSql();
-    buffer.write(fromSql.a);
-    values.addAll(fromSql.b);
+  ParamSql buildSql() {
+    final sql = ParamSql('DELETE FROM ');
+    sql.add(from.buildSql());
 
     if (!_filter.isEmpty) {
-      buffer.write(' WHERE ');
-
-      final filterResult = SqlBuilder.filterSql(_filter);
-      buffer.write(filterResult.a);
-      values.addAll(filterResult.b);
+      sql.addSql(' WHERE ');
+      sql.add(SqlBuilder.filterSql(_filter));
     }
 
-    return Tuple(buffer.toString(),
-        values.map((k, v) => MapEntry(k, SqlBuilder.toSqlData(v))));
+    return sql;
   }
 }

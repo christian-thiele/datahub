@@ -1,7 +1,7 @@
-import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
-import 'package:datahub/src/persistence/postgresql/type_registry.dart';
+import '../type_registry.dart';
 
+import 'param_sql.dart';
 import 'select_from.dart';
 import 'sql_builder.dart';
 
@@ -23,32 +23,26 @@ class UpdateBuilder extends SqlBuilder {
   }
 
   @override
-  Tuple<String, Map<String, dynamic>> buildSql() {
-    final buffer = StringBuffer();
+  ParamSql buildSql() {
+    final sql = ParamSql('UPDATE ');
     final values = _values.entries.map((e) {
       final fieldName = SqlBuilder.escapeName(e.key.name);
       final type = typeRegistry.findType(e.key.type);
-      final value = type.toPostgresValue(e.value);
-      return Tuple(fieldName, value);
+      final value = type.toPostgresValue(e.key.type, e.value);
+      final sql = ParamSql('$fieldName = ');
+      sql.add(value);
+      return sql;
     }).toList();
 
-    buffer.write('UPDATE ');
-    final fromSql = from.buildSql();
-    buffer.write(fromSql.a);
-    buffer.write(' SET ');
-    buffer.write(values.map((e) => '${e.a} = ${e.b}').join(', '));
-
-    final substitutionValues = <String, dynamic>{};
+    sql.add(from.buildSql());
+    sql.addSql(' SET ');
+    sql.add(values.joinSql(', '));
 
     if (!_filter.isEmpty) {
-      buffer.write(' WHERE ');
-
-      final filterResult = SqlBuilder.filterSql(_filter);
-      buffer.write(filterResult.a);
-      substitutionValues.addAll(filterResult.b);
+      sql.addSql(' WHERE ');
+      sql.add(SqlBuilder.filterSql(_filter));
     }
 
-    return Tuple(buffer.toString(),
-        substitutionValues.map((k, v) => MapEntry(k, SqlBuilder.toSqlData(v))));
+    return sql;
   }
 }

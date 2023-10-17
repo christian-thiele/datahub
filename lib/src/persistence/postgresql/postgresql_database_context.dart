@@ -4,6 +4,7 @@ import 'package:datahub/postgresql.dart';
 
 import 'package:postgres/postgres.dart' as postgres;
 
+import 'sql/param_sql.dart';
 import 'sql/sql.dart';
 
 class PostgreSQLDatabaseContext implements DatabaseContext {
@@ -39,16 +40,17 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     }
   }
 
-  Future<int> execute(SqlBuilder builder) async {
-    final result = builder.buildSql();
-    return await _context.execute(result.a, substitutionValues: result.b);
+  Future<int> execute(ParamSql sql) async {
+    return await _context.execute(
+      sql.toString(),
+      substitutionValues: sql.getSubstitutionValues(),
+    );
   }
 
-  Future<List<List<QueryResult>>> querySql(SqlBuilder builder) async {
-    final builderResult = builder.buildSql();
+  Future<List<List<QueryResult>>> querySql(ParamSql sql) async {
     final result = await _context.query(
-      builderResult.a,
-      substitutionValues: builderResult.b,
+      sql.toString(),
+      substitutionValues: sql.getSubstitutionValues(),
     );
 
     QueryResult? mapResult(MapEntry<String, Map<String, dynamic>> e) {
@@ -88,15 +90,16 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     bool forUpdate = false,
   }) async {
     final from = SelectFrom.fromQuerySource(_adapter.schema.name, bean);
-    final result = await querySql(SelectBuilder(from)
+    final builder = SelectBuilder(from)
       ..select([const WildcardSelect()])
       ..distinct(distinct)
       ..where(filter)
       ..orderBy(sort)
       ..offset(offset)
       ..limit(limit)
-      ..forUpdate(forUpdate));
+      ..forUpdate(forUpdate);
 
+    final result = await querySql(builder.buildSql());
     return result.map((r) => bean.map(r)).whereNotNull.toList();
   }
 
@@ -107,9 +110,10 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     bool forUpdate = false,
   }) async {
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    final result = await querySql(SelectBuilder(from)
+    final builder = SelectBuilder(from)
       ..where(Filter.equals(bean.primaryKey, id))
-      ..forUpdate(forUpdate));
+      ..forUpdate(forUpdate);
+    final result = await querySql(builder.buildSql());
 
     return result.map((r) => bean.map(r)).firstOrNull;
   }
@@ -120,9 +124,10 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     TPrimaryKey id,
   ) async {
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    final result = await querySql(SelectBuilder(from)
+    final builder = SelectBuilder(from)
       ..select([bean.primaryKey])
-      ..where(Filter.equals(bean.primaryKey, id)));
+      ..where(Filter.equals(bean.primaryKey, id));
+    final result = await querySql(builder.buildSql());
 
     return result.isNotEmpty;
   }
@@ -139,10 +144,11 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     final withPrimary = !(primaryKey?.type is SerialDataType);
 
     final data = bean.unmap(entry, includePrimaryKey: withPrimary);
-    final result = await querySql(
+    final builder =
         InsertBuilder(_adapter, _adapter.schema.name, entry.bean.layoutName)
           ..values(data)
-          ..returning(returning));
+          ..returning(returning);
+    final result = await querySql(builder.buildSql());
 
     return result.firstOrNull?.firstOrNull?.data.values.firstOrNull;
   }
@@ -153,9 +159,10 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     final data = bean.unmap(object);
 
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    await execute(UpdateBuilder(_adapter, from)
+    final builder = UpdateBuilder(_adapter, from)
       ..values(data)
-      ..where(_pkFilter(bean, object.getPrimaryKey())));
+      ..where(_pkFilter(bean, object.getPrimaryKey()));
+    await execute(builder.buildSql());
   }
 
   @override
@@ -165,9 +172,10 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     Map<DataField, dynamic> values,
   ) async {
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    await execute(UpdateBuilder(_adapter, from)
+    final builder = UpdateBuilder(_adapter, from)
       ..values(values)
-      ..where(_pkFilter(bean, id)));
+      ..where(_pkFilter(bean, id));
+    await execute(builder.buildSql());
   }
 
   @override
@@ -177,17 +185,19 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     Filter filter,
   ) async {
     final from = SelectFrom.fromQuerySource(_adapter.schema.name, source);
-    return await execute(UpdateBuilder(_adapter, from)
+    final builder = UpdateBuilder(_adapter, from)
       ..values(values)
-      ..where(filter));
+      ..where(filter);
+    return await execute(builder.buildSql());
   }
 
   @override
   Future<void> delete<TDao extends PrimaryKeyDao>(TDao object) async {
     final bean = object.bean;
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    await execute(
-        DeleteBuilder(from)..where(_pkFilter(bean, object.getPrimaryKey())));
+    final builder = DeleteBuilder(from)
+      ..where(_pkFilter(bean, object.getPrimaryKey()));
+    await execute(builder.buildSql());
   }
 
   @override
@@ -196,13 +206,15 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     dynamic id,
   ) async {
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    await execute(DeleteBuilder(from)..where(_pkFilter(bean, id)));
+    final builder = DeleteBuilder(from)..where(_pkFilter(bean, id));
+    await execute(builder.buildSql());
   }
 
   @override
   Future<int> deleteWhere(DataBean bean, Filter filter) async {
     final from = SelectFromTable(_adapter.schema.name, bean.layoutName);
-    return await execute(DeleteBuilder(from)..where(filter));
+    final builder = DeleteBuilder(from)..where(filter);
+    return await execute(builder.buildSql());
   }
 
   @override
@@ -218,14 +230,15 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     bool forUpdate = false,
   }) async {
     final from = SelectFrom.fromQuerySource(_adapter.schema.name, source);
-    final results = await querySql(SelectBuilder(from)
+    final builder = SelectBuilder(from)
       ..where(filter)
       ..orderBy(sort)
       ..offset(offset)
       ..limit(limit)
       ..select(select)
       ..groupBy(group)
-      ..forUpdate(forUpdate));
+      ..forUpdate(forUpdate);
+    final results = await querySql(builder.buildSql());
     return results.map((e) => QueryResult.merge(e)).toList();
   }
 

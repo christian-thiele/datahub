@@ -4,13 +4,16 @@ import 'dart:typed_data';
 import 'package:boost/boost.dart';
 import 'package:datahub/persistence.dart';
 import 'package:datahub/src/persistence/postgresql/sql/sql.dart';
+import 'package:postgres/postgres.dart';
+
+import 'sql/param_sql.dart';
 
 abstract class PostgresqlDataType<T, TDataType extends DataType<T>> {
   const PostgresqlDataType();
 
-  String getTypeSql(TDataType type);
+  ParamSql getTypeSql(TDataType type);
 
-  String toPostgresValue(T? data);
+  ParamSql toPostgresValue(TDataType type, T? data);
 
   T? toDaoValue(dynamic data);
 }
@@ -20,19 +23,15 @@ class PostgresqlStringDataType
   const PostgresqlStringDataType();
 
   @override
-  String getTypeSql(StringDataType type) => 'varchar(${type.length})';
+  ParamSql getTypeSql(StringDataType type) =>
+      ParamSql('varchar(${type.length})');
 
   @override
   String? toDaoValue(dynamic data) => data?.toString();
 
   @override
-  String toPostgresValue(String? data) {
-    if (data == null) {
-      return 'NULL';
-    }
-
-    //TODO other escape things
-    return '\'${data.toString().replaceAll('\'', '\'\'')}\'';
+  ParamSql toPostgresValue(StringDataType type, String? data) {
+    return ParamSql.param(data, PostgreSQLDataType.text);
   }
 }
 
@@ -40,13 +39,13 @@ class PostgresqlIntDataType extends PostgresqlDataType<int, IntDataType> {
   const PostgresqlIntDataType();
 
   @override
-  String getTypeSql(IntDataType type) {
+  ParamSql getTypeSql(IntDataType type) {
     if (type.length == 16) {
-      return 'int2';
+      return ParamSql('int2');
     } else if (type.length == 32) {
-      return 'int4';
+      return ParamSql('int4');
     } else if (type.length == 64) {
-      return 'int8';
+      return ParamSql('int8');
     } else {
       throw PersistenceException(
           'PostgreSQL implementation does not support int length ${type.length}.'
@@ -73,22 +72,32 @@ class PostgresqlIntDataType extends PostgresqlDataType<int, IntDataType> {
   }
 
   @override
-  String toPostgresValue(int? data) => data?.toString() ?? 'NULL';
+  ParamSql toPostgresValue(IntDataType type, int? data) {
+    if (type.length == 32) {
+      return ParamSql.param<int>(data, PostgreSQLDataType.integer);
+    } else if (type.length == 64) {
+      return ParamSql.param<int>(data, PostgreSQLDataType.bigInteger);
+    } else {
+      throw PersistenceException(
+          'PostgreSQL implementation does not support serial length ${type.length}.'
+          'Only 32 or 64 allowed.)');
+    }
+  }
 }
 
 class PostgresqlSerialDataType extends PostgresqlDataType<int, SerialDataType> {
   const PostgresqlSerialDataType();
 
   @override
-  String getTypeSql(SerialDataType type) {
+  ParamSql getTypeSql(SerialDataType type) {
     if (type.length == 32) {
-      return 'serial';
+      return ParamSql('serial');
     } else if (type.length == 64) {
-      return 'bigserial';
+      return ParamSql('bigserial');
     } else {
       throw PersistenceException(
           'PostgreSQL implementation does not support serial length ${type.length}.'
-          'Only 16, 32 or 64 allowed.)');
+          'Only 32 or 64 allowed.)');
     }
   }
 
@@ -111,14 +120,24 @@ class PostgresqlSerialDataType extends PostgresqlDataType<int, SerialDataType> {
   }
 
   @override
-  String toPostgresValue(int? data) => data?.toString() ?? 'NULL';
+  ParamSql toPostgresValue(SerialDataType type, int? data) {
+    if (type.length == 32) {
+      return ParamSql.param<int>(data, PostgreSQLDataType.integer);
+    } else if (type.length == 64) {
+      return ParamSql.param<int>(data, PostgreSQLDataType.bigInteger);
+    } else {
+      throw PersistenceException(
+          'PostgreSQL implementation does not support serial length ${type.length}.'
+          'Only 32 or 64 allowed.)');
+    }
+  }
 }
 
 class PostgresqlBoolDataType extends PostgresqlDataType<bool, BoolDataType> {
   const PostgresqlBoolDataType();
 
   @override
-  String getTypeSql(BoolDataType type) => 'boolean';
+  ParamSql getTypeSql(BoolDataType type) => ParamSql('boolean');
 
   @override
   bool? toDaoValue(data) {
@@ -139,8 +158,8 @@ class PostgresqlBoolDataType extends PostgresqlDataType<bool, BoolDataType> {
   }
 
   @override
-  String toPostgresValue(bool? data) =>
-      data?.apply((p0) => p0 ? 'true' : 'false') ?? 'NULL';
+  ParamSql toPostgresValue(BoolDataType type, bool? data) =>
+      ParamSql.param<bool>(data, PostgreSQLDataType.boolean);
 }
 
 class PostgresqlDoubleDataType
@@ -148,13 +167,13 @@ class PostgresqlDoubleDataType
   const PostgresqlDoubleDataType();
 
   @override
-  String getTypeSql(DoubleDataType type) {
+  ParamSql getTypeSql(DoubleDataType type) {
     if (type.length == 16) {
-      return 'int2';
+      return ParamSql('int2');
     } else if (type.length == 32) {
-      return 'int4';
+      return ParamSql('int4');
     } else if (type.length == 64) {
-      return 'int8';
+      return ParamSql('int8');
     } else {
       throw PersistenceException(
           'PostgreSQL implementation does not support int length ${type.length}.'
@@ -177,7 +196,8 @@ class PostgresqlDoubleDataType
   }
 
   @override
-  String toPostgresValue(double? data) => data?.toString() ?? 'NULL';
+  ParamSql toPostgresValue(DoubleDataType type, double? data) =>
+      ParamSql.param<double>(data, PostgreSQLDataType.double);
 }
 
 class PostgresqlDateTimeDataType
@@ -185,7 +205,8 @@ class PostgresqlDateTimeDataType
   const PostgresqlDateTimeDataType();
 
   @override
-  String getTypeSql(DateTimeDataType type) => 'timestamp with time zone';
+  ParamSql getTypeSql(DateTimeDataType type) =>
+      ParamSql('timestamp with time zone');
 
   @override
   DateTime? toDaoValue(data) {
@@ -210,8 +231,8 @@ class PostgresqlDateTimeDataType
   }
 
   @override
-  String toPostgresValue(DateTime? data) =>
-      data?.apply((d) => '\'${d.toIso8601String()}\'') ?? 'NULL';
+  ParamSql toPostgresValue(DateTimeDataType type, DateTime? data) =>
+      ParamSql.param<DateTime>(data, PostgreSQLDataType.timestampWithTimezone);
 }
 
 class PostgresqlByteDataType
@@ -219,7 +240,7 @@ class PostgresqlByteDataType
   const PostgresqlByteDataType();
 
   @override
-  String getTypeSql(ByteDataType type) => 'bytea';
+  ParamSql getTypeSql(ByteDataType type) => ParamSql('bytea');
 
   @override
   Uint8List? toDaoValue(data) {
@@ -238,8 +259,8 @@ class PostgresqlByteDataType
   }
 
   @override
-  String toPostgresValue(Uint8List? data) =>
-      data?.apply((d) => 'decode(\'${d.toHexString()}\', \'hex\')') ?? 'NULL';
+  ParamSql toPostgresValue(ByteDataType type, Uint8List? data) =>
+      ParamSql.param<List<int>>(data, PostgreSQLDataType.byteArray);
 }
 
 class PostgresqlJsonMapDataType
@@ -247,7 +268,7 @@ class PostgresqlJsonMapDataType
   const PostgresqlJsonMapDataType();
 
   @override
-  String getTypeSql(JsonMapDataType type) => 'jsonb';
+  ParamSql getTypeSql(JsonMapDataType type) => ParamSql('jsonb');
 
   @override
   Map<String, dynamic>? toDaoValue(data) {
@@ -266,12 +287,7 @@ class PostgresqlJsonMapDataType
   }
 
   @override
-  String toPostgresValue(Map<String, dynamic>? data) {
-    if (data == null) {
-      return 'NULL';
-    } else {
-      final escapedJson = SqlBuilder.escapeValue(jsonEncode(data));
-      return '\'$escapedJson\'::jsonb';
-    }
+  ParamSql toPostgresValue(JsonMapDataType type, Map<String, dynamic>? data) {
+    return ParamSql.param(data, PostgreSQLDataType.jsonb);
   }
 }
