@@ -1,5 +1,7 @@
+import 'package:datahub/datahub.dart';
+
 /// Annotation for dao fields.
-///
+/// //TODO OUTDATED DOCS
 /// Valid types are String, int, double, bool, Uint8List and DateTime.
 ///
 /// If [name] is not set, the name of the class is used.
@@ -19,8 +21,9 @@
 class DaoField {
   final String? name;
   final int? length;
+  final Type? type;
 
-  const DaoField({this.name, this.length});
+  const DaoField({this.name, this.type, this.length});
 }
 
 /// Annotation for primary key dao fields.
@@ -46,10 +49,12 @@ class DaoField {
 /// [autoIncrement] only works for int fields and is enabled by default.
 class PrimaryKeyDaoField extends DaoField {
   final bool autoIncrement;
-
-  const PrimaryKeyDaoField(
-      {String? name, int? length, this.autoIncrement = true})
-      : super(name: name, length: length);
+  const PrimaryKeyDaoField({
+    super.name,
+    super.type,
+    super.length,
+    this.autoIncrement = true,
+  });
 }
 
 /// Annotation for foreign key dao fields.

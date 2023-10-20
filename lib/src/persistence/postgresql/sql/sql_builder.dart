@@ -283,23 +283,4 @@ abstract class SqlBuilder {
           'support Expression type ${expression.runtimeType}.');
     }
   }
-
-  @deprecated
-  static dynamic toSqlData(dynamic value) {
-    if (value is Point) {
-      return PgPoint(value.x, value.y);
-    }
-
-    // Postges lib does not support Uint8List yet... :(
-    // in SqlBuilder.substitutionLiteral this is then decoded again
-    if (value is Uint8List) {
-      return value.toHexString();
-    }
-
-    if (value is List || value is Map<String, dynamic>) {
-      return jsonEncode(value);
-    }
-
-    return value;
-  }
 }

@@ -29,10 +29,10 @@ class PostgreSQLDatabaseAdapter
   static const defaultDataTypes = <PostgresqlDataType>{
     PostgresqlStringDataType(),
     PostgresqlIntDataType(),
-    PostgresqlSerialDataType(),
     PostgresqlBoolDataType(),
     PostgresqlDoubleDataType(),
     PostgresqlDateTimeDataType(),
+    PostgresqlByteDataType(),
   };
 
   late final host = config<String>('host');
@@ -98,21 +98,14 @@ class PostgreSQLDatabaseAdapter
             throw PersistenceException('Schema does not exist.');
           }
 
-          await context.execute(ParamSql('CREATE SCHEMA ')
-            ..addParam(schema.name, postgres.PostgreSQLDataType.text));
+          await context.execute(CreateSchemaBuilder(schema.name).buildSql());
 
-          final createMetaTable =
-              CreateTableBuilder(this, schema.name, metaTable)
-                ..fields.addAll([
-                  PrimaryKey(
-                      type: StringDataType(),
-                      layoutName: metaTable,
-                      name: 'key'),
-                  DataField(
-                      type: StringDataType(),
-                      layoutName: metaTable,
-                      name: 'value')
-                ]);
+          final createMetaTable = CreateTableBuilder(
+              this, schema.name, metaTable)
+            ..fields.addAll([
+              PrimaryKey<StringDataType>(layoutName: metaTable, name: 'key'),
+              DataField<StringDataType>(layoutName: metaTable, name: 'value')
+            ]);
           await context.execute(createMetaTable.buildSql());
 
           await context.setMetaValue(
@@ -129,12 +122,10 @@ class PostgreSQLDatabaseAdapter
   }
 
   @override
-  PostgresqlDataType findType<T, TDataType extends DataType<T>>(
-      DataType<T> dataType) {
-    return _typeRegistry
-            .firstOrNullWhere((e) => e is PostgresqlDataType<T, TDataType>) ??
+  PostgresqlDataType findType(DataField field) {
+    return _typeRegistry.firstOrNullWhere((e) => field.type == e.baseType) ??
         (throw PersistenceException(
-            'No type factory registered for ${dataType.runtimeType} in adapter.'));
+            'No type factory registered for ${field.type} in adapter.'));
   }
 
   @override
@@ -160,7 +151,7 @@ class PostgreSQLDatabaseAdapter
     final result = await context.querySql(
       ParamSql('SELECT schema_name FROM information_schema.schemata '
           'WHERE schema_name = ')
-        ..addParam(schema.name, postgres.PostgreSQLDataType.text),
+        ..addParam(schema.name, postgres.PostgreSQLDataType.name),
     );
     return result.isNotEmpty;
   }

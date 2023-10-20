@@ -31,7 +31,7 @@ class AddFieldBuilder implements SqlBuilder {
     final colName = SqlBuilder.escapeName(field.name);
 
     final sql = ParamSql(
-        'ALTER TABLE $tableRef ADD COLUMN $colName ${type.getTypeSql(field.type)}');
+        'ALTER TABLE $tableRef ADD COLUMN $colName ${type.getTypeSql(field)}');
 
     if (field is PrimaryKey) {
       sql.addSql(' PRIMARY KEY');

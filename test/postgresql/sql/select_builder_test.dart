@@ -21,7 +21,7 @@ enum TestEnum { something, test }
 
 void main() {
   final fieldX =
-      DataField(type: StringDataType(), layoutName: 'fake', name: 'fieldX');
+      DataField<StringDataType>(layoutName: 'fake', name: 'fieldX');
   final schemaTable = SelectFromTable('schema', 'table');
   final otherTable = SelectFromTable('schema', 'other');
   final otherTable2 = SelectFromTable('schema', 'different');

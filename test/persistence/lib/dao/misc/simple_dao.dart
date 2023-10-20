@@ -6,7 +6,7 @@ part 'simple_dao.g.dart';
 
 @DaoType()
 class Simple extends _Dao {
-  @PrimaryKeyDaoField()
+  @PrimaryKeyDaoField(type: StringDataType)
   final int id;
 
   final String text;

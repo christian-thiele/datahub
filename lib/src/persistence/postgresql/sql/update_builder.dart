@@ -27,8 +27,8 @@ class UpdateBuilder extends SqlBuilder {
     final sql = ParamSql('UPDATE ');
     final values = _values.entries.map((e) {
       final fieldName = SqlBuilder.escapeName(e.key.name);
-      final type = typeRegistry.findType(e.key.type);
-      final value = type.toPostgresValue(e.key.type, e.value);
+      final type = typeRegistry.findType(e.key);
+      final value = type.toPostgresValue(e.key, e.value);
       final sql = ParamSql('$fieldName = ');
       sql.add(value);
       return sql;

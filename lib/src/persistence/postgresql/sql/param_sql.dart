@@ -16,7 +16,7 @@ class ParamSql {
   ParamSql(String sql)
       : this.ofSegments([if (sql.isNotEmpty) SqlTextSegment(sql)]);
 
-  void add(ParamSql sql) {}
+  void add(ParamSql sql) => segments.addAll(sql.segments);
 
   void addSegment(SqlSegment segment) => segments.add(segment);
 
@@ -52,7 +52,7 @@ class ParamSql {
     return Map.fromEntries(
       segments
           .whereIs<SqlParamSegment>()
-          .mapIndexed((p0, p1) => MapEntry((p1 + 1).toString(), p0)),
+          .mapIndexed((p0, p1) => MapEntry((p1 + 1).toString(), p0.value)),
     );
   }
 

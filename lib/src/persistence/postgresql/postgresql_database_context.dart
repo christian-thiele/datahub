@@ -54,8 +54,7 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     );
 
     QueryResult? mapResult(MapEntry<String, Map<String, dynamic>> e) {
-      final values =
-          e.value.map((key, value) => MapEntry(key, _fromSqlData(value)));
+      final values = e.value.map((key, value) => MapEntry(key, value));
       if (values.values.whereNotNull.isEmpty) {
         return null;
       }
@@ -141,7 +140,8 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
     final returning =
         primaryKey != null ? SqlBuilder.escapeName(primaryKey.name) : null;
 
-    final withPrimary = !(primaryKey?.type is SerialDataType);
+    final withPrimary =
+        !(primaryKey?.type == IntDataType && primaryKey?.autoIncrement == true);
 
     final data = bean.unmap(entry, includePrimaryKey: withPrimary);
     final builder =
@@ -240,14 +240,6 @@ class PostgreSQLDatabaseContext implements DatabaseContext {
       ..forUpdate(forUpdate);
     final results = await querySql(builder.buildSql());
     return results.map((e) => QueryResult.merge(e)).toList();
-  }
-
-  dynamic _fromSqlData(dynamic value) {
-    if (value is postgres.PgPoint) {
-      return Point(value.latitude, value.longitude);
-    }
-
-    return value;
   }
 
   Filter _pkFilter<TPrimaryKey>(

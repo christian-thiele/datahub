@@ -27,8 +27,8 @@ class InsertBuilder implements SqlBuilder {
     final sql = ParamSql('');
     final values = _values.entries.map((e) {
       final fieldName = SqlBuilder.escapeName(e.key.name);
-      final type = typeRegistry.findType(e.key.type);
-      final value = type.toPostgresValue(e.key.type, e.value);
+      final type = typeRegistry.findType(e.key);
+      final value = type.toPostgresValue(e.key, e.value);
       return Tuple(fieldName, value);
     }).toList();
 
@@ -36,6 +36,7 @@ class InsertBuilder implements SqlBuilder {
     sql.addSql(values.map((e) => e.a).join(', ')); //TODO maybe params too?
     sql.addSql(') VALUES (');
     sql.add(values.map((e) => e.b).joinSql(', '));
+    sql.addSql(')');
 
     if (_returning != null) {
       sql.addSql(' RETURNING $_returning');

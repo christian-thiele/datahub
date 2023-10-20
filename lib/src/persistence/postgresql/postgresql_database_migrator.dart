@@ -16,7 +16,7 @@ class PostgreSQLDatabaseMigrator extends Migrator {
   @override
   Future<void> addField(
       DataBean bean, DataField field, Expression initialValue) async {
-    final type = adapter.findType(field.type);
+    final type = adapter.findType(field);
     final builder = AddFieldBuilder(
       _schema.name,
       bean.layoutName,

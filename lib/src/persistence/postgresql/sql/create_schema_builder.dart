@@ -10,8 +10,6 @@ class CreateSchemaBuilder implements SqlBuilder {
 
   @override
   ParamSql buildSql() {
-    final sql = ParamSql('CREATE SCHEMA ');
-    sql.addParam(schemaName, PostgreSQLDataType.text);
-    return sql;
+    return ParamSql('CREATE SCHEMA $schemaName');
   }
 }

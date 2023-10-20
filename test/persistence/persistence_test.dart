@@ -43,6 +43,7 @@ void main() {
       final results = await repo.getAll();
       expect(results.length, greaterThan(0));
     }), timeout: Timeout.none);
+
     test('Pool behavior (PostgreSQL)', host.test(() async {
       final article = ArticleDao(
         userId: 1,

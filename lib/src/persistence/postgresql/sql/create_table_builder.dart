@@ -44,10 +44,10 @@ class CreateTableBuilder implements SqlBuilder {
   }
 
   ParamSql _createFieldSql(DataField field) {
-    final type = adapter.findType(field.type);
+    final type = adapter.findType(field);
     final sql = ParamSql(SqlBuilder.escapeName(field.name));
     sql.addSql(' ');
-    sql.add(type.getTypeSql(field.type));
+    sql.add(type.getTypeSql(field));
     if (field is PrimaryKey) {
       sql.addSql(' PRIMARY KEY');
     } else if (!field.nullable) {

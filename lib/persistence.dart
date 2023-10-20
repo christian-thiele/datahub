@@ -19,8 +19,6 @@ export 'src/persistence/query/sub_query.dart';
 
 export 'src/persistence/migration/migrator.dart';
 
-export 'src/persistence/types/point.dart';
-
 export 'src/persistence/database_adapter.dart';
 export 'src/persistence/database_connection.dart';
 export 'src/persistence/database_context.dart';

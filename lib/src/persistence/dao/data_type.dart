@@ -5,27 +5,15 @@ abstract class DataType<T> {
 }
 
 class StringDataType extends DataType<String> {
-  final int length;
-
-  const StringDataType({this.length = 255});
+  const StringDataType();
 }
 
 class IntDataType extends DataType<int> {
-  final int length;
-
-  const IntDataType({this.length = 64});
-}
-
-class SerialDataType extends DataType<int> {
-  final int length;
-
-  const SerialDataType({this.length = 64});
+  const IntDataType();
 }
 
 class DoubleDataType extends DataType<double> {
-  final int length;
-
-  const DoubleDataType({this.length = 64});
+  const DoubleDataType();
 }
 
 class BoolDataType extends DataType<bool> {
