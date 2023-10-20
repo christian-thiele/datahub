@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:dart_amqp/dart_amqp.dart';
@@ -22,6 +24,7 @@ class AmqpBrokerService extends BrokerService {
   late final _configPassword = config<String>('password');
   late final _heartbeatPeriod = config<int?>('heartbeatPeriod') ?? 3000;
   late final _connectionName = config<String?>('connectionName');
+  late final _useSsl = config<bool?>('useSsl') ?? false;
 
   late final Client _client;
 
@@ -40,6 +43,7 @@ class AmqpBrokerService extends BrokerService {
         _configPassword,
       ),
       connectionName: _connectionName ?? resolve<ConfigService>().serviceName,
+      tlsContext: _useSsl ? SecurityContext() : null,
     );
 
     _client = Client(settings: settings);

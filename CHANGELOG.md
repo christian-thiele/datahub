@@ -1,4 +1,6 @@
 ## 0.17.0
+- AmqpBrokerService
+  - added useSsl param
 - EventHubService
   - EphemeralHubEventSocket
 - Resource Hub
