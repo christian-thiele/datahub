@@ -12,5 +12,3 @@ export 'services.dart';
 export 'storage.dart';
 export 'transfer_object.dart';
 export 'utils.dart';
-
-export 'postgresql.dart';

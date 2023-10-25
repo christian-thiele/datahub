@@ -12,12 +12,16 @@ abstract class DataBean<TDao> extends QuerySource<TDao> {
 
   @override
   TDao? map(List<QueryResult> results) {
-    final data =
-        results.firstOrNullWhere((r) => r.layoutName == layoutName)?.data;
-    if (data == null) {
+    final result = results.firstOrNullWhere((r) => r.layoutName == layoutName);
+    if (result == null) {
       return null;
     }
-    return mapValues(data);
+
+    return mapValues(
+      Map.fromEntries(
+        fields.map((e) => MapEntry(e.name, result.getFieldValue(e))),
+      ),
+    );
   }
 
   TDao mapValues(Map<String, dynamic> data);

@@ -13,7 +13,7 @@ services:
   postgres:
     ports:
       - 5432:5432
-    image: postgres:15
+    image: postgis/postgis:16-3.4
     environment:
       - POSTGRES_DB=test_db
       - POSTGRES_USER=testuser

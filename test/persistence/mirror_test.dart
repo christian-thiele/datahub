@@ -1,9 +1,9 @@
 import 'package:datahub/datahub.dart';
 import 'package:test/test.dart';
 
-import 'lib/dao/blog_daos/article_dao.dart';
-import 'lib/dao/blog_daos/blog_dao.dart';
-import 'lib/dao/blog_daos/user_dao.dart';
+import 'lib/blogsystem/article_dao.dart';
+import 'lib/blogsystem/blog_dao.dart';
+import 'lib/blogsystem/user_dao.dart';
 
 void main() {
   test('example DAOs', _blogMirror);

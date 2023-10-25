@@ -17,7 +17,9 @@ abstract class Expression {
       return ValueExpression(expression);
     }
   }
+}
 
+extension ExpressionExtension on Expression {
   /// Convenience method for creating a CompareFilter which matches
   /// if this equals [other].
   ///
@@ -92,7 +94,7 @@ abstract class Expression {
   Sort sort(bool ascending) => ExpressionSort(this, ascending);
 }
 
-class ValueExpression extends Expression {
+class ValueExpression implements Expression {
   final dynamic value;
 
   const ValueExpression(this.value);
@@ -102,19 +104,12 @@ class ValueExpression extends Expression {
       other is ValueExpression && value == other.value;
 }
 
-class OperationExpression extends Expression {
+enum OperationType { add, subtract, multiply, divide }
+
+class OperationExpression implements Expression {
   final Expression left;
   final Expression right;
   final OperationType type;
 
   OperationExpression(this.left, this.right, this.type);
-}
-
-enum OperationType { add, subtract, multiply, divide }
-
-@deprecated
-class CustomSqlExpression extends Expression {
-  final String sqlExpression;
-
-  const CustomSqlExpression(this.sqlExpression);
 }

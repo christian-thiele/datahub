@@ -310,7 +310,7 @@ class RestClient {
     } else if (TResponse == double) {
       return double.parse(await encoding.decodeStream(data)) as TResponse;
     } else if (TResponse == Uint8List) {
-      return data as TResponse;
+      return await data.collect() as TResponse;
     } else if (responseType.isMapOf<String, dynamic>() || responseType.isList) {
       return jsonDecode(await encoding.decodeStream(data)) as TResponse;
     } else if (TypeCheck<void>().isSubtypeOf<TResponse>()) {

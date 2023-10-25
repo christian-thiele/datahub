@@ -31,4 +31,7 @@ class UserDao extends _Dao {
 
     return super == other;
   }
+
+  @override
+  int get hashCode => Object.hashAll([id, name, executionId, image]);
 }

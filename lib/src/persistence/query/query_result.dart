@@ -1,4 +1,7 @@
-class QueryResult {
+import '../dao/data_field.dart';
+import '../dao/data_type.dart';
+
+abstract class QueryResult {
   final String layoutName;
   final Map<String, dynamic> data;
 
@@ -11,4 +14,6 @@ class QueryResult {
     }
     return map;
   }
+
+  T getFieldValue<T>(DataField<DataType<T>> field);
 }

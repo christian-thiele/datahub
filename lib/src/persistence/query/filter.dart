@@ -8,19 +8,15 @@ import 'expression.dart';
 ///
 /// All [Filter] implementations are immutable.
 abstract class Filter {
+  /// Returns the representation of "no filter".
+  static const Filter empty = _EmptyFilter();
+
   const Filter();
 
   bool get isEmpty;
 
-  Filter and(Filter other) => andGroup([this, other]);
-
-  Filter or(Filter other) => orGroup([this, other]);
-
   /// Tries to simplify the Filter structure to avoid redundancy.
   Filter reduce();
-
-  /// Returns the representation of "no filter".
-  static const Filter empty = _EmptyFilter();
 
   /// Returns the smallest representation of the "And" group of [filters].
   ///
@@ -59,6 +55,12 @@ abstract class Filter {
       Iterable<Filter> filters, FilterGroupType type) {
     return FilterGroup(filters.toList(growable: false), type).reduce();
   }
+}
+
+extension FilterExtension on Filter {
+  Filter and(Filter other) => Filter.andGroup([this, other]);
+
+  Filter or(Filter other) => Filter.orGroup([this, other]);
 }
 
 enum FilterGroupType { And, Or }
@@ -113,21 +115,6 @@ class CompareFilter extends Filter {
 
   const CompareFilter(this.left, this.type, this.right,
       {this.caseSensitive = true});
-
-  @override
-  bool get isEmpty => false;
-
-  @override
-  Filter reduce() => this;
-}
-
-@Deprecated('This method assumes that the adapter supports SQL, '
-    'as well as the specific dialect you are using. Only use this method '
-    'when you know the adapter implementation you are using.')
-class CustomSqlCondition extends Filter {
-  final String sql;
-
-  CustomSqlCondition(this.sql);
 
   @override
   bool get isEmpty => false;

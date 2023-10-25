@@ -64,7 +64,7 @@ abstract class DatabaseContext {
 }
 
 /// Utility methods that can be used on any [DatabaseContext].
-extension DatabaseContextUtils on DatabaseContext {
+extension DatabaseContextExtension on DatabaseContext {
   /// Checks if there are any entries that match the filter.
   Future<bool> any(QuerySource bean, {Filter filter = Filter.empty}) async {
     return await count(bean, filter: filter) > 0;

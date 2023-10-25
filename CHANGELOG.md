@@ -18,8 +18,10 @@
 - HttpClient
   - HTTP/2.0 client can reconnect if connection was lost
 - Persistence
+  - Custom Data Types
   - SubQuery as new QuerySource type
   - Connection Pooling in DatabaseAdapter (refactored Repository / Adapters)
+  - Refactored postgres into library datahub_postgres
 - CLI
   - added --codegen / --no-codegen flag to build command
 - Broker

@@ -1,8 +1,8 @@
 import 'package:datahub/datahub.dart';
 
-import 'blog_daos/article_dao.dart';
-import 'blog_daos/blog_dao.dart';
-import 'blog_daos/user_dao.dart';
+import 'article_dao.dart';
+import 'blog_dao.dart';
+import 'user_dao.dart';
 
 class BlogSchema extends DataSchema {
   BlogSchema()
