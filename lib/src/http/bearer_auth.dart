@@ -18,7 +18,7 @@ class BearerAuth extends HttpAuth {
   }
 
   static BearerAuth? fromRequest(ApiRequest request,
-      {String prefix = 'Basic '}) {
+      {String prefix = 'Bearer '}) {
     final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
     if (nullOrWhitespace(token)) {
       return null;

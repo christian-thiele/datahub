@@ -131,7 +131,7 @@ class JWT extends BearerAuth {
     }
 
     final key = publicKey ??
-        await resolve<KeyService>().getKey(Uri.parse(iss!), alg!, kid!);
+        await resolve<KeyService>().getOAuthKey(Uri.parse(iss!), alg!, kid!);
 
     final body = utf8.encode(token.split('.').take(2).join('.'));
     final signer = Signer('SHA-256/RSA');

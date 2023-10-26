@@ -43,7 +43,7 @@ class AmqpBrokerService extends BrokerService {
         _configPassword,
       ),
       connectionName: _connectionName ?? resolve<ConfigService>().serviceName,
-      tlsContext: _useSsl ? SecurityContext() : null,
+      tlsContext: _useSsl ? SecurityContext.defaultContext : null,
     );
 
     _client = Client(settings: settings);

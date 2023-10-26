@@ -23,13 +23,12 @@ class KeyService extends BaseService {
 
   KeyService() : super('datahub');
 
-  //TODO more key types / algs?
   /// Fetches the OAuth public key with id [kid] from [issuer].
   ///
   /// Keys are cached by default to avoid unnecessary requests.
   /// You can disable the key cache by setting the `datahub.enableKeyCache`
   /// configuration value to false.
-  Future<RSAPublicKey> getKey(Uri issuer, String alg, String kid,
+  Future<RSAPublicKey> getOAuthKey(Uri issuer, String alg, String kid,
       {bool forceFetch = false}) async {
     final cacheKey = CacheKey(issuer, alg, kid);
     if (_enableCache && !forceFetch && _cache.containsKey(cacheKey)) {
