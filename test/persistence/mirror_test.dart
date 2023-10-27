@@ -1,3 +1,5 @@
+import 'dart:ffi';
+
 import 'package:datahub/datahub.dart';
 import 'package:test/test.dart';
 
@@ -22,7 +24,8 @@ void _blogMirror() {
         name: 'owner_id',
         nullable: false,
       ),
-      DataField<StringDataType>(layoutName: 'blog', name: 'display_name')
+      DataField<StringDataType>(layoutName: 'blog', name: 'display_name'),
+      DataField<BoolDataType>(layoutName: 'blog', name: 'enabled'),
     ]),
   );
 

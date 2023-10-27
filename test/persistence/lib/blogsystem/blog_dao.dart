@@ -14,5 +14,12 @@ class BlogDao extends _Dao {
 
   final String displayName;
 
-  BlogDao(this.key, this.ownerId, {required this.displayName});
+  final bool enabled;
+
+  BlogDao(
+    this.key,
+    this.ownerId, {
+    required this.displayName,
+    this.enabled = false,
+  });
 }

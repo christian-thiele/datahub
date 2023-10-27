@@ -24,6 +24,8 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
   late final targetPoolSize = config<int?>('poolSize') ?? 3;
   late final maxConnectionLifetime =
       config<int?>('maxConnectionLifetime') ?? 3600;
+  late final connectionPoolTimeout =
+      config<int?>('connectionPoolTimeout') ?? 60;
 
   int get poolSize => _pool.total;
 
@@ -55,7 +57,8 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
       return await delegate(Zone.current['$_adapterId/connection']);
     }
 
-    final connection = await _pool.take(timeout: timeout);
+    final connection = await _pool.take(
+        timeout: timeout ?? Duration(seconds: connectionPoolTimeout));
 
     try {
       return await runZoned(() async {

@@ -10,9 +10,6 @@ import 'package:datahub/persistence.dart';
 /// [initializeAdapter] which must be implemented by the inheriting class.
 /// It opens a single connection and keeps it alive during it's life cycle.
 ///
-/// Configuration values:
-///   `ignoreMigration`: ignore schema migration while initializing (optional)
-///
 /// See also:
 ///   [CRUDRepository]
 abstract class Repository extends BaseService {
