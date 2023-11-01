@@ -19,7 +19,8 @@ import 'cache_key.dart';
 class KeyService extends BaseService {
   late final _enableCache = config<bool?>('enableKeyCache') ?? true;
 
-  final _cache = <CacheKey, RSAPublicKey>{};
+  final _JWKCache = <CacheKey, RSAPublicKey>{};
+  final _openIdCache = <Uri, Uri>{};
 
   KeyService() : super('datahub');
 
@@ -30,9 +31,8 @@ class KeyService extends BaseService {
   /// configuration value to false.
   Future<RSAPublicKey> getOAuthKey(Uri issuer, String alg, String kid,
       {bool forceFetch = false}) async {
-    final cacheKey = CacheKey(issuer, alg, kid);
-    if (_enableCache && !forceFetch && _cache.containsKey(cacheKey)) {
-      return _cache[cacheKey]!;
+    if (_enableCache && !forceFetch && _openIdCache.containsKey(issuer)) {
+      return await getJWKSKey(_openIdCache[issuer]!, alg, kid);
     }
 
     final issuerClient = await RestClient.connect(issuer);
@@ -54,44 +54,57 @@ class KeyService extends BaseService {
       }
 
       final jwksUri = Uri.parse(openIdConfig.data['jwks_uri']);
-      final jwksClient = await RestClient.connect(jwksUri);
-      try {
-        final jwksRequest =
-            await jwksClient.getObject<Map<String, dynamic>>(jwksUri.path)
-              ..throwOnError();
-
-        if (jwksRequest.data['keys'] is! List) {
-          throw Exception('Invalid JWKS.');
-        }
-
-        for (final key in jwksRequest.data['keys']) {
-          if (key['alg'] == alg && key['kid'] == kid) {
-            if (key['n'] is String && key['e'] is String) {
-              final n = _decodeBigInt(base64Decode(addBase64Padding(key['n'])));
-              final e = _decodeBigInt(base64Decode(addBase64Padding(key['e'])));
-              final pub = RSAPublicKey(n, e);
-              if (_enableCache) {
-                return _cache[cacheKey] = pub;
-              } else {
-                return pub;
-              }
-            } else {
-              throw Exception('Could not find e/n properties on key.');
-            }
-          }
-        }
-      } finally {
-        await jwksClient.close();
-      }
-
-      throw Exception('Key not found in JWKS.');
+      return await getJWKSKey(jwksUri, alg, kid);
     } finally {
       await issuerClient.close();
     }
   }
 
-  /// Removes all cached keys.
-  void clearCache() => _cache.clear();
+  Future<RSAPublicKey> getJWKSKey(Uri jwksUri, String alg, String kid,
+      {bool forceFetch = false}) async {
+    final cacheKey = CacheKey(jwksUri, alg, kid);
+    if (_enableCache && !forceFetch && _JWKCache.containsKey(cacheKey)) {
+      return _JWKCache[cacheKey]!;
+    }
+
+    final jwksClient = await RestClient.connect(jwksUri);
+    try {
+      final jwksRequest =
+          await jwksClient.getObject<Map<String, dynamic>>(jwksUri.path)
+            ..throwOnError();
+
+      if (jwksRequest.data['keys'] is! List) {
+        throw Exception('Invalid JWKS.');
+      }
+
+      for (final key in jwksRequest.data['keys']) {
+        if (key['alg'] == alg && key['kid'] == kid) {
+          if (key['n'] is String && key['e'] is String) {
+            final n = _decodeBigInt(base64Decode(addBase64Padding(key['n'])));
+            final e = _decodeBigInt(base64Decode(addBase64Padding(key['e'])));
+            final pub = RSAPublicKey(n, e);
+            if (_enableCache) {
+              return _JWKCache[cacheKey] = pub;
+            } else {
+              return pub;
+            }
+          } else {
+            throw Exception('Could not find e/n properties on key.');
+          }
+        }
+      }
+    } finally {
+      await jwksClient.close();
+    }
+
+    throw Exception('Key not found in JWKS.');
+  }
+
+  /// Clear all caches.
+  void clearCache() {
+    _JWKCache.clear();
+    _openIdCache.clear();
+  }
 
   static BigInt _decodeBigInt(List<int> bytes) {
     var result = BigInt.zero;

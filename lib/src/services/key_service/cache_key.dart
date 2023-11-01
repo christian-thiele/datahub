@@ -1,22 +1,22 @@
 class CacheKey {
-  final Uri issuer;
+  final Uri jwks;
   final String alg;
   final String kid;
 
-  CacheKey(this.issuer, this.alg, this.kid);
+  const CacheKey(this.jwks, this.alg, this.kid);
 
   @override
   bool operator ==(Object other) {
     if (other is CacheKey) {
-      return issuer == other.issuer && alg == other.alg && kid == other.kid;
+      return jwks == other.jwks && alg == other.alg && kid == other.kid;
     }
 
     return false;
   }
 
   @override
-  int get hashCode => Object.hashAll([issuer, alg, kid]);
+  int get hashCode => Object.hashAll([jwks, alg, kid]);
 
   @override
-  String toString() => '$issuer : $kid ($alg)';
+  String toString() => '$jwks : $kid ($alg)';
 }
