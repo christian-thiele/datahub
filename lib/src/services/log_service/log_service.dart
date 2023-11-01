@@ -34,8 +34,9 @@ import 'log_message.dart';
 /// ```
 class LogService extends BaseService {
   final LogBackend _backend;
+  final void Function() _criticalCallback;
 
-  LogService(this._backend) : super('datahub');
+  LogService(this._backend, this._criticalCallback) : super('datahub');
 
   void setLogLevel(LogLevel level) => _backend.setLogLevel(level);
 
@@ -208,6 +209,7 @@ class LogService extends BaseService {
         meta,
       ),
     );
+    _criticalCallback();
   }
 
   @override

@@ -24,7 +24,16 @@ class JWT extends BearerAuth {
 
   String? get iss => payload['iss'];
 
-  String? get aud => payload['aud'];
+  List<String>? get aud {
+    final audience = payload['aud'];
+    if (audience is String) {
+      return [audience];
+    } else if (audience is List) {
+      return audience.map((e) => e.toString()).toList();
+    } else {
+      return null;
+    }
+  }
 
   String? get sub => payload['sub'];
 
@@ -126,7 +135,7 @@ class JWT extends BearerAuth {
       throw ApiRequestException.unauthorized('Issuer mismatch.');
     }
 
-    if (audience != null && aud != audience) {
+    if (aud?.contains(audience) != true) {
       throw ApiRequestException.unauthorized('Audience mismatch.');
     }
 

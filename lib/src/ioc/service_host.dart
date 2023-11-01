@@ -30,7 +30,7 @@ abstract class ServiceHost extends ServiceResolver {
     Map<String, dynamic> config = const <String, dynamic>{},
   }) : _logBackend = logBackend ?? ConsoleLogBackend() {
     _factories = <BaseService Function()>[
-      () => LogService(_logBackend),
+      () => LogService(_logBackend, _onCriticalErrorLog),
       () => ConfigService(config, args),
       SchedulerService.new,
       KeyService.new,
@@ -114,6 +114,16 @@ abstract class ServiceHost extends ServiceResolver {
       log.verbose(line);
     } else {
       parent.print(zone, line);
+    }
+  }
+
+  void _onCriticalErrorLog() {
+    final shutdownOnCriticalError = resolveService<ConfigService?>()
+            ?.config<bool?>('datahub.shutdownOnCriticalError') ??
+        false;
+
+    if (shutdownOnCriticalError) {
+      shutdown();
     }
   }
 

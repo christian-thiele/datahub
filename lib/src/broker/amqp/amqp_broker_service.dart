@@ -25,6 +25,8 @@ class AmqpBrokerService extends BrokerService {
   late final _heartbeatPeriod = config<int?>('heartbeatPeriod') ?? 3000;
   late final _connectionName = config<String?>('connectionName');
   late final _useSsl = config<bool?>('useSsl') ?? false;
+  late final _connectionErrorCritical =
+      config<bool?>('_connectionErrorCritical') ?? false;
 
   late final Client _client;
 
@@ -48,7 +50,11 @@ class AmqpBrokerService extends BrokerService {
 
     _client = Client(settings: settings);
     _client.errorListener((error) {
-      _logService.error('Error in AMQP Broker Client.', error: error);
+      if (_connectionErrorCritical) {
+        _logService.critical('Error in AMQP Broker Client.', error: error);
+      } else {
+        _logService.error('Error in AMQP Broker Client.', error: error);
+      }
     });
     _logService.verbose('AMQP Broker Service initialized.', sender: 'DataHub');
   }
