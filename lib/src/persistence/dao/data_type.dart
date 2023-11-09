@@ -28,6 +28,22 @@ class DateTimeDataType extends DataType<DateTime> {
   const DateTimeDataType();
 }
 
+class StringArrayDataType extends DataType<List<String>> {
+  const StringArrayDataType();
+}
+
+class IntArrayDataType extends DataType<List<int>> {
+  const IntArrayDataType();
+}
+
+class DoubleArrayDataType extends DataType<List<double>> {
+  const DoubleArrayDataType();
+}
+
+class BoolArrayDataType extends DataType<List<bool>> {
+  const BoolArrayDataType();
+}
+
 class JsonListDataType extends DataType<List<dynamic>> {
   const JsonListDataType();
 }
