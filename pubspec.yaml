@@ -32,7 +32,3 @@ dev_dependencies:
 false_secrets:
   - test/resource_hub/localhost.crt
   - test/resource_hub/localhost.key
-
-dependency_overrides:
-  datahub_codegen:
-    path: ../datahub_codegen
