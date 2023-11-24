@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:typed_data';
 
 import 'package:datahub/api.dart';
 import 'package:datahub/ioc.dart';
@@ -27,7 +28,14 @@ abstract class ServerTransportStreamController<T> {
     this.resourceType,
     Stream<void> expiration,
   ) {
-    _expirationSubscription = expiration.listen((_) => _onCancel());
+    _expirationSubscription = expiration.listen((_) {
+      emit(ResourceTransportMessage(
+        resourceType,
+        ResourceTransportMessageType.expired,
+        Uint8List(0),
+      ));
+      _onCancel();
+    });
   }
 
   Stream<ResourceTransportMessage> get stream => _controller.stream;
@@ -78,19 +86,13 @@ abstract class ServerTransportStreamController<T> {
       );
     }
 
-    if (_controller.hasListener) {
-      await _controller.close();
-    }
-    await _resourceSubscription?.cancel();
-    await _expirationSubscription.cancel();
-    _onDone(this);
+    await _onCancel();
   }
 
   FutureOr<void> _onCancel() async {
     if (_controller.hasListener) {
       await _controller.close();
     }
-
     await _resourceSubscription?.cancel();
     await _expirationSubscription.cancel();
     _onDone(this);

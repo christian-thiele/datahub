@@ -82,7 +82,7 @@ mixin _ImmutableElementResourceMethods<T extends TransferObjectBase>
     Map<String, List<String>> query,
   ) {
     //TODO this could create more problems than it solves
-    final existing = _streamControllers.firstOrNullWhere(
+    /*final existing = _streamControllers.firstOrNullWhere(
       (p0) =>
           deepMapEquality(p0.params, params) &&
           deepMapEquality(p0.query, query),
@@ -90,7 +90,7 @@ mixin _ImmutableElementResourceMethods<T extends TransferObjectBase>
 
     if (existing != null) {
       return existing;
-    }
+    }*/
 
     final controller = ClientElementResourceStreamController(
       client,

@@ -51,8 +51,8 @@ class MinioService extends S3Service {
 
   @override
   Stream<ListObjectsResult> listObjects(String bucket,
-          [String? prefix, bool recursive = false]) =>
-      _minio.listObjects(bucket, recursive: recursive);
+          {String? prefix, bool recursive = false}) =>
+      _minio.listObjects(bucket, prefix: prefix ?? '', recursive: recursive);
 
   @override
   Future<MinioByteStream> getObject(String bucket, String object) async =>

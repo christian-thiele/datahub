@@ -16,7 +16,7 @@ abstract class S3Service extends BaseService {
   Future<void> removeBucket(String bucket);
 
   Stream<ListObjectsResult> listObjects(String bucket,
-      [String? prefix, bool recursive = false]);
+      {String? prefix, bool recursive = false});
 
   Future<MinioByteStream> getObject(String bucket, String object);
 

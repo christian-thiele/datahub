@@ -33,6 +33,7 @@ class ApiRequestException extends ApiException {
   ApiResponse toResponse() {
     final requestId = Zone.current[#apiRequestId];
     return JsonResponse({
+      'statusCode': statusCode,
       'errorMessage': message,
       if (requestId is String) 'requestId': requestId,
     }, statusCode);

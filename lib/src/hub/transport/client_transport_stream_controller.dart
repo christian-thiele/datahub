@@ -10,8 +10,8 @@ import '../transport/resource_transport_message.dart';
 import '../transport/resource_transport_stream.dart';
 
 abstract class ClientTransportStreamController<T> {
-  final RestClient
-      _client; //TODO replace this with interface for other transport protocols
+  //TODO replace this with interface for other transport protocols
+  final RestClient _client;
   final RoutePattern routePattern;
   final Map<String, String> params;
   final Map<String, List<String>> query;
@@ -71,6 +71,10 @@ abstract class ClientTransportStreamController<T> {
 
   void _onDataInternal(ResourceTransportMessage message) {
     try {
+      if (message.messageType == ResourceTransportMessageType.expired) {
+        _connectionDone();
+      }
+
       onData(message);
     } catch (e, stack) {
       subject.addError(e, stack);

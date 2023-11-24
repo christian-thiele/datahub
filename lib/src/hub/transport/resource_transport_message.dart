@@ -41,8 +41,14 @@ enum ResourceTransportMessageType {
   /// resource not available anymore
   delete(0x07),
 
+  /// session expired
+  ///
+  /// Client should silently reconnect with valid authorization.
+  expired(0xFE),
+
   /// high level request exception
   exception(0xFF);
+
 
   const ResourceTransportMessageType(this.byte);
 

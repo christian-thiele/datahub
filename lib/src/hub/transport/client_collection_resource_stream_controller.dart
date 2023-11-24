@@ -77,6 +77,15 @@ class ClientCollectionResourceStreamController<
         subject.addError(
             ApiRequestException.notFound('The resource was removed.'));
         subject.close();
+      case ResourceTransportMessageType.exception:
+        final data = jsonDecode(utf8.decode(payload));
+        if (data
+            case {'statusCode': int statusCode, 'message': String message}) {
+          subject.addError(ApiRequestException(statusCode, message));
+        } else {
+          subject
+              .addError(ApiRequestException(500, 'Invalid exception message.'));
+        }
         break;
       default:
         throw ResourceTransportException(
