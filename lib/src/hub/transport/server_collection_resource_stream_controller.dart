@@ -71,7 +71,7 @@ class ServerCollectionResourceStreamController<
       final payload = OrderedDataCodec.encode([event.element]);
       emit(ResourceTransportMessage(
         ResourceTransportResourceType.collection,
-        ResourceTransportMessageType.remove,
+        ResourceTransportMessageType.update,
         payload,
       ));
     } else {
