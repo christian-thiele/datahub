@@ -15,6 +15,7 @@ abstract class ServerTransportStreamController<T> {
   StreamSubscription? _resourceSubscription;
   late final StreamSubscription _expirationSubscription;
   final void Function(ServerTransportStreamController) _onDone;
+  var _closing = false;
 
   late final _controller = StreamController<ResourceTransportMessage>(
     onListen: _onListen,
@@ -65,18 +66,25 @@ abstract class ServerTransportStreamController<T> {
       _logService
           .info('ApiRequestException in resource window stream: ${e.message}');
 
-      try {
-        emit(ResourceTransportMessage(
-          resourceType,
-          ResourceTransportMessageType.exception,
-          await e.toResponse().getData().fold(<int>[], (p, e) => p..addAll(e)),
-        ));
-      } catch (e, stack) {
-        _logService.error(
-          'Could not send exception transport message.',
-          error: e,
-          trace: stack,
-        );
+      if (!_closing) {
+        _closing = true;
+        try {
+          emit(ResourceTransportMessage(
+            resourceType,
+            ResourceTransportMessageType.exception,
+            await e
+                .toResponse()
+                .getData()
+                .fold(<int>[], (p, e) => p..addAll(e)),
+          ));
+        } catch (e, stack) {
+          _logService.error(
+            'Could not send exception transport message.',
+            error: e,
+            trace: stack,
+          );
+        }
+        _closing = false;
       }
     } else {
       _logService.error(
@@ -84,17 +92,43 @@ abstract class ServerTransportStreamController<T> {
         error: e,
         trace: stack,
       );
+
+      if (!_closing) {
+        _closing = true;
+        try {
+          final apiException =
+              ApiRequestException.internalError('Internal Error');
+          emit(ResourceTransportMessage(
+            resourceType,
+            ResourceTransportMessageType.exception,
+            await apiException
+                .toResponse()
+                .getData()
+                .fold(<int>[], (p, e) => p..addAll(e)),
+          ));
+        } catch (e, stack) {
+          _logService.error(
+            'Could not send exception transport message.',
+            error: e,
+            trace: stack,
+          );
+        }
+        _closing = false;
+      }
     }
 
     await _onCancel();
   }
 
   FutureOr<void> _onCancel() async {
-    if (_controller.hasListener) {
-      await _controller.close();
+    if (!_closing) {
+      _closing = true;
+      if (_controller.hasListener) {
+        await _controller.close();
+      }
+      await _resourceSubscription?.cancel();
+      await _expirationSubscription.cancel();
+      _onDone(this);
     }
-    await _resourceSubscription?.cancel();
-    await _expirationSubscription.cancel();
-    _onDone(this);
   }
 }
