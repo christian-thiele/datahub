@@ -73,6 +73,8 @@ class CRUDRepository<TDao extends PrimaryKeyDao<TDao, TPrimaryKey>, TPrimaryKey>
   Future<List<TDao>> getAll({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
+    int offset = 0,
+    int limit = -1,
   }) async =>
       await transaction(
         (context) async {
@@ -80,6 +82,8 @@ class CRUDRepository<TDao extends PrimaryKeyDao<TDao, TPrimaryKey>, TPrimaryKey>
             bean,
             filter: filter,
             sort: sort,
+            offset: offset,
+            limit: limit,
           );
         },
       );
