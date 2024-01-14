@@ -9,4 +9,6 @@ abstract class PrimaryKeyDao<TDao, TPrimaryKey> extends BaseDao<TDao> {
   PrimaryKeyDataBean<TDao, TPrimaryKey> get bean;
 
   TPrimaryKey getPrimaryKey();
+
+  TDao copyWithPrimaryKey(TPrimaryKey value);
 }
