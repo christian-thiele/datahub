@@ -49,7 +49,6 @@ enum ResourceTransportMessageType {
   /// high level request exception
   exception(0xFF);
 
-
   const ResourceTransportMessageType(this.byte);
 
   final int byte;
