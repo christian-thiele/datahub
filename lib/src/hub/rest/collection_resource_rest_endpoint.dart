@@ -1,4 +1,5 @@
-import 'dart:io' as io;
+import 'package:datahub/collection.dart';
+import 'package:datahub/src/hub/transport/resource_transport_exception.dart';
 import 'package:datahub/src/hub/transport/resource_transport_message.dart';
 import 'package:rxdart/rxdart.dart';
 
@@ -49,9 +50,20 @@ class CollectionResourceRestEndpoint extends ResourceRestEndpoint {
         );
       }
     }
+    final offset = request.getParam<int>('offset');
+    final length = request.getParam<int>('length');
 
-    //TODO make available to non-resource stream requests
-    throw ApiRequestException(io.HttpStatus.notAcceptable);
+    final event = _resource.getWindow(request, offset, length).first;
+    if (event case CollectionInitEvent initEvent) {
+      return JsonResponse({
+        'offset': initEvent.windowOffset,
+        'total': initEvent.collectionLength,
+        'data': initEvent.data.map((e) => e.data.toJson()).toList(),
+      });
+    } else {
+      throw ResourceTransportException(
+          'Protocol error. Window did not emit init message.');
+    }
   }
 
   void _removeController(ServerTransportStreamController controller) {
