@@ -8,6 +8,8 @@ export 'src/hub/hub_client.dart';
 export 'src/hub/hub_provider.dart';
 export 'src/hub/hub_resource.dart';
 
+export 'src/hub/reactive_partition.dart';
+
 export 'src/hub/resource.dart';
 export 'src/hub/element_resource.dart';
 export 'src/hub/collection_resource.dart';

@@ -71,7 +71,7 @@ class PrimaryKey<T extends DataType> extends DataField<T> {
 class ForeignKey<T extends DataType> extends DataField<T> {
   final PrimaryKey foreignPrimaryKey;
 
-  ForeignKey({
+  const ForeignKey({
     required PrimaryKey foreignPrimaryKey,
     required String layoutName,
     required String name,

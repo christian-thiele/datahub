@@ -6,6 +6,8 @@ abstract class DataBean<TDao> extends QuerySource<TDao> {
 
   List<DataField> get fields;
 
+  List<DataField> get reactivePartitions;
+
   const DataBean();
 
   Map<DataField, dynamic> unmap(TDao dao, {bool includePrimaryKey = false});
@@ -25,6 +27,13 @@ abstract class DataBean<TDao> extends QuerySource<TDao> {
   }
 
   TDao mapValues(Map<String, dynamic> data);
+
+  T getValue<TDataType extends DataType<T>, T>(
+      TDao dao, DataField<TDataType> field) {
+    //TODO make whole dao more efficient
+    final unmapped = unmap(dao, includePrimaryKey: true);
+    return unmapped[field] as T;
+  }
 
   /// Create [JoinedQuerySource] where this DataBean is used as main source.
   ///
