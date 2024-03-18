@@ -80,7 +80,7 @@ class ApiRequest {
       } else if (T == List<dynamic>) {
         return await getJsonListBody() as T;
       } else if (T == Stream<Uint8List>) {
-        return bodyData as T;
+        return bodyData.asUint8List() as T;
       } else if (T == Stream<List<int>>) {
         return bodyData as T;
       } else if (T == dynamic) {
