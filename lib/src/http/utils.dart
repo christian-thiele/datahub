@@ -6,10 +6,16 @@ import 'package:boost/boost.dart';
 import 'http_headers.dart';
 
 late final charsetRegExp = RegExp(r'(charset|encoding)=([^;,\n]+)');
+late final headerValueRegExp = RegExp(r'(?:[^;"]|"(?:\\.|[^"])*")+');
 
 Map<String, List<String>> http1Headers(io.HttpHeaders headers) {
   final map = <String, List<String>>{};
-  headers.forEach((name, values) => map[name] = values);
+  headers.forEach((name, values) {
+    if (!map.containsKey(name)) {
+      map[name] = [];
+    }
+    map[name]!.addAll(values);
+  });
   return map;
 }
 
@@ -18,10 +24,21 @@ Tuple<Map<String, String>, Map<String, List<String>>> http2Headers(
     List<http2.Header> headers) {
   final rawHeaders =
       headers.map((e) => MapEntry(utf8.decode(e.name), utf8.decode(e.value)));
+
   final decodedHeaders = rawHeaders.split((h) => h.key.startsWith(':'));
   final pseudoHeaders = Map.fromEntries(decodedHeaders.a);
-  final httpHeaders = Map.fromEntries(decodedHeaders.b.map((e) =>
-      MapEntry(e.key, e.value.split(',').map((e) => e.trim()).toList())));
+
+  final httpHeaders = <String, List<String>>{};
+  for (final entry in decodedHeaders.b) {
+    if (!httpHeaders.containsKey(entry.key)) {
+      httpHeaders[entry.key] = [];
+    }
+    final values = headerValueRegExp
+        .allMatches(entry.value)
+        .map((e) => e.group(0)!.trim());
+    httpHeaders[entry.key]!.addAll(values);
+  }
+
   return Tuple(pseudoHeaders, httpHeaders);
 }
 
