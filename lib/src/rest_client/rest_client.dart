@@ -225,7 +225,10 @@ class RestClient {
     };
 
     final bodyData = () {
-      if (body is Uint8List) {
+      if (body is Stream<List<int>>) {
+        requestHeaders[HttpHeaders.contentType] = [Mime.octetStream];
+        return body;
+      } else if (body is Uint8List) {
         requestHeaders[HttpHeaders.contentType] = [Mime.octetStream];
         return Stream.value(body);
       } else if (body is String) {
