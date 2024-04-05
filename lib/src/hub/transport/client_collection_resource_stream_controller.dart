@@ -89,7 +89,7 @@ class ClientCollectionResourceStreamController<
         break;
       default:
         throw ResourceTransportException(
-            'Invalid message type in transport message.');
+            'Invalid message type "${message.messageType.name}" in transport message.');
     }
   }
 }
