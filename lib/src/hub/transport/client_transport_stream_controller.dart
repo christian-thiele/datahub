@@ -56,7 +56,7 @@ abstract class ClientTransportStreamController<T> {
               .transform(ResourceTransportReadTransformer())
               .listen(
                 _onDataInternal,
-                onDone: _connectionDone,
+                onDone: reconnect,
                 onError: _connectionError,
               );
         }
@@ -72,7 +72,7 @@ abstract class ClientTransportStreamController<T> {
   void _onDataInternal(ResourceTransportMessage message) {
     try {
       if (message.messageType == ResourceTransportMessageType.expired) {
-        _connectionDone();
+        reconnect();
       }
 
       onData(message);
@@ -92,7 +92,7 @@ abstract class ClientTransportStreamController<T> {
     });
   }
 
-  void _connectionDone() async {
+  Future<void> reconnect() async {
     try {
       await _disconnect();
       if (subject.hasListener) {
@@ -105,6 +105,11 @@ abstract class ClientTransportStreamController<T> {
       await subject.close();
       onCanceled(this);
     }
+  }
+
+  Future<void> close() async {
+    await subject.close();
+    onCanceled(this);
   }
 
   void _connectionError(dynamic e, StackTrace stack) {

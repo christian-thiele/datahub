@@ -26,6 +26,12 @@ abstract class CollectionResourceClient<Item extends TransferObjectBase<Id>, Id>
     Map<String, String> params = const {},
     Map<String, List<String>> query = const {},
   });
+
+  /// Disconnects all connections held by this client.
+  Future<void> closeAll();
+
+  /// Forces all connections on this client to reconnect.
+  Future<void> reconnectAll();
 }
 
 abstract class CollectionResourceProvider<Item extends TransferObjectBase<Id>,

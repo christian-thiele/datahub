@@ -139,4 +139,22 @@ mixin _ImmutableElementResourceMethods<T extends TransferObjectBase>
       {...defaultQuery, ...query},
     ).stream;
   }
+
+  /// Closes all stream controllers.
+  @override
+  Future<void> closeAll() async {
+    //copy list because of concurrent modification due to onCancel()
+    for (final controller in _streamControllers.toList()) {
+      await controller.close();
+    }
+  }
+
+  /// Forces all stream controllers to reconnect.
+  @override
+  Future<void> reconnectAll() async {
+    //copy list because of concurrent modification due to onCancel()
+    for (final controller in _streamControllers.toList()) {
+      await controller.reconnect();
+    }
+  }
 }

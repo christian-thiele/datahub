@@ -73,4 +73,22 @@ mixin _ImmutableResourceMethods<Item extends TransferObjectBase<Id>, Id>
 
   void _onCanceled(ClientTransportStreamController controller) =>
       _streamControllers.remove(controller);
+
+  /// Closes all stream controllers.
+  @override
+  Future<void> closeAll() async {
+    //copy list because of concurrent modification due to onCancel()
+    for (final controller in _streamControllers.toList()) {
+      await controller.close();
+    }
+  }
+
+  /// Forces all stream controllers to reconnect.
+  @override
+  Future<void> reconnectAll() async {
+    //copy list because of concurrent modification due to onCancel()
+    for (final controller in _streamControllers.toList()) {
+      await controller.reconnect();
+    }
+  }
 }

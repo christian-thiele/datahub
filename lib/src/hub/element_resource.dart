@@ -28,6 +28,12 @@ abstract class ElementResourceClient<T extends TransferObjectBase>
     Map<String, String> params = const {},
     Map<String, List<String>> query = const {},
   });
+
+  /// Disconnects all connections held by this client.
+  Future<void> closeAll();
+
+  /// Forces all connections on this client to reconnect.
+  Future<void> reconnectAll();
 }
 
 abstract class MutableElementResourceClient<T extends TransferObjectBase>

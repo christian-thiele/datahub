@@ -9,4 +9,10 @@ abstract class HubClient<T> {
   HubClient() {
     assert(this is T, 'HubClient<$T> must implement $T.');
   }
+
+  /// Forces all connections on this client to reconnect.
+  Future<void> reconnectAll();
+
+  /// Closes all connections on this client.
+  Future<void> closeAll();
 }
