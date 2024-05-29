@@ -73,6 +73,7 @@ abstract class ClientTransportStreamController<T> {
     try {
       if (message.messageType == ResourceTransportMessageType.expired) {
         reconnect();
+        return;
       }
 
       onData(message);
