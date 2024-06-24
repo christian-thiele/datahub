@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
@@ -73,6 +74,13 @@ abstract class ClientTransportStreamController<T> {
       if (message.messageType == ResourceTransportMessageType.expired) {
         reconnect();
         return;
+      }
+
+      if (message.messageType == ResourceTransportMessageType.exception) {
+        final data = jsonDecode(utf8.decode(message.payload));
+        final exception =
+            ApiRequestException.fromResponse(data['statusCode'] ?? 500, data);
+        subject.addError(exception);
       }
 
       onData(message);

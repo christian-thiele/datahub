@@ -96,6 +96,25 @@ void main() {
           }),
         );
       });
+
+      host.apiTest('Delete Simple Element', (apiClient) async {
+        final client = MemoHubClient(apiClient);
+        final stream = client.memo.getStream(query: {
+          'delete': ['true']
+        });
+        expectLater(
+          stream,
+          allOf(
+            emitsInOrder(
+              [
+                isA<Memo>(),
+                emitsError(isA<ApiRequestException>()
+                    .having((e) => e.statusCode, 'statusCode', equals(404))),
+              ],
+            ),
+          ),
+        );
+      });
     });
   });
 }

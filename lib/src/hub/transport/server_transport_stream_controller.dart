@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
@@ -72,10 +73,7 @@ abstract class ServerTransportStreamController<T> {
           emit(ResourceTransportMessage(
             resourceType,
             ResourceTransportMessageType.exception,
-            await e
-                .toResponse()
-                .getData()
-                .fold(<int>[], (p, e) => p..addAll(e)),
+            await e.toResponse().getData().collect(),
           ));
         } catch (e, stack) {
           _logService.error(
@@ -101,10 +99,7 @@ abstract class ServerTransportStreamController<T> {
           emit(ResourceTransportMessage(
             resourceType,
             ResourceTransportMessageType.exception,
-            await apiException
-                .toResponse()
-                .getData()
-                .fold(<int>[], (p, e) => p..addAll(e)),
+            await apiException.toResponse().getData().collect(),
           ));
         } catch (e, stack) {
           _logService.error(

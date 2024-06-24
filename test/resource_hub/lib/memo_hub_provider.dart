@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:datahub/datahub.dart';
 
 import 'memo.dart';
@@ -18,7 +20,14 @@ class MemoHubProviderImpl extends MemoHubProvider {
   Stream<Memo> getMemoStream(ApiRequest request) async* {
     resolve<LogService>().d(
         'METHOD: ${request.method} ACCEPT: ${request.headers[HttpHeaders.accept]}');
-    yield* _repo.memo;
+    print(jsonEncode(request.queryParams));
+    if (request.getParam<bool?>('delete') ?? false) {
+      resolve<LogService>().d('Deleting in 1 second');
+      await Future.delayed(Duration(seconds: 1));
+      throw ApiRequestException.notFound();
+    }else {
+      yield* _repo.memo;
+    }
   }
 
   @override
