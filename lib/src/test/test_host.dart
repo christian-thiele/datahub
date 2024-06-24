@@ -2,10 +2,9 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:datahub/api.dart';
-import 'package:datahub/broker.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/rest_client.dart';
-import 'package:test/expect.dart';
+import 'package:test/test.dart' as dartTest;
 
 class TestHost extends ServiceHost {
   TestHost(
@@ -27,54 +26,103 @@ class TestHost extends ServiceHost {
           },
         );
 
-  Future<void> Function() test<T extends ApiService>(
-      [FutureOr<void> Function()? body]) {
-    return () async {
-      try {
-        await initialize();
-      } catch (_) {
-        fail('TestHost does not initialize.');
-      }
+  void declare(void Function(TestHost host) scaffold,
+      {bool useCommonHost = false}) {
+    if (useCommonHost) {
+      dartTest.setUpAll(setUp);
+      dartTest.tearDownAll(tearDown);
+    } else {
+      dartTest.setUp(setUp);
+      dartTest.tearDown(tearDown);
+    }
+    scaffold(this);
+  }
 
-      try {
-        if (body != null) {
-          await runAsService(body);
-        }
-      } finally {
+  Future<void> setUp() async {
+    try {
+      await initialize();
+    } catch (_) {
+      dartTest.fail('TestHost does not initialize.');
+    }
+  }
+
+  Future<void> tearDown() async {
+    try {
+      await shutdown();
+    } catch (_) {
+      dartTest.fail('TestHost does not shutdown gracefully.');
+    }
+  }
+
+  /// Wrapper for defining test bodies.
+  ///
+  /// Wrapping the test body function with this method ensures that
+  /// the test is run in a service zone which provides access to
+  /// the [ServiceResolver] required by the [resolve] function.
+  void test<T extends ApiService>(
+    String name,
+    FutureOr<void> Function() body, {
+    dartTest.Timeout? timeout,
+    Object? tags,
+    Map<String, dynamic>? onPlatform,
+    int? retry,
+    Object? skip,
+    String? testOn,
+  }) {
+    dartTest.test(
+      name,
+      () => runAsService(body),
+      timeout: timeout,
+      tags: tags,
+      onPlatform: onPlatform,
+      retry: retry,
+      skip: skip,
+      testOn: testOn,
+    );
+  }
+
+  /// Wrapper for defining api test bodies.
+  ///
+  /// Wrapping the test body function with this method ensures that
+  /// the test is run in a service zone which provides access to
+  /// the [ServiceResolver] required by the [resolve] function.
+  ///
+  /// This method additionally provides access to a client connected to
+  /// the selected [ApiService] of the host.
+  void apiTest<T extends ApiService>(
+    String name,
+    FutureOr<void> Function(RestClient client) body, {
+    dartTest.Timeout? timeout,
+    Object? tags,
+    Map<String, dynamic>? onPlatform,
+    int? retry,
+    Object? skip,
+    String? testOn,
+  }) {
+    test(
+      name,
+      () async {
+        final api = resolve<T>();
+        final client = RestClient.connectHttp2(
+          Uri(
+            scheme: 'http',
+            host: InternetAddress.loopbackIPv4.host,
+            port: api.port,
+            path: api.basePath,
+          ),
+        );
         try {
-          await shutdown();
-        } catch (_) {
-          fail('TestHost does not shutdown gracefully.');
+          await body(client);
+        } finally {
+          await client.close();
         }
-      }
-    };
-  }
-
-  Future<void> Function() apiTest<T extends ApiService>(
-      FutureOr<void> Function(RestClient client) body) {
-    return test(() async {
-      final api = resolve<T>();
-      final client = RestClient.connectHttp2(
-        Uri(
-          scheme: 'http',
-          host: InternetAddress.loopbackIPv4.host,
-          port: api.port,
-          path: api.basePath,
-        ),
-      );
-      try {
-        await body(client);
-      } finally {
-        await client.close();
-      }
-    });
-  }
-
-  Future<void> Function() eventTest<T extends EventHubService>(
-      FutureOr<void> Function(T hub) body) {
-    return test(() async {
-      final hub = resolve<T>();
-      await body(hub);
-    });
+      },
+      timeout: timeout,
+      tags: tags,
+      onPlatform: onPlatform,
+      retry: retry,
+      skip: skip,
+      testOn: testOn,
+    );
   }
 }

@@ -16,46 +16,45 @@ class EchoLengthEndpoint extends ApiEndpoint {
 }
 
 void main() {
-  final testHost = TestHost(
+  TestHost(
     [
-      () => ApiService('api', [EchoLengthEndpoint()]),
+      () => ApiService('api', [EchoLengthEndpoint()])
     ],
     config: {
       'api': {'port': 8080},
     },
-  );
+  ).declare((host) {
+    host.test(
+      'Test GET Payload fix',
+      () async {
+        final uri = Uri.parse('http://localhost:8080/');
 
-  test(
-    'Test GET Payload fix',
-    testHost.test(() async {
-      final uri = Uri.parse('http://localhost:8080/');
+        final restClient = RestClient.connectHttp11(uri);
+        final response = await restClient.get(
+          '/',
+          headers: {
+            HttpHeaders.accept: [Mime.json],
+            HttpHeaders.contentType: [Mime.json],
+          },
+        ).thenGetJsonBody();
 
-      final restClient = RestClient.connectHttp11(uri);
-      final response = await restClient.getObject<Map<String, dynamic>>(
-        '/',
-        headers: {
-          HttpHeaders.accept: [Mime.json],
-          HttpHeaders.contentType: [Mime.json],
-        },
-      );
+        expect(response['length'], equals(0));
 
-      response.throwOnError();
-      expect(response.data['length'], equals(0));
+        final request = http.Request('GET', uri);
+        request.headers.addAll({
+          'accept': 'application/json',
+        });
 
-      final request = http.Request('GET', uri);
-      request.headers.addAll({
-        'accept': 'application/json',
-      });
+        final response2 = await request.send().timeout(Duration(seconds: 20));
+        if (response2.statusCode != 200) {
+          throw Exception(response2.reasonPhrase);
+        }
 
-      final response2 = await request.send().timeout(Duration(seconds: 20));
-      if (response2.statusCode != 200) {
-        throw Exception(response2.reasonPhrase);
-      }
+        final responseData =
+            await response2.stream.bytesToString().then(jsonDecode);
 
-      final responseData =
-          await response2.stream.bytesToString().then(jsonDecode);
-
-      expect(responseData['length'], equals(0));
-    }),
-  );
+        expect(responseData['length'], equals(0));
+      },
+    );
+  });
 }

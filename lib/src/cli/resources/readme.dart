@@ -43,7 +43,7 @@ The resulting executable will be named `bin/$projectName.exe`.
 *The file extension is `exe` on linux or mac too, don't worry about it.*
 
 #### Requirements
-- Dart &#8805; 2.17 ([Setup][2])
+- Dart &#8805; ^3.1 ([Setup][2])
 
 #### Get Dependencies
 

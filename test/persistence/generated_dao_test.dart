@@ -6,10 +6,10 @@ import 'lib/blogsystem/blog_dao.dart';
 import 'lib/blogsystem/user_dao.dart';
 
 void main() {
-  test('example DAOs', _blogMirror);
+  test('Generated Blog DAO', _blogDaoCheck);
 }
 
-void _blogMirror() {
+void _blogDaoCheck() {
   expect(BlogDaoDataBean.layoutName, equals('blog'));
   expect(
     BlogDaoDataBean.fields,

@@ -1,14 +1,27 @@
 import 'dart:async';
 
-import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/utils.dart';
 
 class ApiRequestException extends ApiException {
   final int statusCode;
+  final Map<String, dynamic> data;
 
-  ApiRequestException(this.statusCode, [String? message])
-      : super(_toMessage(statusCode, message));
+  ApiRequestException(this.statusCode, String? message,
+      {Map<String, dynamic>? data})
+      : data = {
+          'statusCode': statusCode,
+          'errorMessage': message,
+          if (Zone.current[#apiRequestId] is String)
+            'requestId': Zone.current[#apiRequestId],
+          ...?data,
+        },
+        super('$statusCode ${message ?? getHttpStatus(statusCode)}');
+
+  ApiRequestException.fromResponse(this.statusCode, this.data)
+      : super(
+          '$statusCode ${data['errorMessage']?.toString() ?? getHttpStatus(statusCode)}',
+        );
 
   ApiRequestException.unauthorized([message]) : this(401, message);
 
@@ -22,20 +35,5 @@ class ApiRequestException extends ApiException {
 
   ApiRequestException.internalError(message) : this(500, message);
 
-  static String _toMessage(int statusCode, String? message) {
-    if (nullOrEmpty(message)) {
-      return getHttpStatus(statusCode);
-    }
-
-    return message!;
-  }
-
-  ApiResponse toResponse() {
-    final requestId = Zone.current[#apiRequestId];
-    return JsonResponse({
-      'statusCode': statusCode,
-      'errorMessage': message,
-      if (requestId is String) 'requestId': requestId,
-    }, statusCode);
-  }
+  ApiResponse toResponse() => JsonResponse(data, statusCode);
 }

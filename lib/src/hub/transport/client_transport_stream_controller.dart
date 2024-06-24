@@ -44,15 +44,14 @@ abstract class ClientTransportStreamController<T> {
     try {
       await _connectSemaphore.runLocked(() async {
         if (_currentSubscription == null) {
-          final streamResponse = await _client.getObject<Stream<List<int>>>(
+          final streamResponse = await _client.get(
             routePattern.encode(params),
             query: query,
             headers: {
               HttpHeaders.accept: [Mime.datahubResourceStream]
             },
           );
-          streamResponse.throwOnError();
-          _currentSubscription = streamResponse.data
+          _currentSubscription = streamResponse.bodyData
               .transform(ResourceTransportReadTransformer())
               .listen(
                 _onDataInternal,

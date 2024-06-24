@@ -48,6 +48,12 @@ class TestCommand extends CliCommand {
       defaultsTo: 'test_default',
       help: 'Specifies the docker network the test container is attached to.',
     );
+    argParser.addOption(
+      'warmup',
+      defaultsTo: '5',
+      help:
+          'Amount of time (in seconds) to wait for compose environment to warm up before starting tests.',
+    );
   }
 
   @override
@@ -77,20 +83,23 @@ class TestCommand extends CliCommand {
       await buildDebugStep([], 'test');
     }
 
-    Process? composeProcess;
     if (argResults!['compose']) {
-      composeProcess =
-          await step('Creating docker compose environment.', () async {
-        final result = await Process.start(
+      await step('Creating docker compose environment.', () async {
+        return await Process.run(
           'docker',
-          ['compose', '-f', 'test/docker-compose.yml', 'up'],
+          ['compose', '-f', 'test/docker-compose.yml', 'up', '-d'],
         );
-
-        // TODO find out when containers are up
-        await Future.delayed(Duration(seconds: 3));
-
-        return result;
       });
+
+      final warmup = int.tryParse(argResults!['warmup'].toString()) ?? 0;
+      if (warmup > 0) {
+        await step(
+          'Waiting for environment to warm up.',
+          () async {
+            await Future.delayed(Duration(seconds: warmup));
+          },
+        );
+      }
     }
 
     final useVmService = argResults!['enable_vm_service'];
@@ -125,8 +134,7 @@ class TestCommand extends CliCommand {
     await stdout.addStream(process.stdout);
     await stderr.addStream(process.stderr);
     final exitCode = await process.exitCode;
-
-    composeProcess?.kill(ProcessSignal.sigint);
+    stdout.writeln('\n');
 
     if (argResults!['compose']) {
       await step('Disposing docker compose environment.', () async {

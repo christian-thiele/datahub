@@ -44,20 +44,18 @@ Future<void> _testConnect() async {
 }
 
 Future<void> _testClient(RestClient client) async {
-  final text = await client.getObject<String>('/html');
-  text.throwOnError();
-  expect(text.data, contains('<html>'));
+  final text = await client.get('/html').thenGetTextBody();
+  expect(text, contains('<html>'));
 
-  final dto = await client.getObject('/json', bean: ExampleObjectTransferBean);
-  dto.throwOnError();
-  expect(dto.data.slideshow.author, equals('Yours Truly'));
-  expect(dto.data.slideshow.date, equals('date of publication'));
-  expect(dto.data.slideshow.title, equals('Sample Slide Show'));
+  final dto =
+      await client.get('/json').thenGetBody(bean: ExampleObjectTransferBean);
+  expect(dto.slideshow.author, equals('Yours Truly'));
+  expect(dto.slideshow.date, equals('date of publication'));
+  expect(dto.slideshow.title, equals('Sample Slide Show'));
 
-  final stream = await client.getObject<Stream<List<int>>>('/drip', query: {
+  final stream = await client.get('/drip', query: {
     'numbytes': ['5'],
     'duration': ['1']
-  });
-  stream.throwOnError();
-  expect(await stream.data.expand((element) => element).toList(), hasLength(5));
+  }).thenGetBodyData();
+  expect(await stream.expand((element) => element).toList(), hasLength(5));
 }

@@ -40,20 +40,21 @@ class KeyService extends BaseService {
       final issuerBasePath = issuer.path.endsWith('/')
           ? issuer.path.substring(0, issuer.path.length - 1)
           : issuer.path;
-      final openIdConfig = await issuerClient.getObject<Map<String, dynamic>>(
-        '$issuerBasePath/.well-known/openid-configuration',
-      )
-        ..throwOnError();
+      final openIdConfig = await issuerClient
+          .get(
+            '$issuerBasePath/.well-known/openid-configuration',
+          )
+          .thenGetJsonBody();
 
-      if (Uri.tryParse(openIdConfig.data['issuer'])?.host != issuer.host) {
+      if (Uri.tryParse(openIdConfig['issuer'])?.host != issuer.host) {
         throw Exception('Issuer mismatch in openid-configuration.');
       }
 
-      if (openIdConfig.data['jwks_uri'] == null) {
+      if (openIdConfig['jwks_uri'] == null) {
         throw Exception('Missing JWKS uri in openid-configuration.');
       }
 
-      final jwksUri = Uri.parse(openIdConfig.data['jwks_uri']);
+      final jwksUri = Uri.parse(openIdConfig['jwks_uri']);
       return await getJWKSKey(jwksUri, alg, kid);
     } finally {
       await issuerClient.close();
@@ -69,15 +70,13 @@ class KeyService extends BaseService {
 
     final jwksClient = await RestClient.connect(jwksUri);
     try {
-      final jwksRequest =
-          await jwksClient.getObject<Map<String, dynamic>>(jwksUri.path)
-            ..throwOnError();
+      final jwksRequest = await jwksClient.get(jwksUri.path).thenGetJsonBody();
 
-      if (jwksRequest.data['keys'] is! List) {
+      if (jwksRequest['keys'] is! List) {
         throw Exception('Invalid JWKS.');
       }
 
-      for (final key in jwksRequest.data['keys']) {
+      for (final key in jwksRequest['keys']) {
         if (key['alg'] == alg && key['kid'] == kid) {
           if (key['n'] is String && key['e'] is String) {
             final n = _decodeBigInt(base64Decode(addBase64Padding(key['n'])));

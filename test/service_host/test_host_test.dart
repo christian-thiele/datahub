@@ -25,22 +25,22 @@ class InstantiateFailureService extends BaseService {
 
 void main() {
   group('Test Host', () {
-    test(
-      'Simple Service',
-      TestHost([ExampleService.new]).test(() {
-        resolve<ExampleService>().doSomething();
-      }),
-    );
+    TestHost([ExampleService.new]).declare((host) {
+      host.test(
+        'Simple Service',
+        () => resolve<ExampleService>().doSomething(),
+      );
+    });
 
     test(
       'Service Instantiate Failure',
-      () => expect(TestHost([InstantiateFailureService.new]).test(),
+      () => expect(TestHost([InstantiateFailureService.new]).setUp(),
           throwsA(isA<TestFailure>())),
     );
 
     test(
       'Service Initialize Failure',
-      () => expect(TestHost([InitializeFailureService.new]).test(),
+      () => expect(TestHost([InitializeFailureService.new]).setUp(),
           throwsA(isA<TestFailure>())),
     );
   });

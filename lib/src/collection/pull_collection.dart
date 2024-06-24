@@ -42,7 +42,7 @@ abstract class PullCollection<Item> {
   }) =>
       PullCollection<Item>.delegate(
         (p, q) async {
-          final response = await client.getObject<Map<String, dynamic>>(
+          final response = await client.get(
             endpoint,
             urlParams: {...urlParams, ...p},
             query: {
@@ -52,19 +52,17 @@ abstract class PullCollection<Item> {
             },
             headers: headers,
           );
-          response.throwOnError();
-          return response.data['count'] as int;
+          final data = await response.getBody();
+          return data['count'] as int;
         },
         (offset, limit, p, q) async {
-          final response = await client.getList<Item>(
+          final response = await client.get(
             endpoint,
             urlParams: {...urlParams, ...p},
             query: {...query, ...q},
             headers: headers,
-            bean: bean,
           );
-          response.throwOnError();
-          return response.data;
+          return await response.getBody<List<Item>>(bean: bean);
         },
       );
 
@@ -108,7 +106,7 @@ abstract class PrimaryKeyPullCollection<Item, Id> extends PullCollection<Item> {
   }) {
     return PrimaryKeyPullCollection<Item, Id>.delegate(
       (p, q) async {
-        final response = await client.getObject<Map<String, dynamic>>(
+        final response = await client.get(
           endpoint,
           urlParams: {...urlParams, ...p},
           query: {
@@ -118,30 +116,26 @@ abstract class PrimaryKeyPullCollection<Item, Id> extends PullCollection<Item> {
           },
           headers: headers,
         );
-        response.throwOnError();
-        return response.data['count'] as int;
+        final data = await response.getJsonBody();
+        return data['count'] as int;
       },
       (offset, limit, p, q) async {
-        final response = await client.getList<Item>(
+        final response = await client.get(
           endpoint,
           urlParams: {...urlParams, ...p},
           query: {...query, ...q},
           headers: headers,
-          bean: bean,
         );
-        response.throwOnError();
-        return response.data;
+        return response.getBody<List<Item>>(bean: bean);
       },
       (id) async {
-        final response = await client.getObject<Item>(
+        final response = await client.get(
           '$endpoint/${Uri.encodeComponent(id.toString())}',
           urlParams: {...urlParams},
           query: {...query},
           headers: headers,
-          bean: bean,
         );
-        response.throwOnError();
-        return response.data;
+        return response.getBody<Item>(bean: bean);
       },
     );
   }

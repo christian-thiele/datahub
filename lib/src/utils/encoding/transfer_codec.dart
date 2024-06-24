@@ -14,6 +14,7 @@ class TransferCodec<T> extends TypeCheck<T> {
 
   const TransferCodec(this.encode, this.decode);
 
+  //TODO refactor, List<...> codecs probably not needed anymore
   static const codecs = <TransferCodec>[
     TransferCodec<String>(_pass, _decodeString),
     TransferCodec<double>(_pass, _decodeDouble),

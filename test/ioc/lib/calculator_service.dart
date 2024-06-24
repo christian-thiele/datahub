@@ -27,8 +27,6 @@ class CalculatorService extends IsolatedService {
 
   static void executeTask(_CalculatorTask task) async {
     print('Received ${task.text}');
-    print('Blocking for no good reason...');
-    sleep(const Duration(seconds: 5));
     print('Returning ${task.text.length}');
     task.result.send(task.text.length);
   }

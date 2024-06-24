@@ -7,43 +7,37 @@ import 'package:datahub/test.dart';
 import 'package:test/test.dart';
 
 void main() {
-  final host = TestHost(
-    [
-      () => AmqpBrokerService('rabbit'),
-    ],
-    config: {
-      'datahub': {
-        'serviceName': 'unit-test',
-      },
-      'rabbit': {
-        'host': 'rabbit',
-        'user': 'testuser',
-        'password': 'secretpassword',
-      },
-    },
-  );
+  TestHost(
+    [() => AmqpBrokerService('rabbit')],
+    args: ['test/config.yaml'],
+  ).declare((host) {
+    group('AMQP', () {
+      host.test('Connection', () async {
+        final amqp = resolve<AmqpBrokerService>();
 
-  group('AMQP', () {
-    test('Connection', host.test(() async {
-      final amqp = resolve<AmqpBrokerService>();
-      final sendChannel = await amqp.openChannel(prefetch: 1);
-      final sendX = await sendChannel.declareExchange(
-          'test-exchange', BrokerExchangeType.fanOut);
-      await sendX.publish(utf8.encode('MESSAGE 1').asUint8List(), null);
-      unawaited(Future.delayed(Duration(minutes: 10)).then((value) async =>
-          await sendX.publish(utf8.encode('MESSAGE 2').asUint8List(), null)));
+        final sendChannel = await amqp.openChannel(prefetch: 1);
+        final sendX = await sendChannel.declareExchange(
+            'test-exchange', BrokerExchangeType.fanOut);
 
-      final rcvChannel = await amqp.openChannel(prefetch: 3);
-      final rcvX = await rcvChannel.declareExchange(
-          'test-exchange', BrokerExchangeType.fanOut);
-      final rcvQ = await rcvX.declareAndBindQueue('test-queue', []);
-      rcvQ.getConsumer(noAck: false).listen((event) {
-        print(utf8.decode(event.payload));
-      }, onDone: () {
-        print('DONE');
-      }, onError: (e) {
-        print('ERROR: $e');
-      });
-    }), timeout: Timeout(const Duration(minutes: 15)));
+        final rcvChannel = await amqp.openChannel(prefetch: 3);
+        final rcvX = await rcvChannel.declareExchange(
+            'test-exchange', BrokerExchangeType.fanOut);
+        final rcvQ = await rcvX.declareAndBindQueue('test-queue', []);
+
+        final valueCompleter = Completer<String>();
+
+        final subscription = rcvQ.getConsumer(noAck: false).listen((event) {
+          if (!valueCompleter.isCompleted)
+            valueCompleter.complete(utf8.decode(event.payload));
+        }, onError: (e) {
+          fail(e.toString());
+        });
+
+        await Future.delayed(Duration(seconds: 3));
+        await sendX.publish(utf8.encode('MESSAGE').asUint8List(), null);
+        expect(await valueCompleter.future, equals('MESSAGE'));
+        await subscription.cancel();
+      }, timeout: Timeout(const Duration(minutes: 1)));
+    });
   });
 }

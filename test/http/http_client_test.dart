@@ -5,7 +5,7 @@ import 'package:datahub/http.dart';
 import 'package:datahub/src/http/utils.dart';
 import 'package:test/test.dart';
 
-final website = Uri.parse('https://datahubproject.net');
+final website = Uri.parse('https://datahubproject.net/');
 
 void main() {
   group('HTTP Client', () {

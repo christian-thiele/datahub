@@ -10,80 +10,92 @@ import 'lib/memo_hub_provider.dart';
 import 'lib/memo_repository.dart';
 
 void main() {
-  final host = TestHost([
+  TestHost([
     MemoRepository.new,
     MemoHubProviderImpl.new,
-    () => ApiService('api', [
-          ...ResourceRestEndpoint.allOf<MemoHub>(),
-        ]),
-  ]);
+    () => ApiService(
+          'api',
+          [
+            ...ResourceRestEndpoint.allOf<MemoHub>(),
+          ],
+        ),
+  ]).declare((host) {
+    group('Memo Hub', () {
+      host.apiTest('REST Client', (client) async {
+        await Future.delayed(const Duration(seconds: 1));
+        final initial = await client.get('/memo');
+        expect(initial, isSuccess);
+        expect(
+          initial.getBody(),
+          completion(
+            isA<Map<String, dynamic>>()
+                .having((p0) => p0['text'], 'text', 'initial'),
+          ),
+        );
 
-  group('Memo Hub', () {
-    test('REST Client', host.apiTest((client) async {
-      final initial = await client.getObject('/memo', bean: MemoTransferBean);
-      expect(initial, isSuccess);
-      expect(initial, hasBody());
-      expect(initial.data.text, 'initial');
+        final setResponse =
+            await client.put('/memo', Memo(1, 'changed', DateTime.now()));
+        expect(setResponse, isSuccess);
+        expect(setResponse.getByteBody(), completion(isEmpty));
 
-      final setResponse =
-          await client.putObject('/memo', Memo(1, 'changed', DateTime.now()));
-      expect(setResponse, isSuccess);
-      expect(setResponse, isNot(hasBody()));
+        final changed = await client.get('/memo');
+        expect(changed, isSuccess);
+        expect(
+          changed.getBody(bean: MemoTransferBean),
+          completion(
+            isA<Memo>().having((e) => e.text, 'text', equals('changed')),
+          ),
+        );
+      });
 
-      final changed = await client.getObject('/memo', bean: MemoTransferBean);
-      expect(changed, isSuccess);
-      expect(changed, hasBody());
-      expect(changed.data.text, 'changed');
-    }));
+      host.apiTest('Hub Client', (client) async {
+        final hub = MemoHubClient(client);
+        final initial = await hub.memo.get();
+        expect(initial.text, 'initial');
 
-    test('Hub Client', host.apiTest((client) async {
-      final hub = MemoHubClient(client);
-      final initial = await hub.memo.get();
-      expect(initial.text, 'initial');
+        final future1 = expectLater(
+          hub.memo.getStream(),
+          emitsInOrder([
+            isA<Memo>().having((p0) => p0.text, 'text', equals('initial')),
+            isA<Memo>().having((p0) => p0.text, 'text', equals('changed')),
+          ]),
+        );
+        await Future.delayed(const Duration(milliseconds: 100));
+        await hub.memo.set(Memo(1, 'changed', DateTime.now()));
+        await future1;
 
-      final listener = StreamBatchListener(hub.memo.getStream());
-      expect(
-        await listener.next,
-        predicate<Memo>((p0) => p0.text == 'initial'),
-      );
-
-      await hub.memo.set(Memo(1, 'changed', DateTime.now()));
-      expect(
-        await listener.next,
-        predicate<Memo>((p0) => p0.text == 'changed'),
-      );
-
-      final todoListener = StreamBatchListener(hub.todos.getWindow(5, 10));
-      final event1 = await todoListener.next;
-      expect(
-        event1,
-        predicate<CollectionWindowState<Memo, int>>((p0) {
-          return p0.windowOffset == 5 &&
-              p0.windowLength == 10 &&
-              p0.window.length == p0.windowLength;
-        }),
-      );
-      final event2 = await todoListener.next;
-      expect(
-        event2,
-        predicate<CollectionWindowState<Memo, int>>((p0) {
-          return p0.windowOffset == 6 &&
-              p0.windowLength == 10 &&
-              p0.items.length == p0.windowLength;
-        }),
-      );
-      expect(event2.items.map((e) => e.id),
-          orderedEquals(event1.items.map((e) => e.id)));
-      final event3 = await todoListener.next;
-      expect(
-        event3,
-        predicate<CollectionWindowState<Memo, int>>((p0) {
-          return p0.windowOffset == 6 &&
-              p0.windowLength == 9 &&
-              p0.items.length == p0.windowLength &&
-              p0.items.first.id != event2.items.first.id;
-        }),
-      );
-    }), timeout: Timeout.none);
+        final todoListener = StreamBatchListener(hub.todos.getWindow(5, 10));
+        final event1 = await todoListener.next;
+        expect(
+          event1,
+          predicate<CollectionWindowState<Memo, int>>((p0) {
+            return p0.windowOffset == 5 &&
+                p0.windowLength == 10 &&
+                p0.window.length == p0.windowLength;
+          }),
+        );
+        final event2 = await todoListener.next;
+        expect(
+          event2,
+          predicate<CollectionWindowState<Memo, int>>((p0) {
+            return p0.windowOffset == 6 &&
+                p0.windowLength == 10 &&
+                p0.items.length == p0.windowLength;
+          }),
+        );
+        expect(event2.items.map((e) => e.id),
+            orderedEquals(event1.items.map((e) => e.id)));
+        final event3 = await todoListener.next;
+        expect(
+          event3,
+          predicate<CollectionWindowState<Memo, int>>((p0) {
+            return p0.windowOffset == 6 &&
+                p0.windowLength == 9 &&
+                p0.items.length == p0.windowLength &&
+                p0.items.first.id != event2.items.first.id;
+          }),
+        );
+      });
+    });
   });
 }

@@ -1,5 +1,15 @@
 postgres:
-  host: localhost
+  host: postgres
   database: test_db
+  username: testuser
+  password: secretpassword
+
+rabbit:
+  host: rabbit
+  username: testuser
+  password: secretpassword
+
+minio:
+  host: minio
   username: testuser
   password: secretpassword

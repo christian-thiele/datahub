@@ -11,7 +11,6 @@ RUN dart pub get
 COPY . .
 # Ensure packages are still up-to-date if anything has changed
 RUN dart pub get --offline
-RUN dart run build_runner build --delete-conflicting-outputs
 RUN dart compile exe bin/$projectName.dart -o bin/$projectName
 
 # Build minimal serving image from AOT-compiled `/server` and required system

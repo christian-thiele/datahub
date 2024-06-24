@@ -1,9 +1,7 @@
 import 'dart:async';
 
-import 'package:boost/boost.dart';
 import 'package:datahub/rest_client.dart';
 import 'package:datahub/transfer_object.dart';
-import 'package:datahub/utils.dart';
 
 import '../element_resource.dart';
 import '../transport/client_element_resource_stream_controller.dart';
@@ -55,13 +53,12 @@ class MutableElementResourceRestClient<T extends TransferObjectBase>
     Map<String, String> params = const {},
     Map<String, List<String>> query = const {},
   }) async {
-    final response = await client.putObject<void>(
+    await client.put(
       routePattern.pattern,
       value,
       urlParams: {...defaultParams, ...params},
       query: {...defaultQuery, ...query},
     );
-    response.throwOnError();
   }
 }
 
@@ -118,15 +115,11 @@ mixin _ImmutableElementResourceMethods<T extends TransferObjectBase>
       return controller.current!;
     }
 
-    final response = await client.getObject(
+    return await client.get(
       routePattern.pattern,
       urlParams: {...defaultParams, ...params},
       query: {...defaultQuery, ...query},
-      bean: bean,
-    );
-
-    response.throwOnError();
-    return response.data;
+    ).thenGetBody(bean: bean);
   }
 
   @override

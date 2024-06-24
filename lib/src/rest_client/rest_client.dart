@@ -2,10 +2,8 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:typed_data';
 
-import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
-import 'package:datahub/transfer_object.dart';
 import 'package:datahub/utils.dart';
 
 import 'rest_response.dart';
@@ -78,141 +76,105 @@ class RestClient {
 
   RestClient withAuth(HttpAuth? auth) => RestClient(_httpClient, auth: auth);
 
-  Future<RestResponse<TResponse>> getObject<TResponse>(
+  Future<RestResponse> get(
     String endpoint, {
     Map<String, dynamic> urlParams = const {},
     Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
-    TransferBean<TResponse>? bean,
+    bool throwOnError = true,
   }) async {
-    return await request<TResponse, TResponse>(
+    return await request(
       ApiRequestMethod.GET,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
-      bean: bean,
       query: query,
+      throwOnError: throwOnError,
     );
   }
 
-  Future<RestResponse<List<TResponse>>> getList<TResponse>(
-    String endpoint, {
-    Map<String, dynamic> urlParams = const {},
-    Map<String, List<String>> query = const {},
-    Map<String, List<String>> headers = const {},
-    TransferBean<TResponse>? bean,
-  }) async {
-    return await request<TResponse, List<TResponse>>(
-      ApiRequestMethod.GET,
-      RoutePattern(endpoint),
-      urlParams,
-      headers: headers,
-      bean: bean,
-      query: query,
-    );
-  }
-
-  Future<RestResponse<TResponse>> postObject<TResponse>(
+  Future<RestResponse> post(
     String endpoint,
     dynamic object, {
     Map<String, dynamic> urlParams = const {},
     Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
-    TransferBean<TResponse>? bean,
+    bool throwOnError = true,
   }) async {
-    return await request<TResponse, TResponse>(
+    return await request(
       ApiRequestMethod.POST,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
-      bean: bean,
       body: object,
       query: query,
+      throwOnError: throwOnError,
     );
   }
 
-  Future<RestResponse<TResponse>> putObject<TResponse>(
+  Future<RestResponse> put(
     String endpoint,
     dynamic object, {
     Map<String, dynamic> urlParams = const {},
     Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
-    TransferBean<TResponse>? bean,
+    bool throwOnError = true,
   }) async {
-    return await request<TResponse, TResponse>(
+    return await request(
       ApiRequestMethod.PUT,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
-      bean: bean,
       body: object,
       query: query,
+      throwOnError: throwOnError,
     );
   }
 
-  Future<RestResponse<TResponse>> patchObject<TResponse>(
+  Future<RestResponse> patch(
     String endpoint,
     dynamic object, {
     Map<String, dynamic> urlParams = const {},
     Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
-    TransferBean<TResponse>? bean,
+    bool throwOnError = true,
   }) async {
-    return await request<TResponse, TResponse>(
+    return await request(
       ApiRequestMethod.PATCH,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
-      bean: bean,
       body: object,
       query: query,
+      throwOnError: throwOnError,
     );
   }
 
-  @deprecated
-  Future<RestResponse<TResponse>> rawRequest<TResponse>(
-    ApiRequestMethod method,
-    String endpoint, {
-    dynamic body,
-    Map<String, dynamic> urlParams = const {},
-    Map<String, List<String>> query = const {},
-    Map<String, List<String>> headers = const {},
-    TransferBean<TResponse>? bean,
-  }) async {
-    return await request<TResponse, TResponse>(
-      method,
-      RoutePattern(endpoint),
-      urlParams,
-      headers: headers,
-      bean: bean,
-      body: body,
-      query: query,
-    );
-  }
-
-  Future<RestResponse<void>> delete(
+  Future<RestResponse> delete(
     String endpoint, {
     Map<String, dynamic> urlParams = const {},
     Map<String, List<String>> query = const {},
     Map<String, List<String>> headers = const {},
+    bool throwOnError = true,
   }) async {
-    return await request<void, void>(
+    return await request(
       ApiRequestMethod.DELETE,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
       query: query,
+      throwOnError: throwOnError,
     );
   }
 
-  Future<RestResponse<TResponse>> request<TData, TResponse>(
+  Future<RestResponse> request(
     ApiRequestMethod method,
     RoutePattern endpoint,
     Map<String, dynamic> urlParams, {
     Map<String, List<String>> headers = const {},
     Map<String, List<String>> query = const {},
     dynamic body,
-    TransferBean<TData>? bean,
+    bool throwOnError = true,
   }) async {
     final uri = _httpClient.address.replace(
       path: endpoint.encode(urlParams),
@@ -251,76 +213,14 @@ class RestClient {
       }
     }();
 
-    final response = await _httpClient
+    final httpResponse = await _httpClient
         .request(HttpRequest(method, uri, requestHeaders, bodyData));
 
-    return await handleResponse<TData, TResponse>(response, bean);
-  }
-
-  Future<RestResponse<TResponse>> handleResponse<TData, TResponse>(
-    HttpResponse response,
-    TransferBean<TData>? bean,
-  ) async {
-    try {
-      if (response.statusCode < 400) {
-        final data = await _handleData<TData, TResponse>(
-          response.bodyData,
-          response.charset ?? utf8,
-          bean,
-        );
-        return RestResponse<TResponse>(response, data);
-      } else {
-        return RestResponse(response, null);
-      }
-    } on Exception catch (e) {
-      throw ApiException('Could not process response data.', e);
+    final restResponse = RestResponse(httpResponse);
+    if (throwOnError) {
+      await restResponse.throwOnError();
     }
-  }
-
-  Future<TResponse?> _handleData<TData, TResponse>(
-    Stream<List<int>> data,
-    Encoding encoding,
-    TransferBean<TData>? bean,
-  ) async {
-    final responseType = TypeCheck<TResponse>();
-    if (TResponse != TData && (!responseType.isListOf<TData>())) {
-      throw ApiError(
-          'Invalid data and response type combination: ${TData.toString()}, ${TResponse.toString()}');
-    }
-
-    if (TResponse == Stream<List<int>>) {
-      return data as TResponse;
-    } else if (bean != null) {
-      final obj = jsonDecode(await encoding.decodeStream(data));
-      if (obj is Map<String, dynamic>) {
-        final decodedData = bean.toObject(obj);
-        if (responseType.isList) {
-          return [decodedData] as TResponse;
-        } else {
-          return decodedData as TResponse;
-        }
-      } else if (obj is List) {
-        if (responseType.isList) {
-          return obj.map((e) => bean.toObject(e)).toList() as TResponse;
-        }
-      }
-
-      throw ApiException('Invalid response.');
-    } else if (TResponse == String) {
-      return await encoding.decodeStream(data) as TResponse;
-    } else if (TResponse == int) {
-      return int.parse(await encoding.decodeStream(data)) as TResponse;
-    } else if (TResponse == double) {
-      return double.parse(await encoding.decodeStream(data)) as TResponse;
-    } else if (TResponse == Uint8List) {
-      return await data.collect() as TResponse;
-    } else if (responseType.isMapOf<String, dynamic>() || responseType.isList) {
-      return jsonDecode(await encoding.decodeStream(data)) as TResponse;
-    } else if (TypeCheck<void>().isSubtypeOf<TResponse>()) {
-      return null;
-    }
-
-    throw ApiError.invalidType(TResponse);
+    return restResponse;
   }
 
   Future<void> close() async => await _httpClient.close();

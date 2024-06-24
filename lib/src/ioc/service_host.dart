@@ -95,13 +95,15 @@ abstract class ServiceHost extends ServiceResolver {
 
     _shutdownCompleter = Completer();
 
-    for (final service in _services.reversed) {
-      try {
-        await service.shutdown();
-      } catch (e, stack) {
-        _onError('Could not shutdown service gracefully.', e, stack, false);
+    await runAsService(() async {
+      for (final service in _services.reversed) {
+        try {
+          await service.shutdown();
+        } catch (e, stack) {
+          _onError('Could not shutdown service gracefully.', e, stack, false);
+        }
       }
-    }
+    });
 
     _services.clear();
     _shutdownCompleter!.complete();

@@ -85,6 +85,8 @@ class ApiRequest {
         return bodyData as T;
       } else if (T == dynamic) {
         return jsonDecode(await getTextBody());
+      } else if (TypeCheck<void>().isSubtypeOf<T>()) {
+        return null as T;
       }
     } on CodecException catch (e) {
       throw ApiRequestException.badRequest(e.message);

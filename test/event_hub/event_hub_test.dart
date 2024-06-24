@@ -8,63 +8,58 @@ import 'lib/notification_hub.dart';
 import 'lib/notification_hub_consumer.dart';
 
 void main() {
-  final host = TestHost(
+  TestHost(
     [
       () => AmqpBrokerService('rabbit'),
       NotificationHub.new,
       NotificationHubConsumer.new,
       EphemeralConsumer.new,
     ],
-    config: {
-      'datahub': {
-        'serviceName': 'unit-test',
-      },
-      'rabbit': {
-        'host': 'rabbit',
-        'user': 'testuser',
-        'password': 'secretpassword',
-      },
-    },
-  );
+    args: ['test/config.yaml'],
+  ).declare((host) {
+    group('Event Hub', () {
+      host.test('Simple Transfer', () async {
+        final hub = resolve<NotificationHub>();
+        final listener =
+            StreamBatchListener(hub.notificationReceive.getStream(prefetch: 3));
+        await hub.notificationSend
+            .publish(Notification('Hello', 'Some text here', false));
+        await Future.delayed(Duration(milliseconds: 100));
+        expect(listener.hasNext, isFalse);
+        await hub.notificationSend
+            .publish(Notification('Hello', 'Other text', true));
+        await Future.delayed(Duration(milliseconds: 100));
+        expect(listener.hasNext, isTrue);
 
-  group('Event Hub', () {
-    test('Simple Transfer', host.eventTest<NotificationHub>((hub) async {
-      final listener =
-          StreamBatchListener(hub.notificationReceive.getStream(prefetch: 3));
-      await hub.notificationSend
-          .publish(Notification('Hello', 'Some text here', false));
-      await Future.delayed(Duration(milliseconds: 100));
-      expect(listener.hasNext, isFalse);
-      await hub.notificationSend
-          .publish(Notification('Hello', 'Other text', true));
-      await Future.delayed(Duration(milliseconds: 100));
-      expect(listener.hasNext, isTrue);
+        expect(
+            await listener.next,
+            predicate<HubEvent<Notification>>(
+                (n) => n.data.text == 'ECHO: Other text'));
+        listener.cancel();
+      });
 
-      expect(
-          await listener.next,
-          predicate<HubEvent<Notification>>(
-              (n) => n.data.text == 'ECHO: Other text'));
-    }));
-
-    test('Ephemeral', host.eventTest<NotificationHub>((hub) async {
-      final listener = resolve<EphemeralConsumer>();
-      listener.start();
-      await Future.delayed(Duration(seconds: 1));
-      await hub.notificationProcessed
-          .publish('info.x', Notification('hi', 'this is x', false));
-      await hub.notificationProcessed
-          .publish('info.y', Notification('hi', 'this is y', false));
-      await Future.delayed(Duration(seconds: 1));
-      listener.stop();
-      await Future.delayed(Duration(seconds: 1));
-      await hub.notificationProcessed.publish(
-          'info.x', Notification('hi', 'this is x but dropped', false));
-      await Future.delayed(Duration(seconds: 1));
-      listener.start();
-      await hub.notificationProcessed
-          .publish('info.x', Notification('hi', 'this is x', false));
-      await hub.notificationProcessed.publish(
-          'info2.y', Notification('hi', 'this is y but ignored', false));
-    }));
+      host.test('Ephemeral', () async {
+        final hub = resolve<NotificationHub>();
+        final listener = resolve<EphemeralConsumer>();
+        listener.start();
+        await Future.delayed(Duration(seconds: 1));
+        await hub.notificationProcessed
+            .publish('info.x', Notification('hi', 'this is x', false));
+        await hub.notificationProcessed
+            .publish('info.y', Notification('hi', 'this is y', false));
+        await Future.delayed(Duration(seconds: 1));
+        listener.stop();
+        await Future.delayed(Duration(seconds: 1));
+        await hub.notificationProcessed.publish(
+            'info.x', Notification('hi', 'this is x but dropped', false));
+        await Future.delayed(Duration(seconds: 1));
+        listener.start();
+        await hub.notificationProcessed
+            .publish('info.x', Notification('hi', 'this is x', false));
+        await hub.notificationProcessed.publish(
+            'info2.y', Notification('hi', 'this is y but ignored', false));
+        listener.stop();
+      });
+    });
   });
 }

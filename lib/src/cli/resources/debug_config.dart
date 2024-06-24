@@ -1,5 +1,5 @@
 String createDebugConfig(String projectName) => '''datahub:
-  environment: DEV
-  log: DEBUG
+  environment: dev
+  log: debug
   serviceName: $projectName
 ''';

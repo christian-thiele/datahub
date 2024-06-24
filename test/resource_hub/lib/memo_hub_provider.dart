@@ -18,7 +18,6 @@ class MemoHubProviderImpl extends MemoHubProvider {
   Stream<Memo> getMemoStream(ApiRequest request) async* {
     resolve<LogService>().d(
         'METHOD: ${request.method} ACCEPT: ${request.headers[HttpHeaders.accept]}');
-    yield _repo.current;
     yield* _repo.memo;
   }
 
@@ -35,9 +34,10 @@ class MemoHubProviderImpl extends MemoHubProvider {
     final current = List.generate(
       length,
       (index) => OrderedData(
-          10 + index * 2,
-          Memo(offset + index, uuid(),
-              DateTime.now().subtract(Duration(seconds: length - offset)))),
+        10 + index * 2,
+        Memo(offset + index, uuid(),
+            DateTime.now().subtract(Duration(seconds: length - offset))),
+      ),
     );
 
     yield CollectionInitEvent(100, offset, current);

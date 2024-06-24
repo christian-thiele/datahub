@@ -1,46 +1,60 @@
+import 'dart:typed_data';
+
+import 'package:datahub/api.dart';
 import 'package:datahub/test.dart';
 import 'package:test/test.dart';
 
 import 'lib/echo_api.dart';
 
 void main() {
-  final host = TestHost([EchoApi.new]);
+  TestHost([
+    EchoApi.new
+  ], config: {
+    'echoApi': {'port': 8081}
+  }).declare(
+    (host) {
+      host.apiTest('PUT /echo', (client) async {
+        expect(client.put('/echo', {'whatever': 123}),
+            throwsA(isA<ApiRequestException>()));
+      });
 
-  test('GET /echo', host.apiTest((client) async {
-    final response = await client.getObject('/echo');
-    expect(response, isSuccess);
-    expect(response, isNot(hasBody()));
-  }), timeout: Timeout.none);
+      host.apiTest('GET /echo', (client) async {
+        final response = await client.get('/echo');
+        expect(response, isSuccess);
+        final responseBody = await response.getBody<Uint8List>();
+        expect(responseBody, isEmpty);
+      });
 
-  test('POST /echo', host.apiTest((client) async {
-    final response = await client
-        .postObject<Map<String, dynamic>>('/echo', {'success': true});
-    expect(response, isSuccess);
-    expect(response, hasBody(equals({'success': true})));
+      host.apiTest('POST /echo', (client) async {
+        final response = await client.post('/echo', {'success': true});
+        expect(response, isSuccess);
+        final responseBody = await response.getBody();
+        expect(responseBody, equals({'success': true}));
 
-    final response2 = await client.postObject<List<dynamic>>('/echo', [
-      {'success': true}
-    ]);
-    expect(response2, isSuccess);
-    expect(
-        response2,
-        hasBody(equals([
+        final response2 = await client.post('/echo', [
           {'success': true}
-        ])));
-  }), timeout: Timeout.none);
+        ]);
+        expect(response2, isSuccess);
+        final response2Body = await response2.getBody();
+        expect(
+          response2Body,
+          equals([
+            {'success': true}
+          ]),
+        );
+      });
 
-  test('PATCH /echo', host.apiTest((client) async {
-    final response = await client.patchObject('/echo', {'success': false});
-    expect(response, isNot(isSuccess));
-  }), timeout: Timeout.none);
+      host.apiTest('PATCH /echo', (client) async {
+        final response = await client.patch('/echo', {'success': false},
+            throwOnError: false);
+        expect(response, isNot(isSuccess));
+      });
 
-  test('PUT /echo', host.apiTest((client) async {
-    final response = await client.putObject('/echo', {'whatever': 123});
-    expect(response, isNot(isSuccess));
-  }), timeout: Timeout.none);
-
-  test('DELETE /echo', host.apiTest((client) async {
-    final response = await client.delete('/echo');
-    expect(response, isSuccess);
-  }), timeout: Timeout.none);
+      host.apiTest('DELETE /echo', (client) async {
+        final response = await client.delete('/echo');
+        expect(response, isSuccess);
+      });
+    },
+    useCommonHost: true,
+  );
 }

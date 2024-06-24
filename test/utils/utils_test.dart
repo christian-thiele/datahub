@@ -1,9 +1,18 @@
+import 'dart:async';
 import 'dart:convert';
 
+import 'package:datahub/datahub.dart';
 import 'package:datahub/src/cli/utils.dart';
-import 'package:datahub/utils.dart';
+import 'package:datahub/src/test/test_host.dart';
 import 'package:boost/boost.dart';
 import 'package:test/test.dart';
+
+class BlockingService extends BaseService {
+  void test() {
+    throw ApiRequestException(123, 'fuck you');
+    print('works');
+  }
+}
 
 void main() {
   group('Token', () {
