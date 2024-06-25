@@ -213,6 +213,8 @@ class RestResponse implements HttpResponse {
               'errorBody': textBody,
             });
           }
+        } on ApiRequestException catch (_) {
+          rethrow;
         } catch (e) {
           throw ApiRequestException.fromResponse(
             statusCode,
