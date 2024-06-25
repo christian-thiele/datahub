@@ -25,7 +25,7 @@ class MemoHubProviderImpl extends MemoHubProvider {
       resolve<LogService>().d('Deleting in 1 second');
       await Future.delayed(Duration(seconds: 1));
       throw ApiRequestException.notFound();
-    }else {
+    } else {
       yield* _repo.memo;
     }
   }
