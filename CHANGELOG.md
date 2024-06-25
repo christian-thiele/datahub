@@ -12,8 +12,9 @@
     - added meta map to LogMessage (Watchtower)
 - ServiceResolver
     - servicesReady notifier
-- ApiRequest
+- ApiRequest / ApiService / ApiEndpoint
     - getParam supports List query parameters
+    - added OPTIONS, HEAD and TRACE methods
 - TransferCodec
     - always encode DateTime with time zone
 - HttpClient
