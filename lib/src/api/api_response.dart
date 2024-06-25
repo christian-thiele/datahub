@@ -200,17 +200,11 @@ class DebugResponse extends TextResponse {
             statusCode: statusCode);
 }
 
-//TODO docs
-class PushStreamResponse extends ApiResponse {
-  final ApiResponse response;
-  final Stream<ApiResponse> pushStream;
+class HeadResponse extends EmptyResponse {
+  final ApiResponse _inner;
 
-  PushStreamResponse(this.response, this.pushStream)
-      : super(response.statusCode);
+  HeadResponse(this._inner);
 
   @override
-  Stream<List<int>> getData() => response.getData();
-
-  @override
-  Map<String, List<String>> getHeaders() => response.getHeaders();
+  Map<String, List<String>> getHeaders() => _inner.getHeaders();
 }

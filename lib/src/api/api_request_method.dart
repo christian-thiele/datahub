@@ -1,27 +1,26 @@
 import 'package:datahub/utils.dart';
 
-enum ApiRequestMethod { GET, POST, PUT, PATCH, DELETE }
+enum ApiRequestMethod {
+  GET,
+  POST,
+  PUT,
+  PATCH,
+  DELETE,
+  OPTIONS,
+  HEAD,
+  TRACE;
 
-ApiRequestMethod parseMethod(String source) {
-  if (source.toLowerCase() == 'get') {
-    return ApiRequestMethod.GET;
+  static ApiRequestMethod parse(String source) {
+    return switch (source.toLowerCase()) {
+      'get' => ApiRequestMethod.GET,
+      'post' => ApiRequestMethod.POST,
+      'put' => ApiRequestMethod.PUT,
+      'patch' => ApiRequestMethod.PATCH,
+      'delete' => ApiRequestMethod.DELETE,
+      'options' => ApiRequestMethod.OPTIONS,
+      'head' => ApiRequestMethod.HEAD,
+      'trace' => ApiRequestMethod.TRACE,
+      _ => throw ApiException('Could not parse method: $source')
+    };
   }
-
-  if (source.toLowerCase() == 'post') {
-    return ApiRequestMethod.POST;
-  }
-
-  if (source.toLowerCase() == 'put') {
-    return ApiRequestMethod.PUT;
-  }
-
-  if (source.toLowerCase() == 'patch') {
-    return ApiRequestMethod.PATCH;
-  }
-
-  if (source.toLowerCase() == 'delete') {
-    return ApiRequestMethod.DELETE;
-  }
-
-  throw ApiException('Could not parse method: $source');
 }

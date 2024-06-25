@@ -14,6 +14,7 @@ class HttpRequest {
   final Stream<List<int>> bodyData;
 
   String get path => nullOrWhitespace(requestUri.path) ? '/' : requestUri.path;
+
   Map<String, List<String>> get queryParams => requestUri.queryParametersAll;
 
   Encoding? get charset => getEncodingFromHeaders(headers);
@@ -27,7 +28,7 @@ class HttpRequest {
 
   factory HttpRequest.http1(io.HttpRequest request) {
     return HttpRequest(
-      parseMethod(request.method),
+      ApiRequestMethod.parse(request.method),
       request.uri,
       http1Headers(request.headers),
       request,
@@ -47,7 +48,7 @@ class HttpRequest {
     final path = Uri.parse(headers.a[':path']!);
 
     return HttpRequest(
-      parseMethod(headers.a[':method']!),
+      ApiRequestMethod.parse(headers.a[':method']!),
       path,
       headers.b,
       data,
