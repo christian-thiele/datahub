@@ -54,6 +54,17 @@ void main() {
         final response = await client.delete('/echo');
         expect(response, isSuccess);
       });
+
+      host.apiTest('OPTIONS /echo', (client) async {
+        final response = await client.request(
+          ApiRequestMethod.OPTIONS,
+          RoutePattern('/echo'),
+          {},
+          throwOnError: false,
+        );
+        expect(response, isNot(isSuccess));
+        expect(response, hasStatusCode(equals(405)));
+      });
     },
     useCommonHost: true,
   );
