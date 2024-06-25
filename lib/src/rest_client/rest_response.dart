@@ -195,8 +195,24 @@ class RestResponse implements HttpResponse {
     if (statusCode >= 400) {
       if (headers['content-type']?.contains(Mime.json) ?? false) {
         try {
-          throw ApiRequestException.fromResponse(
-              statusCode, await getJsonBody());
+          final textBody = await getTextBody();
+          try {
+            final jsonBody = jsonDecode(textBody) as Map<String, dynamic>;
+            throw ApiRequestException.fromResponse(
+              statusCode,
+              {
+                'statusCode': statusCode,
+                ...jsonBody,
+              },
+            );
+          } on ApiRequestException catch (_) {
+            rethrow;
+          } catch (_) {
+            throw ApiRequestException.fromResponse(statusCode, {
+              'statusCode': statusCode,
+              'errorBody': textBody,
+            });
+          }
         } catch (e) {
           throw ApiRequestException.fromResponse(
             statusCode,
