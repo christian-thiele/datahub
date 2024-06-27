@@ -116,6 +116,11 @@ class _ArticleDaoDataBeanImpl extends PrimaryKeyDataBean<ArticleDao, int> {
   ];
 
   @override
+  late final reactivePartitions = [
+    id,
+  ];
+
+  @override
   Map<DataField, dynamic> unmap(ArticleDao dao,
       {bool includePrimaryKey = false}) {
     return {

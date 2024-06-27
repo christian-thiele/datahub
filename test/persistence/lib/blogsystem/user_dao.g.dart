@@ -76,6 +76,11 @@ class _UserDaoDataBeanImpl extends PrimaryKeyDataBean<UserDao, int> {
   ];
 
   @override
+  late final reactivePartitions = [
+    id,
+  ];
+
+  @override
   Map<DataField, dynamic> unmap(UserDao dao, {bool includePrimaryKey = false}) {
     return {
       if (includePrimaryKey) id: dao.id,

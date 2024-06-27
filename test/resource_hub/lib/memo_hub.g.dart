@@ -8,11 +8,8 @@ part of 'memo_hub.dart';
 
 class MemoHubClient extends HubClient<MemoHub> implements MemoHub {
   final RestClient _client;
-
   final String basePath;
-
   MemoHubClient(this._client, {this.basePath = ''});
-
   @override
   late final MutableElementResourceClient<Memo> memo =
       MutableElementResourceRestClient(
@@ -20,7 +17,6 @@ class MemoHubClient extends HubClient<MemoHub> implements MemoHub {
     RoutePattern('$basePath/memo'),
     MemoTransferBean,
   );
-
   @override
   late final CollectionResourceClient<Memo, int> todos =
       CollectionResourceRestClient(
@@ -28,6 +24,17 @@ class MemoHubClient extends HubClient<MemoHub> implements MemoHub {
     RoutePattern('$basePath/todos'),
     MemoTransferBean,
   );
+  @override
+  Future<void> closeAll() async {
+    await memo.closeAll();
+    await todos.closeAll();
+  }
+
+  @override
+  Future<void> reconnectAll() async {
+    await memo.reconnectAll();
+    await todos.reconnectAll();
+  }
 }
 
 // **************************************************************************

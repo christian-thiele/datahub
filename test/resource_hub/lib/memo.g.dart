@@ -26,10 +26,10 @@ extension MemoCopyExtension on Memo {
 
 // ignore_for_file: constant_identifier_names
 
-const MemoTransferBean = _MemoTransferBeanImpl._();
+final MemoTransferBean = _MemoTransferBeanImpl._();
 
 class _MemoTransferBeanImpl extends TransferBean<Memo> {
-  const _MemoTransferBeanImpl._();
+  _MemoTransferBeanImpl._();
 
   @override
   Map<String, dynamic> toMap(Memo transferObject) {

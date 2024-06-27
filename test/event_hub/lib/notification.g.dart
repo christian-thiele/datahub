@@ -26,10 +26,10 @@ extension NotificationCopyExtension on Notification {
 
 // ignore_for_file: constant_identifier_names
 
-const NotificationTransferBean = _NotificationTransferBeanImpl._();
+final NotificationTransferBean = _NotificationTransferBeanImpl._();
 
 class _NotificationTransferBeanImpl extends TransferBean<Notification> {
-  const _NotificationTransferBeanImpl._();
+  _NotificationTransferBeanImpl._();
 
   @override
   Map<String, dynamic> toMap(Notification transferObject) {

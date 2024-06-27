@@ -22,10 +22,10 @@ extension ExampleObjectCopyExtension on ExampleObject {
 
 // ignore_for_file: constant_identifier_names
 
-const ExampleObjectTransferBean = _ExampleObjectTransferBeanImpl._();
+final ExampleObjectTransferBean = _ExampleObjectTransferBeanImpl._();
 
 class _ExampleObjectTransferBeanImpl extends TransferBean<ExampleObject> {
-  const _ExampleObjectTransferBeanImpl._();
+  _ExampleObjectTransferBeanImpl._();
 
   @override
   Map<String, dynamic> toMap(ExampleObject transferObject) {

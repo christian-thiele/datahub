@@ -41,7 +41,7 @@ abstract class ClientTransportStreamController<T> {
   final _connectSemaphore = Semaphore();
   StreamSubscription? _currentSubscription;
 
-  void _connect() async {
+  Future<void> _connect() async {
     try {
       await _connectSemaphore.runLocked(() async {
         if (_currentSubscription == null) {
@@ -104,7 +104,7 @@ abstract class ClientTransportStreamController<T> {
     try {
       await _disconnect();
       if (subject.hasListener) {
-        _connect();
+        await _connect();
       } else {
         onCanceled(this);
       }

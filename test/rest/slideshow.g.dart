@@ -26,10 +26,10 @@ extension SlideshowCopyExtension on Slideshow {
 
 // ignore_for_file: constant_identifier_names
 
-const SlideshowTransferBean = _SlideshowTransferBeanImpl._();
+final SlideshowTransferBean = _SlideshowTransferBeanImpl._();
 
 class _SlideshowTransferBeanImpl extends TransferBean<Slideshow> {
-  const _SlideshowTransferBeanImpl._();
+  _SlideshowTransferBeanImpl._();
 
   @override
   Map<String, dynamic> toMap(Slideshow transferObject) {
