@@ -67,10 +67,27 @@ class ApiRequest {
   /// [Uint8List], [Stream<Uint8List>], [dynamic].
   ///
   /// If T is dynamic, the body data will be returned as json (Map or List).
-  Future<T> getBody<T>({TransferBean<T>? bean}) async {
+  Future<T> getBody<T>({TransferBean? bean}) async {
     try {
       if (bean != null) {
-        return bean.toObject(await getJsonBody());
+        final obj = jsonDecode(await getTextBody());
+
+        if (bean.codec.isSubtypeOf<T>() || T == dynamic) {
+          if (obj is List) {
+            throw CodecException.typeMismatch(T, obj.runtimeType, null);
+          } else {
+            return bean.toObject(obj) as T;
+          }
+        } else if (bean.codec.toList.isSubtypeOf<T>()) {
+          if (obj is List) {
+            return obj.map((e) => bean.toObject(e)).cast<T>().toList() as T;
+          } else {
+            throw CodecException.typeMismatch(T, obj.runtimeType, null);
+          }
+        } else {
+          throw ApiError(
+              'TransferBean<${bean.codec.name}> does not match response type $T');
+        }
       } else if (T == String) {
         return await getTextBody() as T;
       } else if (T == Map<String, dynamic>) {

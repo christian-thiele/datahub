@@ -62,7 +62,7 @@ class RestResponse implements HttpResponse {
         }
       } else if (bean.codec.toList.isSubtypeOf<T>()) {
         if (obj is List) {
-          return obj.map((e) => bean.toObject(e)).toList() as T;
+          return obj.map((e) => bean.toObject(e)).cast<T>().toList() as T;
         } else {
           throw ApiException('Expected $T but received Object.');
         }
