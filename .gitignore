@@ -30,4 +30,3 @@
 .pub/
 build/
 pubspec.lock
-*.g.dart
