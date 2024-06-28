@@ -37,13 +37,8 @@ class KeyService extends BaseService {
 
     final issuerClient = await RestClient.connect(issuer);
     try {
-      final issuerBasePath = issuer.path.endsWith('/')
-          ? issuer.path.substring(0, issuer.path.length - 1)
-          : issuer.path;
       final openIdConfig = await issuerClient
-          .get(
-            '$issuerBasePath/.well-known/openid-configuration',
-          )
+          .get('/.well-known/openid-configuration')
           .thenGetJsonBody();
 
       if (Uri.tryParse(openIdConfig['issuer'])?.host != issuer.host) {
@@ -70,7 +65,7 @@ class KeyService extends BaseService {
 
     final jwksClient = await RestClient.connect(jwksUri);
     try {
-      final jwksRequest = await jwksClient.get(jwksUri.path).thenGetJsonBody();
+      final jwksRequest = await jwksClient.get('').thenGetJsonBody();
 
       if (jwksRequest['keys'] is! List) {
         throw Exception('Invalid JWKS.');

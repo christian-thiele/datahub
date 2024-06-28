@@ -20,7 +20,7 @@ class ApiRequestException extends ApiException {
 
   ApiRequestException.fromResponse(this.statusCode, this.data)
       : super(
-          '$statusCode ${data['errorMessage']?.toString() ?? getHttpStatus(statusCode)}',
+          '[$statusCode] ${data['errorMessage']?.toString() ?? getHttpStatus(statusCode)}',
         );
 
   ApiRequestException.unauthorized([message]) : this(401, message);
