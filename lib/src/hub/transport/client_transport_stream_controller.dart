@@ -81,6 +81,7 @@ abstract class ClientTransportStreamController<T> {
         final exception =
             ApiRequestException.fromResponse(data['statusCode'] ?? 500, data);
         subject.addError(exception);
+        return;
       }
 
       onData(message);
