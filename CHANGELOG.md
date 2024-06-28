@@ -21,6 +21,7 @@
     - HTTP/2.0 client can reconnect if connection was lost
 - RestClient
     - API now more similar to ApiEndpoint / ApiRequest API
+    - Client no longer ignores path prefix of connect base URI
 - Persistence
     - Custom Data Types
     - SubQuery as new QuerySource type

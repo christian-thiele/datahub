@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/utils.dart';
+import 'package:path/path.dart';
 
 import 'rest_response.dart';
 
@@ -176,8 +177,14 @@ class RestClient {
     dynamic body,
     bool throwOnError = true,
   }) async {
+    final pathPrefix = _httpClient.address.pathSegments.isNotEmpty
+        ? '/' +
+            _httpClient.address.pathSegments
+                .where((e) => e.isNotEmpty)
+                .join('/')
+        : '';
     final uri = _httpClient.address.replace(
-      path: endpoint.encode(urlParams),
+      path: pathPrefix + endpoint.encode(urlParams),
       queryParameters: query.isNotEmpty ? query : null,
     );
 
