@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:boost/boost.dart';
+import 'package:datahub/datahub.dart';
 import 'package:uuid/uuid.dart';
 
 const Map<int, String> _statusCodes = {
@@ -191,4 +192,11 @@ bool deepMapEquality<T>(Map<T, dynamic> map1, Map<T, dynamic> map2) {
   }
 
   return true;
+}
+
+extension TransferCodecExtension<T> on TransferCodec<T> {
+  T cast(dynamic object) => object as T;
+  List<T> castList(List list) {
+    return list.cast<T>().toList();
+  }
 }

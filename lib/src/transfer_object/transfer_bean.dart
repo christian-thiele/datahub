@@ -11,6 +11,9 @@ abstract class TransferBean<T> {
 
   T toObject(Map<String, dynamic> data, {String? name});
 
+  List<T> toList(List<dynamic> data, {String? name}) =>
+      decodeList<List<T>, T>(data, (e, name) => toObject(e, name: name));
+
   T _decode(dynamic value, {String? name}) {
     if (value is Map<String, dynamic>) {
       return toObject(value, name: name);

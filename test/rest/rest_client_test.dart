@@ -3,6 +3,8 @@ import 'package:datahub/src/test/matchers.dart';
 import 'package:test/test.dart';
 
 import 'example_object.dart';
+import 'placeholder_user.dart';
+import 'slideshow.dart';
 
 final uri = Uri.parse('https://httpbin.org/');
 final prefixUri = Uri.parse('https://httpbin.org/status');
@@ -15,6 +17,7 @@ void main() {
     test('REST via RestClient.connect', _testConnect);
     test('REST with Path Prefix 1', () => _testPrefix(prefixUri));
     test('REST with Path Prefix 2', () => _testPrefix(prefixUri2));
+    test('REST List request', () => _testListRequest());
   });
 }
 
@@ -65,10 +68,27 @@ Future<void> _testClient(RestClient client) async {
 Future<void> _testPrefix(Uri uri) async {
   final client1 = await RestClient.connect(uri);
   try {
-    expect(await client1.get('/404', throwOnError: false), hasStatusCode(equals(404)));
-    expect(await client1.post('/500', null, throwOnError: false), hasStatusCode(equals(500)));
-    expect(await client1.patch('/200', null, throwOnError: false), hasStatusCode(equals(200)));
-    expect(await client1.delete('/200', throwOnError: false), hasStatusCode(equals(200)));
+    expect(await client1.get('/404', throwOnError: false),
+        hasStatusCode(equals(404)));
+    expect(await client1.post('/500', null, throwOnError: false),
+        hasStatusCode(equals(500)));
+    expect(await client1.patch('/200', null, throwOnError: false),
+        hasStatusCode(equals(200)));
+    expect(await client1.delete('/200', throwOnError: false),
+        hasStatusCode(equals(200)));
+  } finally {
+    await client1.close();
+  }
+}
+
+Future<void> _testListRequest() async {
+  final client1 =
+      await RestClient.connect(Uri.parse('https://jsonplaceholder.typicode.com'));
+  try {
+    expect(
+      await client1.get('/users').thenGetBody<List<PlaceholderUser>>(bean: PlaceholderUserTransferBean),
+      allOf(isA<List<PlaceholderUser>>(), hasLength(10)),
+    );
   } finally {
     await client1.close();
   }

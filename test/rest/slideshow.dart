@@ -9,4 +9,15 @@ class Slideshow extends _TransferObject {
   final String title;
 
   Slideshow(this.author, this.date, this.title);
+
+  @override
+  bool operator ==(Object other) {
+    return other is Slideshow &&
+        author == other.author &&
+        date == other.date &&
+        title == other.title;
+  }
+
+  @override
+  int get hashCode => Object.hashAll([author, date, title]);
 }
