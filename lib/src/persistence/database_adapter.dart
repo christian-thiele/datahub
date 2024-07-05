@@ -64,7 +64,7 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
     await runZonedGuarded(
       () async {
         try {
-          return await delegate(connection);
+          completer.complete(_Box<TResult>.value(await delegate(connection)));
         } finally {
           if (connection.isOpen) {
             _pool.give(connection);
@@ -75,7 +75,7 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
       },
       (error, stack) {
         if (!completer.isCompleted) {
-          completer.complete(_Box.error(error, stack));
+          completer.complete(_Box<TResult>.error(error, stack));
         } else {}
       },
       zoneValues: {
