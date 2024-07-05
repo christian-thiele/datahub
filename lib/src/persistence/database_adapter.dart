@@ -60,8 +60,9 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
     final connection = await _pool.take(
         timeout: timeout ?? Duration(seconds: connectionPoolTimeout));
 
-    try {
-      return await runZoned(() async {
+    final completer = Completer<_Box<TResult>>();
+    await runZonedGuarded(
+      () async {
         try {
           return await delegate(connection);
         } finally {
@@ -71,9 +72,18 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
             _pool.remove(connection);
           }
         }
-      }, zoneValues: {
+      },
+      (error, stack) {
+        if (!completer.isCompleted) {
+          completer.complete(_Box.error(error, stack));
+        } else {}
+      },
+      zoneValues: {
         '$_adapterId/connection': connection,
-      });
+      },
+    );
+    try {
+      return (await completer.future).value;
     } on SocketException catch (e, stack) {
       resolve<LogService?>()?.warn(
         'Socket exception in postgres connection.',
@@ -95,6 +105,26 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
       _pool.remove(connection);
 
       rethrow;
+    }
+  }
+}
+
+class _Box<T> {
+  final dynamic error;
+  final StackTrace? stack;
+  final T? _value;
+
+  _Box.error(this.error, this.stack) : _value = null;
+
+  _Box.value(this._value)
+      : error = null,
+        stack = null;
+
+  Future<T> get value {
+    if (error != null) {
+      return Future<T>.error(error, stack);
+    } else {
+      return Future<T>.value(_value);
     }
   }
 }

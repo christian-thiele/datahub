@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:boost/boost.dart';
+
 //TODO docs
 class Pool<T> {
   final _items = <_PoolItem<T>>[];
@@ -8,6 +10,7 @@ class Pool<T> {
 
   final FutureOr<T> Function() _createItem;
   final FutureOr<bool> Function(T)? _checkIsLive;
+  final _takeSemaphore = Semaphore();
 
   int targetSize;
   final Duration? maxLifetime;
@@ -30,14 +33,17 @@ class Pool<T> {
   }
 
   void give(T item) {
-    final poolItem = _PoolItem(item);
+    final poolItem =
+        _taken.firstOrNullWhere((t) => t.item == item) ?? _PoolItem(item);
     if (_queue.isNotEmpty) {
       final next = _queue.removeAt(0);
-      _taken.add(poolItem);
+      if (!_taken.contains(poolItem)) {
+        _taken.add(poolItem);
+      }
       next.complete(poolItem);
     } else {
       _items.add(_PoolItem(item));
-      _taken.removeWhere((i) => i.item == item);
+      _taken.remove(poolItem);
     }
   }
 
@@ -47,18 +53,20 @@ class Pool<T> {
   }
 
   Future<T> take({Duration? timeout}) async {
-    if (total < targetSize) {
-      return giveReserved(await _createItem());
-    } else {
-      final item = await _takeInternal(timeout);
-
-      if (await _isLive(item)) {
-        return item.item;
+    return await _takeSemaphore.runLocked(() async {
+      if (total < targetSize) {
+        return giveReserved(await _createItem());
       } else {
-        remove(item.item);
-        return await take(timeout: timeout);
+        final item = await _takeInternal(timeout);
+
+        if (await _isLive(item)) {
+          return item.item;
+        } else {
+          remove(item.item);
+          return await take(timeout: timeout);
+        }
       }
-    }
+    });
   }
 
   Future<_PoolItem<T>> _takeInternal(Duration? timeout) async {
