@@ -13,18 +13,14 @@ class TestEndpoint extends ApiEndpoint {
 
 void main(List<String> args) async {
   final host = ApplicationHost(
-    [
-      () => TestService('test'),
-      () => ApiService('api', [TestEndpoint()]),
-    ],
-    onInitialized: onInit,
-    config: {
-      'api': {
-        'port': 1234,
-        'metricPrefix': 'test_api'
-      }
-    }
-  );
+      [
+        () => TestService('test'),
+        () => ApiService('api', [TestEndpoint()]),
+      ],
+      onInitialized: onInit,
+      config: {
+        'api': {'port': 1234, 'metricPrefix': 'test_api'}
+      });
   await host.run();
 
   // required because of signal catching inside ServiceHost
@@ -51,7 +47,8 @@ class TestService extends BaseService {
     log.error('Some error message.');
     log.critical('Some critical message.');
 
-    final _client = await RestClient.connect(Uri.parse('http://localhost:1234'));
+    final _client =
+        await RestClient.connect(Uri.parse('http://localhost:1234'));
 
     resolve<SchedulerService>().schedule(() async {
       funMetric.inc();

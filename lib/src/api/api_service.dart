@@ -99,8 +99,9 @@ class ApiService extends BaseService {
 
             final httpResponse =
                 response.toHttpResponse(httpRequest.requestUri);
-            _metricRequestsTotal?.inc(
-                {'status_code': '${(httpResponse.statusCode / 100).floor()}xx'});
+            _metricRequestsTotal?.inc({
+              'status_code': '${(httpResponse.statusCode / 100).floor()}xx'
+            });
             return httpResponse;
           } on ApiRequestException catch (e) {
             _metricRequestsTotal
