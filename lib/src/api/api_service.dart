@@ -6,6 +6,7 @@ import 'package:boost/boost.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:datahub/http.dart';
+import 'package:datahub/src/services/instrumentation_service/histogram_metric.dart';
 
 import 'middleware/error_request_handler.dart';
 import 'middleware/middleware.dart';
@@ -20,12 +21,16 @@ import 'route.dart';
 class ApiService extends BaseService {
   late final address = config<String?>('address');
   late final port = config<int?>('port') ?? 8080;
+  late final _metricPrefix = config<String?>('metricPrefix') ?? 'api';
   late final HttpServer _server;
 
   final String basePath;
   final List<ApiEndpoint> endpoints;
   final MiddlewareBuilder? middleware;
   final io.SecurityContext? securityContext;
+
+  CounterMetric? _metricRequestsTotal;
+  HistogramMetric? _metricRequestDuration;
 
   ApiService(
     String? config,
@@ -38,6 +43,20 @@ class ApiService extends BaseService {
 
   @override
   Future<void> initialize() async {
+    final instrumentation = resolve<InstrumentationService>();
+    _metricRequestsTotal = instrumentation.counter(
+      _metricPrefix + '_requests_total',
+      labels: {
+        'status_code': ['2xx', '3xx', '4xx', '5xx', '6xx']
+      },
+    );
+    _metricRequestDuration = instrumentation.exponentialHistogram(
+      _metricPrefix + '_request_duration',
+      start: 0.01,
+      factor: 5,
+      count: 5,
+    );
+
     final serveAddress =
         nullOrWhitespace(address) ? io.InternetAddress.anyIPv4 : address;
 
@@ -50,54 +69,69 @@ class ApiService extends BaseService {
   }
 
   Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
-    return await runZoned(
-      () async {
-        try {
-          final handler = _findRequestHandler(httpRequest.path);
-          final path = httpRequest.path.startsWith(basePath)
-              ? httpRequest.path.substring(basePath.length)
-              : '';
+    final watch = Stopwatch();
+    try {
+      return await runZoned(
+        () async {
+          try {
+            final handler = _findRequestHandler(httpRequest.path);
+            final path = httpRequest.path.startsWith(basePath)
+                ? httpRequest.path.substring(basePath.length)
+                : '';
 
-          final route = (handler is ApiEndpoint)
-              ? handler.routePattern.decode(path)
-              : Route(RoutePattern.any, path, {}, path);
+            final route = (handler is ApiEndpoint)
+                ? handler.routePattern.decode(path)
+                : Route(RoutePattern.any, path, {}, path);
 
-          //TODO cookies
+            //TODO cookies
 
-          final request = ApiRequest(
-            httpRequest.method,
-            route,
-            httpRequest.headers,
-            httpRequest.queryParams,
-            httpRequest.bodyData,
-            null,
-          );
+            final request = ApiRequest(
+              httpRequest.method,
+              route,
+              httpRequest.headers,
+              httpRequest.queryParams,
+              httpRequest.bodyData,
+              null,
+            );
 
-          final response = await (middleware?.call(handler) ?? handler)
-              .handleRequest(request);
+            final response = await (middleware?.call(handler) ?? handler)
+                .handleRequest(request);
 
-          return response.toHttpResponse(httpRequest.requestUri);
-        } on ApiRequestException catch (e) {
-          // Exceptions should have been handled by ApiEndpoint, this is just
-          // to make sure
-          return e.toResponse().toHttpResponse(httpRequest.requestUri);
-        } catch (e, stack) {
-          // Exceptions should have been handled by ApiEndpoint, this is just
-          // to make sure
-          if (resolve<ConfigService>().environment == Environment.dev) {
-            return DebugResponse(e, stack, 500)
-                .toHttpResponse(httpRequest.requestUri);
-          } else {
-            return ApiRequestException.internalError('Internal Server Error')
-                .toResponse()
-                .toHttpResponse(httpRequest.requestUri);
+            final httpResponse =
+                response.toHttpResponse(httpRequest.requestUri);
+            _metricRequestsTotal?.inc(
+                {'status_code': '${(httpResponse.statusCode / 100).floor()}xx'});
+            return httpResponse;
+          } on ApiRequestException catch (e) {
+            _metricRequestsTotal
+                ?.inc({'status_code': '${(e.statusCode / 3).floor()}xx'});
+
+            // Exceptions should have been handled by ApiEndpoint, this is just
+            // to make sure
+            return e.toResponse().toHttpResponse(httpRequest.requestUri);
+          } catch (e, stack) {
+            _metricRequestsTotal?.inc({'status_code': '5xx'});
+
+            // Exceptions should have been handled by ApiEndpoint, this is just
+            // to make sure
+            if (resolve<ConfigService>().environment == Environment.dev) {
+              return DebugResponse(e, stack, 500)
+                  .toHttpResponse(httpRequest.requestUri);
+            } else {
+              return ApiRequestException.internalError('Internal Server Error')
+                  .toResponse()
+                  .toHttpResponse(httpRequest.requestUri);
+            }
           }
-        }
-      },
-      zoneValues: {
-        #apiRequestId: _generateRequestId(),
-      },
-    );
+        },
+        zoneValues: {
+          #apiRequestId: _generateRequestId(),
+        },
+      );
+    } finally {
+      watch.stop();
+      _metricRequestDuration?.observeDuration(watch.elapsed);
+    }
   }
 
   void _onSocketError(dynamic e, StackTrace? trace) {

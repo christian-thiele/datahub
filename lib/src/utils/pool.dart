@@ -52,6 +52,15 @@ class Pool<T> {
     return item;
   }
 
+  Future<T> use(FutureOr<T> Function() delegate, {Duration? timeout}) async {
+    final item = await take(timeout: timeout);
+    try {
+      return await delegate();
+    } finally {
+      give(item);
+    }
+  }
+
   Future<T> take({Duration? timeout}) async {
     return await _takeSemaphore.runLocked(() async {
       if (total < targetSize) {
@@ -96,11 +105,15 @@ class Pool<T> {
       return false;
     }
 
-    try {
-      return await _checkIsLive!(item.item);
-    } catch (_) {
-      remove(item.item);
-      rethrow;
+    if (_checkIsLive != null) {
+      try {
+        return await _checkIsLive!(item.item);
+      } catch (_) {
+        remove(item.item);
+        rethrow;
+      }
+    } else {
+      return true;
     }
   }
 

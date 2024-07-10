@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/services.dart';
@@ -32,6 +31,7 @@ abstract class ServiceHost extends ServiceResolver {
     _factories = <BaseService Function()>[
       () => LogService(_logBackend, _onCriticalErrorLog),
       () => ConfigService(config, args),
+      () => InstrumentationService(),
       SchedulerService.new,
       KeyService.new,
       ...factories,
@@ -136,7 +136,7 @@ abstract class ServiceHost extends ServiceResolver {
       final method = critical ? logService.c : logService.e;
       method(msg, error: exception, trace: trace, sender: 'DataHub');
     } else {
-      print('$msg\n$e');
+      print('$msg\n$exception');
     }
   }
 
