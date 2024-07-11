@@ -18,9 +18,22 @@ import 'api_request_exception.dart';
 import 'api_response.dart';
 import 'route.dart';
 
+//TODO docs
+/// A Service that serves HTTP-Requests by calling the provided [ApiEndpoint]s.
+///
+/// The ApiService uses the datahub [HTTPServer], therefore supports
+/// HTTP 1.1 and HTTP 2 connections.
+///
+/// Configuration values:
+/// * `address`: the address the HTTP-Server listens to, null means any (default null)
+/// * `port`: the port the HTTP-Server listens on (default 8080)
+/// * `enableMetrics`: enable default metrics (default true)
+/// * `metricPrefix`: prefix for default metrics (default "api")
+///
 class ApiService extends BaseService {
   late final address = config<String?>('address');
   late final port = config<int?>('port') ?? 8080;
+  late final _enableMetrics = config<bool?>('enableMetrics') ?? true;
   late final _metricPrefix = config<String?>('metricPrefix') ?? 'api';
   late final HttpServer _server;
 
@@ -44,18 +57,20 @@ class ApiService extends BaseService {
   @override
   Future<void> initialize() async {
     final instrumentation = resolve<InstrumentationService>();
-    _metricRequestsTotal = instrumentation.counter(
-      _metricPrefix + '_requests_total',
-      labels: {
-        'status_code': ['2xx', '3xx', '4xx', '5xx', '6xx']
-      },
-    );
-    _metricRequestDuration = instrumentation.exponentialHistogram(
-      _metricPrefix + '_request_duration',
-      start: 0.01,
-      factor: 5,
-      count: 5,
-    );
+    if (_enableMetrics) {
+      _metricRequestsTotal = instrumentation.counter(
+        _metricPrefix + '_requests_total',
+        labels: {
+          'status_code': ['2xx', '3xx', '4xx', '5xx', '6xx']
+        },
+      );
+      _metricRequestDuration = instrumentation.exponentialHistogram(
+        _metricPrefix + '_request_duration',
+        start: 0.01,
+        factor: 5,
+        count: 5,
+      );
+    }
 
     final serveAddress =
         nullOrWhitespace(address) ? io.InternetAddress.anyIPv4 : address;
@@ -70,8 +85,9 @@ class ApiService extends BaseService {
 
   Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
     final watch = Stopwatch();
+    watch.start();
     try {
-      return await runZoned(
+      final response = await runZoned(
         () async {
           try {
             final handler = _findRequestHandler(httpRequest.path);
@@ -97,22 +113,12 @@ class ApiService extends BaseService {
             final response = await (middleware?.call(handler) ?? handler)
                 .handleRequest(request);
 
-            final httpResponse =
-                response.toHttpResponse(httpRequest.requestUri);
-            _metricRequestsTotal?.inc({
-              'status_code': '${(httpResponse.statusCode / 100).floor()}xx'
-            });
-            return httpResponse;
+            return response.toHttpResponse(httpRequest.requestUri);
           } on ApiRequestException catch (e) {
-            _metricRequestsTotal
-                ?.inc({'status_code': '${(e.statusCode / 3).floor()}xx'});
-
             // Exceptions should have been handled by ApiEndpoint, this is just
             // to make sure
             return e.toResponse().toHttpResponse(httpRequest.requestUri);
           } catch (e, stack) {
-            _metricRequestsTotal?.inc({'status_code': '5xx'});
-
             // Exceptions should have been handled by ApiEndpoint, this is just
             // to make sure
             if (resolve<ConfigService>().environment == Environment.dev) {
@@ -129,6 +135,9 @@ class ApiService extends BaseService {
           #apiRequestId: _generateRequestId(),
         },
       );
+      _metricRequestsTotal
+          ?.inc({'status_code': '${(response.statusCode / 3).floor()}xx'});
+      return response;
     } finally {
       watch.stop();
       _metricRequestDuration?.observeDuration(watch.elapsed);
