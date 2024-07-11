@@ -5,7 +5,13 @@ import 'package:datahub/datahub.dart';
 import 'metric.dart';
 import 'metric_sample.dart';
 
-///TODO docs
+/// A gauge metric for use with [InstrumentationService].
+///
+/// A gauge is a metric that represents a single numerical value that can
+/// arbitrarily go up and down. Gauges are typically used for measured values
+/// like temperatures or current memory usage, but also "counts" that can go up
+/// and down, like the number of concurrent requests.
+///
 /// Best practice for creating metric instances is by using the metric
 /// definition methods on [InstrumentationService]:
 ///  - counter
@@ -63,6 +69,9 @@ class GaugeMetric extends Metric {
 
   void inc([Map<String, String> labels = const {}]) =>
       _findSeries(labels).inc();
+
+  void dec([Map<String, String> labels = const {}]) =>
+      _findSeries(labels).dec();
 
   void incBy(num val, [Map<String, String> labels = const {}]) =>
       _findSeries(labels).incBy(val);

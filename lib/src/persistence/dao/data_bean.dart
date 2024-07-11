@@ -39,19 +39,19 @@ abstract class DataBean<TDao> extends QuerySource<TDao> {
   ///
   /// This will create an inner join. (Both return types will be non-null)
   ///
-  /// When [mainField] and [otherField] are null, the only [ForeignKey] of
-  /// this is used as [mainField] and the corresponding [PrimaryKey] of [other]
+  /// When [filter] is null, the first [ForeignKey] of this is used as
+  /// [mainField] and the corresponding [PrimaryKey] of [other]
   /// is used as [otherField]. If this bean has multiple [ForeignKey]s to
   /// [other], this throws a [PersistenceException].
   TupleJoinQuerySource<TDao, Tb> join<Tb>(DataBean<Tb> other,
       {Filter? filter}) {
     if (filter == null) {
-      final foreignField = fields
-          .whereType<ForeignKey>()
-          .firstOrNullWhere((f) => other.fields.contains(f.foreignPrimaryKey));
-      final mainField = foreignField;
-      final otherField = foreignField?.foreignPrimaryKey;
-      filter = mainField?.equals(otherField);
+      final foreignFields = fields.whereType<ForeignKey>();
+      if (foreignFields.length == 1) {
+        final foreignField = foreignFields.firstOrNullWhere(
+            (f) => other.fields.contains(f.foreignPrimaryKey));
+        filter = foreignField?.equals(foreignField.foreignPrimaryKey);
+      }
     }
 
     if (filter == null) {

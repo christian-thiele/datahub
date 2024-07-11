@@ -22,13 +22,29 @@ export 'histogram_metric.dart';
 /// In terms of Prometheus conventions, this service provides the
 /// "CollectorRegistry" and the "Bridge" to the Prometheus text based format.
 ///
-/// Configuration values: (inside "datahub.metrics")
-///   `endpointEnabled`: Enable prometheus text-based format endpoint (default false)
-///   `address`: The address the HTTP-Server listens for, null means any (default null)
-///   `port`: The port the HTTP-Server listens on (default 9090)
-///   `path`: The path of the metrics endpoint (default "/metrics")
+/// Configuration values: (below "datahub.metrics")
+/// * `endpointEnabled`: Enable prometheus text-based format endpoint (default false)
+/// * `address`: The address the HTTP-Server listens for, null means any (default null)
+/// * `port`: The port the HTTP-Server listens on (default 9090)
+/// * `path`: The path of the metrics endpoint (default "/metrics")
 ///
-/// TODO instrumentation docs
+/// For exposing metrics, creating [Metric] instances is required, which provide
+/// a handle for the given metric. Best practice for creating metric instances
+/// is by using the metric definition methods on [InstrumentationService]:
+/// * [counter]
+/// * [gauge]
+/// * [linearHistogram]
+/// * [exponentialHistogram]
+///
+/// This way, the same metric can be injected from different places inside the
+/// application. If instantiated separately through their constructor, they
+/// have to be registered at the [InstrumentationService] by invoking the
+/// [register] method.
+///
+/// Metrics can be scraped (see [scrape]) into samples, which provide a
+/// snapshot of all of the current values. Usually this is done via the
+/// metrics endpoint, which provides the [prometheus text-bases format](https://prometheus.io/docs/instrumenting/exposition_formats/#text-based-format)
+/// for exposing metrics.
 class InstrumentationService extends BaseService {
   InstrumentationService() : super('datahub.metrics');
 
@@ -161,6 +177,8 @@ class InstrumentationService extends BaseService {
     };
   }
 
+  /// Collects all current values of metrics into [SampleGroup]s with
+  /// [MetricSample]s.
   List<SampleGroup> scrape() {
     final samples = <SampleGroup>[];
     _scrapeMetric.measureDuration(() {
@@ -175,10 +193,22 @@ class InstrumentationService extends BaseService {
     return samples;
   }
 
+  /// Registers a custom collector.
+  ///
+  /// Custom collectors can fetch metrics from other services,
+  /// query values from databases or generate values in any other way.
+  ///
+  /// For simple metrics like counters or gauges prefer using one of the
+  /// definition methods:
+  ///  - [counter]
+  ///  - [gauge]
+  ///  - [linearHistogram]
+  ///  - [exponentialHistogram]
   void registerCollector(MetricCollector metricCollector) {
     _collectors.add(metricCollector);
   }
 
+  /// Unregisters a custom collector.
   void unregisterCollector(MetricCollector metricCollector) {
     _collectors.remove(metricCollector);
   }
