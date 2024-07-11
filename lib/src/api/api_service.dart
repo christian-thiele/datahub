@@ -61,7 +61,7 @@ class ApiService extends BaseService {
       _metricRequestsTotal = instrumentation.counter(
         _metricPrefix + '_requests_total',
         labels: {
-          'status_code': ['2xx', '3xx', '4xx', '5xx', '6xx']
+          'status_code': ['1xx', '2xx', '3xx', '4xx', '5xx', '6xx', 'other'],
         },
       );
       _metricRequestDuration = instrumentation.exponentialHistogram(
@@ -135,8 +135,13 @@ class ApiService extends BaseService {
           #apiRequestId: _generateRequestId(),
         },
       );
-      _metricRequestsTotal
-          ?.inc({'status_code': '${(response.statusCode / 3).floor()}xx'});
+
+      final statusCodeLabel = switch (response.statusCode) {
+        int i when i >= 100 && i < 700 =>
+          '${(response.statusCode / 100).floor()}xx',
+        _ => 'other',
+      };
+      _metricRequestsTotal?.inc({'status_code': statusCodeLabel});
       return response;
     } finally {
       watch.stop();
