@@ -23,7 +23,7 @@ export 'histogram_metric.dart';
 /// "CollectorRegistry" and the "Bridge" to the Prometheus text based format.
 ///
 /// Configuration values: (inside "datahub.metrics")
-///   `endpointEnabled`: Enable prometheus text-based format endpoint (default true)
+///   `endpointEnabled`: Enable prometheus text-based format endpoint (default false)
 ///   `address`: The address the HTTP-Server listens for, null means any (default null)
 ///   `port`: The port the HTTP-Server listens on (default 9090)
 ///   `path`: The path of the metrics endpoint (default "/metrics")
@@ -33,7 +33,7 @@ class InstrumentationService extends BaseService {
   InstrumentationService() : super('datahub.metrics');
 
   final MetricBridge _bridge = PrometheusBridge();
-  late final enableEndpoint = config<bool?>('enableEndpoint') ?? true;
+  late final enableEndpoint = config<bool?>('enableEndpoint') ?? false;
   late final address = config<String?>('address');
   late final port = config<int?>('port') ?? 9090;
   late final path = config<String?>('path') ?? '/metrics';
