@@ -10,6 +10,7 @@ class Pool<T> {
 
   final FutureOr<T> Function() _createItem;
   final FutureOr<bool> Function(T)? _checkIsLive;
+  final void Function()? onChange;
   final _takeSemaphore = Semaphore();
 
   int targetSize;
@@ -24,6 +25,7 @@ class Pool<T> {
     this._createItem, {
     FutureOr<bool> Function(T)? checkIsLive,
     this.maxLifetime,
+    this.onChange,
   }) : _checkIsLive = checkIsLive;
 
   Future<void> fill() async {
@@ -40,15 +42,18 @@ class Pool<T> {
       if (!_taken.contains(poolItem)) {
         _taken.add(poolItem);
       }
+      onChange?.call();
       next.complete(poolItem);
     } else {
       _items.add(_PoolItem(item));
       _taken.remove(poolItem);
+      onChange?.call();
     }
   }
 
   T giveReserved(T item) {
     _taken.add(_PoolItem(item));
+    onChange?.call();
     return item;
   }
 
@@ -82,10 +87,12 @@ class Pool<T> {
     if (_items.isNotEmpty) {
       final item = _items.removeAt(0);
       _taken.add(item);
+      onChange?.call();
       return item;
     } else {
       final completer = Completer<_PoolItem<T>>();
       _queue.add(completer);
+      onChange?.call();
 
       if (timeout == null) {
         return await completer.future;
@@ -94,6 +101,7 @@ class Pool<T> {
           return await completer.future.timeout(timeout);
         } on TimeoutException catch (_) {
           _queue.remove(completer);
+          onChange?.call();
           rethrow;
         }
       }
