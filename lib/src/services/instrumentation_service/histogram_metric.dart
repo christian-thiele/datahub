@@ -64,6 +64,7 @@ class HistogramMetric extends Metric {
     for (final bucket in _buckets) {
       if (value <= bucket.boundary) {
         bucket.value++;
+      }else{
         return;
       }
     }

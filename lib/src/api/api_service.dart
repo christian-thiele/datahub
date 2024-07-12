@@ -64,11 +64,12 @@ class ApiService extends BaseService {
           'status_code': ['1xx', '2xx', '3xx', '4xx', '5xx', '6xx', 'other'],
         },
       );
+
       _metricRequestDuration = instrumentation.exponentialHistogram(
         _metricPrefix + '_request_duration',
         start: 0.01,
-        factor: 5,
-        count: 5,
+        factor: 2,
+        count: 10,
       );
     }
 
