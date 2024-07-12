@@ -61,7 +61,7 @@ class HistogramMetric extends Metric {
   void observe(num value) {
     _count++;
     _sum += value;
-    for (final bucket in _buckets) {
+    for (final bucket in _buckets.reversed) {
       if (value <= bucket.boundary) {
         bucket.value++;
       }else{

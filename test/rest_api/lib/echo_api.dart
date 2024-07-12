@@ -8,7 +8,10 @@ class EchoEndpoint extends ApiEndpoint {
   EchoEndpoint() : super(RoutePattern('/echo'));
 
   @override
-  Future get(ApiRequest request) async => EmptyResponse();
+  Future get(ApiRequest request) async {
+    await Future.delayed(Duration(milliseconds: 1500));
+    return EmptyResponse();
+  }
 
   @override
   Future post(ApiRequest request) async {
