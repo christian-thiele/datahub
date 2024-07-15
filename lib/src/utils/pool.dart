@@ -5,7 +5,7 @@ import 'package:boost/boost.dart';
 //TODO docs
 class Pool<T> {
   final _items = <_PoolItem<T>>[];
-  final _taken = <_PoolItem<T>>[];
+  final _taken = <_PoolItem<T>>{};
   final _queue = <Completer<_PoolItem<T>>>[];
 
   final FutureOr<T> Function() _createItem;
@@ -45,14 +45,20 @@ class Pool<T> {
       onChange?.call();
       next.complete(poolItem);
     } else {
-      _items.add(_PoolItem(item));
       _taken.remove(poolItem);
+      _items.add(poolItem);
       onChange?.call();
     }
   }
 
   T giveReserved(T item) {
-    _taken.add(_PoolItem(item));
+    final poolItem =
+        _taken.firstOrNullWhere((t) => t.item == item) ?? _PoolItem(item);
+    if (!_taken.contains(poolItem)) {
+      _taken.add(poolItem);
+    }
+
+    _taken.add(poolItem);
     onChange?.call();
     return item;
   }
