@@ -1,5 +1,6 @@
 import 'package:datahub/api.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
 
 /// [AuthProvider] handles the authorization of requests.
 ///

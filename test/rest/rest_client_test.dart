@@ -4,7 +4,6 @@ import 'package:test/test.dart';
 
 import 'example_object.dart';
 import 'placeholder_user.dart';
-import 'slideshow.dart';
 
 final uri = Uri.parse('https://httpbin.org/');
 final prefixUri = Uri.parse('https://httpbin.org/status');
