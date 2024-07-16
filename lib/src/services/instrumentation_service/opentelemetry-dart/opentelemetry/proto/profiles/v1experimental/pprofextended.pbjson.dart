@@ -47,24 +47,93 @@ final $typed_data.Uint8List buildIdKindDescriptor = $convert.base64Decode(
 const Profile$json = {
   '1': 'Profile',
   '2': [
-    {'1': 'sample_type', '3': 1, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.ValueType', '10': 'sampleType'},
-    {'1': 'sample', '3': 2, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.Sample', '10': 'sample'},
-    {'1': 'mapping', '3': 3, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.Mapping', '10': 'mapping'},
-    {'1': 'location', '3': 4, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.Location', '10': 'location'},
+    {
+      '1': 'sample_type',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.ValueType',
+      '10': 'sampleType'
+    },
+    {
+      '1': 'sample',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.Sample',
+      '10': 'sample'
+    },
+    {
+      '1': 'mapping',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.Mapping',
+      '10': 'mapping'
+    },
+    {
+      '1': 'location',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.Location',
+      '10': 'location'
+    },
     {'1': 'location_indices', '3': 15, '4': 3, '5': 3, '10': 'locationIndices'},
-    {'1': 'function', '3': 5, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.Function', '10': 'function'},
-    {'1': 'attribute_table', '3': 16, '4': 3, '5': 11, '6': '.opentelemetry.proto.common.v1.KeyValue', '10': 'attributeTable'},
-    {'1': 'attribute_units', '3': 17, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.AttributeUnit', '10': 'attributeUnits'},
-    {'1': 'link_table', '3': 18, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.Link', '10': 'linkTable'},
+    {
+      '1': 'function',
+      '3': 5,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.Function',
+      '10': 'function'
+    },
+    {
+      '1': 'attribute_table',
+      '3': 16,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.common.v1.KeyValue',
+      '10': 'attributeTable'
+    },
+    {
+      '1': 'attribute_units',
+      '3': 17,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.AttributeUnit',
+      '10': 'attributeUnits'
+    },
+    {
+      '1': 'link_table',
+      '3': 18,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.Link',
+      '10': 'linkTable'
+    },
     {'1': 'string_table', '3': 6, '4': 3, '5': 9, '10': 'stringTable'},
     {'1': 'drop_frames', '3': 7, '4': 1, '5': 3, '10': 'dropFrames'},
     {'1': 'keep_frames', '3': 8, '4': 1, '5': 3, '10': 'keepFrames'},
     {'1': 'time_nanos', '3': 9, '4': 1, '5': 3, '10': 'timeNanos'},
     {'1': 'duration_nanos', '3': 10, '4': 1, '5': 3, '10': 'durationNanos'},
-    {'1': 'period_type', '3': 11, '4': 1, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.ValueType', '10': 'periodType'},
+    {
+      '1': 'period_type',
+      '3': 11,
+      '4': 1,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.ValueType',
+      '10': 'periodType'
+    },
     {'1': 'period', '3': 12, '4': 1, '5': 3, '10': 'period'},
     {'1': 'comment', '3': 13, '4': 3, '5': 3, '10': 'comment'},
-    {'1': 'default_sample_type', '3': 14, '4': 1, '5': 3, '10': 'defaultSampleType'},
+    {
+      '1': 'default_sample_type',
+      '3': 14,
+      '4': 1,
+      '5': 3,
+      '10': 'defaultSampleType'
+    },
   ],
 };
 
@@ -125,7 +194,15 @@ const ValueType$json = {
   '2': [
     {'1': 'type', '3': 1, '4': 1, '5': 3, '10': 'type'},
     {'1': 'unit', '3': 2, '4': 1, '5': 3, '10': 'unit'},
-    {'1': 'aggregation_temporality', '3': 3, '4': 1, '5': 14, '6': '.opentelemetry.proto.profiles.v1experimental.AggregationTemporality', '10': 'aggregationTemporality'},
+    {
+      '1': 'aggregation_temporality',
+      '3': 3,
+      '4': 1,
+      '5': 14,
+      '6':
+          '.opentelemetry.proto.profiles.v1experimental.AggregationTemporality',
+      '10': 'aggregationTemporality'
+    },
   ],
 };
 
@@ -141,14 +218,39 @@ const Sample$json = {
   '1': 'Sample',
   '2': [
     {'1': 'location_index', '3': 1, '4': 3, '5': 4, '10': 'locationIndex'},
-    {'1': 'locations_start_index', '3': 7, '4': 1, '5': 4, '10': 'locationsStartIndex'},
+    {
+      '1': 'locations_start_index',
+      '3': 7,
+      '4': 1,
+      '5': 4,
+      '10': 'locationsStartIndex'
+    },
     {'1': 'locations_length', '3': 8, '4': 1, '5': 4, '10': 'locationsLength'},
-    {'1': 'stacktrace_id_index', '3': 9, '4': 1, '5': 13, '10': 'stacktraceIdIndex'},
+    {
+      '1': 'stacktrace_id_index',
+      '3': 9,
+      '4': 1,
+      '5': 13,
+      '10': 'stacktraceIdIndex'
+    },
     {'1': 'value', '3': 2, '4': 3, '5': 3, '10': 'value'},
-    {'1': 'label', '3': 3, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.Label', '10': 'label'},
+    {
+      '1': 'label',
+      '3': 3,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.Label',
+      '10': 'label'
+    },
     {'1': 'attributes', '3': 10, '4': 3, '5': 4, '10': 'attributes'},
     {'1': 'link', '3': 12, '4': 1, '5': 4, '10': 'link'},
-    {'1': 'timestamps_unix_nano', '3': 13, '4': 3, '5': 4, '10': 'timestampsUnixNano'},
+    {
+      '1': 'timestamps_unix_nano',
+      '3': 13,
+      '4': 3,
+      '5': 4,
+      '10': 'timestampsUnixNano'
+    },
   ],
 };
 
@@ -189,12 +291,25 @@ const Mapping$json = {
     {'1': 'file_offset', '3': 4, '4': 1, '5': 4, '10': 'fileOffset'},
     {'1': 'filename', '3': 5, '4': 1, '5': 3, '10': 'filename'},
     {'1': 'build_id', '3': 6, '4': 1, '5': 3, '10': 'buildId'},
-    {'1': 'build_id_kind', '3': 11, '4': 1, '5': 14, '6': '.opentelemetry.proto.profiles.v1experimental.BuildIdKind', '10': 'buildIdKind'},
+    {
+      '1': 'build_id_kind',
+      '3': 11,
+      '4': 1,
+      '5': 14,
+      '6': '.opentelemetry.proto.profiles.v1experimental.BuildIdKind',
+      '10': 'buildIdKind'
+    },
     {'1': 'attributes', '3': 12, '4': 3, '5': 4, '10': 'attributes'},
     {'1': 'has_functions', '3': 7, '4': 1, '5': 8, '10': 'hasFunctions'},
     {'1': 'has_filenames', '3': 8, '4': 1, '5': 8, '10': 'hasFilenames'},
     {'1': 'has_line_numbers', '3': 9, '4': 1, '5': 8, '10': 'hasLineNumbers'},
-    {'1': 'has_inline_frames', '3': 10, '4': 1, '5': 8, '10': 'hasInlineFrames'},
+    {
+      '1': 'has_inline_frames',
+      '3': 10,
+      '4': 1,
+      '5': 8,
+      '10': 'hasInlineFrames'
+    },
   ],
 };
 
@@ -217,7 +332,14 @@ const Location$json = {
     {'1': 'id', '3': 1, '4': 1, '5': 4, '10': 'id'},
     {'1': 'mapping_index', '3': 2, '4': 1, '5': 4, '10': 'mappingIndex'},
     {'1': 'address', '3': 3, '4': 1, '5': 4, '10': 'address'},
-    {'1': 'line', '3': 4, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.Line', '10': 'line'},
+    {
+      '1': 'line',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.Line',
+      '10': 'line'
+    },
     {'1': 'is_folded', '3': 5, '4': 1, '5': 8, '10': 'isFolded'},
     {'1': 'type_index', '3': 6, '4': 1, '5': 13, '10': 'typeIndex'},
     {'1': 'attributes', '3': 7, '4': 3, '5': 4, '10': 'attributes'},
@@ -264,4 +386,3 @@ final $typed_data.Uint8List function_Descriptor = $convert.base64Decode(
     'CghGdW5jdGlvbhIOCgJpZBgBIAEoBFICaWQSEgoEbmFtZRgCIAEoA1IEbmFtZRIfCgtzeXN0ZW'
     '1fbmFtZRgDIAEoA1IKc3lzdGVtTmFtZRIaCghmaWxlbmFtZRgEIAEoA1IIZmlsZW5hbWUSHQoK'
     'c3RhcnRfbGluZRgFIAEoA1IJc3RhcnRMaW5l');
-

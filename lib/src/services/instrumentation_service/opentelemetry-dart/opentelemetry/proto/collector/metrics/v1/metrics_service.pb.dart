@@ -28,33 +28,48 @@ class ExportMetricsServiceRequest extends $pb.GeneratedMessage {
     return $result;
   }
   ExportMetricsServiceRequest._() : super();
-  factory ExportMetricsServiceRequest.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ExportMetricsServiceRequest.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ExportMetricsServiceRequest.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory ExportMetricsServiceRequest.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExportMetricsServiceRequest', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.collector.metrics.v1'), createEmptyInstance: create)
-    ..pc<$4.ResourceMetrics>(1, _omitFieldNames ? '' : 'resourceMetrics', $pb.PbFieldType.PM, subBuilder: $4.ResourceMetrics.create)
-    ..hasRequiredFields = false
-  ;
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ExportMetricsServiceRequest',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'opentelemetry.proto.collector.metrics.v1'),
+      createEmptyInstance: create)
+    ..pc<$4.ResourceMetrics>(
+        1, _omitFieldNames ? '' : 'resourceMetrics', $pb.PbFieldType.PM,
+        subBuilder: $4.ResourceMetrics.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  ExportMetricsServiceRequest clone() => ExportMetricsServiceRequest()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ExportMetricsServiceRequest copyWith(void Function(ExportMetricsServiceRequest) updates) => super.copyWith((message) => updates(message as ExportMetricsServiceRequest)) as ExportMetricsServiceRequest;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  ExportMetricsServiceRequest clone() =>
+      ExportMetricsServiceRequest()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  ExportMetricsServiceRequest copyWith(
+          void Function(ExportMetricsServiceRequest) updates) =>
+      super.copyWith(
+              (message) => updates(message as ExportMetricsServiceRequest))
+          as ExportMetricsServiceRequest;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static ExportMetricsServiceRequest create() => ExportMetricsServiceRequest._();
+  static ExportMetricsServiceRequest create() =>
+      ExportMetricsServiceRequest._();
   ExportMetricsServiceRequest createEmptyInstance() => create();
-  static $pb.PbList<ExportMetricsServiceRequest> createRepeated() => $pb.PbList<ExportMetricsServiceRequest>();
+  static $pb.PbList<ExportMetricsServiceRequest> createRepeated() =>
+      $pb.PbList<ExportMetricsServiceRequest>();
   @$core.pragma('dart2js:noInline')
-  static ExportMetricsServiceRequest getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExportMetricsServiceRequest>(create);
+  static ExportMetricsServiceRequest getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ExportMetricsServiceRequest>(create);
   static ExportMetricsServiceRequest? _defaultInstance;
 
   /// An array of ResourceMetrics.
@@ -77,33 +92,48 @@ class ExportMetricsServiceResponse extends $pb.GeneratedMessage {
     return $result;
   }
   ExportMetricsServiceResponse._() : super();
-  factory ExportMetricsServiceResponse.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ExportMetricsServiceResponse.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ExportMetricsServiceResponse.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory ExportMetricsServiceResponse.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExportMetricsServiceResponse', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.collector.metrics.v1'), createEmptyInstance: create)
-    ..aOM<ExportMetricsPartialSuccess>(1, _omitFieldNames ? '' : 'partialSuccess', subBuilder: ExportMetricsPartialSuccess.create)
-    ..hasRequiredFields = false
-  ;
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ExportMetricsServiceResponse',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'opentelemetry.proto.collector.metrics.v1'),
+      createEmptyInstance: create)
+    ..aOM<ExportMetricsPartialSuccess>(
+        1, _omitFieldNames ? '' : 'partialSuccess',
+        subBuilder: ExportMetricsPartialSuccess.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  ExportMetricsServiceResponse clone() => ExportMetricsServiceResponse()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ExportMetricsServiceResponse copyWith(void Function(ExportMetricsServiceResponse) updates) => super.copyWith((message) => updates(message as ExportMetricsServiceResponse)) as ExportMetricsServiceResponse;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  ExportMetricsServiceResponse clone() =>
+      ExportMetricsServiceResponse()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  ExportMetricsServiceResponse copyWith(
+          void Function(ExportMetricsServiceResponse) updates) =>
+      super.copyWith(
+              (message) => updates(message as ExportMetricsServiceResponse))
+          as ExportMetricsServiceResponse;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static ExportMetricsServiceResponse create() => ExportMetricsServiceResponse._();
+  static ExportMetricsServiceResponse create() =>
+      ExportMetricsServiceResponse._();
   ExportMetricsServiceResponse createEmptyInstance() => create();
-  static $pb.PbList<ExportMetricsServiceResponse> createRepeated() => $pb.PbList<ExportMetricsServiceResponse>();
+  static $pb.PbList<ExportMetricsServiceResponse> createRepeated() =>
+      $pb.PbList<ExportMetricsServiceResponse>();
   @$core.pragma('dart2js:noInline')
-  static ExportMetricsServiceResponse getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExportMetricsServiceResponse>(create);
+  static ExportMetricsServiceResponse getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ExportMetricsServiceResponse>(create);
   static ExportMetricsServiceResponse? _defaultInstance;
 
   ///  The details of a partially successful export request.
@@ -124,7 +154,10 @@ class ExportMetricsServiceResponse extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   ExportMetricsPartialSuccess get partialSuccess => $_getN(0);
   @$pb.TagNumber(1)
-  set partialSuccess(ExportMetricsPartialSuccess v) { setField(1, v); }
+  set partialSuccess(ExportMetricsPartialSuccess v) {
+    setField(1, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasPartialSuccess() => $_has(0);
   @$pb.TagNumber(1)
@@ -148,34 +181,47 @@ class ExportMetricsPartialSuccess extends $pb.GeneratedMessage {
     return $result;
   }
   ExportMetricsPartialSuccess._() : super();
-  factory ExportMetricsPartialSuccess.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ExportMetricsPartialSuccess.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ExportMetricsPartialSuccess.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory ExportMetricsPartialSuccess.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ExportMetricsPartialSuccess', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.collector.metrics.v1'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ExportMetricsPartialSuccess',
+      package: const $pb.PackageName(
+          _omitMessageNames ? '' : 'opentelemetry.proto.collector.metrics.v1'),
+      createEmptyInstance: create)
     ..aInt64(1, _omitFieldNames ? '' : 'rejectedDataPoints')
     ..aOS(2, _omitFieldNames ? '' : 'errorMessage')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
-  ExportMetricsPartialSuccess clone() => ExportMetricsPartialSuccess()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ExportMetricsPartialSuccess copyWith(void Function(ExportMetricsPartialSuccess) updates) => super.copyWith((message) => updates(message as ExportMetricsPartialSuccess)) as ExportMetricsPartialSuccess;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
+  ExportMetricsPartialSuccess clone() =>
+      ExportMetricsPartialSuccess()..mergeFromMessage(this);
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  ExportMetricsPartialSuccess copyWith(
+          void Function(ExportMetricsPartialSuccess) updates) =>
+      super.copyWith(
+              (message) => updates(message as ExportMetricsPartialSuccess))
+          as ExportMetricsPartialSuccess;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
-  static ExportMetricsPartialSuccess create() => ExportMetricsPartialSuccess._();
+  static ExportMetricsPartialSuccess create() =>
+      ExportMetricsPartialSuccess._();
   ExportMetricsPartialSuccess createEmptyInstance() => create();
-  static $pb.PbList<ExportMetricsPartialSuccess> createRepeated() => $pb.PbList<ExportMetricsPartialSuccess>();
+  static $pb.PbList<ExportMetricsPartialSuccess> createRepeated() =>
+      $pb.PbList<ExportMetricsPartialSuccess>();
   @$core.pragma('dart2js:noInline')
-  static ExportMetricsPartialSuccess getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ExportMetricsPartialSuccess>(create);
+  static ExportMetricsPartialSuccess getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ExportMetricsPartialSuccess>(create);
   static ExportMetricsPartialSuccess? _defaultInstance;
 
   ///  The number of rejected data points.
@@ -185,7 +231,10 @@ class ExportMetricsPartialSuccess extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $fixnum.Int64 get rejectedDataPoints => $_getI64(0);
   @$pb.TagNumber(1)
-  set rejectedDataPoints($fixnum.Int64 v) { $_setInt64(0, v); }
+  set rejectedDataPoints($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasRejectedDataPoints() => $_has(0);
   @$pb.TagNumber(1)
@@ -201,7 +250,10 @@ class ExportMetricsPartialSuccess extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.String get errorMessage => $_getSZ(1);
   @$pb.TagNumber(2)
-  set errorMessage($core.String v) { $_setString(1, v); }
+  set errorMessage($core.String v) {
+    $_setString(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasErrorMessage() => $_has(1);
   @$pb.TagNumber(2)
@@ -212,11 +264,12 @@ class MetricsServiceApi {
   $pb.RpcClient _client;
   MetricsServiceApi(this._client);
 
-  $async.Future<ExportMetricsServiceResponse> export($pb.ClientContext? ctx, ExportMetricsServiceRequest request) =>
-    _client.invoke<ExportMetricsServiceResponse>(ctx, 'MetricsService', 'Export', request, ExportMetricsServiceResponse())
-  ;
+  $async.Future<ExportMetricsServiceResponse> export(
+          $pb.ClientContext? ctx, ExportMetricsServiceRequest request) =>
+      _client.invoke<ExportMetricsServiceResponse>(ctx, 'MetricsService',
+          'Export', request, ExportMetricsServiceResponse());
 }
 
-
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
+const _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');

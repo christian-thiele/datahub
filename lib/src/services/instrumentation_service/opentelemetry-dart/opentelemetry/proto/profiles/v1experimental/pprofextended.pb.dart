@@ -100,41 +100,60 @@ class Profile extends $pb.GeneratedMessage {
     return $result;
   }
   Profile._() : super();
-  factory Profile.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Profile.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory Profile.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory Profile.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Profile', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..pc<ValueType>(1, _omitFieldNames ? '' : 'sampleType', $pb.PbFieldType.PM, subBuilder: ValueType.create)
-    ..pc<Sample>(2, _omitFieldNames ? '' : 'sample', $pb.PbFieldType.PM, subBuilder: Sample.create)
-    ..pc<Mapping>(3, _omitFieldNames ? '' : 'mapping', $pb.PbFieldType.PM, subBuilder: Mapping.create)
-    ..pc<Location>(4, _omitFieldNames ? '' : 'location', $pb.PbFieldType.PM, subBuilder: Location.create)
-    ..pc<Function_>(5, _omitFieldNames ? '' : 'function', $pb.PbFieldType.PM, subBuilder: Function_.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Profile',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..pc<ValueType>(1, _omitFieldNames ? '' : 'sampleType', $pb.PbFieldType.PM,
+        subBuilder: ValueType.create)
+    ..pc<Sample>(2, _omitFieldNames ? '' : 'sample', $pb.PbFieldType.PM,
+        subBuilder: Sample.create)
+    ..pc<Mapping>(3, _omitFieldNames ? '' : 'mapping', $pb.PbFieldType.PM,
+        subBuilder: Mapping.create)
+    ..pc<Location>(4, _omitFieldNames ? '' : 'location', $pb.PbFieldType.PM,
+        subBuilder: Location.create)
+    ..pc<Function_>(5, _omitFieldNames ? '' : 'function', $pb.PbFieldType.PM,
+        subBuilder: Function_.create)
     ..pPS(6, _omitFieldNames ? '' : 'stringTable')
     ..aInt64(7, _omitFieldNames ? '' : 'dropFrames')
     ..aInt64(8, _omitFieldNames ? '' : 'keepFrames')
     ..aInt64(9, _omitFieldNames ? '' : 'timeNanos')
     ..aInt64(10, _omitFieldNames ? '' : 'durationNanos')
-    ..aOM<ValueType>(11, _omitFieldNames ? '' : 'periodType', subBuilder: ValueType.create)
+    ..aOM<ValueType>(11, _omitFieldNames ? '' : 'periodType',
+        subBuilder: ValueType.create)
     ..aInt64(12, _omitFieldNames ? '' : 'period')
     ..p<$fixnum.Int64>(13, _omitFieldNames ? '' : 'comment', $pb.PbFieldType.K6)
     ..aInt64(14, _omitFieldNames ? '' : 'defaultSampleType')
-    ..p<$fixnum.Int64>(15, _omitFieldNames ? '' : 'locationIndices', $pb.PbFieldType.K6)
-    ..pc<$0.KeyValue>(16, _omitFieldNames ? '' : 'attributeTable', $pb.PbFieldType.PM, subBuilder: $0.KeyValue.create)
-    ..pc<AttributeUnit>(17, _omitFieldNames ? '' : 'attributeUnits', $pb.PbFieldType.PM, subBuilder: AttributeUnit.create)
-    ..pc<Link>(18, _omitFieldNames ? '' : 'linkTable', $pb.PbFieldType.PM, subBuilder: Link.create)
-    ..hasRequiredFields = false
-  ;
+    ..p<$fixnum.Int64>(
+        15, _omitFieldNames ? '' : 'locationIndices', $pb.PbFieldType.K6)
+    ..pc<$0.KeyValue>(
+        16, _omitFieldNames ? '' : 'attributeTable', $pb.PbFieldType.PM,
+        subBuilder: $0.KeyValue.create)
+    ..pc<AttributeUnit>(
+        17, _omitFieldNames ? '' : 'attributeUnits', $pb.PbFieldType.PM,
+        subBuilder: AttributeUnit.create)
+    ..pc<Link>(18, _omitFieldNames ? '' : 'linkTable', $pb.PbFieldType.PM,
+        subBuilder: Link.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Profile clone() => Profile()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Profile copyWith(void Function(Profile) updates) => super.copyWith((message) => updates(message as Profile)) as Profile;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  Profile copyWith(void Function(Profile) updates) =>
+      super.copyWith((message) => updates(message as Profile)) as Profile;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -143,7 +162,8 @@ class Profile extends $pb.GeneratedMessage {
   Profile createEmptyInstance() => create();
   static $pb.PbList<Profile> createRepeated() => $pb.PbList<Profile>();
   @$core.pragma('dart2js:noInline')
-  static Profile getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Profile>(create);
+  static Profile getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Profile>(create);
   static Profile? _defaultInstance;
 
   /// A description of the samples associated with each Sample.value.
@@ -184,7 +204,10 @@ class Profile extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $fixnum.Int64 get dropFrames => $_getI64(6);
   @$pb.TagNumber(7)
-  set dropFrames($fixnum.Int64 v) { $_setInt64(6, v); }
+  set dropFrames($fixnum.Int64 v) {
+    $_setInt64(6, v);
+  }
+
   @$pb.TagNumber(7)
   $core.bool hasDropFrames() => $_has(6);
   @$pb.TagNumber(7)
@@ -195,7 +218,10 @@ class Profile extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $fixnum.Int64 get keepFrames => $_getI64(7);
   @$pb.TagNumber(8)
-  set keepFrames($fixnum.Int64 v) { $_setInt64(7, v); }
+  set keepFrames($fixnum.Int64 v) {
+    $_setInt64(7, v);
+  }
+
   @$pb.TagNumber(8)
   $core.bool hasKeepFrames() => $_has(7);
   @$pb.TagNumber(8)
@@ -205,7 +231,10 @@ class Profile extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $fixnum.Int64 get timeNanos => $_getI64(8);
   @$pb.TagNumber(9)
-  set timeNanos($fixnum.Int64 v) { $_setInt64(8, v); }
+  set timeNanos($fixnum.Int64 v) {
+    $_setInt64(8, v);
+  }
+
   @$pb.TagNumber(9)
   $core.bool hasTimeNanos() => $_has(8);
   @$pb.TagNumber(9)
@@ -215,7 +244,10 @@ class Profile extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   $fixnum.Int64 get durationNanos => $_getI64(9);
   @$pb.TagNumber(10)
-  set durationNanos($fixnum.Int64 v) { $_setInt64(9, v); }
+  set durationNanos($fixnum.Int64 v) {
+    $_setInt64(9, v);
+  }
+
   @$pb.TagNumber(10)
   $core.bool hasDurationNanos() => $_has(9);
   @$pb.TagNumber(10)
@@ -226,7 +258,10 @@ class Profile extends $pb.GeneratedMessage {
   @$pb.TagNumber(11)
   ValueType get periodType => $_getN(10);
   @$pb.TagNumber(11)
-  set periodType(ValueType v) { setField(11, v); }
+  set periodType(ValueType v) {
+    setField(11, v);
+  }
+
   @$pb.TagNumber(11)
   $core.bool hasPeriodType() => $_has(10);
   @$pb.TagNumber(11)
@@ -238,7 +273,10 @@ class Profile extends $pb.GeneratedMessage {
   @$pb.TagNumber(12)
   $fixnum.Int64 get period => $_getI64(11);
   @$pb.TagNumber(12)
-  set period($fixnum.Int64 v) { $_setInt64(11, v); }
+  set period($fixnum.Int64 v) {
+    $_setInt64(11, v);
+  }
+
   @$pb.TagNumber(12)
   $core.bool hasPeriod() => $_has(11);
   @$pb.TagNumber(12)
@@ -257,7 +295,10 @@ class Profile extends $pb.GeneratedMessage {
   @$pb.TagNumber(14)
   $fixnum.Int64 get defaultSampleType => $_getI64(13);
   @$pb.TagNumber(14)
-  set defaultSampleType($fixnum.Int64 v) { $_setInt64(13, v); }
+  set defaultSampleType($fixnum.Int64 v) {
+    $_setInt64(13, v);
+  }
+
   @$pb.TagNumber(14)
   $core.bool hasDefaultSampleType() => $_has(13);
   @$pb.TagNumber(14)
@@ -296,41 +337,54 @@ class AttributeUnit extends $pb.GeneratedMessage {
     return $result;
   }
   AttributeUnit._() : super();
-  factory AttributeUnit.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory AttributeUnit.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory AttributeUnit.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory AttributeUnit.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'AttributeUnit', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'AttributeUnit',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
     ..aInt64(1, _omitFieldNames ? '' : 'attributeKey')
     ..aInt64(2, _omitFieldNames ? '' : 'unit')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   AttributeUnit clone() => AttributeUnit()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  AttributeUnit copyWith(void Function(AttributeUnit) updates) => super.copyWith((message) => updates(message as AttributeUnit)) as AttributeUnit;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  AttributeUnit copyWith(void Function(AttributeUnit) updates) =>
+      super.copyWith((message) => updates(message as AttributeUnit))
+          as AttributeUnit;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static AttributeUnit create() => AttributeUnit._();
   AttributeUnit createEmptyInstance() => create();
-  static $pb.PbList<AttributeUnit> createRepeated() => $pb.PbList<AttributeUnit>();
+  static $pb.PbList<AttributeUnit> createRepeated() =>
+      $pb.PbList<AttributeUnit>();
   @$core.pragma('dart2js:noInline')
-  static AttributeUnit getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<AttributeUnit>(create);
+  static AttributeUnit getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<AttributeUnit>(create);
   static AttributeUnit? _defaultInstance;
 
   /// Index into string table.
   @$pb.TagNumber(1)
   $fixnum.Int64 get attributeKey => $_getI64(0);
   @$pb.TagNumber(1)
-  set attributeKey($fixnum.Int64 v) { $_setInt64(0, v); }
+  set attributeKey($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasAttributeKey() => $_has(0);
   @$pb.TagNumber(1)
@@ -340,7 +394,10 @@ class AttributeUnit extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get unit => $_getI64(1);
   @$pb.TagNumber(2)
-  set unit($fixnum.Int64 v) { $_setInt64(1, v); }
+  set unit($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasUnit() => $_has(1);
   @$pb.TagNumber(2)
@@ -364,25 +421,34 @@ class Link extends $pb.GeneratedMessage {
     return $result;
   }
   Link._() : super();
-  factory Link.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Link.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory Link.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory Link.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Link', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'traceId', $pb.PbFieldType.OY)
-    ..a<$core.List<$core.int>>(2, _omitFieldNames ? '' : 'spanId', $pb.PbFieldType.OY)
-    ..hasRequiredFields = false
-  ;
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Link',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(
+        1, _omitFieldNames ? '' : 'traceId', $pb.PbFieldType.OY)
+    ..a<$core.List<$core.int>>(
+        2, _omitFieldNames ? '' : 'spanId', $pb.PbFieldType.OY)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Link clone() => Link()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Link copyWith(void Function(Link) updates) => super.copyWith((message) => updates(message as Link)) as Link;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  Link copyWith(void Function(Link) updates) =>
+      super.copyWith((message) => updates(message as Link)) as Link;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -391,7 +457,8 @@ class Link extends $pb.GeneratedMessage {
   Link createEmptyInstance() => create();
   static $pb.PbList<Link> createRepeated() => $pb.PbList<Link>();
   @$core.pragma('dart2js:noInline')
-  static Link getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Link>(create);
+  static Link getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Link>(create);
   static Link? _defaultInstance;
 
   /// A unique identifier of a trace that this linked span is part of. The ID is a
@@ -399,7 +466,10 @@ class Link extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.List<$core.int> get traceId => $_getN(0);
   @$pb.TagNumber(1)
-  set traceId($core.List<$core.int> v) { $_setBytes(0, v); }
+  set traceId($core.List<$core.int> v) {
+    $_setBytes(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasTraceId() => $_has(0);
   @$pb.TagNumber(1)
@@ -409,7 +479,10 @@ class Link extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $core.List<$core.int> get spanId => $_getN(1);
   @$pb.TagNumber(2)
-  set spanId($core.List<$core.int> v) { $_setBytes(1, v); }
+  set spanId($core.List<$core.int> v) {
+    $_setBytes(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasSpanId() => $_has(1);
   @$pb.TagNumber(2)
@@ -436,26 +509,38 @@ class ValueType extends $pb.GeneratedMessage {
     return $result;
   }
   ValueType._() : super();
-  factory ValueType.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ValueType.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ValueType.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory ValueType.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ValueType', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ValueType',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
     ..aInt64(1, _omitFieldNames ? '' : 'type')
     ..aInt64(2, _omitFieldNames ? '' : 'unit')
-    ..e<AggregationTemporality>(3, _omitFieldNames ? '' : 'aggregationTemporality', $pb.PbFieldType.OE, defaultOrMaker: AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED, valueOf: AggregationTemporality.valueOf, enumValues: AggregationTemporality.values)
-    ..hasRequiredFields = false
-  ;
+    ..e<AggregationTemporality>(
+        3, _omitFieldNames ? '' : 'aggregationTemporality', $pb.PbFieldType.OE,
+        defaultOrMaker:
+            AggregationTemporality.AGGREGATION_TEMPORALITY_UNSPECIFIED,
+        valueOf: AggregationTemporality.valueOf,
+        enumValues: AggregationTemporality.values)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   ValueType clone() => ValueType()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ValueType copyWith(void Function(ValueType) updates) => super.copyWith((message) => updates(message as ValueType)) as ValueType;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  ValueType copyWith(void Function(ValueType) updates) =>
+      super.copyWith((message) => updates(message as ValueType)) as ValueType;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -464,13 +549,17 @@ class ValueType extends $pb.GeneratedMessage {
   ValueType createEmptyInstance() => create();
   static $pb.PbList<ValueType> createRepeated() => $pb.PbList<ValueType>();
   @$core.pragma('dart2js:noInline')
-  static ValueType getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ValueType>(create);
+  static ValueType getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ValueType>(create);
   static ValueType? _defaultInstance;
 
   @$pb.TagNumber(1)
   $fixnum.Int64 get type => $_getI64(0);
   @$pb.TagNumber(1)
-  set type($fixnum.Int64 v) { $_setInt64(0, v); }
+  set type($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasType() => $_has(0);
   @$pb.TagNumber(1)
@@ -479,7 +568,10 @@ class ValueType extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get unit => $_getI64(1);
   @$pb.TagNumber(2)
-  set unit($fixnum.Int64 v) { $_setInt64(1, v); }
+  set unit($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasUnit() => $_has(1);
   @$pb.TagNumber(2)
@@ -488,7 +580,10 @@ class ValueType extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   AggregationTemporality get aggregationTemporality => $_getN(2);
   @$pb.TagNumber(3)
-  set aggregationTemporality(AggregationTemporality v) { setField(3, v); }
+  set aggregationTemporality(AggregationTemporality v) {
+    setField(3, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasAggregationTemporality() => $_has(2);
   @$pb.TagNumber(3)
@@ -542,32 +637,49 @@ class Sample extends $pb.GeneratedMessage {
     return $result;
   }
   Sample._() : super();
-  factory Sample.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Sample.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory Sample.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory Sample.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Sample', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..p<$fixnum.Int64>(1, _omitFieldNames ? '' : 'locationIndex', $pb.PbFieldType.KU6)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Sample',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..p<$fixnum.Int64>(
+        1, _omitFieldNames ? '' : 'locationIndex', $pb.PbFieldType.KU6)
     ..p<$fixnum.Int64>(2, _omitFieldNames ? '' : 'value', $pb.PbFieldType.K6)
-    ..pc<Label>(3, _omitFieldNames ? '' : 'label', $pb.PbFieldType.PM, subBuilder: Label.create)
-    ..a<$fixnum.Int64>(7, _omitFieldNames ? '' : 'locationsStartIndex', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(8, _omitFieldNames ? '' : 'locationsLength', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$core.int>(9, _omitFieldNames ? '' : 'stacktraceIdIndex', $pb.PbFieldType.OU3)
-    ..p<$fixnum.Int64>(10, _omitFieldNames ? '' : 'attributes', $pb.PbFieldType.KU6)
-    ..a<$fixnum.Int64>(12, _omitFieldNames ? '' : 'link', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..p<$fixnum.Int64>(13, _omitFieldNames ? '' : 'timestampsUnixNano', $pb.PbFieldType.KU6)
-    ..hasRequiredFields = false
-  ;
+    ..pc<Label>(3, _omitFieldNames ? '' : 'label', $pb.PbFieldType.PM,
+        subBuilder: Label.create)
+    ..a<$fixnum.Int64>(
+        7, _omitFieldNames ? '' : 'locationsStartIndex', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        8, _omitFieldNames ? '' : 'locationsLength', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$core.int>(
+        9, _omitFieldNames ? '' : 'stacktraceIdIndex', $pb.PbFieldType.OU3)
+    ..p<$fixnum.Int64>(
+        10, _omitFieldNames ? '' : 'attributes', $pb.PbFieldType.KU6)
+    ..a<$fixnum.Int64>(12, _omitFieldNames ? '' : 'link', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..p<$fixnum.Int64>(
+        13, _omitFieldNames ? '' : 'timestampsUnixNano', $pb.PbFieldType.KU6)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Sample clone() => Sample()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Sample copyWith(void Function(Sample) updates) => super.copyWith((message) => updates(message as Sample)) as Sample;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  Sample copyWith(void Function(Sample) updates) =>
+      super.copyWith((message) => updates(message as Sample)) as Sample;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -576,7 +688,8 @@ class Sample extends $pb.GeneratedMessage {
   Sample createEmptyInstance() => create();
   static $pb.PbList<Sample> createRepeated() => $pb.PbList<Sample>();
   @$core.pragma('dart2js:noInline')
-  static Sample getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Sample>(create);
+  static Sample getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Sample>(create);
   static Sample? _defaultInstance;
 
   /// The indices recorded here correspond to locations in Profile.location.
@@ -610,7 +723,10 @@ class Sample extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $fixnum.Int64 get locationsStartIndex => $_getI64(3);
   @$pb.TagNumber(7)
-  set locationsStartIndex($fixnum.Int64 v) { $_setInt64(3, v); }
+  set locationsStartIndex($fixnum.Int64 v) {
+    $_setInt64(3, v);
+  }
+
   @$pb.TagNumber(7)
   $core.bool hasLocationsStartIndex() => $_has(3);
   @$pb.TagNumber(7)
@@ -621,7 +737,10 @@ class Sample extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $fixnum.Int64 get locationsLength => $_getI64(4);
   @$pb.TagNumber(8)
-  set locationsLength($fixnum.Int64 v) { $_setInt64(4, v); }
+  set locationsLength($fixnum.Int64 v) {
+    $_setInt64(4, v);
+  }
+
   @$pb.TagNumber(8)
   $core.bool hasLocationsLength() => $_has(4);
   @$pb.TagNumber(8)
@@ -631,7 +750,10 @@ class Sample extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $core.int get stacktraceIdIndex => $_getIZ(5);
   @$pb.TagNumber(9)
-  set stacktraceIdIndex($core.int v) { $_setUnsignedInt32(5, v); }
+  set stacktraceIdIndex($core.int v) {
+    $_setUnsignedInt32(5, v);
+  }
+
   @$pb.TagNumber(9)
   $core.bool hasStacktraceIdIndex() => $_has(5);
   @$pb.TagNumber(9)
@@ -645,7 +767,10 @@ class Sample extends $pb.GeneratedMessage {
   @$pb.TagNumber(12)
   $fixnum.Int64 get link => $_getI64(7);
   @$pb.TagNumber(12)
-  set link($fixnum.Int64 v) { $_setInt64(7, v); }
+  set link($fixnum.Int64 v) {
+    $_setInt64(7, v);
+  }
+
   @$pb.TagNumber(12)
   $core.bool hasLink() => $_has(7);
   @$pb.TagNumber(12)
@@ -682,27 +807,34 @@ class Label extends $pb.GeneratedMessage {
     return $result;
   }
   Label._() : super();
-  factory Label.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Label.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory Label.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory Label.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Label', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Label',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
     ..aInt64(1, _omitFieldNames ? '' : 'key')
     ..aInt64(2, _omitFieldNames ? '' : 'str')
     ..aInt64(3, _omitFieldNames ? '' : 'num')
     ..aInt64(4, _omitFieldNames ? '' : 'numUnit')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Label clone() => Label()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Label copyWith(void Function(Label) updates) => super.copyWith((message) => updates(message as Label)) as Label;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  Label copyWith(void Function(Label) updates) =>
+      super.copyWith((message) => updates(message as Label)) as Label;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -711,13 +843,17 @@ class Label extends $pb.GeneratedMessage {
   Label createEmptyInstance() => create();
   static $pb.PbList<Label> createRepeated() => $pb.PbList<Label>();
   @$core.pragma('dart2js:noInline')
-  static Label getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Label>(create);
+  static Label getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Label>(create);
   static Label? _defaultInstance;
 
   @$pb.TagNumber(1)
   $fixnum.Int64 get key => $_getI64(0);
   @$pb.TagNumber(1)
-  set key($fixnum.Int64 v) { $_setInt64(0, v); }
+  set key($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasKey() => $_has(0);
   @$pb.TagNumber(1)
@@ -727,7 +863,10 @@ class Label extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get str => $_getI64(1);
   @$pb.TagNumber(2)
-  set str($fixnum.Int64 v) { $_setInt64(1, v); }
+  set str($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasStr() => $_has(1);
   @$pb.TagNumber(2)
@@ -736,7 +875,10 @@ class Label extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get num => $_getI64(2);
   @$pb.TagNumber(3)
-  set num($fixnum.Int64 v) { $_setInt64(2, v); }
+  set num($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasNum() => $_has(2);
   @$pb.TagNumber(3)
@@ -752,7 +894,10 @@ class Label extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $fixnum.Int64 get numUnit => $_getI64(3);
   @$pb.TagNumber(4)
-  set numUnit($fixnum.Int64 v) { $_setInt64(3, v); }
+  set numUnit($fixnum.Int64 v) {
+    $_setInt64(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasNumUnit() => $_has(3);
   @$pb.TagNumber(4)
@@ -816,35 +961,54 @@ class Mapping extends $pb.GeneratedMessage {
     return $result;
   }
   Mapping._() : super();
-  factory Mapping.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Mapping.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory Mapping.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory Mapping.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Mapping', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'memoryStart', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'memoryLimit', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(4, _omitFieldNames ? '' : 'fileOffset', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Mapping',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'memoryStart', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        3, _omitFieldNames ? '' : 'memoryLimit', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        4, _omitFieldNames ? '' : 'fileOffset', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
     ..aInt64(5, _omitFieldNames ? '' : 'filename')
     ..aInt64(6, _omitFieldNames ? '' : 'buildId')
     ..aOB(7, _omitFieldNames ? '' : 'hasFunctions')
     ..aOB(8, _omitFieldNames ? '' : 'hasFilenames')
     ..aOB(9, _omitFieldNames ? '' : 'hasLineNumbers')
     ..aOB(10, _omitFieldNames ? '' : 'hasInlineFrames')
-    ..e<BuildIdKind>(11, _omitFieldNames ? '' : 'buildIdKind', $pb.PbFieldType.OE, defaultOrMaker: BuildIdKind.BUILD_ID_LINKER, valueOf: BuildIdKind.valueOf, enumValues: BuildIdKind.values)
-    ..p<$fixnum.Int64>(12, _omitFieldNames ? '' : 'attributes', $pb.PbFieldType.KU6)
-    ..hasRequiredFields = false
-  ;
+    ..e<BuildIdKind>(
+        11, _omitFieldNames ? '' : 'buildIdKind', $pb.PbFieldType.OE,
+        defaultOrMaker: BuildIdKind.BUILD_ID_LINKER,
+        valueOf: BuildIdKind.valueOf,
+        enumValues: BuildIdKind.values)
+    ..p<$fixnum.Int64>(
+        12, _omitFieldNames ? '' : 'attributes', $pb.PbFieldType.KU6)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Mapping clone() => Mapping()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Mapping copyWith(void Function(Mapping) updates) => super.copyWith((message) => updates(message as Mapping)) as Mapping;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  Mapping copyWith(void Function(Mapping) updates) =>
+      super.copyWith((message) => updates(message as Mapping)) as Mapping;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -853,14 +1017,18 @@ class Mapping extends $pb.GeneratedMessage {
   Mapping createEmptyInstance() => create();
   static $pb.PbList<Mapping> createRepeated() => $pb.PbList<Mapping>();
   @$core.pragma('dart2js:noInline')
-  static Mapping getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Mapping>(create);
+  static Mapping getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Mapping>(create);
   static Mapping? _defaultInstance;
 
   /// Unique nonzero id for the mapping. [deprecated]
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) { $_setInt64(0, v); }
+  set id($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -870,7 +1038,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get memoryStart => $_getI64(1);
   @$pb.TagNumber(2)
-  set memoryStart($fixnum.Int64 v) { $_setInt64(1, v); }
+  set memoryStart($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasMemoryStart() => $_has(1);
   @$pb.TagNumber(2)
@@ -880,7 +1051,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get memoryLimit => $_getI64(2);
   @$pb.TagNumber(3)
-  set memoryLimit($fixnum.Int64 v) { $_setInt64(2, v); }
+  set memoryLimit($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasMemoryLimit() => $_has(2);
   @$pb.TagNumber(3)
@@ -890,7 +1064,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $fixnum.Int64 get fileOffset => $_getI64(3);
   @$pb.TagNumber(4)
-  set fileOffset($fixnum.Int64 v) { $_setInt64(3, v); }
+  set fileOffset($fixnum.Int64 v) {
+    $_setInt64(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasFileOffset() => $_has(3);
   @$pb.TagNumber(4)
@@ -902,7 +1079,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $fixnum.Int64 get filename => $_getI64(4);
   @$pb.TagNumber(5)
-  set filename($fixnum.Int64 v) { $_setInt64(4, v); }
+  set filename($fixnum.Int64 v) {
+    $_setInt64(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasFilename() => $_has(4);
   @$pb.TagNumber(5)
@@ -914,7 +1094,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $fixnum.Int64 get buildId => $_getI64(5);
   @$pb.TagNumber(6)
-  set buildId($fixnum.Int64 v) { $_setInt64(5, v); }
+  set buildId($fixnum.Int64 v) {
+    $_setInt64(5, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasBuildId() => $_has(5);
   @$pb.TagNumber(6)
@@ -924,7 +1107,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.bool get hasFunctions => $_getBF(6);
   @$pb.TagNumber(7)
-  set hasFunctions($core.bool v) { $_setBool(6, v); }
+  set hasFunctions($core.bool v) {
+    $_setBool(6, v);
+  }
+
   @$pb.TagNumber(7)
   $core.bool hasHasFunctions() => $_has(6);
   @$pb.TagNumber(7)
@@ -933,7 +1119,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $core.bool get hasFilenames => $_getBF(7);
   @$pb.TagNumber(8)
-  set hasFilenames($core.bool v) { $_setBool(7, v); }
+  set hasFilenames($core.bool v) {
+    $_setBool(7, v);
+  }
+
   @$pb.TagNumber(8)
   $core.bool hasHasFilenames() => $_has(7);
   @$pb.TagNumber(8)
@@ -942,7 +1131,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(9)
   $core.bool get hasLineNumbers => $_getBF(8);
   @$pb.TagNumber(9)
-  set hasLineNumbers($core.bool v) { $_setBool(8, v); }
+  set hasLineNumbers($core.bool v) {
+    $_setBool(8, v);
+  }
+
   @$pb.TagNumber(9)
   $core.bool hasHasLineNumbers() => $_has(8);
   @$pb.TagNumber(9)
@@ -951,7 +1143,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(10)
   $core.bool get hasInlineFrames => $_getBF(9);
   @$pb.TagNumber(10)
-  set hasInlineFrames($core.bool v) { $_setBool(9, v); }
+  set hasInlineFrames($core.bool v) {
+    $_setBool(9, v);
+  }
+
   @$pb.TagNumber(10)
   $core.bool hasHasInlineFrames() => $_has(9);
   @$pb.TagNumber(10)
@@ -961,7 +1156,10 @@ class Mapping extends $pb.GeneratedMessage {
   @$pb.TagNumber(11)
   BuildIdKind get buildIdKind => $_getN(10);
   @$pb.TagNumber(11)
-  set buildIdKind(BuildIdKind v) { setField(11, v); }
+  set buildIdKind(BuildIdKind v) {
+    setField(11, v);
+  }
+
   @$pb.TagNumber(11)
   $core.bool hasBuildIdKind() => $_has(10);
   @$pb.TagNumber(11)
@@ -1008,30 +1206,43 @@ class Location extends $pb.GeneratedMessage {
     return $result;
   }
   Location._() : super();
-  factory Location.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Location.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory Location.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory Location.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Location', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'mappingIndex', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'address', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..pc<Line>(4, _omitFieldNames ? '' : 'line', $pb.PbFieldType.PM, subBuilder: Line.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Location',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'mappingIndex', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'address', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..pc<Line>(4, _omitFieldNames ? '' : 'line', $pb.PbFieldType.PM,
+        subBuilder: Line.create)
     ..aOB(5, _omitFieldNames ? '' : 'isFolded')
     ..a<$core.int>(6, _omitFieldNames ? '' : 'typeIndex', $pb.PbFieldType.OU3)
-    ..p<$fixnum.Int64>(7, _omitFieldNames ? '' : 'attributes', $pb.PbFieldType.KU6)
-    ..hasRequiredFields = false
-  ;
+    ..p<$fixnum.Int64>(
+        7, _omitFieldNames ? '' : 'attributes', $pb.PbFieldType.KU6)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Location clone() => Location()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Location copyWith(void Function(Location) updates) => super.copyWith((message) => updates(message as Location)) as Location;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  Location copyWith(void Function(Location) updates) =>
+      super.copyWith((message) => updates(message as Location)) as Location;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -1040,7 +1251,8 @@ class Location extends $pb.GeneratedMessage {
   Location createEmptyInstance() => create();
   static $pb.PbList<Location> createRepeated() => $pb.PbList<Location>();
   @$core.pragma('dart2js:noInline')
-  static Location getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Location>(create);
+  static Location getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Location>(create);
   static Location? _defaultInstance;
 
   /// Unique nonzero id for the location.  A profile could use
@@ -1048,7 +1260,10 @@ class Location extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) { $_setInt64(0, v); }
+  set id($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1060,7 +1275,10 @@ class Location extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get mappingIndex => $_getI64(1);
   @$pb.TagNumber(2)
-  set mappingIndex($fixnum.Int64 v) { $_setInt64(1, v); }
+  set mappingIndex($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasMappingIndex() => $_has(1);
   @$pb.TagNumber(2)
@@ -1074,7 +1292,10 @@ class Location extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get address => $_getI64(2);
   @$pb.TagNumber(3)
-  set address($fixnum.Int64 v) { $_setInt64(2, v); }
+  set address($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasAddress() => $_has(2);
   @$pb.TagNumber(3)
@@ -1098,7 +1319,10 @@ class Location extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.bool get isFolded => $_getBF(4);
   @$pb.TagNumber(5)
-  set isFolded($core.bool v) { $_setBool(4, v); }
+  set isFolded($core.bool v) {
+    $_setBool(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasIsFolded() => $_has(4);
   @$pb.TagNumber(5)
@@ -1108,7 +1332,10 @@ class Location extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.int get typeIndex => $_getIZ(5);
   @$pb.TagNumber(6)
-  set typeIndex($core.int v) { $_setUnsignedInt32(5, v); }
+  set typeIndex($core.int v) {
+    $_setUnsignedInt32(5, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasTypeIndex() => $_has(5);
   @$pb.TagNumber(6)
@@ -1139,26 +1366,35 @@ class Line extends $pb.GeneratedMessage {
     return $result;
   }
   Line._() : super();
-  factory Line.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Line.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory Line.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory Line.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Line', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'functionIndex', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Line',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(
+        1, _omitFieldNames ? '' : 'functionIndex', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
     ..aInt64(2, _omitFieldNames ? '' : 'line')
     ..aInt64(3, _omitFieldNames ? '' : 'column')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Line clone() => Line()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Line copyWith(void Function(Line) updates) => super.copyWith((message) => updates(message as Line)) as Line;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  Line copyWith(void Function(Line) updates) =>
+      super.copyWith((message) => updates(message as Line)) as Line;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -1167,14 +1403,18 @@ class Line extends $pb.GeneratedMessage {
   Line createEmptyInstance() => create();
   static $pb.PbList<Line> createRepeated() => $pb.PbList<Line>();
   @$core.pragma('dart2js:noInline')
-  static Line getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Line>(create);
+  static Line getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Line>(create);
   static Line? _defaultInstance;
 
   /// The index of the corresponding profile.Function for this line.
   @$pb.TagNumber(1)
   $fixnum.Int64 get functionIndex => $_getI64(0);
   @$pb.TagNumber(1)
-  set functionIndex($fixnum.Int64 v) { $_setInt64(0, v); }
+  set functionIndex($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasFunctionIndex() => $_has(0);
   @$pb.TagNumber(1)
@@ -1184,7 +1424,10 @@ class Line extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get line => $_getI64(1);
   @$pb.TagNumber(2)
-  set line($fixnum.Int64 v) { $_setInt64(1, v); }
+  set line($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasLine() => $_has(1);
   @$pb.TagNumber(2)
@@ -1194,7 +1437,10 @@ class Line extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get column => $_getI64(2);
   @$pb.TagNumber(3)
-  set column($fixnum.Int64 v) { $_setInt64(2, v); }
+  set column($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasColumn() => $_has(2);
   @$pb.TagNumber(3)
@@ -1230,28 +1476,36 @@ class Function_ extends $pb.GeneratedMessage {
     return $result;
   }
   Function_._() : super();
-  factory Function_.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory Function_.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory Function_.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory Function_.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'Function', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6, defaultOrMaker: $fixnum.Int64.ZERO)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'Function',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..a<$fixnum.Int64>(1, _omitFieldNames ? '' : 'id', $pb.PbFieldType.OU6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
     ..aInt64(2, _omitFieldNames ? '' : 'name')
     ..aInt64(3, _omitFieldNames ? '' : 'systemName')
     ..aInt64(4, _omitFieldNames ? '' : 'filename')
     ..aInt64(5, _omitFieldNames ? '' : 'startLine')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   Function_ clone() => Function_()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  Function_ copyWith(void Function(Function_) updates) => super.copyWith((message) => updates(message as Function_)) as Function_;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  Function_ copyWith(void Function(Function_) updates) =>
+      super.copyWith((message) => updates(message as Function_)) as Function_;
 
   $pb.BuilderInfo get info_ => _i;
 
@@ -1260,14 +1514,18 @@ class Function_ extends $pb.GeneratedMessage {
   Function_ createEmptyInstance() => create();
   static $pb.PbList<Function_> createRepeated() => $pb.PbList<Function_>();
   @$core.pragma('dart2js:noInline')
-  static Function_ getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Function_>(create);
+  static Function_ getDefault() =>
+      _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<Function_>(create);
   static Function_? _defaultInstance;
 
   /// Unique nonzero id for the function. [deprecated]
   @$pb.TagNumber(1)
   $fixnum.Int64 get id => $_getI64(0);
   @$pb.TagNumber(1)
-  set id($fixnum.Int64 v) { $_setInt64(0, v); }
+  set id($fixnum.Int64 v) {
+    $_setInt64(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasId() => $_has(0);
   @$pb.TagNumber(1)
@@ -1277,7 +1535,10 @@ class Function_ extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get name => $_getI64(1);
   @$pb.TagNumber(2)
-  set name($fixnum.Int64 v) { $_setInt64(1, v); }
+  set name($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasName() => $_has(1);
   @$pb.TagNumber(2)
@@ -1288,7 +1549,10 @@ class Function_ extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get systemName => $_getI64(2);
   @$pb.TagNumber(3)
-  set systemName($fixnum.Int64 v) { $_setInt64(2, v); }
+  set systemName($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasSystemName() => $_has(2);
   @$pb.TagNumber(3)
@@ -1298,7 +1562,10 @@ class Function_ extends $pb.GeneratedMessage {
   @$pb.TagNumber(4)
   $fixnum.Int64 get filename => $_getI64(3);
   @$pb.TagNumber(4)
-  set filename($fixnum.Int64 v) { $_setInt64(3, v); }
+  set filename($fixnum.Int64 v) {
+    $_setInt64(3, v);
+  }
+
   @$pb.TagNumber(4)
   $core.bool hasFilename() => $_has(3);
   @$pb.TagNumber(4)
@@ -1308,13 +1575,16 @@ class Function_ extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $fixnum.Int64 get startLine => $_getI64(4);
   @$pb.TagNumber(5)
-  set startLine($fixnum.Int64 v) { $_setInt64(4, v); }
+  set startLine($fixnum.Int64 v) {
+    $_setInt64(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasStartLine() => $_has(4);
   @$pb.TagNumber(5)
   void clearStartLine() => clearField(5);
 }
 
-
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
+const _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');

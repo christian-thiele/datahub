@@ -21,23 +21,29 @@ import 'trace_service.pbjson.dart';
 export 'trace_service.pb.dart';
 
 abstract class TraceServiceBase extends $pb.GeneratedService {
-  $async.Future<$10.ExportTraceServiceResponse> export($pb.ServerContext ctx, $10.ExportTraceServiceRequest request);
+  $async.Future<$10.ExportTraceServiceResponse> export(
+      $pb.ServerContext ctx, $10.ExportTraceServiceRequest request);
 
   $pb.GeneratedMessage createRequest($core.String methodName) {
     switch (methodName) {
-      case 'Export': return $10.ExportTraceServiceRequest();
-      default: throw $core.ArgumentError('Unknown method: $methodName');
+      case 'Export':
+        return $10.ExportTraceServiceRequest();
+      default:
+        throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
 
-  $async.Future<$pb.GeneratedMessage> handleCall($pb.ServerContext ctx, $core.String methodName, $pb.GeneratedMessage request) {
+  $async.Future<$pb.GeneratedMessage> handleCall($pb.ServerContext ctx,
+      $core.String methodName, $pb.GeneratedMessage request) {
     switch (methodName) {
-      case 'Export': return this.export(ctx, request as $10.ExportTraceServiceRequest);
-      default: throw $core.ArgumentError('Unknown method: $methodName');
+      case 'Export':
+        return this.export(ctx, request as $10.ExportTraceServiceRequest);
+      default:
+        throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
 
   $core.Map<$core.String, $core.dynamic> get $json => TraceServiceBase$json;
-  $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> get $messageJson => TraceServiceBase$messageJson;
+  $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
+      get $messageJson => TraceServiceBase$messageJson;
 }
-

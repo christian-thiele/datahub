@@ -21,7 +21,14 @@ import '../../../trace/v1/trace.pbjson.dart' as $9;
 const ExportTraceServiceRequest$json = {
   '1': 'ExportTraceServiceRequest',
   '2': [
-    {'1': 'resource_spans', '3': 1, '4': 3, '5': 11, '6': '.opentelemetry.proto.trace.v1.ResourceSpans', '10': 'resourceSpans'},
+    {
+      '1': 'resource_spans',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.trace.v1.ResourceSpans',
+      '10': 'resourceSpans'
+    },
   ],
 };
 
@@ -34,15 +41,23 @@ final $typed_data.Uint8List exportTraceServiceRequestDescriptor = $convert.base6
 const ExportTraceServiceResponse$json = {
   '1': 'ExportTraceServiceResponse',
   '2': [
-    {'1': 'partial_success', '3': 1, '4': 1, '5': 11, '6': '.opentelemetry.proto.collector.trace.v1.ExportTracePartialSuccess', '10': 'partialSuccess'},
+    {
+      '1': 'partial_success',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.opentelemetry.proto.collector.trace.v1.ExportTracePartialSuccess',
+      '10': 'partialSuccess'
+    },
   ],
 };
 
 /// Descriptor for `ExportTraceServiceResponse`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List exportTraceServiceResponseDescriptor = $convert.base64Decode(
-    'ChpFeHBvcnRUcmFjZVNlcnZpY2VSZXNwb25zZRJqCg9wYXJ0aWFsX3N1Y2Nlc3MYASABKAsyQS'
-    '5vcGVudGVsZW1ldHJ5LnByb3RvLmNvbGxlY3Rvci50cmFjZS52MS5FeHBvcnRUcmFjZVBhcnRp'
-    'YWxTdWNjZXNzUg5wYXJ0aWFsU3VjY2Vzcw==');
+final $typed_data.Uint8List exportTraceServiceResponseDescriptor =
+    $convert.base64Decode(
+        'ChpFeHBvcnRUcmFjZVNlcnZpY2VSZXNwb25zZRJqCg9wYXJ0aWFsX3N1Y2Nlc3MYASABKAsyQS'
+        '5vcGVudGVsZW1ldHJ5LnByb3RvLmNvbGxlY3Rvci50cmFjZS52MS5FeHBvcnRUcmFjZVBhcnRp'
+        'YWxTdWNjZXNzUg5wYXJ0aWFsU3VjY2Vzcw==');
 
 @$core.Deprecated('Use exportTracePartialSuccessDescriptor instead')
 const ExportTracePartialSuccess$json = {
@@ -54,20 +69,28 @@ const ExportTracePartialSuccess$json = {
 };
 
 /// Descriptor for `ExportTracePartialSuccess`. Decode as a `google.protobuf.DescriptorProto`.
-final $typed_data.Uint8List exportTracePartialSuccessDescriptor = $convert.base64Decode(
-    'ChlFeHBvcnRUcmFjZVBhcnRpYWxTdWNjZXNzEiUKDnJlamVjdGVkX3NwYW5zGAEgASgDUg1yZW'
-    'plY3RlZFNwYW5zEiMKDWVycm9yX21lc3NhZ2UYAiABKAlSDGVycm9yTWVzc2FnZQ==');
+final $typed_data.Uint8List exportTracePartialSuccessDescriptor =
+    $convert.base64Decode(
+        'ChlFeHBvcnRUcmFjZVBhcnRpYWxTdWNjZXNzEiUKDnJlamVjdGVkX3NwYW5zGAEgASgDUg1yZW'
+        'plY3RlZFNwYW5zEiMKDWVycm9yX21lc3NhZ2UYAiABKAlSDGVycm9yTWVzc2FnZQ==');
 
 const $core.Map<$core.String, $core.dynamic> TraceServiceBase$json = {
   '1': 'TraceService',
   '2': [
-    {'1': 'Export', '2': '.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest', '3': '.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse', '4': {}},
+    {
+      '1': 'Export',
+      '2': '.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest',
+      '3': '.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse',
+      '4': {}
+    },
   ],
 };
 
 @$core.Deprecated('Use traceServiceDescriptor instead')
-const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> TraceServiceBase$messageJson = {
-  '.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest': ExportTraceServiceRequest$json,
+const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
+    TraceServiceBase$messageJson = {
+  '.opentelemetry.proto.collector.trace.v1.ExportTraceServiceRequest':
+      ExportTraceServiceRequest$json,
   '.opentelemetry.proto.trace.v1.ResourceSpans': $9.ResourceSpans$json,
   '.opentelemetry.proto.resource.v1.Resource': $1.Resource$json,
   '.opentelemetry.proto.common.v1.KeyValue': $0.KeyValue$json,
@@ -75,13 +98,16 @@ const $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> TraceServi
   '.opentelemetry.proto.common.v1.ArrayValue': $0.ArrayValue$json,
   '.opentelemetry.proto.common.v1.KeyValueList': $0.KeyValueList$json,
   '.opentelemetry.proto.trace.v1.ScopeSpans': $9.ScopeSpans$json,
-  '.opentelemetry.proto.common.v1.InstrumentationScope': $0.InstrumentationScope$json,
+  '.opentelemetry.proto.common.v1.InstrumentationScope':
+      $0.InstrumentationScope$json,
   '.opentelemetry.proto.trace.v1.Span': $9.Span$json,
   '.opentelemetry.proto.trace.v1.Span.Event': $9.Span_Event$json,
   '.opentelemetry.proto.trace.v1.Span.Link': $9.Span_Link$json,
   '.opentelemetry.proto.trace.v1.Status': $9.Status$json,
-  '.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse': ExportTraceServiceResponse$json,
-  '.opentelemetry.proto.collector.trace.v1.ExportTracePartialSuccess': ExportTracePartialSuccess$json,
+  '.opentelemetry.proto.collector.trace.v1.ExportTraceServiceResponse':
+      ExportTraceServiceResponse$json,
+  '.opentelemetry.proto.collector.trace.v1.ExportTracePartialSuccess':
+      ExportTracePartialSuccess$json,
 };
 
 /// Descriptor for `TraceService`. Decode as a `google.protobuf.ServiceDescriptorProto`.
@@ -89,4 +115,3 @@ final $typed_data.Uint8List traceServiceDescriptor = $convert.base64Decode(
     'CgxUcmFjZVNlcnZpY2USkQEKBkV4cG9ydBJBLm9wZW50ZWxlbWV0cnkucHJvdG8uY29sbGVjdG'
     '9yLnRyYWNlLnYxLkV4cG9ydFRyYWNlU2VydmljZVJlcXVlc3QaQi5vcGVudGVsZW1ldHJ5LnBy'
     'b3RvLmNvbGxlY3Rvci50cmFjZS52MS5FeHBvcnRUcmFjZVNlcnZpY2VSZXNwb25zZSIA');
-

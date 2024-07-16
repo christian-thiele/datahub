@@ -17,7 +17,14 @@ import 'dart:typed_data' as $typed_data;
 const ProfilesData$json = {
   '1': 'ProfilesData',
   '2': [
-    {'1': 'resource_profiles', '3': 1, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.ResourceProfiles', '10': 'resourceProfiles'},
+    {
+      '1': 'resource_profiles',
+      '3': 1,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.ResourceProfiles',
+      '10': 'resourceProfiles'
+    },
   ],
 };
 
@@ -31,8 +38,22 @@ final $typed_data.Uint8List profilesDataDescriptor = $convert.base64Decode(
 const ResourceProfiles$json = {
   '1': 'ResourceProfiles',
   '2': [
-    {'1': 'resource', '3': 1, '4': 1, '5': 11, '6': '.opentelemetry.proto.resource.v1.Resource', '10': 'resource'},
-    {'1': 'scope_profiles', '3': 2, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.ScopeProfiles', '10': 'scopeProfiles'},
+    {
+      '1': 'resource',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.opentelemetry.proto.resource.v1.Resource',
+      '10': 'resource'
+    },
+    {
+      '1': 'scope_profiles',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.ScopeProfiles',
+      '10': 'scopeProfiles'
+    },
     {'1': 'schema_url', '3': 3, '4': 1, '5': 9, '10': 'schemaUrl'},
   ],
   '9': [
@@ -52,8 +73,22 @@ final $typed_data.Uint8List resourceProfilesDescriptor = $convert.base64Decode(
 const ScopeProfiles$json = {
   '1': 'ScopeProfiles',
   '2': [
-    {'1': 'scope', '3': 1, '4': 1, '5': 11, '6': '.opentelemetry.proto.common.v1.InstrumentationScope', '10': 'scope'},
-    {'1': 'profiles', '3': 2, '4': 3, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.ProfileContainer', '10': 'profiles'},
+    {
+      '1': 'scope',
+      '3': 1,
+      '4': 1,
+      '5': 11,
+      '6': '.opentelemetry.proto.common.v1.InstrumentationScope',
+      '10': 'scope'
+    },
+    {
+      '1': 'profiles',
+      '3': 2,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.ProfileContainer',
+      '10': 'profiles'
+    },
     {'1': 'schema_url', '3': 3, '4': 1, '5': 9, '10': 'schemaUrl'},
   ],
 };
@@ -70,13 +105,51 @@ const ProfileContainer$json = {
   '1': 'ProfileContainer',
   '2': [
     {'1': 'profile_id', '3': 1, '4': 1, '5': 12, '10': 'profileId'},
-    {'1': 'start_time_unix_nano', '3': 2, '4': 1, '5': 6, '10': 'startTimeUnixNano'},
-    {'1': 'end_time_unix_nano', '3': 3, '4': 1, '5': 6, '10': 'endTimeUnixNano'},
-    {'1': 'attributes', '3': 4, '4': 3, '5': 11, '6': '.opentelemetry.proto.common.v1.KeyValue', '10': 'attributes'},
-    {'1': 'dropped_attributes_count', '3': 5, '4': 1, '5': 13, '10': 'droppedAttributesCount'},
-    {'1': 'original_payload_format', '3': 6, '4': 1, '5': 9, '10': 'originalPayloadFormat'},
+    {
+      '1': 'start_time_unix_nano',
+      '3': 2,
+      '4': 1,
+      '5': 6,
+      '10': 'startTimeUnixNano'
+    },
+    {
+      '1': 'end_time_unix_nano',
+      '3': 3,
+      '4': 1,
+      '5': 6,
+      '10': 'endTimeUnixNano'
+    },
+    {
+      '1': 'attributes',
+      '3': 4,
+      '4': 3,
+      '5': 11,
+      '6': '.opentelemetry.proto.common.v1.KeyValue',
+      '10': 'attributes'
+    },
+    {
+      '1': 'dropped_attributes_count',
+      '3': 5,
+      '4': 1,
+      '5': 13,
+      '10': 'droppedAttributesCount'
+    },
+    {
+      '1': 'original_payload_format',
+      '3': 6,
+      '4': 1,
+      '5': 9,
+      '10': 'originalPayloadFormat'
+    },
     {'1': 'original_payload', '3': 7, '4': 1, '5': 12, '10': 'originalPayload'},
-    {'1': 'profile', '3': 8, '4': 1, '5': 11, '6': '.opentelemetry.proto.profiles.v1experimental.Profile', '10': 'profile'},
+    {
+      '1': 'profile',
+      '3': 8,
+      '4': 1,
+      '5': 11,
+      '6': '.opentelemetry.proto.profiles.v1experimental.Profile',
+      '10': 'profile'
+    },
   ],
 };
 
@@ -91,4 +164,3 @@ final $typed_data.Uint8List profileContainerDescriptor = $convert.base64Decode(
     'EG9yaWdpbmFsX3BheWxvYWQYByABKAxSD29yaWdpbmFsUGF5bG9hZBJOCgdwcm9maWxlGAggAS'
     'gLMjQub3BlbnRlbGVtZXRyeS5wcm90by5wcm9maWxlcy52MWV4cGVyaW1lbnRhbC5Qcm9maWxl'
     'Ugdwcm9maWxl');
-

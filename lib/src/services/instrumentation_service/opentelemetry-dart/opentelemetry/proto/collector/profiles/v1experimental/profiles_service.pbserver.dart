@@ -21,23 +21,29 @@ import 'profiles_service.pbjson.dart';
 export 'profiles_service.pb.dart';
 
 abstract class ProfilesServiceBase extends $pb.GeneratedService {
-  $async.Future<$8.ExportProfilesServiceResponse> export($pb.ServerContext ctx, $8.ExportProfilesServiceRequest request);
+  $async.Future<$8.ExportProfilesServiceResponse> export(
+      $pb.ServerContext ctx, $8.ExportProfilesServiceRequest request);
 
   $pb.GeneratedMessage createRequest($core.String methodName) {
     switch (methodName) {
-      case 'Export': return $8.ExportProfilesServiceRequest();
-      default: throw $core.ArgumentError('Unknown method: $methodName');
+      case 'Export':
+        return $8.ExportProfilesServiceRequest();
+      default:
+        throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
 
-  $async.Future<$pb.GeneratedMessage> handleCall($pb.ServerContext ctx, $core.String methodName, $pb.GeneratedMessage request) {
+  $async.Future<$pb.GeneratedMessage> handleCall($pb.ServerContext ctx,
+      $core.String methodName, $pb.GeneratedMessage request) {
     switch (methodName) {
-      case 'Export': return this.export(ctx, request as $8.ExportProfilesServiceRequest);
-      default: throw $core.ArgumentError('Unknown method: $methodName');
+      case 'Export':
+        return this.export(ctx, request as $8.ExportProfilesServiceRequest);
+      default:
+        throw $core.ArgumentError('Unknown method: $methodName');
     }
   }
 
   $core.Map<$core.String, $core.dynamic> get $json => ProfilesServiceBase$json;
-  $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>> get $messageJson => ProfilesServiceBase$messageJson;
+  $core.Map<$core.String, $core.Map<$core.String, $core.dynamic>>
+      get $messageJson => ProfilesServiceBase$messageJson;
 }
-

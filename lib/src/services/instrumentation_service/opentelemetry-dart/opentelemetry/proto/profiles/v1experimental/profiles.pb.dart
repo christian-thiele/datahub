@@ -39,33 +39,45 @@ class ProfilesData extends $pb.GeneratedMessage {
     return $result;
   }
   ProfilesData._() : super();
-  factory ProfilesData.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ProfilesData.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ProfilesData.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory ProfilesData.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProfilesData', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..pc<ResourceProfiles>(1, _omitFieldNames ? '' : 'resourceProfiles', $pb.PbFieldType.PM, subBuilder: ResourceProfiles.create)
-    ..hasRequiredFields = false
-  ;
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ProfilesData',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..pc<ResourceProfiles>(
+        1, _omitFieldNames ? '' : 'resourceProfiles', $pb.PbFieldType.PM,
+        subBuilder: ResourceProfiles.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   ProfilesData clone() => ProfilesData()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ProfilesData copyWith(void Function(ProfilesData) updates) => super.copyWith((message) => updates(message as ProfilesData)) as ProfilesData;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  ProfilesData copyWith(void Function(ProfilesData) updates) =>
+      super.copyWith((message) => updates(message as ProfilesData))
+          as ProfilesData;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ProfilesData create() => ProfilesData._();
   ProfilesData createEmptyInstance() => create();
-  static $pb.PbList<ProfilesData> createRepeated() => $pb.PbList<ProfilesData>();
+  static $pb.PbList<ProfilesData> createRepeated() =>
+      $pb.PbList<ProfilesData>();
   @$core.pragma('dart2js:noInline')
-  static ProfilesData getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProfilesData>(create);
+  static ProfilesData getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ProfilesData>(create);
   static ProfilesData? _defaultInstance;
 
   /// An array of ResourceProfiles.
@@ -97,35 +109,48 @@ class ResourceProfiles extends $pb.GeneratedMessage {
     return $result;
   }
   ResourceProfiles._() : super();
-  factory ResourceProfiles.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ResourceProfiles.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ResourceProfiles.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory ResourceProfiles.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ResourceProfiles', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..aOM<$1.Resource>(1, _omitFieldNames ? '' : 'resource', subBuilder: $1.Resource.create)
-    ..pc<ScopeProfiles>(2, _omitFieldNames ? '' : 'scopeProfiles', $pb.PbFieldType.PM, subBuilder: ScopeProfiles.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ResourceProfiles',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..aOM<$1.Resource>(1, _omitFieldNames ? '' : 'resource',
+        subBuilder: $1.Resource.create)
+    ..pc<ScopeProfiles>(
+        2, _omitFieldNames ? '' : 'scopeProfiles', $pb.PbFieldType.PM,
+        subBuilder: ScopeProfiles.create)
     ..aOS(3, _omitFieldNames ? '' : 'schemaUrl')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   ResourceProfiles clone() => ResourceProfiles()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ResourceProfiles copyWith(void Function(ResourceProfiles) updates) => super.copyWith((message) => updates(message as ResourceProfiles)) as ResourceProfiles;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  ResourceProfiles copyWith(void Function(ResourceProfiles) updates) =>
+      super.copyWith((message) => updates(message as ResourceProfiles))
+          as ResourceProfiles;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ResourceProfiles create() => ResourceProfiles._();
   ResourceProfiles createEmptyInstance() => create();
-  static $pb.PbList<ResourceProfiles> createRepeated() => $pb.PbList<ResourceProfiles>();
+  static $pb.PbList<ResourceProfiles> createRepeated() =>
+      $pb.PbList<ResourceProfiles>();
   @$core.pragma('dart2js:noInline')
-  static ResourceProfiles getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ResourceProfiles>(create);
+  static ResourceProfiles getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ResourceProfiles>(create);
   static ResourceProfiles? _defaultInstance;
 
   /// The resource for the profiles in this message.
@@ -133,7 +158,10 @@ class ResourceProfiles extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $1.Resource get resource => $_getN(0);
   @$pb.TagNumber(1)
-  set resource($1.Resource v) { setField(1, v); }
+  set resource($1.Resource v) {
+    setField(1, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasResource() => $_has(0);
   @$pb.TagNumber(1)
@@ -153,7 +181,10 @@ class ResourceProfiles extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get schemaUrl => $_getSZ(2);
   @$pb.TagNumber(3)
-  set schemaUrl($core.String v) { $_setString(2, v); }
+  set schemaUrl($core.String v) {
+    $_setString(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasSchemaUrl() => $_has(2);
   @$pb.TagNumber(3)
@@ -180,35 +211,48 @@ class ScopeProfiles extends $pb.GeneratedMessage {
     return $result;
   }
   ScopeProfiles._() : super();
-  factory ScopeProfiles.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ScopeProfiles.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ScopeProfiles.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory ScopeProfiles.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ScopeProfiles', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..aOM<$0.InstrumentationScope>(1, _omitFieldNames ? '' : 'scope', subBuilder: $0.InstrumentationScope.create)
-    ..pc<ProfileContainer>(2, _omitFieldNames ? '' : 'profiles', $pb.PbFieldType.PM, subBuilder: ProfileContainer.create)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ScopeProfiles',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..aOM<$0.InstrumentationScope>(1, _omitFieldNames ? '' : 'scope',
+        subBuilder: $0.InstrumentationScope.create)
+    ..pc<ProfileContainer>(
+        2, _omitFieldNames ? '' : 'profiles', $pb.PbFieldType.PM,
+        subBuilder: ProfileContainer.create)
     ..aOS(3, _omitFieldNames ? '' : 'schemaUrl')
-    ..hasRequiredFields = false
-  ;
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   ScopeProfiles clone() => ScopeProfiles()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ScopeProfiles copyWith(void Function(ScopeProfiles) updates) => super.copyWith((message) => updates(message as ScopeProfiles)) as ScopeProfiles;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  ScopeProfiles copyWith(void Function(ScopeProfiles) updates) =>
+      super.copyWith((message) => updates(message as ScopeProfiles))
+          as ScopeProfiles;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ScopeProfiles create() => ScopeProfiles._();
   ScopeProfiles createEmptyInstance() => create();
-  static $pb.PbList<ScopeProfiles> createRepeated() => $pb.PbList<ScopeProfiles>();
+  static $pb.PbList<ScopeProfiles> createRepeated() =>
+      $pb.PbList<ScopeProfiles>();
   @$core.pragma('dart2js:noInline')
-  static ScopeProfiles getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ScopeProfiles>(create);
+  static ScopeProfiles getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ScopeProfiles>(create);
   static ScopeProfiles? _defaultInstance;
 
   /// The instrumentation scope information for the profiles in this message.
@@ -217,7 +261,10 @@ class ScopeProfiles extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $0.InstrumentationScope get scope => $_getN(0);
   @$pb.TagNumber(1)
-  set scope($0.InstrumentationScope v) { setField(1, v); }
+  set scope($0.InstrumentationScope v) {
+    setField(1, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasScope() => $_has(0);
   @$pb.TagNumber(1)
@@ -236,7 +283,10 @@ class ScopeProfiles extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $core.String get schemaUrl => $_getSZ(2);
   @$pb.TagNumber(3)
-  set schemaUrl($core.String v) { $_setString(2, v); }
+  set schemaUrl($core.String v) {
+    $_setString(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasSchemaUrl() => $_has(2);
   @$pb.TagNumber(3)
@@ -283,40 +333,60 @@ class ProfileContainer extends $pb.GeneratedMessage {
     return $result;
   }
   ProfileContainer._() : super();
-  factory ProfileContainer.fromBuffer($core.List<$core.int> i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromBuffer(i, r);
-  factory ProfileContainer.fromJson($core.String i, [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) => create()..mergeFromJson(i, r);
+  factory ProfileContainer.fromBuffer($core.List<$core.int> i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromBuffer(i, r);
+  factory ProfileContainer.fromJson($core.String i,
+          [$pb.ExtensionRegistry r = $pb.ExtensionRegistry.EMPTY]) =>
+      create()..mergeFromJson(i, r);
 
-  static final $pb.BuilderInfo _i = $pb.BuilderInfo(_omitMessageNames ? '' : 'ProfileContainer', package: const $pb.PackageName(_omitMessageNames ? '' : 'opentelemetry.proto.profiles.v1experimental'), createEmptyInstance: create)
-    ..a<$core.List<$core.int>>(1, _omitFieldNames ? '' : 'profileId', $pb.PbFieldType.OY)
-    ..a<$fixnum.Int64>(2, _omitFieldNames ? '' : 'startTimeUnixNano', $pb.PbFieldType.OF6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..a<$fixnum.Int64>(3, _omitFieldNames ? '' : 'endTimeUnixNano', $pb.PbFieldType.OF6, defaultOrMaker: $fixnum.Int64.ZERO)
-    ..pc<$0.KeyValue>(4, _omitFieldNames ? '' : 'attributes', $pb.PbFieldType.PM, subBuilder: $0.KeyValue.create)
-    ..a<$core.int>(5, _omitFieldNames ? '' : 'droppedAttributesCount', $pb.PbFieldType.OU3)
+  static final $pb.BuilderInfo _i = $pb.BuilderInfo(
+      _omitMessageNames ? '' : 'ProfileContainer',
+      package: const $pb.PackageName(_omitMessageNames
+          ? ''
+          : 'opentelemetry.proto.profiles.v1experimental'),
+      createEmptyInstance: create)
+    ..a<$core.List<$core.int>>(
+        1, _omitFieldNames ? '' : 'profileId', $pb.PbFieldType.OY)
+    ..a<$fixnum.Int64>(
+        2, _omitFieldNames ? '' : 'startTimeUnixNano', $pb.PbFieldType.OF6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..a<$fixnum.Int64>(
+        3, _omitFieldNames ? '' : 'endTimeUnixNano', $pb.PbFieldType.OF6,
+        defaultOrMaker: $fixnum.Int64.ZERO)
+    ..pc<$0.KeyValue>(
+        4, _omitFieldNames ? '' : 'attributes', $pb.PbFieldType.PM,
+        subBuilder: $0.KeyValue.create)
+    ..a<$core.int>(
+        5, _omitFieldNames ? '' : 'droppedAttributesCount', $pb.PbFieldType.OU3)
     ..aOS(6, _omitFieldNames ? '' : 'originalPayloadFormat')
-    ..a<$core.List<$core.int>>(7, _omitFieldNames ? '' : 'originalPayload', $pb.PbFieldType.OY)
-    ..aOM<$6.Profile>(8, _omitFieldNames ? '' : 'profile', subBuilder: $6.Profile.create)
-    ..hasRequiredFields = false
-  ;
+    ..a<$core.List<$core.int>>(
+        7, _omitFieldNames ? '' : 'originalPayload', $pb.PbFieldType.OY)
+    ..aOM<$6.Profile>(8, _omitFieldNames ? '' : 'profile',
+        subBuilder: $6.Profile.create)
+    ..hasRequiredFields = false;
 
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
-  'Will be removed in next major version')
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.deepCopy] instead. '
+      'Will be removed in next major version')
   ProfileContainer clone() => ProfileContainer()..mergeFromMessage(this);
-  @$core.Deprecated(
-  'Using this can add significant overhead to your binary. '
-  'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
-  'Will be removed in next major version')
-  ProfileContainer copyWith(void Function(ProfileContainer) updates) => super.copyWith((message) => updates(message as ProfileContainer)) as ProfileContainer;
+  @$core.Deprecated('Using this can add significant overhead to your binary. '
+      'Use [GeneratedMessageGenericExtensions.rebuild] instead. '
+      'Will be removed in next major version')
+  ProfileContainer copyWith(void Function(ProfileContainer) updates) =>
+      super.copyWith((message) => updates(message as ProfileContainer))
+          as ProfileContainer;
 
   $pb.BuilderInfo get info_ => _i;
 
   @$core.pragma('dart2js:noInline')
   static ProfileContainer create() => ProfileContainer._();
   ProfileContainer createEmptyInstance() => create();
-  static $pb.PbList<ProfileContainer> createRepeated() => $pb.PbList<ProfileContainer>();
+  static $pb.PbList<ProfileContainer> createRepeated() =>
+      $pb.PbList<ProfileContainer>();
   @$core.pragma('dart2js:noInline')
-  static ProfileContainer getDefault() => _defaultInstance ??= $pb.GeneratedMessage.$_defaultFor<ProfileContainer>(create);
+  static ProfileContainer getDefault() => _defaultInstance ??=
+      $pb.GeneratedMessage.$_defaultFor<ProfileContainer>(create);
   static ProfileContainer? _defaultInstance;
 
   ///  A globally unique identifier for a profile. The ID is a 16-byte array. An ID with
@@ -326,7 +396,10 @@ class ProfileContainer extends $pb.GeneratedMessage {
   @$pb.TagNumber(1)
   $core.List<$core.int> get profileId => $_getN(0);
   @$pb.TagNumber(1)
-  set profileId($core.List<$core.int> v) { $_setBytes(0, v); }
+  set profileId($core.List<$core.int> v) {
+    $_setBytes(0, v);
+  }
+
   @$pb.TagNumber(1)
   $core.bool hasProfileId() => $_has(0);
   @$pb.TagNumber(1)
@@ -339,7 +412,10 @@ class ProfileContainer extends $pb.GeneratedMessage {
   @$pb.TagNumber(2)
   $fixnum.Int64 get startTimeUnixNano => $_getI64(1);
   @$pb.TagNumber(2)
-  set startTimeUnixNano($fixnum.Int64 v) { $_setInt64(1, v); }
+  set startTimeUnixNano($fixnum.Int64 v) {
+    $_setInt64(1, v);
+  }
+
   @$pb.TagNumber(2)
   $core.bool hasStartTimeUnixNano() => $_has(1);
   @$pb.TagNumber(2)
@@ -352,7 +428,10 @@ class ProfileContainer extends $pb.GeneratedMessage {
   @$pb.TagNumber(3)
   $fixnum.Int64 get endTimeUnixNano => $_getI64(2);
   @$pb.TagNumber(3)
-  set endTimeUnixNano($fixnum.Int64 v) { $_setInt64(2, v); }
+  set endTimeUnixNano($fixnum.Int64 v) {
+    $_setInt64(2, v);
+  }
+
   @$pb.TagNumber(3)
   $core.bool hasEndTimeUnixNano() => $_has(2);
   @$pb.TagNumber(3)
@@ -379,7 +458,10 @@ class ProfileContainer extends $pb.GeneratedMessage {
   @$pb.TagNumber(5)
   $core.int get droppedAttributesCount => $_getIZ(4);
   @$pb.TagNumber(5)
-  set droppedAttributesCount($core.int v) { $_setUnsignedInt32(4, v); }
+  set droppedAttributesCount($core.int v) {
+    $_setUnsignedInt32(4, v);
+  }
+
   @$pb.TagNumber(5)
   $core.bool hasDroppedAttributesCount() => $_has(4);
   @$pb.TagNumber(5)
@@ -389,7 +471,10 @@ class ProfileContainer extends $pb.GeneratedMessage {
   @$pb.TagNumber(6)
   $core.String get originalPayloadFormat => $_getSZ(5);
   @$pb.TagNumber(6)
-  set originalPayloadFormat($core.String v) { $_setString(5, v); }
+  set originalPayloadFormat($core.String v) {
+    $_setString(5, v);
+  }
+
   @$pb.TagNumber(6)
   $core.bool hasOriginalPayloadFormat() => $_has(5);
   @$pb.TagNumber(6)
@@ -403,7 +488,10 @@ class ProfileContainer extends $pb.GeneratedMessage {
   @$pb.TagNumber(7)
   $core.List<$core.int> get originalPayload => $_getN(6);
   @$pb.TagNumber(7)
-  set originalPayload($core.List<$core.int> v) { $_setBytes(6, v); }
+  set originalPayload($core.List<$core.int> v) {
+    $_setBytes(6, v);
+  }
+
   @$pb.TagNumber(7)
   $core.bool hasOriginalPayload() => $_has(6);
   @$pb.TagNumber(7)
@@ -413,7 +501,10 @@ class ProfileContainer extends $pb.GeneratedMessage {
   @$pb.TagNumber(8)
   $6.Profile get profile => $_getN(7);
   @$pb.TagNumber(8)
-  set profile($6.Profile v) { setField(8, v); }
+  set profile($6.Profile v) {
+    setField(8, v);
+  }
+
   @$pb.TagNumber(8)
   $core.bool hasProfile() => $_has(7);
   @$pb.TagNumber(8)
@@ -422,6 +513,6 @@ class ProfileContainer extends $pb.GeneratedMessage {
   $6.Profile ensureProfile() => $_ensure(7);
 }
 
-
 const _omitFieldNames = $core.bool.fromEnvironment('protobuf.omit_field_names');
-const _omitMessageNames = $core.bool.fromEnvironment('protobuf.omit_message_names');
+const _omitMessageNames =
+    $core.bool.fromEnvironment('protobuf.omit_message_names');
