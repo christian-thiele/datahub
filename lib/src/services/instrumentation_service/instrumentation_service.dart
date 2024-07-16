@@ -12,6 +12,7 @@ import 'metric.dart';
 import 'metric_collector.dart';
 import 'metric_sample.dart';
 import 'prometheus_bridge.dart';
+import 'trace/tracer.dart';
 
 export 'counter_metric.dart';
 export 'gauge_metric.dart';
@@ -23,10 +24,11 @@ export 'histogram_metric.dart';
 /// "CollectorRegistry" and the "Bridge" to the Prometheus text based format.
 ///
 /// Configuration values: (below "datahub.metrics")
-/// * `endpointEnabled`: Enable prometheus text-based format endpoint (default false)
+/// * `enableEndpoint`: Enable prometheus text-based format endpoint (default false)
 /// * `address`: The address the HTTP-Server listens for, null means any (default null)
 /// * `port`: The port the HTTP-Server listens on (default 9090)
 /// * `path`: The path of the metrics endpoint (default "/metrics")
+/// * `enableDartTimeline`: Enable reporting trace spans as TimelineTasks to the dart developer timeline (default true)
 ///
 /// For exposing metrics, creating [Metric] instances is required, which provide
 /// a handle for the given metric. Best practice for creating metric instances
@@ -53,11 +55,14 @@ class InstrumentationService extends BaseService {
   late final address = config<String?>('address');
   late final port = config<int?>('port') ?? 9090;
   late final path = config<String?>('path') ?? '/metrics';
+  late final enableDartTimeline = config<bool?>('enableDartTimeline') ?? true;
   late final HttpServer _server;
 
   final _collectors = Set<MetricCollector>();
   final _metrics = <String, Metric>{};
+  final _tracers = <String, Tracer>{};
 
+  late final Tracer defaultTracer;
   final _scrapeMetric = GaugeMetric('datahub_instrumentation_scrape_duration');
 
   @override
@@ -75,6 +80,8 @@ class InstrumentationService extends BaseService {
         _onStreamError,
       );
     }
+
+    defaultTracer = getTracer(resolve<ConfigService>().serviceName, '1');
   }
 
   /// Defines a metric of type [CounterMetric].
@@ -211,6 +218,23 @@ class InstrumentationService extends BaseService {
   /// Unregisters a custom collector.
   void unregisterCollector(MetricCollector metricCollector) {
     _collectors.remove(metricCollector);
+  }
+
+  FutureOr<R> trace<R>(
+    String name,
+    Map<String, dynamic> attributes,
+    FutureOr<R> Function() delegate,
+  ) async {
+    return await defaultTracer.trace(name, attributes, delegate);
+  }
+
+  Tracer getTracer(String name, String version) {
+    final key = Tracer.buildKey(name, version);
+    return _tracers[key] ??= Tracer(
+      name: name,
+      version: version,
+      enableDartTimeline: true,
+    );
   }
 
   Future<HttpResponse> _handleRequest(HttpRequest httpRequest) async {

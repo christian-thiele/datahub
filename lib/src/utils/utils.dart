@@ -126,10 +126,15 @@ String stripBase64Padding(String value) {
   return value.replaceAll(RegExp(r'=+$'), '');
 }
 
-String randomHexId(int parts) {
+Iterable<int> randomBytes(int length) {
   final r = Random();
-  return Iterable.generate(
-      parts, (_) => r.nextInt(255).toRadixString(16).padLeft(2, '0')).join(':');
+  return Iterable.generate(length, (i) => r.nextInt(255));
+}
+
+String randomHexId(int parts) {
+  return randomBytes(parts)
+      .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+      .join(':');
 }
 
 bool deepListEquality<T>(List<T> list1, List<T> list2) {

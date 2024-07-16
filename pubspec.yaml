@@ -1,6 +1,6 @@
 name: datahub
 description: DataHub is a Cloud Development Ecosystem aiming to bring the power of Dart into the Cloud.
-version: 0.17.0-dev.89
+version: 0.17.0-dev.90
 homepage: https://datahubproject.net/
 
 environment:
@@ -24,6 +24,7 @@ dependencies:
   # flutter_test depends on test_api: 0.7.0, so 1.25.2 is max version for now
   test: ^1.25.2
   minio: ^3.5.0
+  protobuf: ^3.1.0
 
 dev_dependencies:
   build_runner: ^2.4.11

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
@@ -6,6 +7,9 @@ import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 
 class RestResponse implements HttpResponse {
+  static final Finalizer<HttpResponse> _finalizer =
+      Finalizer((response) => response.bodyData.drain());
+
   final HttpResponse _httpResponse;
 
   @override
@@ -29,12 +33,15 @@ class RestResponse implements HttpResponse {
   /// Also [throwOnError] will drain the stream to parse error data in the case
   /// of a non-success status code.
   @override
-  Stream<List<int>> get bodyData => _httpResponse.bodyData;
+  Stream<List<int>> get bodyData => _httpResponse.bodyData
+      .transform(StreamListenHook(() => _finalizer.detach(this)));
 
   @override
   Encoding get charset => _httpResponse.charset ?? utf8;
 
-  RestResponse(this._httpResponse);
+  RestResponse(this._httpResponse) {
+    _finalizer.attach(this, _httpResponse, detach: this);
+  }
 
   /// Returns the response body as [TResult].
   ///
@@ -251,6 +258,22 @@ class RestResponse implements HttpResponse {
       }
 
       throw ApiRequestException.fromResponse(statusCode, {});
+    }
+  }
+
+  /// Discards the body stream.
+  ///
+  /// The [RestResponse] expects the user-code to consume and handle the body
+  /// data of a request in some way by calling any of the get...Body() methods
+  /// or accessing the [bodyData] Stream directly.
+  ///
+  /// If it is certain, that the body data will not be accessed, then call
+  /// [discard] to avoid memory leaks.
+  Future<void> discard() async {
+    try {
+      await bodyData.drain();
+    } catch (e) {
+      print(e);
     }
   }
 }

@@ -1,12 +1,26 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:datahub/datahub.dart';
 
 class TestEndpoint extends ApiEndpoint {
+  final _inst = resolve<InstrumentationService>();
+
   TestEndpoint() : super(RoutePattern('/'));
 
   @override
   Future<dynamic> get(ApiRequest request) async {
+    await _inst.trace('Waiting', {'some': 'stuff'}, () async {
+      await Future.delayed(const Duration(milliseconds: 250));
+    });
+
+    await _inst.trace('Waiting some more', {'some': 'stuff'}, () async {
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      if (request.getParam<bool?>('fail') == true) {
+        throw ApiRequestException.badRequest('Failure requested!');
+      }
+    });
     return TextResponse.plain('works!');
   }
 }
@@ -52,8 +66,11 @@ class TestService extends BaseService {
 
     resolve<SchedulerService>().schedule(() async {
       funMetric.inc();
-
-      await _client.get('/');
+      final fail = Random().nextBool();
+      final response = await _client.get('/', query: {
+        'fail': ['$fail']
+      });
+      response.discard();
     }, Schedule.repeat(const Duration(seconds: 3)));
   }
 }
