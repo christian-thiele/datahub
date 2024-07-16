@@ -35,6 +35,7 @@ abstract class AuthProvider extends Middleware {
         if (requireAuthorization && session == null) {
           throw ApiRequestException.unauthorized();
         }
+        return session;
       },
     );
 
