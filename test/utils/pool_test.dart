@@ -69,7 +69,7 @@ void main() {
       expect(pool, poolState(3, 3, 3));
     });
 
-    test('Should remove "not live" items from pool', () async {
+    test(/*'Should remove "not live" items from pool'*/'abc', () async {
       final liveItem = Item();
       final deadItem = Item();
       final pool = Pool(
@@ -88,7 +88,31 @@ void main() {
       expect(pool, poolState(2, 2, 0));
 
       expect(item1.id, equals(liveItem.id));
+      expect(item1.id, isNot(equals(deadItem.id)));
       expect(item2.id, isNot(equals(liveItem.id)));
+      expect(item2.id, isNot(equals(deadItem.id)));
+    });
+
+    test('Should remove items older than maxLifetime from pool', () async {
+      final liveItem = Item();
+      final deadItem = Item();
+      final pool = Pool(
+        2,
+        createItem,
+        checkIsLive: checkLiveWhereId(liveItem.id),
+        maxLifetime: Duration(milliseconds: 400),
+      );
+      pool.give(deadItem);
+      await Future.delayed(const Duration(milliseconds: 500));
+      pool.give(liveItem);
+
+      final item1 = await pool.take();
+      expect(pool, poolState(2, 2, 1));
+
+      final item2 = await pool.take();
+      expect(pool, poolState(2, 2, 0));
+
+      expect(item1.id, isNot(equals(deadItem.id)));
       expect(item2.id, isNot(equals(deadItem.id)));
     });
 
@@ -136,6 +160,37 @@ void main() {
           completion(isA<Item>().having((i) => i.id, 'id', equals(item1.id))));
       expect(comp2.future,
           completion(isA<Item>().having((i) => i.id, 'id', equals(item2.id))));
+    });
+
+    test('Should call onRemoveItem when removing an item from pool', () async {
+      final item = Item();
+      final completer = Completer<Item>();
+      final pool = Pool(
+        1,
+        createItem,
+        checkIsLive: checkLiveNever,
+        onRemoveItem: (i) async => completer.complete(i),
+      );
+      pool.give(item);
+      await pool.take();
+      expect(completer.future,
+          completion(isA<Item>().having((i) => i.id, 'id', equals(item.id))));
+    });
+
+    test('Should not finalize and remove items that are currently taken',
+        () async {
+      final completer = Completer<Item>();
+      final pool = Pool(
+        1,
+        createItem,
+        checkIsLive: checkLiveAlwaysOn,
+        maxLifetime: Duration(milliseconds: 100),
+        onRemoveItem: (i) async => completer.complete(i),
+      );
+      await pool.fill();
+      await pool.take();
+      await Future.delayed(const Duration(milliseconds: 100));
+      expect(completer.isCompleted, false);
     });
   });
 }

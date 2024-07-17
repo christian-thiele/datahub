@@ -12,6 +12,7 @@ class Pool<T> {
 
   final FutureOr<T> Function() _createItem;
   final FutureOr<bool> Function(T)? _checkIsLive;
+  final Future<void> Function(T)? onRemoveItem;
   final void Function()? onChange;
   final _takeSemaphore = Semaphore();
 
@@ -26,6 +27,7 @@ class Pool<T> {
   Pool(
     this.targetSize,
     this._createItem, {
+    this.onRemoveItem,
     FutureOr<bool> Function(T)? checkIsLive,
     this.checkIsLiveTimeout = const Duration(seconds: 10),
     this.maxLifetime,
@@ -121,6 +123,7 @@ class Pool<T> {
           watch.stop();
           return item.item;
         } else {
+          _taken.removeWhere((i) => i.item == item.item);
           remove(item.item);
           watch.stop();
           if (timeout == null || watch.elapsed < timeout) {
@@ -195,9 +198,27 @@ class Pool<T> {
   }
 
   void remove(T item) {
+    if (_taken.any((i) => i.item == item)) {
+      throw Exception('Cannot remove item: Item is currently taken.');
+    }
+
     _items.removeWhere((i) => i.item == item);
-    _taken.removeWhere((i) => i.item == item);
     onChange?.call();
+    try {
+      onRemoveItem?.call(item).catchError((error, stack) {
+        _log?.warn(
+          'Pool: onRemoveItem threw exception.',
+          error: error,
+          trace: stack,
+        );
+      });
+    } catch (error, stack) {
+      _log?.warn(
+        'Pool: onRemoveItem threw exception.',
+        error: error,
+        trace: stack,
+      );
+    }
   }
 }
 
