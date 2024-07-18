@@ -7,8 +7,6 @@ import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:datahub/utils.dart';
 
-import 'metrics_exporter.dart';
-
 // Could be a Service...
 //TODO docs
 class PrometheusExporter extends MetricsExporter {
