@@ -14,10 +14,14 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
   final _adapterId = randomHexId(5);
   final DataSchema schema;
 
-  late final _pool = Pool<TConnection>(targetPoolSize, _create,
-      maxLifetime: Duration(seconds: maxConnectionLifetime),
-      checkIsLive: (c) => c.isOpen,
-      onChange: _updateMetrics);
+  late final _pool = Pool<TConnection>(
+    targetPoolSize,
+    _create,
+    maxLifetime: Duration(seconds: maxConnectionLifetime),
+    checkIsLive: (c) => c.isOpen,
+    onChange: _updateMetrics,
+    onRemoveItem: (c) => c.close(),
+  );
 
   late final targetPoolSize = config<int?>('poolSize') ?? 3;
   late final maxConnectionLifetime =
