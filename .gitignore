@@ -31,4 +31,4 @@
 build/
 pubspec.lock
 
-lib/src/services/instrumentation_service/opentelemetry-proto/
+lib/src/services/telemetry_service/opentelemetry-proto/

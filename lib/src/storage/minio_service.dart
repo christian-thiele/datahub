@@ -18,7 +18,7 @@ import 's3_service.dart';
 ///   - `sessionToken` - x-amz-security-token (AWS S3 specific) (Optional)
 ///   - `enableTrace` - Enable tracing (default false)
 class MinioService extends S3Service {
-  final _tracer = resolve<InstrumentationService>().defaultTracer;
+  final _tracer = resolve<TelemetryService>().defaultTracer;
   late final Minio _minio;
 
   MinioService([super.path]);

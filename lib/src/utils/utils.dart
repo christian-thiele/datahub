@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:uuid/uuid.dart';
 
 const Map<int, String> _statusCodes = {
@@ -216,4 +217,8 @@ extension TransferCodecExtension<T> on TransferCodec<T> {
   List<T> castList(List list) {
     return list.cast<T>().toList();
   }
+}
+
+extension NanoSecondsDateTimeExtension on DateTime {
+  Int64 get nanosecondsSinceEpoch => Int64(microsecondsSinceEpoch) * 1000;
 }

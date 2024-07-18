@@ -30,7 +30,7 @@ import 'route.dart';
 /// * `metricPrefix`: prefix for default metrics (default "api")
 ///
 class ApiService extends BaseService {
-  final _inst = resolve<InstrumentationService>();
+  final _inst = resolve<TelemetryService>();
 
   late final address = config<String?>('address');
   late final port = config<int?>('port') ?? 8080;
@@ -88,10 +88,11 @@ class ApiService extends BaseService {
     final watch = Stopwatch();
     watch.start();
     return _inst.trace(
-      'Handling API request',
+      'HTTP ${httpRequest.method.name.toUpperCase()}',
+      SpanType.server,
       {
-        'path': httpRequest.path,
-        'method': httpRequest.method.name,
+        'http.request.route': httpRequest.path,
+        'http.request.method': httpRequest.method.name.toUpperCase(),
       },
       () async {
         try {

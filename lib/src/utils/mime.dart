@@ -10,6 +10,21 @@ class Mime {
 
   Mime._();
 
+  /// Detects the Mime-type from a content-type header.
+  ///
+  /// Content-type headers often contain more than just the mime type.
+  ///
+  /// Example:
+  /// ```
+  /// text/plain; charset=utf8
+  /// ```
+  ///
+  /// This can in practice break detection. This method is a helper to decode
+  /// such content-type header values.
+  static String? fromContentType(String? headerValue) {
+    return headerValue?.split(';').first.trim();
+  }
+
   static String? fromExtension(String extension) {
     if (extension.startsWith('.')) {
       extension = extension.substring(1);

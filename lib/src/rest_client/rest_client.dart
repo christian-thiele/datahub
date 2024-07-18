@@ -202,7 +202,7 @@ class RestClient {
       } else if (body is String) {
         if (!requestHeaders.containsKey(HttpHeaders.contentType)) {
           requestHeaders[HttpHeaders.contentType] = [
-            '${Mime.plainText}; charset=UTF-8'
+            '${Mime.plainText};charset=utf-8'
           ];
         }
         return Stream.value(utf8.encode(body));
@@ -211,7 +211,7 @@ class RestClient {
         return Stream.value(utf8.encode(body.toString()));
       } else if (body != null) {
         requestHeaders[HttpHeaders.contentType] = [
-          '${Mime.json}; charset=UTF-8'
+          '${Mime.json};charset=utf-8'
         ];
         return Stream.value(utf8.encode(jsonEncode(body)));
       } else {

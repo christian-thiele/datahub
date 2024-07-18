@@ -41,7 +41,7 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
 
   @override
   Future<void> initialize() async {
-    final instrumentation = resolve<InstrumentationService?>();
+    final instrumentation = resolve<TelemetryService?>();
     if (enableMetrics && instrumentation != null) {
       _poolTargetMetric = instrumentation.gauge(
         '${metricPrefix}_pool_size_target',

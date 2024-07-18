@@ -69,7 +69,7 @@ void main() {
       expect(pool, poolState(3, 3, 3));
     });
 
-    test(/*'Should remove "not live" items from pool'*/'abc', () async {
+    test(/*'Should remove "not live" items from pool'*/ 'abc', () async {
       final liveItem = Item();
       final deadItem = Item();
       final pool = Pool(

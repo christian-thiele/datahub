@@ -18,7 +18,7 @@ import 'package:datahub/services.dart';
 /// but instead forwarded to the [RequestHandler] with
 /// [ApiRequest.session] = null.
 abstract class AuthProvider extends Middleware {
-  final _inst = resolve<InstrumentationService>();
+  final _inst = resolve<TelemetryService>();
   final bool requireAuthorization;
 
   AuthProvider(super.internal, {this.requireAuthorization = true});
@@ -28,8 +28,11 @@ abstract class AuthProvider extends Middleware {
   @override
   Future<ApiResponse> handleRequest(ApiRequest request) async {
     final session = await _inst.trace(
-      'Handle authentication',
-      {},
+      'Handling Authentication',
+      SpanType.internal,
+      {
+        'auth_provider.type': this.runtimeType.toString(),
+      },
       () async {
         final session = await authorizeRequest(request);
         if (requireAuthorization && session == null) {

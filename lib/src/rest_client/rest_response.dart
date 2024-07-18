@@ -200,7 +200,8 @@ class RestResponse implements HttpResponse {
   /// of a non-success status code.
   Future<void> throwOnError() async {
     if (statusCode >= 400) {
-      if (headers['content-type']?.contains(Mime.json) ?? false) {
+      if (Mime.fromContentType(headers['content-type']?.firstOrNull) ==
+          Mime.json) {
         try {
           final textBody = await getTextBody();
           try {
@@ -232,7 +233,8 @@ class RestResponse implements HttpResponse {
             },
           );
         }
-      } else if (headers['content-type']?.contains(Mime.plainText) ?? false) {
+      } else if (Mime.fromContentType(headers['content-type']?.firstOrNull) ==
+          Mime.plainText) {
         // Create exception data that are similar to datahub error responses for
         // servers that are not providing json error data.
         try {

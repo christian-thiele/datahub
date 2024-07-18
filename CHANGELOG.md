@@ -9,7 +9,8 @@
     - Resource Refactor (ElementResource)
 - LogService
     - refactored LogLevel enum
-    - added meta map to LogMessage (Watchtower)
+    - added meta map to LogMessage
+    - use stack_trace package for nicer StackTrace logs
 - ServiceResolver
     - servicesReady notifier
 - ApiRequest / ApiService / ApiEndpoint

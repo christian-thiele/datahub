@@ -88,7 +88,7 @@ class JsonResponse extends _SynchronousResponse {
   @override
   Map<String, List<String>> getHeaders() {
     return {
-      HttpHeaders.contentType: ['${Mime.json};encoding=utf-8']
+      HttpHeaders.contentType: ['${Mime.json};charset=utf-8']
     };
   }
 }

@@ -4,17 +4,17 @@ import 'dart:math';
 import 'package:datahub/datahub.dart';
 
 class TestEndpoint extends ApiEndpoint {
-  final _inst = resolve<InstrumentationService>();
+  final _inst = resolve<TelemetryService>();
 
   TestEndpoint() : super(RoutePattern('/'));
 
   @override
   Future<dynamic> get(ApiRequest request) async {
-    await _inst.trace('Waiting', {'some': 'stuff'}, () async {
+    await _inst.trace('Waiting', SpanType.internal, {'some': 'stuff'}, () async {
       await Future.delayed(const Duration(milliseconds: 250));
     });
 
-    await _inst.trace('Waiting some more', {'some': 'stuff'}, () async {
+    await _inst.trace('Waiting some more', SpanType.internal, {'some': 'stuff'}, () async {
       await Future.delayed(const Duration(milliseconds: 150));
 
       if (request.getParam<bool?>('fail') == true) {
@@ -33,7 +33,21 @@ void main(List<String> args) async {
       ],
       onInitialized: onInit,
       config: {
-        'api': {'port': 1234, 'metricPrefix': 'test_api'}
+        'api': {'port': 1234, 'metricPrefix': 'test_api'},
+        'datahub': {
+          'serviceName': 'example-service',
+          'telemetry': {
+            'traces': {
+              'openTelemetryExporter': {
+                'enable': true,
+                'host': 'localhost',
+              },
+              'dartTimelineExporter': {
+                'enable': true,
+              }
+            },
+          }
+        }
       });
   await host.run();
 
@@ -44,7 +58,7 @@ void main(List<String> args) async {
 class TestService extends BaseService {
   // use ioc to inject other services
   final log = resolve<LogService>();
-  final funMetric = resolve<InstrumentationService>().counter(
+  final funMetric = resolve<TelemetryService>().counter(
     'fun_total',
     help: 'Shows how much fun it is to use datahub.',
   );
@@ -71,7 +85,7 @@ class TestService extends BaseService {
         'fail': ['$fail']
       });
       response.discard();
-    }, Schedule.repeat(const Duration(seconds: 3)));
+    }, Schedule.repeat(const Duration(seconds: 20)));
   }
 }
 
