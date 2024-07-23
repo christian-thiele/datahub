@@ -89,7 +89,8 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
     await runZonedGuarded(
       () async {
         try {
-          completer.complete(_Box<TResult>.value(await delegate(connection)));
+          completer.complete(_Box<TResult>.value(
+              await delegate(connection).timeout(Duration(minutes: 5))));
         } finally {
           if (connection.isOpen) {
             _pool.give(connection);
