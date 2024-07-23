@@ -89,49 +89,47 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
     await runZonedGuarded(
       () async {
         try {
-          completer.complete(_Box<TResult>.value(
-              await delegate(connection).timeout(Duration(minutes: 5))));
-        } finally {
-          if (connection.isOpen) {
-            _pool.give(connection);
-          } else {
-            _pool.remove(connection);
+          completer.complete(_Box<TResult>.value(await delegate(connection)));
+        } on SocketException catch (e, stack) {
+          resolve<LogService?>()?.warn(
+            'Socket exception in postgres connection.',
+            error: e,
+            trace: stack,
+          );
+
+          try {
+            await connection.close();
+          } catch (e, stack) {
+            resolve<LogService?>()?.warn(
+              'Could not close connection.',
+              error: e,
+              trace: stack,
+              sender: 'DataHub',
+            );
           }
+
+          rethrow;
+        } finally {
+          _pool.give(connection);
         }
       },
       (error, stack) {
         if (!completer.isCompleted) {
           completer.complete(_Box<TResult>.error(error, stack));
-        } else {}
+        } else {
+          resolve<LogService?>()?.warn(
+            'Unhandled error in DatabaseAdapter.',
+            error: error,
+            trace: stack,
+          );
+        }
       },
       zoneValues: {
         '$_adapterId/connection': connection,
       },
     );
-    try {
-      return (await completer.future).value;
-    } on SocketException catch (e, stack) {
-      resolve<LogService?>()?.warn(
-        'Socket exception in postgres connection.',
-        error: e,
-        trace: stack,
-      );
 
-      try {
-        await connection.close();
-      } catch (e, stack) {
-        resolve<LogService?>()?.warn(
-          'Could not close connection.',
-          error: e,
-          trace: stack,
-          sender: 'DataHub',
-        );
-      }
-
-      _pool.remove(connection);
-
-      rethrow;
-    }
+    return (await completer.future).value;
   }
 
   void _updateMetrics() {
