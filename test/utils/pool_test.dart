@@ -69,7 +69,7 @@ void main() {
       expect(pool, poolState(3, 3, 3));
     });
 
-    test(/*'Should remove "not live" items from pool'*/ 'abc', () async {
+    test('Should remove "not live" items from pool', () async {
       final liveItem = Item();
       final deadItem = Item();
       final pool = Pool(
@@ -99,15 +99,16 @@ void main() {
       final pool = Pool(
         2,
         createItem,
-        checkIsLive: checkLiveWhereId(liveItem.id),
+        checkIsLive: checkLiveAlwaysOn,
         maxLifetime: Duration(milliseconds: 400),
       );
       pool.give(deadItem);
       await Future.delayed(const Duration(milliseconds: 500));
       pool.give(liveItem);
 
+      expect(pool, poolState(2, 2, 2));
       final item1 = await pool.take();
-      expect(pool, poolState(2, 2, 1));
+      expect(pool, poolState(2, 1, 0));
 
       final item2 = await pool.take();
       expect(pool, poolState(2, 2, 0));

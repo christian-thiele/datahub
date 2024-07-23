@@ -63,8 +63,6 @@ class Pool<T> {
     if (!_taken.contains(poolItem)) {
       _taken.add(poolItem);
     }
-
-    _taken.add(poolItem);
     onChange?.call();
     return item;
   }
@@ -112,7 +110,7 @@ class Pool<T> {
   }
 
   Future<T> _takeInternal(Duration? timeout) async {
-    if (total < targetSize) {
+    if (available < 1 && total < targetSize) {
       return giveReserved(await _createItem());
     } else {
       try {
