@@ -10,11 +10,11 @@ import '../broker_service.dart';
 /// Implements [BrokerService] as an AMQP client using dart_amqp lib.
 ///
 /// Configuration values:
-///   `host`: Broker connection host
-///   `port`: Broker connection port (optional, default 5672)
-///   `username`: Username for authentication at broker
-///   `password`: Password for authentication at broker
-///   `heartbeatPeriod`: Milliseconds between heartbeats (optional, default 5000)
+/// * `host`: Broker connection host
+/// * `port`: Broker connection port (optional, default 5672)
+/// * `username`: Username for authentication at broker
+/// * `password`: Password for authentication at broker
+/// * `heartbeatPeriod`: Milliseconds between heartbeats (optional, default 5000)
 class AmqpBrokerService extends BrokerService {
   final _logService = resolve<LogService>();
 

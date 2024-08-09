@@ -21,6 +21,9 @@ class TestHost extends ServiceHost {
               'log': 'debug',
               'environment': 'dev',
               'serviceName': 'unit-test',
+              'metrics': {
+                'enableEndpoint': false,
+              }
             },
             ...config,
           },

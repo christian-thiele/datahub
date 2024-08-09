@@ -14,22 +14,26 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
   final _adapterId = randomHexId(5);
   final DataSchema schema;
 
-  late final _pool = Pool<TConnection>(
-    targetPoolSize,
-    _create,
-    maxLifetime: Duration(seconds: maxConnectionLifetime),
-    checkIsLive: (c) => c.isOpen,
-  );
+  late final _pool = Pool<TConnection>(targetPoolSize, _create,
+      maxLifetime: Duration(seconds: maxConnectionLifetime),
+      checkIsLive: (c) => c.isOpen,
+      onChange: _updateMetrics);
 
   late final targetPoolSize = config<int?>('poolSize') ?? 3;
   late final maxConnectionLifetime =
       config<int?>('maxConnectionLifetime') ?? 3600;
   late final connectionPoolTimeout =
       config<int?>('connectionPoolTimeout') ?? 60;
+  late final enableMetrics = config<bool?>('enableMetrics') ?? true;
+  late final metricPrefix = config<String?>('metricPrefix') ?? 'database';
 
   int get poolSize => _pool.total;
 
   int get poolAvailable => _pool.available;
+
+  late final GaugeMetric? _poolTargetMetric;
+  late final GaugeMetric? _poolTotalMetric;
+  late final GaugeMetric? _poolAvailableMetric;
 
   DatabaseAdapter(super.path, this.schema);
 
@@ -37,6 +41,23 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
 
   @override
   Future<void> initialize() async {
+    final instrumentation = resolve<InstrumentationService?>();
+    if (enableMetrics && instrumentation != null) {
+      _poolTargetMetric = instrumentation.gauge(
+        '${metricPrefix}_pool_size_target',
+      );
+      _poolTotalMetric = instrumentation.gauge(
+        '${metricPrefix}_pool_size_total',
+      );
+      _poolAvailableMetric = instrumentation.gauge(
+        '${metricPrefix}_pool_size_available',
+      );
+    } else {
+      _poolTargetMetric = null;
+      _poolTotalMetric = null;
+      _poolAvailableMetric = null;
+    }
+
     await _pool.fill();
   }
 
@@ -60,10 +81,11 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
     final connection = await _pool.take(
         timeout: timeout ?? Duration(seconds: connectionPoolTimeout));
 
-    try {
-      return await runZoned(() async {
+    final completer = Completer<_Box<TResult>>();
+    await runZonedGuarded(
+      () async {
         try {
-          return await delegate(connection);
+          completer.complete(_Box<TResult>.value(await delegate(connection)));
         } finally {
           if (connection.isOpen) {
             _pool.give(connection);
@@ -71,9 +93,18 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
             _pool.remove(connection);
           }
         }
-      }, zoneValues: {
+      },
+      (error, stack) {
+        if (!completer.isCompleted) {
+          completer.complete(_Box<TResult>.error(error, stack));
+        } else {}
+      },
+      zoneValues: {
         '$_adapterId/connection': connection,
-      });
+      },
+    );
+    try {
+      return (await completer.future).value;
     } on SocketException catch (e, stack) {
       resolve<LogService?>()?.warn(
         'Socket exception in postgres connection.',
@@ -95,6 +126,32 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
       _pool.remove(connection);
 
       rethrow;
+    }
+  }
+
+  void _updateMetrics() {
+    _poolTargetMetric?.set(_pool.targetSize);
+    _poolTotalMetric?.set(_pool.total);
+    _poolAvailableMetric?.set(_pool.available);
+  }
+}
+
+class _Box<T> {
+  final dynamic error;
+  final StackTrace? stack;
+  final T? _value;
+
+  _Box.error(this.error, this.stack) : _value = null;
+
+  _Box.value(this._value)
+      : error = null,
+        stack = null;
+
+  Future<T> get value {
+    if (error != null) {
+      return Future<T>.error(error, stack);
+    } else {
+      return Future<T>.value(_value);
     }
   }
 }

@@ -14,6 +14,24 @@ void main() {
   group('CLI Utils', () {
     test('LineTransformer', _lineTransformerTest);
   });
+  group('Misc', () {
+    test('Every combination', _combinationTest);
+  });
+}
+
+void _combinationTest() {
+  final variants = [
+    ['a', 'b'],
+    ['1', '2', '3', '4', '5'],
+    ['x'],
+  ];
+
+  final combinations = everyCombination(variants);
+  for (final combination in combinations) {
+    print(combination.join(','));
+  }
+  expect(combinations,
+      hasLength(variants.fold<double>(1, (p, c) => p * c.length)));
 }
 
 void _testTokenEquality() {

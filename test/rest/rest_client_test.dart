@@ -82,11 +82,12 @@ Future<void> _testPrefix(Uri uri) async {
 }
 
 Future<void> _testListRequest() async {
-  final client1 =
-      await RestClient.connect(Uri.parse('https://jsonplaceholder.typicode.com'));
+  final client1 = await RestClient.connect(
+      Uri.parse('https://jsonplaceholder.typicode.com'));
   try {
     expect(
-      await client1.get('/users').thenGetBody<List<PlaceholderUser>>(bean: PlaceholderUserTransferBean),
+      await client1.get('/users').thenGetBody<List<PlaceholderUser>>(
+          bean: PlaceholderUserTransferBean),
       allOf(isA<List<PlaceholderUser>>(), hasLength(10)),
     );
   } finally {

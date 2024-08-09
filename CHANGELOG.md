@@ -33,6 +33,8 @@
     - abstraction for amqp broker implementation to provide more stable framework
 - ServiceHost
     - IsolatedService / IsolatedHost
+- Instrumentation
+    - added InstrumentationService
 
 ## 0.16.5
 

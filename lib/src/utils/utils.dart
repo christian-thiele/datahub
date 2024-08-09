@@ -101,7 +101,7 @@ extension MapEquality<K, V> on Map<K, V> {
     }
 
     for (final entry in entries) {
-      if (other.containsKey(entry.key)) {
+      if (!other.containsKey(entry.key)) {
         return false;
       }
       if (entry.value != other[entry.key]) {
@@ -194,8 +194,20 @@ bool deepMapEquality<T>(Map<T, dynamic> map1, Map<T, dynamic> map2) {
   return true;
 }
 
+Iterable<Iterable<T>> everyCombination<T>(Iterable<Iterable<T>> lists) sync* {
+  if (lists.length == 1) {
+    yield* lists.first.map((e) => [e]);
+    return;
+  }
+
+  for (final element in lists.first) {
+    yield* everyCombination(lists.skip(1)).map((e) => [element, ...e]);
+  }
+}
+
 extension TransferCodecExtension<T> on TransferCodec<T> {
   T cast(dynamic object) => object as T;
+
   List<T> castList(List list) {
     return list.cast<T>().toList();
   }
