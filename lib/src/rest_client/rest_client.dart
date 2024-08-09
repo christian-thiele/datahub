@@ -194,23 +194,22 @@ class RestClient {
 
     final bodyData = () {
       if (body is Stream<List<int>>) {
-        requestHeaders[HttpHeaders.contentType] = [Mime.octetStream];
+        requestHeaders[HttpHeaders.contentType] ??= [Mime.octetStream];
         return body;
       } else if (body is Uint8List) {
-        requestHeaders[HttpHeaders.contentType] = [Mime.octetStream];
+        requestHeaders[HttpHeaders.contentType] ??= [Mime.octetStream];
         return Stream.value(body);
       } else if (body is String) {
-        if (!requestHeaders.containsKey(HttpHeaders.contentType)) {
-          requestHeaders[HttpHeaders.contentType] = [
-            '${Mime.plainText}; charset=UTF-8'
-          ];
-        }
+        requestHeaders[HttpHeaders.contentType] ??= [
+          '${Mime.plainText}; charset=UTF-8'
+        ];
+
         return Stream.value(utf8.encode(body));
       } else if (body is HttpFormData) {
-        requestHeaders[HttpHeaders.contentType] = [Mime.formData];
+        requestHeaders[HttpHeaders.contentType] ??= [Mime.formData];
         return Stream.value(utf8.encode(body.toString()));
       } else if (body != null) {
-        requestHeaders[HttpHeaders.contentType] = [
+        requestHeaders[HttpHeaders.contentType] ??= [
           '${Mime.json}; charset=UTF-8'
         ];
         return Stream.value(utf8.encode(jsonEncode(body)));
