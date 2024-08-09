@@ -1,4 +1,6 @@
 import 'package:datahub/api.dart';
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
 
 /// [AuthProvider] handles the authorization of requests.
 ///
@@ -16,6 +18,7 @@ import 'package:datahub/api.dart';
 /// but instead forwarded to the [RequestHandler] with
 /// [ApiRequest.session] = null.
 abstract class AuthProvider extends Middleware {
+  final _inst = resolve<TelemetryService>();
   final bool requireAuthorization;
 
   AuthProvider(super.internal, {this.requireAuthorization = true});
@@ -24,10 +27,20 @@ abstract class AuthProvider extends Middleware {
 
   @override
   Future<ApiResponse> handleRequest(ApiRequest request) async {
-    final session = await authorizeRequest(request);
-    if (requireAuthorization && session == null) {
-      throw ApiRequestException.unauthorized();
-    }
+    final session = await _inst.trace(
+      'Handling Authentication',
+      SpanType.internal,
+      {
+        'auth_provider.type': this.runtimeType.toString(),
+      },
+      () async {
+        final session = await authorizeRequest(request);
+        if (requireAuthorization && session == null) {
+          throw ApiRequestException.unauthorized();
+        }
+        return session;
+      },
+    );
 
     return await next(request.withSession(session));
   }

@@ -112,12 +112,25 @@ String buildDockerArgs(List<String> args) {
 }
 
 class LineTransformer extends StreamTransformerBase<Uint8List, String> {
+  late final Stream<List<int>> _source;
+  late final StreamSubscription _subscription;
+  late final _controller = StreamController<String>(
+    onListen: _onListen,
+    onCancel: () => _subscription.cancel(),
+    onPause: () => _subscription.pause(),
+    onResume: () => _subscription.resume(),
+  );
+
   String? _current = '';
-  final _controller = StreamController<String>();
 
   @override
   Stream<String> bind(Stream<List<int>> stream) {
-    stream.transform(utf8.decoder).listen(
+    _source = stream;
+    return _controller.stream;
+  }
+
+  void _onListen() {
+    _subscription = _source.transform(utf8.decoder).listen(
       (event) {
         final lines = '${_current ?? ''}$event'.split('\n');
         for (final l in lines.take(lines.length - 1)) {
@@ -131,6 +144,5 @@ class LineTransformer extends StreamTransformerBase<Uint8List, String> {
       },
       onError: _controller.addError,
     );
-    return _controller.stream;
   }
 }

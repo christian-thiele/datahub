@@ -20,11 +20,24 @@ abstract class ServiceResolver {
   /// See:  [ApplicationHost]
   ///       [TestHost]
   static ServiceResolver get current {
+    return maybeCurrent ??
+        (throw Exception('No service resolver registered in current zone.'));
+  }
+
+  /// Returns the current zones [ServiceResolver] or null if there is no
+  /// ServiceResolver in the current zone.
+  ///
+  /// A service resolver is usually provided to the zone by the
+  /// applications [ServiceHost].
+  ///
+  /// See:  [ApplicationHost]
+  ///       [TestHost]
+  static ServiceResolver? get maybeCurrent {
     final resolver = Zone.current[#serviceResolver];
     if (resolver is ServiceResolver) {
       return resolver;
     } else {
-      throw Exception('No service resolver registered in current zone.');
+      return null;
     }
   }
 

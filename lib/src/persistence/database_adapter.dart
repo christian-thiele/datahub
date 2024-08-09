@@ -14,10 +14,14 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
   final _adapterId = randomHexId(5);
   final DataSchema schema;
 
-  late final _pool = Pool<TConnection>(targetPoolSize, _create,
-      maxLifetime: Duration(seconds: maxConnectionLifetime),
-      checkIsLive: (c) => c.isOpen,
-      onChange: _updateMetrics);
+  late final _pool = Pool<TConnection>(
+    targetPoolSize,
+    _create,
+    maxLifetime: Duration(seconds: maxConnectionLifetime),
+    checkIsLive: (c) => c.isOpen,
+    onChange: _updateMetrics,
+    onRemoveItem: (c) => c.close(),
+  );
 
   late final targetPoolSize = config<int?>('poolSize') ?? 3;
   late final maxConnectionLifetime =
@@ -41,7 +45,7 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
 
   @override
   Future<void> initialize() async {
-    final instrumentation = resolve<InstrumentationService?>();
+    final instrumentation = resolve<TelemetryService?>();
     if (enableMetrics && instrumentation != null) {
       _poolTargetMetric = instrumentation.gauge(
         '${metricPrefix}_pool_size_target',
@@ -86,47 +90,46 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
       () async {
         try {
           completer.complete(_Box<TResult>.value(await delegate(connection)));
-        } finally {
-          if (connection.isOpen) {
-            _pool.give(connection);
-          } else {
-            _pool.remove(connection);
+        } on SocketException catch (e, stack) {
+          resolve<LogService?>()?.warn(
+            'Socket exception in postgres connection.',
+            error: e,
+            trace: stack,
+          );
+
+          try {
+            await connection.close();
+          } catch (e, stack) {
+            resolve<LogService?>()?.warn(
+              'Could not close connection.',
+              error: e,
+              trace: stack,
+              sender: 'DataHub',
+            );
           }
+
+          rethrow;
+        } finally {
+          _pool.give(connection);
         }
       },
       (error, stack) {
         if (!completer.isCompleted) {
           completer.complete(_Box<TResult>.error(error, stack));
-        } else {}
+        } else {
+          resolve<LogService?>()?.warn(
+            'Unhandled error in DatabaseAdapter.',
+            error: error,
+            trace: stack,
+          );
+        }
       },
       zoneValues: {
         '$_adapterId/connection': connection,
       },
     );
-    try {
-      return (await completer.future).value;
-    } on SocketException catch (e, stack) {
-      resolve<LogService?>()?.warn(
-        'Socket exception in postgres connection.',
-        error: e,
-        trace: stack,
-      );
 
-      try {
-        await connection.close();
-      } catch (e, stack) {
-        resolve<LogService?>()?.warn(
-          'Could not close connection.',
-          error: e,
-          trace: stack,
-          sender: 'DataHub',
-        );
-      }
-
-      _pool.remove(connection);
-
-      rethrow;
-    }
+    return (await completer.future).value;
   }
 
   void _updateMetrics() {

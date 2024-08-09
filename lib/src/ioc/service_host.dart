@@ -31,7 +31,7 @@ abstract class ServiceHost extends ServiceResolver {
     _factories = <BaseService Function()>[
       () => LogService(_logBackend, _onCriticalErrorLog),
       () => ConfigService(config, args),
-      () => InstrumentationService(),
+      () => TelemetryService(),
       SchedulerService.new,
       KeyService.new,
       ...factories,

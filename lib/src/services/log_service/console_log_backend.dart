@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:intl/intl.dart';
+import 'package:stack_trace/stack_trace.dart';
 
 import 'log_backend.dart';
 import 'log_level.dart';
@@ -70,7 +71,7 @@ class ConsoleLogBackend extends LogBackend {
     if (message.trace != null) {
       buffer.write('\n');
       buffer.write(indent);
-      buffer.write(message.trace.toString().replaceAll('\n', '\n$indent'));
+      buffer.write(Trace.format(message.trace!).replaceAll('\n', '\n$indent'));
     }
 
     if (color != null) {

@@ -6,7 +6,6 @@ import 'package:boost/boost.dart';
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
 import 'package:datahub/http.dart';
-import 'package:datahub/src/services/instrumentation_service/histogram_metric.dart';
 
 import 'middleware/error_request_handler.dart';
 import 'middleware/middleware.dart';
@@ -31,6 +30,8 @@ import 'route.dart';
 /// * `metricPrefix`: prefix for default metrics (default "api")
 ///
 class ApiService extends BaseService {
+  final _inst = resolve<TelemetryService>();
+
   late final address = config<String?>('address');
   late final port = config<int?>('port') ?? 8080;
   late final _enableMetrics = config<bool?>('enableMetrics') ?? true;
@@ -56,16 +57,15 @@ class ApiService extends BaseService {
 
   @override
   Future<void> initialize() async {
-    final instrumentation = resolve<InstrumentationService>();
     if (_enableMetrics) {
-      _metricRequestsTotal = instrumentation.counter(
+      _metricRequestsTotal = _inst.counter(
         _metricPrefix + '_requests_total',
         labels: {
           'status_code': ['1xx', '2xx', '3xx', '4xx', '5xx', '6xx', 'other'],
         },
       );
 
-      _metricRequestDuration = instrumentation.exponentialHistogram(
+      _metricRequestDuration = _inst.exponentialHistogram(
         _metricPrefix + '_request_duration',
         start: 0.01,
         factor: 2,
@@ -87,67 +87,78 @@ class ApiService extends BaseService {
   Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
     final watch = Stopwatch();
     watch.start();
-    try {
-      final response = await runZoned(
-        () async {
-          try {
-            final handler = _findRequestHandler(httpRequest.path);
-            final path = httpRequest.path.startsWith(basePath)
-                ? httpRequest.path.substring(basePath.length)
-                : '';
+    return _inst.trace(
+      'HTTP ${httpRequest.method.name.toUpperCase()}',
+      SpanType.server,
+      {
+        'http.request.route': httpRequest.path,
+        'http.request.method': httpRequest.method.name.toUpperCase(),
+      },
+      () async {
+        try {
+          final response = await runZoned(
+            () async {
+              try {
+                final handler = _findRequestHandler(httpRequest.path);
+                final path = httpRequest.path.startsWith(basePath)
+                    ? httpRequest.path.substring(basePath.length)
+                    : '';
 
-            final route = (handler is ApiEndpoint)
-                ? handler.routePattern.decode(path)
-                : Route(RoutePattern.any, path, {}, path);
+                final route = (handler is ApiEndpoint)
+                    ? handler.routePattern.decode(path)
+                    : Route(RoutePattern.any, path, {}, path);
 
-            //TODO cookies
+                //TODO cookies
 
-            final request = ApiRequest(
-              httpRequest.method,
-              route,
-              httpRequest.headers,
-              httpRequest.queryParams,
-              httpRequest.bodyData,
-              null,
-            );
+                final request = ApiRequest(
+                  httpRequest.method,
+                  route,
+                  httpRequest.headers,
+                  httpRequest.queryParams,
+                  httpRequest.bodyData,
+                  null,
+                );
 
-            final response = await (middleware?.call(handler) ?? handler)
-                .handleRequest(request);
+                final response = await (middleware?.call(handler) ?? handler)
+                    .handleRequest(request);
 
-            return response.toHttpResponse(httpRequest.requestUri);
-          } on ApiRequestException catch (e) {
-            // Exceptions should have been handled by ApiEndpoint, this is just
-            // to make sure
-            return e.toResponse().toHttpResponse(httpRequest.requestUri);
-          } catch (e, stack) {
-            // Exceptions should have been handled by ApiEndpoint, this is just
-            // to make sure
-            if (resolve<ConfigService>().environment == Environment.dev) {
-              return DebugResponse(e, stack, 500)
-                  .toHttpResponse(httpRequest.requestUri);
-            } else {
-              return ApiRequestException.internalError('Internal Server Error')
-                  .toResponse()
-                  .toHttpResponse(httpRequest.requestUri);
-            }
-          }
-        },
-        zoneValues: {
-          #apiRequestId: _generateRequestId(),
-        },
-      );
+                return response.toHttpResponse(httpRequest.requestUri);
+              } on ApiRequestException catch (e) {
+                // Exceptions should have been handled by ApiEndpoint, this is just
+                // to make sure
+                return e.toResponse().toHttpResponse(httpRequest.requestUri);
+              } catch (e, stack) {
+                // Exceptions should have been handled by ApiEndpoint, this is just
+                // to make sure
+                if (resolve<ConfigService>().environment == Environment.dev) {
+                  return DebugResponse(e, stack, 500)
+                      .toHttpResponse(httpRequest.requestUri);
+                } else {
+                  return ApiRequestException.internalError(
+                          'Internal Server Error')
+                      .toResponse()
+                      .toHttpResponse(httpRequest.requestUri);
+                }
+              }
+            },
+            zoneValues: {
+              #apiRequestId: _generateRequestId(),
+            },
+          );
 
-      final statusCodeLabel = switch (response.statusCode) {
-        int i when i >= 100 && i < 700 =>
-          '${(response.statusCode / 100).floor()}xx',
-        _ => 'other',
-      };
-      _metricRequestsTotal?.inc({'status_code': statusCodeLabel});
-      return response;
-    } finally {
-      watch.stop();
-      _metricRequestDuration?.observeDuration(watch.elapsed);
-    }
+          final statusCodeLabel = switch (response.statusCode) {
+            int i when i >= 100 && i < 700 =>
+              '${(response.statusCode / 100).floor()}xx',
+            _ => 'other',
+          };
+          _metricRequestsTotal?.inc({'status_code': statusCodeLabel});
+          return response;
+        } finally {
+          watch.stop();
+          _metricRequestDuration?.observeDuration(watch.elapsed);
+        }
+      },
+    );
   }
 
   void _onSocketError(dynamic e, StackTrace? trace) {

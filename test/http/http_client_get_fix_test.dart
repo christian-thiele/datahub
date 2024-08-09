@@ -42,7 +42,7 @@ void main() {
 
         final request = http.Request('GET', uri);
         request.headers.addAll({
-          'accept': 'application/json',
+          'accept': Mime.json,
         });
 
         final response2 = await request.send().timeout(Duration(seconds: 20));

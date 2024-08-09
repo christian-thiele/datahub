@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
+import 'package:fixnum/fixnum.dart';
 import 'package:uuid/uuid.dart';
 
 const Map<int, String> _statusCodes = {
@@ -126,10 +127,15 @@ String stripBase64Padding(String value) {
   return value.replaceAll(RegExp(r'=+$'), '');
 }
 
-String randomHexId(int parts) {
+Iterable<int> randomBytes(int length) {
   final r = Random();
-  return Iterable.generate(
-      parts, (_) => r.nextInt(255).toRadixString(16).padLeft(2, '0')).join(':');
+  return Iterable.generate(length, (i) => r.nextInt(255));
+}
+
+String randomHexId(int parts) {
+  return randomBytes(parts)
+      .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+      .join(':');
 }
 
 bool deepListEquality<T>(List<T> list1, List<T> list2) {
@@ -211,4 +217,8 @@ extension TransferCodecExtension<T> on TransferCodec<T> {
   List<T> castList(List list) {
     return list.cast<T>().toList();
   }
+}
+
+extension NanoSecondsDateTimeExtension on DateTime {
+  Int64 get nanosecondsSinceEpoch => Int64(microsecondsSinceEpoch) * 1000;
 }

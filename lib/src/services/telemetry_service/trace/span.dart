@@ -1,0 +1,117 @@
+import 'dart:collection';
+import 'dart:developer';
+
+import 'package:datahub/ioc.dart';
+import 'package:datahub/services.dart';
+
+enum SpanType {
+  internal,
+  server,
+  client,
+  producer,
+  consumer,
+}
+
+class Span {
+  final Tracer tracer;
+  final TraceId traceId;
+  final Span? parent;
+  final SpanId spanId;
+  final String name;
+  final SpanType? type;
+  bool _hasError = false;
+
+  TimelineTask? _timelineTask;
+  DateTime? _startTimestamp;
+  DateTime? _endTimestamp;
+
+  final Map<String, dynamic> _attributes;
+  final _events = <Event>[];
+
+  UnmodifiableMapView<String, dynamic> get attributes =>
+      UnmodifiableMapView(_attributes);
+
+  UnmodifiableListView<Event> get events => UnmodifiableListView(_events);
+
+  DateTime? get startTimestamp => _startTimestamp;
+
+  DateTime? get endTimestamp => _endTimestamp;
+
+  bool get hasError => _hasError;
+
+  Span({
+    required this.tracer,
+    required this.traceId,
+    required this.spanId,
+    required this.parent,
+    required this.name,
+    required Map<String, dynamic> attributes,
+    required this.type,
+  }) : _attributes = attributes;
+
+  void start() {
+    try {
+      if (_startTimestamp == null) {
+        if (tracer.enableDartTimeline) {
+          _timelineTask = TimelineTask(parent: parent?._timelineTask);
+          _timelineTask?.start(
+            name,
+            arguments: {
+              'traceId': traceId.hexId,
+              'spanId': spanId.hexId,
+              ...attributes,
+            },
+          );
+        }
+        _startTimestamp = DateTime.timestamp();
+      }
+    } catch (e, stack) {
+      resolve<LogService?>()
+          ?.error('Could not start span.', error: e, trace: stack);
+    }
+  }
+
+  void setHasError() => _hasError = true;
+
+  void addEvent(String name, {Map<String, dynamic>? arguments}) {
+    _addEvent(Event(
+      name: name,
+      attributes: attributes,
+      timestamp: DateTime.timestamp(),
+    ));
+  }
+
+  void addExceptionEvent(dynamic error) {
+    _addEvent(ExceptionEvent(
+      error: error,
+      timestamp: DateTime.timestamp(),
+    ));
+    setHasError();
+  }
+
+  void _addEvent(Event event) {
+    try {
+      _events.add(event);
+      if (_timelineTask != null) {
+        TimelineTask(parent: _timelineTask).instant(
+          event.name,
+          arguments: {
+            'traceId': traceId.hexId,
+            'spanId': spanId.hexId,
+            ...event.attributes
+          },
+        );
+      }
+    } catch (e, stack) {
+      resolve<LogService?>()
+          ?.error('Could not add trace event.', error: e, trace: stack);
+    }
+  }
+
+  void stop() {
+    if (_endTimestamp == null) {
+      _timelineTask?.finish();
+      _endTimestamp = DateTime.timestamp();
+    }
+  }
+}
