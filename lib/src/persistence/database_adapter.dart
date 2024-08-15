@@ -86,13 +86,13 @@ abstract class DatabaseAdapter<TConnection extends DatabaseConnection>
         timeout: timeout ?? Duration(seconds: connectionPoolTimeout));
 
     final completer = Completer<_Box<TResult>>();
-    await runZonedGuarded(
+    runZonedGuarded(
       () async {
         try {
           completer.complete(_Box<TResult>.value(await delegate(connection)));
         } on SocketException catch (e, stack) {
           resolve<LogService?>()?.warn(
-            'Socket exception in postgres connection.',
+            'Socket exception in database connection.',
             error: e,
             trace: stack,
           );
