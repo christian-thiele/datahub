@@ -1,7 +1,16 @@
 import 'package:datahub/api.dart';
 
+import 'simple_dto.dart';
+
 class EchoApi extends ApiService {
-  EchoApi() : super('echoApi', [EchoEndpoint()]);
+  EchoApi()
+      : super(
+          'echoApi',
+          [
+            EchoEndpoint(),
+            ListBodyEndpoint(),
+          ],
+        );
 }
 
 class EchoEndpoint extends ApiEndpoint {
@@ -20,4 +29,14 @@ class EchoEndpoint extends ApiEndpoint {
 
   @override
   Future delete(ApiRequest request) async {}
+}
+
+class ListBodyEndpoint extends ApiEndpoint {
+  ListBodyEndpoint() : super(RoutePattern('/list'));
+
+  @override
+  Future post(ApiRequest request) async {
+    final body = request.getBody<List<SimpleDto>>(bean: SimpleDtoTransferBean);
+    return body;
+  }
 }

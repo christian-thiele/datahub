@@ -80,7 +80,7 @@ class ApiRequest {
           }
         } else if (bean.codec.toList.isSubtypeOf<T>()) {
           if (obj is List) {
-            return obj.map((e) => bean.toObject(e)).cast<T>().toList() as T;
+            return bean.toList(obj) as T;
           } else {
             throw CodecException.typeMismatch(T, obj.runtimeType, null);
           }

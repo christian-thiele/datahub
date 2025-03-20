@@ -5,6 +5,7 @@ import 'package:datahub/test.dart';
 import 'package:test/test.dart';
 
 import 'lib/echo_api.dart';
+import 'lib/simple_dto.dart';
 
 void main() {
   TestHost([
@@ -64,6 +65,25 @@ void main() {
         );
         expect(response, isNot(isSuccess));
         expect(response, hasStatusCode(equals(405)));
+      });
+
+      host.apiTest('POST /list', (client) async {
+        final response = await client.post(
+          '/list',
+          [
+            SimpleDto(text: 'test1', number: 1),
+            SimpleDto(text: 'test2', number: 2),
+          ],
+        );
+        final data = await response.getBody<List<SimpleDto>>(
+          bean: SimpleDtoTransferBean,
+        );
+        expect(data, isA<List<SimpleDto>>());
+        expect(data, hasLength(2));
+        expect(data[0],
+            isA<SimpleDto>().having((e) => e.text, 'text', equals('test1')));
+        expect(data[1],
+            isA<SimpleDto>().having((e) => e.text, 'text', equals('test2')));
       });
     },
     useCommonHost: true,

@@ -10,11 +10,13 @@ class TestEndpoint extends ApiEndpoint {
 
   @override
   Future<dynamic> get(ApiRequest request) async {
-    await _inst.trace('Waiting', SpanType.internal, {'some': 'stuff'}, () async {
+    await _inst.trace('Waiting', SpanType.internal, {'some': 'stuff'},
+        () async {
       await Future.delayed(const Duration(milliseconds: 250));
     });
 
-    await _inst.trace('Waiting some more', SpanType.internal, {'some': 'stuff'}, () async {
+    await _inst.trace('Waiting some more', SpanType.internal, {'some': 'stuff'},
+        () async {
       await Future.delayed(const Duration(milliseconds: 150));
 
       if (request.getParam<bool?>('fail') == true) {

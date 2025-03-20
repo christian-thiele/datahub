@@ -93,11 +93,15 @@ class HttpServer {
 
       //TODO cookies
     } catch (e, stack) {
-      request.response.statusCode = 500;
-      if (resolve<ConfigService>().environment == Environment.dev) {
-        request.response.writeln('500 - Internal Server Error\n$e\n$stack');
-      } else {
-        request.response.writeln('500 - Internal Server Error');
+      try {
+        request.response.statusCode = 500;
+        if (resolve<ConfigService>().environment == Environment.dev) {
+          request.response.writeln('500 - Internal Server Error\n$e\n$stack');
+        } else {
+          request.response.writeln('500 - Internal Server Error');
+        }
+      } on StateError catch (stateError) {
+        _logService.warn('Could not send error response.', error: stateError);
       }
 
       var errorMessage = 'Error while handling request.';
