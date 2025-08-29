@@ -1,0 +1,9 @@
+.dart_tool/
+.pub-cache/
+.pub/
+.packages
+
+build/
+**/doc/api/
+
+lib/src/services/telemetry_service/opentelemetry-proto/

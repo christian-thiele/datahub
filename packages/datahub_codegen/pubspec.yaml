@@ -1,0 +1,17 @@
+name: datahub_codegen
+description: DataHub Code Generation Lib
+version: 0.18.0-dev.1
+homepage: https://datahubproject.net
+repository: https://github.com/christian-thiele/datahub_codegen
+resolution: workspace
+
+environment:
+  sdk: ^3.6.0
+
+dependencies:
+  analyzer: ^8.1.0
+  boost: ^1.8.10
+  build: ^3.0.2
+  datahub: '>=0.17.0-dev.72 <1.0.0'
+  source_gen: ^4.0.0
+
