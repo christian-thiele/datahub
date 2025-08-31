@@ -1,5 +1,5 @@
+import 'package:datahub/data.dart';
 import 'package:datahub/services.dart';
-import 'package:datahub/transfer_object.dart';
 
 import 'service_resolver.dart';
 
@@ -26,14 +26,13 @@ abstract class BaseService {
   }
 
   /// Fetches a configuration value from [ConfigService] and parse it into the
-  /// TransferObject.
-  T configObject<T extends TransferObjectBase>(
-      String path, TransferBean<T> bean) {
+  /// [DataObject].
+  T configObject<T extends DataObject<T>>(String path, Decoder<T> decoder) {
     final relative = ConfigPath(path);
     final absolute = configPath?.join(relative) ?? relative;
     return _resolver
         .resolveService<ConfigService>()
-        .fetchObject<T>(absolute, bean);
+        .fetchObject<T>(absolute, decoder);
   }
 
   Future<void> initialize() async {}

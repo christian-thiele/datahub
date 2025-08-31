@@ -83,6 +83,61 @@ abstract class DataCodec {
     return value != null ? decodeItem(value, name: name) : null;
   }
 
+  T decodeTyped<T>(dynamic value, {String? name}) {
+    if (value is T) {
+      return value;
+    }
+
+    if (T == String) {
+      return decodeString(value, name: name) as T;
+    }
+
+    if (T == int) {
+      return decodeInt(value, name: name) as T;
+    }
+
+    if (T == double) {
+      return decodeDouble(value, name: name) as T;
+    }
+    if (T == bool) {
+      return decodeBool(value, name: name) as T;
+    }
+    if (T == DateTime) {
+      return decodeDateTime(value, name: name) as T;
+    }
+    if (T == Duration) {
+      return decodeDuration(value, name: name) as T;
+    }
+    if (T == Uint8List) {
+      return decodeUint8List(value, name: name) as T;
+    }
+
+    if (T == List<String>) {
+      return decodeList<String>(value, decodeString, name: name) as T;
+    }
+
+    if (T == List<int>) {
+      return decodeList<int>(value, decodeInt, name: name) as T;
+    }
+    if (T == List<double>) {
+      return decodeList<double>(value, decodeDouble, name: name) as T;
+    }
+    if (T == List<bool>) {
+      return decodeList<bool>(value, decodeBool, name: name) as T;
+    }
+    if (T == List<DateTime>) {
+      return decodeList<DateTime>(value, decodeDateTime, name: name) as T;
+    }
+    if (T == List<Duration>) {
+      return decodeList<Duration>(value, decodeDuration, name: name) as T;
+    }
+    if (T == List<Uint8List>) {
+      return decodeList<Uint8List>(value, decodeUint8List, name: name) as T;
+    }
+
+    throw CodecException('Cannot decode $T typed.');
+  }
+
   static String? childName(String? parent, String? child) {
     if (child == null) {
       return null;

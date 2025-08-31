@@ -57,27 +57,8 @@ class RestResponse implements HttpResponse {
   ///
   /// Also [throwOnError] will drain the stream to parse error data in the case
   /// of a non-success status code.
-  Future<T> getBody<T>({TransferBean? bean}) async {
-    if (bean != null) {
-      final obj = jsonDecode(await charset.decodeStream(bodyData));
-
-      if (bean.codec.isSubtypeOf<T>() || T == dynamic) {
-        if (obj is List) {
-          throw ApiException('Expected $T but received List.');
-        } else {
-          return bean.toObject(obj) as T;
-        }
-      } else if (bean.codec.toList.isSubtypeOf<T>()) {
-        if (obj is List) {
-          return bean.toList(obj) as T;
-        } else {
-          throw ApiException('Expected $T but received Object.');
-        }
-      } else {
-        throw ApiError(
-            'TransferBean<${bean.codec.name}> does not match response type $T');
-      }
-    } else if (T == String) {
+  Future<T> getBody<T>() async {
+    if (T == String) {
       return await getTextBody() as T;
     } else if (T == Map<String, dynamic>) {
       return await getJsonBody() as T;
@@ -96,6 +77,17 @@ class RestResponse implements HttpResponse {
     }
 
     throw ApiError.invalidType(T);
+  }
+
+  Future<T> getData<T>(Decoder<T> decoder) async {
+    final obj = jsonDecode(await charset.decodeStream(bodyData));
+    return decoder(obj);
+  }
+
+  Future<List<T>> getList<T>(Decoder<T> decoder) async {
+    final obj = jsonDecode(await charset.decodeStream(bodyData));
+    final codec = const JsonDataCodec();
+    return codec.decodeList(obj, decoder);
   }
 
   /// Returns the response body as [Uint8List].
@@ -281,99 +273,27 @@ class RestResponse implements HttpResponse {
 }
 
 extension RestResponseFutureExtension on Future<RestResponse> {
-  /// Convenience method for accessing response data.
-  ///
-  /// Example:
-  /// `dart
-  ///   final data = await restClient.getObject<Dto>('...', bean: DtoTransferBean).thenGetBody();
-  /// `
-  ///
-  /// instead of
-  ///
-  /// `dart
-  ///   final response = await restClient.getObject<Dto>('...', bean: DtoTransferBean);
-  ///   final data = await response.getBody();
-  /// `
-  Future<TResponse> thenGetBody<TResponse>({TransferBean? bean}) =>
-      then((response) => response.getBody<TResponse>(bean: bean));
+  Future<TResponse> thenGetBody<TResponse>() =>
+      then((response) => response.getBody<TResponse>());
 
-  /// Convenience method for accessing response data.
-  ///
-  /// Example:
-  /// `dart
-  ///   final data = await restClient.getObject<Dto>('...', bean: DtoTransferBean).thenGetByteBody();
-  /// `
-  ///
-  /// instead of
-  ///
-  /// `dart
-  ///   final response = await restClient.getObject<Dto>('...', bean: DtoTransferBean);
-  ///   final data = await response.getByteBody();
-  /// `
+  Future<TResponse> thenGetData<TResponse>(Decoder<TResponse> decoder) =>
+      then((response) => response.getData<TResponse>(decoder));
+
+  Future<List<TResponse>> thenGetList<TResponse>(Decoder<TResponse> decoder) =>
+      then((response) => response.getList<TResponse>(decoder));
+
   Future<Uint8List> thenGetByteBody<TResponse>() =>
       then((response) => response.getByteBody());
 
-  /// Convenience method for accessing response data.
-  ///
-  /// Example:
-  /// `dart
-  ///   final data = await restClient.getObject<Dto>('...', bean: DtoTransferBean).thenGetJsonBody();
-  /// `
-  ///
-  /// instead of
-  ///
-  /// `dart
-  ///   final response = await restClient.getObject<Dto>('...', bean: DtoTransferBean);
-  ///   final data = await response.getJsonBody();
-  /// `
   Future<Map<String, dynamic>> thenGetJsonBody() =>
       then((response) => response.getJsonBody());
 
-  /// Convenience method for accessing response data.
-  ///
-  /// Example:
-  /// `dart
-  ///   final data = await restClient.getObject<Dto>('...', bean: DtoTransferBean).thenGetJsonListBody();
-  /// `
-  ///
-  /// instead of
-  ///
-  /// `dart
-  ///   final response = await restClient.getObject<Dto>('...', bean: DtoTransferBean);
-  ///   final data = await response.getJsonListBody();
-  /// `
   Future<List<dynamic>> thenGetJsonListBody() =>
       then((response) => response.getJsonListBody());
 
-  /// Convenience method for accessing response data.
-  ///
-  /// Example:
-  /// `dart
-  ///   final data = await restClient.getObject<Dto>('...', bean: DtoTransferBean).thenGetTextBody();
-  /// `
-  ///
-  /// instead of
-  ///
-  /// `dart
-  ///   final response = await restClient.getObject<Dto>('...', bean: DtoTransferBean);
-  ///   final data = await response.getTextBody();
-  /// `
   Future<String> thenGetTextBody() =>
       then((response) => response.getTextBody());
 
-  /// Convenience method for accessing response data.
-  ///
-  /// Example:
-  /// `dart
-  ///   final data = await restClient.getObject<Dto>('...', bean: DtoTransferBean).thenGetBodyData();
-  /// `
-  ///
-  /// instead of
-  ///
-  /// `dart
-  ///   final response = await restClient.getObject<Dto>('...', bean: DtoTransferBean);
-  ///   final data = await response.bodyData;
-  /// `
   Future<Stream<List<int>>> thenGetBodyData() =>
       then((response) => response.bodyData);
 }

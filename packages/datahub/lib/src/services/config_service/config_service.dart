@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
 import 'package:path/path.dart';
 import 'package:yaml/yaml.dart';
@@ -8,7 +9,6 @@ import 'package:boost/boost.dart';
 
 import 'package:datahub/ioc.dart';
 import 'package:datahub/services.dart';
-import 'package:datahub/transfer_object.dart';
 
 /// Internal service parsing configuration files, command line arguments
 /// and environment variables.
@@ -96,7 +96,8 @@ class ConfigService extends BaseService {
     try {
       final raw = path.getFrom(_configMap);
       try {
-        return decodeTyped<T>(raw);
+        final codec = const JsonDataCodec();
+        return codec.decodeTyped<T>(raw);
       } on CodecException catch (_) {
         throw ConfigTypeException(path.toString(), T, raw.runtimeType);
       }
@@ -115,10 +116,8 @@ class ConfigService extends BaseService {
   ///
   /// If the value does not match the requested type or cannot be parsed
   /// into the given type, a [ConfigTypeException] is thrown.
-  T fetchObject<T extends TransferObjectBase>(
-      ConfigPath path, TransferBean<T> bean) {
-    final map = fetch<Map<String, dynamic>>(path);
-    return bean.toObject(map);
+  T fetchObject<T extends DataObject<T>>(ConfigPath path, Decoder<T> decoder) {
+    return decoder(fetch<Map<String, dynamic>>(path), name: path.toString());
   }
 
   /// Add a single config value by using the command line syntax.

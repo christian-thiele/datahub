@@ -6,7 +6,7 @@ import 'package:boost/boost.dart';
 import 'package:datahub/http.dart';
 import 'package:path/path.dart' as p;
 
-import 'package:datahub/transfer_object.dart';
+import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
 
 /// Defines a response to a api request.
@@ -28,8 +28,7 @@ abstract class ApiResponse {
   /// Allowed types for [body] are:
   /// null, [ApiResponse], [Uint8List], [ByteData], [File],
   /// Map<String, dynamic>, List<dynamic> and [TransferObject]
-  factory ApiResponse.dynamic(dynamic body,
-      {TransferBean? bean, int statusCode = 200}) {
+  factory ApiResponse.dynamic(dynamic body, {int statusCode = 200}) {
     if (body == null) {
       return EmptyResponse(statusCode: statusCode);
     } else if (body is ApiResponse) {
@@ -42,7 +41,7 @@ abstract class ApiResponse {
       return FileResponse(body);
     } else if (body is Map<String, dynamic> ||
         body is List<dynamic> ||
-        body is TransferObjectBase) {
+        body is DataObject) {
       return JsonResponse(body, statusCode);
     } else if (body is Stream<List<int>>) {
       throw ApiError(
@@ -82,7 +81,7 @@ class JsonResponse extends _SynchronousResponse {
       return [];
     }
 
-    return utf8.encode(JsonEncoder().convert(_data!));
+    return utf8.encode(JsonEncoder().convert(_data));
   }
 
   @override

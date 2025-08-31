@@ -41,7 +41,7 @@ void main() {
         final changed = await client.get('/memo');
         expect(changed, isSuccess);
         expect(
-          changed.getBody(bean: MemoTransferBean),
+          changed.getBody(decoder: MemoTransferBean),
           completion(
             isA<Memo>().having((e) => e.text, 'text', equals('changed')),
           ),

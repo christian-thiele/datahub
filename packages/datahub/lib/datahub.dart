@@ -8,5 +8,4 @@ export 'hub.dart';
 export 'ioc.dart';
 export 'rest_client.dart';
 export 'services.dart';
-export 'transfer_object.dart';
 export 'utils.dart';

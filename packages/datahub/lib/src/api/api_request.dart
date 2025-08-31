@@ -3,8 +3,9 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
-import 'package:datahub/transfer_object.dart';
+import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
+
 
 class ApiRequest {
   final ApiRequestMethod method;
@@ -62,33 +63,13 @@ class ApiRequest {
 
   /// Returns decoded body data.
   ///
-  /// Useful for receiving transfer objects.
   /// Allowed types are: [String], [Map<String, dynamic>], [List<dynamic>],
   /// [Uint8List], [Stream<Uint8List>], [dynamic].
   ///
   /// If T is dynamic, the body data will be returned as json (Map or List).
-  Future<T> getBody<T>({TransferBean? bean}) async {
+  Future<dynamic> getBody<T>() async {
     try {
-      if (bean != null) {
-        final obj = jsonDecode(await getTextBody());
-
-        if (bean.codec.isSubtypeOf<T>() || T == dynamic) {
-          if (obj is List) {
-            throw CodecException.typeMismatch(T, obj.runtimeType, null);
-          } else {
-            return bean.toObject(obj) as T;
-          }
-        } else if (bean.codec.toList.isSubtypeOf<T>()) {
-          if (obj is List) {
-            return bean.toList(obj) as T;
-          } else {
-            throw CodecException.typeMismatch(T, obj.runtimeType, null);
-          }
-        } else {
-          throw ApiError(
-              'TransferBean<${bean.codec.name}> does not match response type $T');
-        }
-      } else if (T == String) {
+      if (T == String) {
         return await getTextBody() as T;
       } else if (T == Map<String, dynamic>) {
         return await getJsonBody() as T;
@@ -114,6 +95,22 @@ class ApiRequest {
     throw ApiError.invalidType(T);
   }
 
+  /// Returns decoded body data using a decoder.
+  ///
+  /// Useful with [DataObject]s.
+  Future<T> getData<T>(Decoder<T> decoder) async {
+    final obj = jsonDecode(await getTextBody());
+    return decoder(obj);
+  }
+
+  /// Returns decoded body data using a decoder.
+  ///
+  /// Useful with [DataObject]s.
+  Future<List<T>> getList<T>(Decoder<T> decoder) async {
+    final obj = jsonDecode(await getTextBody());
+    return const JsonDataCodec().decodeList<T>(obj, decoder);
+  }
+
   /// Returns the named query parameter.
   ///
   /// Throws [ApiRequestException.badRequest] if value does not exist or could
@@ -125,10 +122,11 @@ class ApiRequest {
   /// are [String], [int], [double], [bool], [DateTime], [Duration] or [Uint8List].
   T getParam<T>(String name) {
     try {
+      final codec = const JsonDataCodec();
       if (TypeCheck<T>().isSubtypeOf<List?>()) {
-        return decodeTyped<T>(queryParams[name]);
+        return codec.decodeTyped<T>(queryParams[name]);
       } else {
-        return decodeTyped<T>(queryParams[name]?.lastOrNull);
+        return codec.decodeTyped<T>(queryParams[name]?.lastOrNull);
       }
     } on CodecException catch (_) {
       throw ApiRequestException.badRequest(

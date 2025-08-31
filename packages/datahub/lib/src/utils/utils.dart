@@ -211,13 +211,6 @@ Iterable<Iterable<T>> everyCombination<T>(Iterable<Iterable<T>> lists) sync* {
   }
 }
 
-extension TransferCodecExtension<T> on TransferCodec<T> {
-  T cast(dynamic object) => object as T;
-
-  List<T> castList(List list) {
-    return list.cast<T>().toList();
-  }
-}
 
 extension NanoSecondsDateTimeExtension on DateTime {
   Int64 get nanosecondsSinceEpoch => Int64(microsecondsSinceEpoch) * 1000;

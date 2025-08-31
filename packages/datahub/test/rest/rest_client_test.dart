@@ -52,7 +52,7 @@ Future<void> _testClient(RestClient client) async {
   expect(text, contains('<html>'));
 
   final dto =
-      await client.get('/json').thenGetBody(bean: ExampleObjectTransferBean);
+      await client.get('/json').thenGetBody(decoder: ExampleObjectTransferBean);
   expect(dto.slideshow.author, equals('Yours Truly'));
   expect(dto.slideshow.date, equals('date of publication'));
   expect(dto.slideshow.title, equals('Sample Slide Show'));
@@ -86,7 +86,7 @@ Future<void> _testListRequest() async {
   try {
     expect(
       await client1.get('/users').thenGetBody<List<PlaceholderUser>>(
-          bean: PlaceholderUserTransferBean),
+          decoder: PlaceholderUserTransferBean),
       allOf(isA<List<PlaceholderUser>>(), hasLength(10)),
     );
   } finally {

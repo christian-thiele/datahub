@@ -1,6 +1,7 @@
 import 'package:boost/boost.dart';
 
 import 'package:datahub/api.dart';
+import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
 
 const _wildcardGroup = '_route_wildcard';
@@ -153,7 +154,7 @@ class RoutePattern {
     }
 
     final matchExp = RegExp(
-        '^' + segments.map((s) => s.toMatchExp()).join() + '\\/?\$',
+        '^${segments.map((s) => s.toMatchExp()).join()}\\/?\$',
         caseSensitive: false);
 
     return RoutePattern._(pattern, segments, matchExp, hasWildcard);
@@ -161,8 +162,9 @@ class RoutePattern {
 
   /// Encodes url params into a path.
   String encode(Map<String, dynamic> values) {
+    final codec = const JsonDataCodec();
     final stringValues = values.map((key, value) =>
-        MapEntry(key, Uri.encodeComponent(decodeTyped<String>(value))));
+        MapEntry(key, Uri.encodeComponent(codec.decodeString(value))));
     return _segments.map((s) => s.encode(stringValues)).join();
   }
 
@@ -245,8 +247,7 @@ class _PLSegment extends _Segment {
   final String key;
   final bool optional;
 
-  const _PLSegment(String source, this.prefix, this.key, this.optional)
-      : super(source);
+  const _PLSegment(super.source, this.prefix, this.key, this.optional);
 
   @override
   String toMatchExp() {
@@ -313,7 +314,8 @@ class Route {
   /// are [String], [int], [double], [bool], [DateTime], [Duration] or [Uint8List].
   T getParam<T>(String name) {
     try {
-      return decodeTyped<T>(routeParams[name]);
+      final codec = const JsonDataCodec();
+      return codec.decodeTyped<T>(routeParams[name]);
     } on CodecException catch (_) {
       throw ApiRequestException.badRequest(
           'Missing or malformed route parameter: $name');

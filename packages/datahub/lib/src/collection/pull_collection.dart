@@ -62,7 +62,7 @@ abstract class PullCollection<Item> {
             query: {...query, ...q},
             headers: headers,
           );
-          return await response.getBody<List<Item>>(bean: bean);
+          return await response.getBody<List<Item>>(decoder: bean);
         },
       );
 
@@ -126,7 +126,7 @@ abstract class PrimaryKeyPullCollection<Item, Id> extends PullCollection<Item> {
           query: {...query, ...q},
           headers: headers,
         );
-        return response.getBody<List<Item>>(bean: bean);
+        return response.getBody<List<Item>>(decoder: bean);
       },
       (id) async {
         final response = await client.get(
@@ -135,7 +135,7 @@ abstract class PrimaryKeyPullCollection<Item, Id> extends PullCollection<Item> {
           query: {...query},
           headers: headers,
         );
-        return response.getBody<Item>(bean: bean);
+        return response.getBody<Item>(decoder: bean);
       },
     );
   }
