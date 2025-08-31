@@ -1,82 +1,18 @@
-targets:
-  $default:
-    builders:
-      datahub_codegen:transfer_bean_generator:
-        enabled: true
-        generate_for:
-          - test/**
-      datahub_codegen:transfer_superclass_generator:
-        enabled: true
-        generate_for:
-          - test/**
-      datahub_codegen:data_bean_generator:
-        enabled: true
-        generate_for:
-          - test/**
-      datahub_codegen:data_superclass_generator:
-        enabled: true
-        generate_for:
-          - test/**
-      datahub_codegen:copy_with_extension_generator:
-        enabled: true
-        generate_for:
-          - test/**
-      datahub_codegen:hub_client_generator:
-        enabled: true
-        generate_for:
-          - test/**
-      datahub_codegen:hub_provider_generator:
-        enabled: true
-        generate_for:
-          - test/**
-
 builders:
-  transfer_bean_generator:
-    import: "package:datahub_codegen/builder.dart"
-    builder_factories: ["transferBeanGenerator"]
-    build_extensions: {".dart": [".dto.g.part"]}
+  data_builder:
+    import: "package:datahub_codegen/datahub_codegen.dart"
+    builder_factories: [ "dataBuilder" ]
+    build_extensions: { ".dart": [ ".data.g.part" ] }
     auto_apply: dependents
     build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
-  data_bean_generator:
-    import: "package:datahub_codegen/builder.dart"
-    builder_factories: ["dataBeanGenerator"]
-    build_extensions: {".dart": [".dao.g.part"]}
-    auto_apply: dependents
-    build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
-  data_superclass_generator:
-    import: "package:datahub_codegen/builder.dart"
-    builder_factories: ["dataSuperclassGenerator"]
-    build_extensions: {".dart": [".das.g.part"]}
-    auto_apply: dependents
-    build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
-  transfer_superclass_generator:
-    import: "package:datahub_codegen/builder.dart"
-    builder_factories: ["transferSuperclassGenerator"]
-    build_extensions: {".dart": [".dts.g.part"]}
-    auto_apply: dependents
-    build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
-  copy_with_extension_generator:
-    import: "package:datahub_codegen/builder.dart"
-    builder_factories: ["copyWithExtensionGenerator"]
-    build_extensions: {".dart": [".cwe.g.part"]}
-    auto_apply: dependents
-    build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
-  hub_client_generator:
-    import: "package:datahub_codegen/builder.dart"
-    builder_factories: ["hubClientGenerator"]
-    build_extensions: {".dart": [".hrc.g.part"]}
-    auto_apply: dependents
-    build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
-  hub_provider_generator:
-    import: "package:datahub_codegen/builder.dart"
-    builder_factories: ["hubProviderGenerator"]
-    build_extensions: {".dart": [".hrp.g.part"]}
-    auto_apply: dependents
-    build_to: cache
-    applies_builders: ["source_gen|combining_builder"]
+    applies_builders: [ "source_gen:combining_builder" ]
+
+targets:
+  datahub_codegen:
+    auto_apply_builders: false
+  datahub_codegen:test:
+    builders:
+      datahub_codegen:data_builder:
+        enabled: true
+    sources:
+      - test/**

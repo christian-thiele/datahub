@@ -1,4 +1,5 @@
-import 'package:datahub/datahub.dart';
+import 'package:datahub/datahub.dart' hide DataField;
+import 'package:datahub/persistence.dart';
 import 'package:test/test.dart';
 
 import 'lib/blogsystem/article_dao.dart';

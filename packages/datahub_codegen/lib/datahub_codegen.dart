@@ -1,4 +1,3 @@
-library datahub_codegen;
+library;
 
-export 'builder.dart';
-export 'utils.dart';
+export 'src/data/data_builder.dart';

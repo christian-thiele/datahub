@@ -1,4 +1,5 @@
 import 'package:datahub/datahub.dart';
+import 'package:datahub/persistence.dart';
 
 import 'article_dao.dart';
 import 'blog_dao.dart';

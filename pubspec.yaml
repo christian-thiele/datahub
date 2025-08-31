@@ -13,6 +13,7 @@ dev_dependencies:
 
 workspace:
   - packages/datahub
+  - packages/datahub_aperture
   - packages/datahub_codegen
   - packages/datahub_postgres
 
