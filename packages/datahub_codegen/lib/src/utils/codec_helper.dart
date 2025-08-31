@@ -65,7 +65,7 @@ class CodecHelper {
       final typeName = dataDeclarationName.startsWith('\$')
           ? dataDeclarationName.substring(1)
           : dataDeclarationName;
-      return '$typeName.fromJson';
+      return '$typeName.bean.fromJson';
     }
 
     return '$codec.decode${firstUp(type.element!.displayName)}';

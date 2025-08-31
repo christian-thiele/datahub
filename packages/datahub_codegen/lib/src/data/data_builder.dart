@@ -85,6 +85,7 @@ class DataBuilder extends Generator {
       ln('\$${field.name},');
     }
     ln(']),');
+    ln('fromValues: fromValues,');
     ln('fromJson: fromJson,');
     ln(');');
 
@@ -92,6 +93,7 @@ class DataBuilder extends Generator {
     ln('@override List<DataField<$className, dynamic>> get \$\$fields => bean.fields;');
 
     ln(generateCopyWith(className, fields));
+    ln(generateFromValues(className, fields));
     ln(generateFromJson(className, fields));
     ln(generateToJson(className, fields));
 
@@ -132,6 +134,18 @@ class DataBuilder extends Generator {
       ln('}');
     }
     ln(');');
+    return ln.toString();
+  }
+
+  String generateFromValues(String className, List<MetaField> fields) {
+    final ln = Writer();
+    ln('static $className fromValues(Map<DataField<$className, dynamic>, dynamic> data) {');
+    ln('return $className(');
+    for (final field in fields) {
+      ln("${field.name}: data[\$${field.name}],");
+    }
+    ln(');');
+    ln('}');
     return ln.toString();
   }
 

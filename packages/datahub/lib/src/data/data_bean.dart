@@ -6,11 +6,13 @@ import 'data_codec.dart';
 final class DataBean<T extends DataObject<T>> {
   final String name;
   final List<DataField<T, dynamic>> fields;
+  final T Function(Map<DataField<T, dynamic>, dynamic>) fromValues;
   final Decoder<T> fromJson;
 
   const DataBean({
     required this.name,
     required this.fields,
+    required this.fromValues,
     required this.fromJson,
   });
 }
