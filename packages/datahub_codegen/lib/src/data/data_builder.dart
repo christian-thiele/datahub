@@ -78,15 +78,18 @@ class DataBuilder extends Generator {
       ln(generateField(className, field));
     }
 
-    ln('static final _name = \'$className\';');
-    ln('static final _fields = List<DataField<$className, dynamic>>.unmodifiable([');
+    ln('static final DataBean<$className> bean = DataBean<$className>(');
+    ln('name: \'$className\',');
+    ln('fields: List<DataField<$className, dynamic>>.unmodifiable([');
     for (final field in fields) {
       ln('\$${field.name},');
     }
-    ln(']);');
+    ln(']),');
+    ln('fromJson: fromJson,');
+    ln(');');
 
-    ln('@override String get \$\$name => _name;');
-    ln('@override List<DataField<$className, dynamic>> get \$\$fields => _fields;');
+    ln('@override String get \$\$name => bean.name;');
+    ln('@override List<DataField<$className, dynamic>> get \$\$fields => bean.fields;');
 
     ln(generateCopyWith(className, fields));
     ln(generateFromJson(className, fields));
