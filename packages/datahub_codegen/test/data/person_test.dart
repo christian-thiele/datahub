@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:math';
 import 'package:test/test.dart';
 
 import 'person.dart';
@@ -18,7 +17,7 @@ void main() {
 
     print(jsonEncode(person));
 
-    final other = Person.fromJson(jsonDecode(jsonEncode(person)));
+    final other = Person.bean.fromJson(jsonDecode(jsonEncode(person)));
     print(jsonEncode(person));
 
     expect(person == other, isTrue);

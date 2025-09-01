@@ -5,15 +5,26 @@ import 'package:datahub/data.dart';
 part 'person.g.dart';
 
 @Data()
-abstract class Person with _Person {
-  const factory Person({
-    int id,
-    required String firstName,
-    required String lastName,
-    required List<String> phone,
-    required List<String> email,
-    required DateTime? birthday,
-    required bool isBlocked,
-    required Uint8List picture,
-  }) = $Person.new;
+class Person extends _Person {
+  final int id;
+  final String firstName;
+  final String lastName;
+  final List<String> phone;
+  final List<String> email;
+  final DateTime? birthday;
+  final bool isBlocked;
+  final Uint8List picture;
+
+  const Person({
+    this.id = 0,
+    required this.firstName,
+    required this.lastName,
+    required this.phone,
+    required this.email,
+    required this.birthday,
+    required this.isBlocked,
+    required this.picture,
+  });
+
+  static DataBean<Person> get bean => _Person.bean;
 }

@@ -9,7 +9,7 @@ environment:
   sdk: ^3.6.0
 
 dependencies:
-  analyzer: ^8.1.0
+  analyzer: ^7.7.1
   boost: ^1.8.10
   build: ^3.0.2
   datahub: '>=0.17.0-dev.72 <1.0.0'
@@ -17,5 +17,5 @@ dependencies:
 
 dev_dependencies:
   lints: ^6.0.0
-  test: ^1.21.6
+  test: ^1.26.2
   build_runner: ^2.7.0

@@ -79,15 +79,14 @@ class RestResponse implements HttpResponse {
     throw ApiError.invalidType(T);
   }
 
-  Future<T> getData<T>(Decoder<T> decoder) async {
-    final obj = jsonDecode(await charset.decodeStream(bodyData));
-    return decoder(obj);
+  Future<T> getData<T extends DataObject<T>>(DataBean<T> bean) async {
+    return bean.fromJson(jsonDecode(await charset.decodeStream(bodyData)));
   }
 
-  Future<List<T>> getList<T>(Decoder<T> decoder) async {
+  Future<List<T>> getList<T extends DataObject<T>>(DataBean<T> bean) async {
     final obj = jsonDecode(await charset.decodeStream(bodyData));
     final codec = const JsonDataCodec();
-    return codec.decodeList(obj, decoder);
+    return codec.decodeList(obj, bean.fromJson);
   }
 
   /// Returns the response body as [Uint8List].
@@ -276,11 +275,13 @@ extension RestResponseFutureExtension on Future<RestResponse> {
   Future<TResponse> thenGetBody<TResponse>() =>
       then((response) => response.getBody<TResponse>());
 
-  Future<TResponse> thenGetData<TResponse>(Decoder<TResponse> decoder) =>
-      then((response) => response.getData<TResponse>(decoder));
+  Future<TResponse> thenGetData<TResponse extends DataObject<TResponse>>(
+          DataBean<TResponse> bean) =>
+      then((response) => response.getData<TResponse>(bean));
 
-  Future<List<TResponse>> thenGetList<TResponse>(Decoder<TResponse> decoder) =>
-      then((response) => response.getList<TResponse>(decoder));
+  Future<List<TResponse>> thenGetList<TResponse extends DataObject<TResponse>>(
+          DataBean<TResponse> bean) =>
+      then((response) => response.getList<TResponse>(bean));
 
   Future<Uint8List> thenGetByteBody<TResponse>() =>
       then((response) => response.getByteBody());

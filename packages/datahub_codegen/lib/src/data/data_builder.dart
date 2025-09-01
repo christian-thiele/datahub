@@ -1,7 +1,7 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
@@ -14,8 +14,10 @@ Builder dataBuilder(BuilderOptions options) =>
     SharedPartBuilder([DataBuilder()], 'data');
 
 class MetaField {
-  final FieldElement element;
+  final FieldElement2 element;
   final List<DartObject> constraints;
+  final List<DartObject>? meta;
+  final String? defaultValueExpression;
 
   String get name => element.displayName;
 
@@ -30,6 +32,8 @@ class MetaField {
   MetaField(
     this.element,
     this.constraints,
+    this.meta,
+    this.defaultValueExpression,
   );
 
   String buildEncodingStatement(String value) =>
@@ -50,16 +54,27 @@ class DataBuilder extends Generator {
       final constructor = findDataConstructor(dataClass);
 
       final fields = [
-        for (final field in dataClass.fields.where((e) => e.isFinal))
+        for (final param in constructor.formalParameters
+            .whereType<FieldFormalParameterElement2>()
+            .where((e) => e.isNamed && e.field2 != null))
           MetaField(
-            field,
+            param.field2!,
             TypeChecker.typeNamed(DataFieldConstraint)
-                .annotationsOf(field)
+                .annotationsOf(param.field2!)
                 .toList(),
+            TypeChecker.typeNamed(MetaData)
+                .annotationsOf(param.field2!)
+                .toList(),
+            getDefaultValueExpression(param),
           ),
       ];
 
-      ln(generateClass(className, constructor, fields));
+      ln(generateClass(
+        className,
+        constructor,
+        fields,
+        TypeChecker.typeNamed(MetaData).annotationsOf(dataClass).toList(),
+      ));
     }
 
     return ln.toString();
@@ -67,8 +82,9 @@ class DataBuilder extends Generator {
 
   String generateClass(
     String className,
-    ConstructorElement constructor,
+    ConstructorElement2 constructor,
     List<MetaField> fields,
+    List<DartObject> metaAnnotations,
   ) {
     final ln = Writer();
     ln('abstract class _$className with DataObject<$className> {');
@@ -78,16 +94,7 @@ class DataBuilder extends Generator {
       ln(generateField(className, field));
     }
 
-    ln('static final DataBean<$className> bean = DataBean<$className>(');
-    ln('name: \'$className\',');
-    ln('fields: List<DataField<$className, dynamic>>.unmodifiable([');
-    for (final field in fields) {
-      ln('\$${field.name},');
-    }
-    ln(']),');
-    ln('fromValues: fromValues,');
-    ln('fromJson: fromJson,');
-    ln(');');
+    ln(generateDataBean(className, fields, metaAnnotations));
 
     ln('@override String get \$\$name => bean.name;');
     ln('@override List<DataField<$className, dynamic>> get \$\$fields => bean.fields;');
@@ -104,12 +111,17 @@ class DataBuilder extends Generator {
   String generateField(String className, MetaField field) {
     final ln = Writer();
     ln('static final \$${field.name} = DataField<$className, ${field.typeName}>(');
-    ln('name: \'${field.name}\', valueOf: (p)=>p.${field.name}');
+    ln('name: \'${field.name}\', valueOf: (p)=>p.${field.name},');
+    final meta = TypeChecker.typeNamed(MetaData).annotationsOf(field.element);
+    if (meta.isNotEmpty) {
+      ln('meta: [${meta.map(metaInvocation).join(', ')},],');
+    }
     ln(');');
     return ln.toString();
   }
 
-  String generateConstructor(String className, ConstructorElement constructor) {
+  String generateConstructor(
+      String className, ConstructorElement2 constructor) {
     final ln = Writer();
     ln('const $className(');
 
@@ -139,10 +151,15 @@ class DataBuilder extends Generator {
 
   String generateFromValues(String className, List<MetaField> fields) {
     final ln = Writer();
-    ln('static $className fromValues(Map<DataField<$className, dynamic>, dynamic> data) {');
+    ln('static $className fromValues(Map<String, dynamic> data) {');
     ln('return $className(');
     for (final field in fields) {
-      ln("${field.name}: data[\$${field.name}],");
+      ln('${field.name}: data[\'${field.name}\']');
+      if (field.defaultValueExpression != null) {
+        ln(' ?? ${field.defaultValueExpression},');
+      } else {
+        ln(',');
+      }
     }
     ln(');');
     ln('}');
@@ -159,8 +176,13 @@ class DataBuilder extends Generator {
     ln('final \$codec = const JsonDataCodec();');
     ln('return $className(');
     for (final field in fields) {
+      final accessor = switch (field.defaultValueExpression) {
+        final val? => '(data[\'${field.key}\'] ?? $val)',
+        _ => 'data[\'${field.key}\']',
+      };
+
       final decodingStatement = field.buildDecodingStatement(
-        'data[\'${field.key}\']',
+        accessor,
         'DataCodec.childName(name, \'${field.key}\')',
       );
       ln("${field.name}: $decodingStatement,");
@@ -218,11 +240,37 @@ class DataBuilder extends Generator {
 
     return ln.toString();
   }
+
+  String generateDataBean(
+    String className,
+    List<MetaField> fields,
+    List<DartObject> meta,
+  ) {
+    final ln = Writer();
+
+    ln('static final DataBean<$className> bean = DataBean<$className>(');
+    ln('name: \'$className\',');
+    ln('fields: List<DataField<$className, dynamic>>.unmodifiable([');
+    for (final field in fields) {
+      ln('\$${field.name},');
+    }
+    ln(']),');
+    ln('fromValues: fromValues,');
+    ln('fromJson: fromJson,');
+
+    if (meta.isNotEmpty) {
+      ln('meta: [${meta.map(metaInvocation).join(', ')},],');
+    }
+
+    ln(');');
+
+    return ln.toString();
+  }
 }
 
-ConstructorElement findDataConstructor(ClassElement dataClass) {
-  return dataClass.constructors.firstWhere(
-    (e) => e.name == 'new' && e.isConst,
+ConstructorElement2 findDataConstructor(ClassElement2 dataClass) {
+  return dataClass.constructors2.firstWhere(
+    (e) => e.name3 == 'new' && e.isConst,
     orElse: () => throw Exception(
         'Data class ${dataClass.displayName} does not provide a unnamed const constructor.'),
   );

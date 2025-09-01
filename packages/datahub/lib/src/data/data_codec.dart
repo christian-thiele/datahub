@@ -88,50 +88,50 @@ abstract class DataCodec {
       return value;
     }
 
-    if (T == String) {
+    if (TypeCheck<T>().isSupertypeOf<String>()) {
       return decodeString(value, name: name) as T;
     }
 
-    if (T == int) {
+    if (TypeCheck<T>().isSupertypeOf<int>()) {
       return decodeInt(value, name: name) as T;
     }
 
-    if (T == double) {
+    if (TypeCheck<T>().isSupertypeOf<double>()) {
       return decodeDouble(value, name: name) as T;
     }
-    if (T == bool) {
+    if (TypeCheck<T>().isSupertypeOf<bool>()) {
       return decodeBool(value, name: name) as T;
     }
-    if (T == DateTime) {
+    if (TypeCheck<T>().isSupertypeOf<DateTime>()) {
       return decodeDateTime(value, name: name) as T;
     }
-    if (T == Duration) {
+    if (TypeCheck<T>().isSupertypeOf<Duration>()) {
       return decodeDuration(value, name: name) as T;
     }
-    if (T == Uint8List) {
+    if (TypeCheck<T>().isSupertypeOf<Uint8List>()) {
       return decodeUint8List(value, name: name) as T;
     }
 
-    if (T == List<String>) {
+    if (TypeCheck<T>().isListOf<String>()) {
       return decodeList<String>(value, decodeString, name: name) as T;
     }
 
-    if (T == List<int>) {
+    if (TypeCheck<T>().isListOf<int>()) {
       return decodeList<int>(value, decodeInt, name: name) as T;
     }
-    if (T == List<double>) {
+    if (TypeCheck<T>().isListOf<double>()) {
       return decodeList<double>(value, decodeDouble, name: name) as T;
     }
-    if (T == List<bool>) {
+    if (TypeCheck<T>().isListOf<bool>()) {
       return decodeList<bool>(value, decodeBool, name: name) as T;
     }
-    if (T == List<DateTime>) {
+    if (TypeCheck<T>().isListOf<DateTime>()) {
       return decodeList<DateTime>(value, decodeDateTime, name: name) as T;
     }
-    if (T == List<Duration>) {
+    if (TypeCheck<T>().isListOf<Duration>()) {
       return decodeList<Duration>(value, decodeDuration, name: name) as T;
     }
-    if (T == List<Uint8List>) {
+    if (TypeCheck<T>().isListOf<Uint8List>()) {
       return decodeList<Uint8List>(value, decodeUint8List, name: name) as T;
     }
 

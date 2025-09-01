@@ -12,5 +12,8 @@ dependencies:
   boost: ^1.8.10
   buffer: ^1.2.3
   datahub: ^0.18.0-dev.1
-  postgres: ^2.6.3
+  postgres: ^3.5.6
+  test: ^1.21.6
 
+dev_dependencies:
+  datahub_codegen: ^0.18.0-dev.1

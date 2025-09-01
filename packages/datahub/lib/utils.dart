@@ -1,5 +1,5 @@
 /// Utility classes, functions and exceptions that are part of DataHub.
-library utils;
+library;
 
 export 'src/utils/api_error.dart';
 export 'src/utils/api_exception.dart';

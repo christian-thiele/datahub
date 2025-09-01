@@ -1,0 +1,12 @@
+export 'api/resource_revision_request.dart';
+export 'api/resource_data.dart';
+export 'api/resource_description.dart';
+export 'api/resource_elements_response.dart';
+export 'api/resource_field.dart';
+export 'api/resource_field_type.dart';
+export 'api/resource_filter.dart';
+export 'api/resource_filter_type.dart';
+export 'api/resource_relation.dart';
+export 'api/resource_relation_filter.dart';
+export 'api/resource_revision_info.dart';
+export 'api/resource_revision_type.dart';

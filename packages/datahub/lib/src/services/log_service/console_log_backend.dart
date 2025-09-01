@@ -51,7 +51,7 @@ class ConsoleLogBackend extends LogBackend {
 
     for (final entry in pathInfo.entries) {
       if (entry.value != null) {
-        if (entry.key == 'isolate' && entry.value == 'main') {
+        if (entry.key == 'isolate') {
           continue;
         }
         writePrefix(_brackets(entry.value.toString(), null));

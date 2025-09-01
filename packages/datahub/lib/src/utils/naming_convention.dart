@@ -1,10 +1,15 @@
 import 'package:boost/boost.dart';
 
 enum NamingConvention {
+  /// no formatting applied
   none,
+  /// lower snake case => lower_snake_case
   lowerSnakeCase,
+  /// upper snake case => UPPER_SNAKE_CASE
   upperSnakeCase,
+  /// camel case => CamelCase
   camelCase,
+  /// lower camel case => lowerCamelCase
   lowerCamelCase
 }
 

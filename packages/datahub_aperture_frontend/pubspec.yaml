@@ -1,0 +1,53 @@
+name: datahub_aperture_frontend
+description: "DataHub Aperture Frontend"
+resolution: workspace
+
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.8.1
+
+flutter:
+  uses-material-design: true
+  generate: true
+
+  assets:
+    - assets/
+    - google_fonts/
+
+flutter_intl:
+  enabled: true
+
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_localizations:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  google_fonts: ^6.2.1
+  go_router: ^16.0.0
+  flutter_bloc: ^9.1.1
+  bloc: ^9.0.0
+  flutter_svg: ^2.2.0
+  shared_preferences: ^2.5.3
+  boost: ^1.8.10
+  intl: ^0.20.0
+  file_picker: ^10.3.2
+  flutter_map: ^8.2.1
+  latlong2: ^0.9.1
+  geojson_vi: ^2.2.5
+
+  datahub: ^0.18.0-dev.1
+  datahub_aperture: ^0.1.0-dev.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  lints: ^6.0.0
+  test: ^1.21.6
+  build_runner: ^2.7.0
+  datahub_codegen: ^0.18.0-dev.1

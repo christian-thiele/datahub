@@ -26,7 +26,7 @@ dependencies:
   protobuf: ^4.0.0
   fixnum: ^1.1.0
   stack_trace: ^1.11.1
-  grpc: ^4.2.0
+  grpc: ^4.1.0
 
 false_secrets:
   - test/resource_hub/localhost.crt

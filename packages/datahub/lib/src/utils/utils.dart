@@ -211,6 +211,9 @@ Iterable<Iterable<T>> everyCombination<T>(Iterable<Iterable<T>> lists) sync* {
   }
 }
 
+extension TupleMapExtension<K, V> on Map<K, V> {
+  Iterable<(K, V)> get tuples => entries.map((e) => (e.key, e.value));
+}
 
 extension NanoSecondsDateTimeExtension on DateTime {
   Int64 get nanosecondsSinceEpoch => Int64(microsecondsSinceEpoch) * 1000;

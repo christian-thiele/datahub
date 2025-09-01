@@ -12,10 +12,3 @@
 final class Data {
   const Data();
 }
-
-/// Annotation for default values of optional parameters.
-final class Default {
-  final dynamic value;
-
-  const Default(this.value);
-}

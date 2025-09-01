@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:datahub/data.dart';
@@ -19,15 +19,15 @@ class CodecHelper {
       return '(v) => $codec.encodeNullable(v, ${encodingFunction(type, codec, nonNull: true)})';
     }
 
-    if (type.element == null) {
+    if (type.element3 == null) {
       throw Exception('Invalid type for encoding: $type');
     }
 
-    if (TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
+    if (TypeChecker.typeNamed(Data).hasAnnotationOf(type.element3!)) {
       return '(v) => v.toJson()';
     }
 
-    if (type.element is EnumElement) {
+    if (type.element3 is EnumElement2) {
       return '$codec.encodeEnum';
     }
 
@@ -35,7 +35,7 @@ class CodecHelper {
       return '(v) => ${encodingStatement(type, codec, 'v', nonNull: nonNull)}';
     }
 
-    return '$codec.encode${firstUp(type.element!.displayName)}';
+    return '$codec.encode${firstUp(type.element3!.displayName)}';
   }
 
   static String decodingFunction(
@@ -47,20 +47,19 @@ class CodecHelper {
       return '(v, {String? name}) => $codec.decodeNullable(v, ${decodingFunction(type, codec, nonNull: true)}, name: name)';
     }
 
-    if (type.element == null) {
+    if (type.element3 == null) {
       throw Exception('Invalid type for decoding: $type');
     }
 
-    if (type.element is EnumElement) {
-      return '(v, {String? name}) => $codec.decodeEnum(v, ${type.element!.displayName}.values, name: name)';
+    if (type.element3 is EnumElement2) {
+      return '(v, {String? name}) => $codec.decodeEnum(v, ${type.element3!.displayName}.values, name: name)';
     }
 
     if (type.isDartCoreList || type.isDartCoreMap) {
       return '(v, {String? name}) => ${decodingStatement(type, codec, 'v', 'name', nonNull: nonNull)}';
     }
 
-    if (TypeChecker.typeNamed(Data)
-        .hasAnnotationOf(type.element!.baseElement)) {
+    if (TypeChecker.typeNamed(Data).hasAnnotationOf(type.element3!)) {
       final dataDeclarationName = typeExpression(type);
       final typeName = dataDeclarationName.startsWith('\$')
           ? dataDeclarationName.substring(1)
@@ -68,7 +67,7 @@ class CodecHelper {
       return '$typeName.bean.fromJson';
     }
 
-    return '$codec.decode${firstUp(type.element!.displayName)}';
+    return '$codec.decode${firstUp(type.element3!.displayName)}';
   }
 
   static String encodingStatement(
@@ -81,12 +80,11 @@ class CodecHelper {
       return '$codec.encodeNullable($value, ${encodingFunction(type, codec, nonNull: true)})';
     }
 
-    if (type.element == null) {
+    if (type.element3 == null) {
       throw Exception('Invalid type for encoding: $type');
     }
 
-    if (TypeChecker.typeNamed(Data)
-        .hasAnnotationOf(type.element!.baseElement)) {
+    if (TypeChecker.typeNamed(Data).hasAnnotationOf(type.element3!)) {
       return '$value.toJson()';
     }
 
@@ -119,12 +117,12 @@ class CodecHelper {
       return '$codec.decodeNullable($value, $decodeItem, name: $name)';
     }
 
-    if (type.element == null) {
+    if (type.element3 == null) {
       throw Exception('Invalid type for decoding: $type');
     }
 
-    if (type.element is EnumElement) {
-      return '$codec.decodeEnum($value, ${type.element!.displayName}.values, name: name)';
+    if (type.element3 is EnumElement2) {
+      return '$codec.decodeEnum($value, ${type.element3!.displayName}.values, name: name)';
     }
 
     if (type.isDartCoreList) {
