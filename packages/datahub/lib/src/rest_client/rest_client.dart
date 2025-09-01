@@ -25,7 +25,7 @@ class RestClient {
     HttpAuth? auth,
     io.SecurityContext? securityContext,
     bool Function(io.X509Certificate certificate)? onBadCertificate,
-    Duration? timeout,
+    Duration? timeout = const Duration(seconds: 30),
   }) async {
     return RestClient(
       await HttpClient.autodetect(

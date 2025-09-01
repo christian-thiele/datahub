@@ -12,6 +12,7 @@ dev_dependencies:
   melos: ^7.1.0
 
 workspace:
+  - packages/boost
   - packages/datahub
   - packages/datahub_aperture
   - packages/datahub_aperture_frontend
@@ -22,3 +23,8 @@ melos:
   scripts:
     analyze:
       exec: dart analyze .
+
+    test:
+      exec: dart test .
+      packageFilters:
+        flutter: false

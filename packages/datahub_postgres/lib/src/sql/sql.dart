@@ -11,13 +11,16 @@ class Sql implements SqlBuilder {
 
   Sql.ofSegments(this.segments);
 
-  static Sql param<T extends Object>(T? value, PostgresqlDataType<T> type) =>
+  static Sql param<T>(T? value, PostgresqlDataType<T> type) =>
       Sql.ofSegments([SqlParamSegment(value, type)]);
 
   Sql.combine(Iterable<Sql> elements)
       : segments = elements.expand((e) => e.segments).toList();
 
   Sql(String sql) : this.ofSegments([if (sql.isNotEmpty) SqlTextSegment(sql)]);
+
+  Sql.name(String name) : this(escapeName(name));
+  Sql.qualifiedName(Iterable<String> parts) : this(parts.map(escapeName).join('.'));
 
   void add(Sql sql) => segments.addAll(sql.segments);
 

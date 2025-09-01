@@ -72,7 +72,7 @@ abstract class ServiceHost extends ServiceResolver {
 
   @override
   TService resolveService<TService extends BaseService?>() {
-    final service = _services.whereIs<TService>().firstOrNull;
+    final service = _services.whereType<TService>().firstOrNull;
     if (service is TService) {
       return service;
     } else {

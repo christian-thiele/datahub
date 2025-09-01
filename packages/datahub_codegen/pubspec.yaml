@@ -10,9 +10,9 @@ environment:
 
 dependencies:
   analyzer: ^7.7.1
-  boost: ^1.8.10
+  boost: ^2.0.0-dev.1
   build: ^3.0.2
-  datahub: '>=0.17.0-dev.72 <1.0.0'
+  datahub: '>=0.18.0-dev.1 <1.0.0'
   source_gen: ^4.0.0
 
 dev_dependencies:

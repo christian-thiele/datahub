@@ -12,7 +12,7 @@ executables:
 
 dependencies:
   args: ^2.5.0
-  boost: ^1.8.10
+  boost: ^2.0.0-dev.1
   http: ^1.0.0
   http2: ^2.0.0
   intl: ^0.20.0
@@ -27,6 +27,11 @@ dependencies:
   fixnum: ^1.1.0
   stack_trace: ^1.11.1
   grpc: ^4.1.0
+
+dev_dependencies:
+  datahub_codegen: 0.18.0-dev.1
+  lints: ^6.0.0
+  build_runner: ^2.7.0
 
 false_secrets:
   - test/resource_hub/localhost.crt

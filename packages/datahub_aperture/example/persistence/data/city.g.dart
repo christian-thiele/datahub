@@ -46,6 +46,7 @@ abstract class _City with DataObject<City> {
     fromJson: fromJson,
     meta: [
       const Meta(name: 'City', namePlural: 'Cities', icon: 58280),
+      const ApertureRelation<Zone>(),
     ],
   );
 

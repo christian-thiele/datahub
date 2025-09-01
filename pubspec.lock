@@ -57,14 +57,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.2"
-  boost:
-    dependency: transitive
-    description:
-      name: boost
-      sha256: "32d4aed952abcf64d5aea5f0620e2ff85f2027f963fa889a53005247816cac90"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.8.10"
   buffer:
     dependency: transitive
     description:
@@ -725,6 +717,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.3.0"
+  pedantic:
+    dependency: transitive
+    description:
+      name: pedantic
+      sha256: "67fc27ed9639506c856c840ccce7594d0bdcd91bc8d53d6e52359449a1d50602"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.11.1"
   petitparser:
     dependency: transitive
     description:

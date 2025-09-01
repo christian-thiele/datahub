@@ -42,7 +42,7 @@ class Pool<T> {
 
   void give(T item) {
     final poolItem =
-        _taken.firstOrNullWhere((t) => t.item == item) ?? _PoolItem(item);
+        _taken.where((t) => t.item == item).firstOrNull ?? _PoolItem(item);
     if (_queue.isNotEmpty) {
       final next = _queue.removeAt(0);
       if (!_taken.contains(poolItem)) {
@@ -59,7 +59,7 @@ class Pool<T> {
 
   T giveReserved(T item) {
     final poolItem =
-        _taken.firstOrNullWhere((t) => t.item == item) ?? _PoolItem(item);
+        _taken.where((t) => t.item == item).firstOrNull ?? _PoolItem(item);
     if (!_taken.contains(poolItem)) {
       _taken.add(poolItem);
     }
@@ -173,7 +173,7 @@ class Pool<T> {
 
     if (_checkIsLive != null) {
       try {
-        switch (_checkIsLive!(item.item)) {
+        switch (_checkIsLive(item.item)) {
           case Future<bool> isLiveFuture:
             try {
               return await isLiveFuture.timeout(checkIsLiveTimeout);

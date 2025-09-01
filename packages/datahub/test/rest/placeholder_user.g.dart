@@ -3,63 +3,74 @@
 part of 'placeholder_user.dart';
 
 // **************************************************************************
-// CopyWithExtensionGenerator
+// Generator: DataBuilder
 // **************************************************************************
 
-extension PlaceholderUserCopyExtension on PlaceholderUser {
+abstract class _PlaceholderUser with DataObject<PlaceholderUser> {
+  const _PlaceholderUser();
+  static final $id = DataField<PlaceholderUser, String>(
+    name: 'id',
+    valueOf: (p) => p.id,
+  );
+
+  static final $name = DataField<PlaceholderUser, String>(
+    name: 'name',
+    valueOf: (p) => p.name,
+  );
+
+  static final DataBean<PlaceholderUser> bean = DataBean<PlaceholderUser>(
+    name: 'PlaceholderUser',
+    fields: List<DataField<PlaceholderUser, dynamic>>.unmodifiable([
+      $id,
+      $name,
+    ]),
+    fromValues: fromValues,
+    fromJson: fromJson,
+  );
+
+  @override
+  String get $$name => bean.name;
+  @override
+  List<DataField<PlaceholderUser, dynamic>> get $$fields => bean.fields;
   PlaceholderUser copyWith({
     String? id,
     String? name,
   }) {
+    final $data = this as PlaceholderUser;
     return PlaceholderUser(
-      id: id ?? this.id,
-      name: name ?? this.name,
+      id: id ?? $data.id,
+      name: name ?? $data.name,
     );
   }
-}
 
-// **************************************************************************
-// TransferBeanGenerator
-// **************************************************************************
+  static PlaceholderUser fromValues(Map<String, dynamic> data) {
+    return PlaceholderUser(
+      id: data['id'],
+      name: data['name'],
+    );
+  }
 
-// ignore_for_file: constant_identifier_names
-
-final PlaceholderUserTransferBean = _PlaceholderUserTransferBeanImpl._();
-
-class _PlaceholderUserTransferBeanImpl extends TransferBean<PlaceholderUser> {
-  _PlaceholderUserTransferBeanImpl._();
+  static PlaceholderUser fromJson(dynamic data, {String? name}) {
+    if (data is! Map<String, dynamic>) {
+      throw CodecException.typeMismatch(
+          PlaceholderUser, data.runtimeType, name);
+    }
+    final $codec = const JsonDataCodec();
+    return PlaceholderUser(
+      id: $codec.decodeString(data['id'],
+          name: DataCodec.childName(name, 'id')),
+      name: $codec.decodeString(data['name'],
+          name: DataCodec.childName(name, 'name')),
+    );
+  }
 
   @override
-  Map<String, dynamic> toMap(PlaceholderUser transferObject) {
+  Map<String, dynamic> toJson() {
+    final $codec = const JsonDataCodec();
+    final $data = this as PlaceholderUser;
     return {
-      'id': encodeTyped<String>(transferObject.id),
-      'name': encodeTyped<String>(transferObject.name),
+      'id': $codec.encodeString($data.id),
+      'name': $codec.encodeString($data.name),
     }..removeWhere((k, v) => v == null);
   }
-
-  @override
-  PlaceholderUser toObject(Map<String, dynamic> data, {String? name}) {
-    return PlaceholderUser(
-      id: decodeTyped<String>(data['id'],
-          name: name == null ? 'id' : '$name.id'),
-      name: decodeTyped<String>(data['name'],
-          name: name == null ? 'name' : '$name.name'),
-    );
-  }
-}
-
-// **************************************************************************
-// TransferSuperclassGenerator
-// **************************************************************************
-
-abstract class _TransferObject extends TransferObjectBase<void> {
-  @override
-  dynamic toJson() =>
-      PlaceholderUserTransferBean.toMap(this as PlaceholderUser);
-
-  @override
-  TransferBean<PlaceholderUser> get bean => PlaceholderUserTransferBean;
-
-  @override
-  void getId() {}
 }

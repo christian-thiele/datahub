@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+<module fileurl="file://$PROJECT_DIR$/packages/boost/melos_boost.iml" filepath="$PROJECT_DIR$/packages/boost/melos_boost.iml" />
 <module fileurl="file://$PROJECT_DIR$/packages/datahub/melos_datahub.iml" filepath="$PROJECT_DIR$/packages/datahub/melos_datahub.iml" />
+<module fileurl="file://$PROJECT_DIR$/packages/datahub_aperture/melos_datahub_aperture.iml" filepath="$PROJECT_DIR$/packages/datahub_aperture/melos_datahub_aperture.iml" />
+<module fileurl="file://$PROJECT_DIR$/packages/datahub_aperture_frontend/melos_datahub_aperture_frontend.iml" filepath="$PROJECT_DIR$/packages/datahub_aperture_frontend/melos_datahub_aperture_frontend.iml" />
 <module fileurl="file://$PROJECT_DIR$/packages/datahub_codegen/melos_datahub_codegen.iml" filepath="$PROJECT_DIR$/packages/datahub_codegen/melos_datahub_codegen.iml" />
 <module fileurl="file://$PROJECT_DIR$/packages/datahub_postgres/melos_datahub_postgres.iml" filepath="$PROJECT_DIR$/packages/datahub_postgres/melos_datahub_postgres.iml" />
 <module fileurl="file://$PROJECT_DIR$/melos_datahub_workspace.iml" filepath="$PROJECT_DIR$/melos_datahub_workspace.iml" />

@@ -9,6 +9,6 @@ class ResourceRevisionRequest extends _ResourceRevisionRequest {
 
   const ResourceRevisionRequest({required this.fieldData, this.revisionLive});
 
-  static const Decoder<ResourceRevisionRequest> fromJson =
-      _ResourceRevisionRequest.fromJson;
+  static DataBean<ResourceRevisionRequest> get bean =>
+      _ResourceRevisionRequest.bean;
 }

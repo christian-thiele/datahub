@@ -1,4 +1,5 @@
 import 'package:datahub_postgres/schema.dart';
+import 'package:datahub_postgres/types.dart';
 
 import 'sql_qualified_relation.dart';
 import 'sql_attribute.dart';
@@ -29,11 +30,11 @@ class SqlSelect implements SqlBuilder {
       ],
       if (offset != 0) ...[
         Sql(' OFFSET '),
-        Sql.param(offset, PostgresqlDataType.bigInt),
+        Sql.param(offset, PostgresqlInt()),
       ],
       if (limit != -1) ...[
         Sql(' LIMIT '),
-        Sql.param(limit, PostgresqlDataType.bigInt),
+        Sql.param(limit, PostgresqlInt()),
       ],
     ]);
   }

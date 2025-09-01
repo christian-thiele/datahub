@@ -13,6 +13,7 @@ abstract class _Zone with DataObject<Zone> {
     valueOf: (p) => p.id,
     meta: [
       const Id(),
+      const Meta(name: 'Zone ID'),
     ],
   );
 
@@ -21,6 +22,7 @@ abstract class _Zone with DataObject<Zone> {
     valueOf: (p) => p.cityId,
     meta: [
       const Meta(name: 'City ID'),
+      const RelationId<City>(),
     ],
   );
 
@@ -52,6 +54,7 @@ abstract class _Zone with DataObject<Zone> {
     fromJson: fromJson,
     meta: [
       const Meta(name: 'Zone', namePlural: 'Zones', icon: 58285),
+      const ApertureRelation<ParkingSpot>(),
     ],
   );
 

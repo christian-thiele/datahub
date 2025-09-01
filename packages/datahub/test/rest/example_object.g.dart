@@ -3,57 +3,61 @@
 part of 'example_object.dart';
 
 // **************************************************************************
-// CopyWithExtensionGenerator
+// Generator: DataBuilder
 // **************************************************************************
 
-extension ExampleObjectCopyExtension on ExampleObject {
+abstract class _ExampleObject with DataObject<ExampleObject> {
+  const _ExampleObject();
+  static final $slideshow = DataField<ExampleObject, Slideshow>(
+    name: 'slideshow',
+    valueOf: (p) => p.slideshow,
+  );
+
+  static final DataBean<ExampleObject> bean = DataBean<ExampleObject>(
+    name: 'ExampleObject',
+    fields: List<DataField<ExampleObject, dynamic>>.unmodifiable([
+      $slideshow,
+    ]),
+    fromValues: fromValues,
+    fromJson: fromJson,
+  );
+
+  @override
+  String get $$name => bean.name;
+  @override
+  List<DataField<ExampleObject, dynamic>> get $$fields => bean.fields;
   ExampleObject copyWith({
     Slideshow? slideshow,
   }) {
+    final $data = this as ExampleObject;
     return ExampleObject(
-      slideshow ?? this.slideshow,
+      slideshow: slideshow ?? $data.slideshow,
     );
   }
-}
 
-// **************************************************************************
-// TransferBeanGenerator
-// **************************************************************************
+  static ExampleObject fromValues(Map<String, dynamic> data) {
+    return ExampleObject(
+      slideshow: data['slideshow'],
+    );
+  }
 
-// ignore_for_file: constant_identifier_names
-
-final ExampleObjectTransferBean = _ExampleObjectTransferBeanImpl._();
-
-class _ExampleObjectTransferBeanImpl extends TransferBean<ExampleObject> {
-  _ExampleObjectTransferBeanImpl._();
+  static ExampleObject fromJson(dynamic data, {String? name}) {
+    if (data is! Map<String, dynamic>) {
+      throw CodecException.typeMismatch(ExampleObject, data.runtimeType, name);
+    }
+    final $codec = const JsonDataCodec();
+    return ExampleObject(
+      slideshow: Slideshow.bean.fromJson(data['slideshow'],
+          name: DataCodec.childName(name, 'slideshow')),
+    );
+  }
 
   @override
-  Map<String, dynamic> toMap(ExampleObject transferObject) {
+  Map<String, dynamic> toJson() {
+    final $codec = const JsonDataCodec();
+    final $data = this as ExampleObject;
     return {
-      'slideshow': transferObject.slideshow.toJson(),
+      'slideshow': $data.slideshow.toJson(),
     }..removeWhere((k, v) => v == null);
   }
-
-  @override
-  ExampleObject toObject(Map<String, dynamic> data, {String? name}) {
-    return ExampleObject(
-      SlideshowTransferBean.toObject(data['slideshow'],
-          name: name == null ? 'slideshow' : '$name.slideshow'),
-    );
-  }
-}
-
-// **************************************************************************
-// TransferSuperclassGenerator
-// **************************************************************************
-
-abstract class _TransferObject extends TransferObjectBase<void> {
-  @override
-  dynamic toJson() => ExampleObjectTransferBean.toMap(this as ExampleObject);
-
-  @override
-  TransferBean<ExampleObject> get bean => ExampleObjectTransferBean;
-
-  @override
-  void getId() {}
 }

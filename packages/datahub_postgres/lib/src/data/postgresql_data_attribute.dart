@@ -1,5 +1,6 @@
 import 'package:datahub/data.dart';
 import 'package:datahub_postgres/schema.dart';
+import 'package:datahub_postgres/src/types/types.dart';
 
 import 'data_utils.dart';
 
@@ -14,21 +15,15 @@ class PostgresqlDataAttribute<T> extends PostgresqlAttribute {
   });
 
   factory PostgresqlDataAttribute(DataField<T, dynamic> field) {
+    // TODO read postgres meta annotations to override default behavior
     final isId = field.meta.any((e) => e is Id);
+    final type = PostgresqlDataType.findForType(field.type);
     return PostgresqlDataAttribute._(
       field: field,
       name: translateName(field.name),
-      type: switch (field) {
-        DataField<dynamic, int?>() =>
-          isId ? PostgresqlDataType.bigSerial : PostgresqlDataType.bigInt,
-        DataField<dynamic, String?>() => PostgresqlDataType.varChar,
-        DataField<dynamic, double?>() => PostgresqlDataType.doublePrecision,
-        DataField<dynamic, bool?>() => PostgresqlDataType.boolean,
-        DataField<dynamic, DateTime?>() => PostgresqlDataType.timestamp,
-        DataField<dynamic, dynamic>() => PostgresqlDataType.jsonb,
-      },
+      type: type,
       constraints: [
-        if (isId) PrimaryKeyConstraint(),
+        if (isId) PrimaryKeyConstraint(auto: type.type.isExact<int>()),
         if (field is DataField<T, Object>) NotNullConstraint(),
       ],
     );

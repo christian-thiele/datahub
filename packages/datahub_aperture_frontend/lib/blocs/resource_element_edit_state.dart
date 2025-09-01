@@ -72,3 +72,7 @@ final class ResourceElementEditError extends ResourceElementEditState {
 
   const ResourceElementEditError({this.message});
 }
+
+final class ResourceElementEditDeleted extends ResourceElementEditState {
+  const ResourceElementEditDeleted();
+}

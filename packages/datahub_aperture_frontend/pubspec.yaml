@@ -34,7 +34,7 @@ dependencies:
   bloc: ^9.0.0
   flutter_svg: ^2.2.0
   shared_preferences: ^2.5.3
-  boost: ^1.8.10
+  boost: ^2.0.0-dev.1
   intl: ^0.20.0
   file_picker: ^10.3.2
   flutter_map: ^8.2.1

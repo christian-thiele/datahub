@@ -21,8 +21,8 @@ class NavBarPage extends StatelessWidget {
       ),
       child: BlocConsumer<ConfigurationCubit, ConfigurationState>(
         listener: (context, state) {
-          if (state is Error) {
-            context.go('/error');
+          if (state case ConfigurationError(:final message)) {
+            context.go('/error', extra: {'error': message});
           }
         },
         builder: (context, state) {

@@ -2,7 +2,6 @@ import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
 import 'package:datahub_aperture_frontend/blocs/resource_element_edit_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
-import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_overlay.dart';
@@ -37,11 +36,15 @@ class ResourceElementEditPage extends StatelessWidget {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text(S.of(context).resourceSaved)),
               );
+            } else if (state is ResourceElementEditDeleted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(S.of(context).resourceDeleted)),
+              );
+              context.pop();
             }
           },
           builder: (context, state) {
             return switch (state) {
-              ResourceElementEditLoading() => LoadingView(),
               ResourceElementEditError(:final message) => ErrorView(
                 message: message,
               ),
@@ -78,6 +81,7 @@ class ResourceElementEditPage extends StatelessWidget {
                         context.read<ResourceElementEditCubit>().delete(),
                   ),
                 ),
+              _ => LoadingView(),
             };
           },
         ),

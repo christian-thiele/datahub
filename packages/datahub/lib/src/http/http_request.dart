@@ -41,16 +41,16 @@ class HttpRequest {
   ) {
     final headers = http2Headers(headerMessage.headers);
 
-    if (!headers.a.containsKey(':method') || !headers.a.containsKey(':path')) {
+    if (!headers.$1.containsKey(':method') || !headers.$1.containsKey(':path')) {
       throw Exception('Invalid header message.');
     }
 
-    final path = Uri.parse(headers.a[':path']!);
+    final path = Uri.parse(headers.$1[':path']!);
 
     return HttpRequest(
-      ApiRequestMethod.parse(headers.a[':method']!),
+      ApiRequestMethod.parse(headers.$1[':method']!),
       path,
-      headers.b,
+      headers.$2,
       data,
     );
   }

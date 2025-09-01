@@ -75,9 +75,7 @@ void main() {
             SimpleDto(text: 'test2', number: 2),
           ],
         );
-        final data = await response.getBody<List<SimpleDto>>(
-          decoder: SimpleDtoTransferBean,
-        );
+        final data = await response.getList<SimpleDto>(SimpleDto.bean);
         expect(data, isA<List<SimpleDto>>());
         expect(data, hasLength(2));
         expect(data[0],

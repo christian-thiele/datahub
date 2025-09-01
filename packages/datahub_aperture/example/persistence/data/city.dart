@@ -1,12 +1,14 @@
 import 'package:datahub/data.dart';
+import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/icons.dart';
-import 'package:datahub_aperture/src/data/meta/aperture_display_field.dart';
-import 'package:datahub_aperture/src/data/meta/aperture_field.dart';
+
+import 'zone.dart';
 
 part 'city.g.dart';
 
 @Data()
 @Meta(name: 'City', namePlural: 'Cities', icon: Icons.location_city)
+@ApertureRelation<Zone>()
 class City extends _City {
   @Id()
   @Meta(name: 'ID')

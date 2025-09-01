@@ -6,7 +6,6 @@ import 'package:datahub/api.dart';
 import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
 
-
 class ApiRequest {
   final ApiRequestMethod method;
   final Route route;
@@ -95,20 +94,25 @@ class ApiRequest {
     throw ApiError.invalidType(T);
   }
 
-  /// Returns decoded body data using a decoder.
-  ///
-  /// Useful with [DataObject]s.
-  Future<T> getData<T>(Decoder<T> decoder) async {
-    final obj = jsonDecode(await getTextBody());
-    return decoder(obj);
+  /// Returns decoded body data using a [DataBean].
+  Future<T> getData<T extends DataObject<T>>(DataBean<T> bean) async {
+    return bean.fromJson(await getJsonBody());
   }
 
-  /// Returns decoded body data using a decoder.
+  /// Returns decoded body data as list using a [DataBean].
   ///
-  /// Useful with [DataObject]s.
-  Future<List<T>> getList<T>(Decoder<T> decoder) async {
-    final obj = jsonDecode(await getTextBody());
-    return const JsonDataCodec().decodeList<T>(obj, decoder);
+  /// Setting [allowSingleFlat] to true enables parsing of a json object
+  /// (instead of a list of objects) into a list with one item instead of
+  /// throwing a bad-request exception.
+  Future<List<T>> getList<T extends DataObject<T>>(DataBean<T> bean,
+      {bool allowSingleFlat = false}) async {
+    final json = jsonDecode(await getTextBody());
+    return switch (json) {
+      Map<String, dynamic>() when allowSingleFlat => [bean.fromJson(json)],
+      List<dynamic>() =>
+        json.mapIndexed((e, idx) => bean.fromJson(e, name: '[$idx]')).toList(),
+      _ => throw ApiRequestException.badRequest('Invalid body data.'),
+    };
   }
 
   /// Returns the named query parameter.

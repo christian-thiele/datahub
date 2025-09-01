@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:datahub/datahub.dart';
 
 import 'resource_revision_info.dart';

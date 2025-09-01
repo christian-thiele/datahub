@@ -207,16 +207,17 @@ class ApiService extends BaseService {
 
   RequestHandler _findRequestHandler(String absolutePath) {
     if (!absolutePath.startsWith(basePath)) {
-      return ErrorRequestHandler(ApiRequestException.notFound(
-          'Resource \"$absolutePath\" not found.'));
+      return ErrorRequestHandler(
+          ApiRequestException.notFound('Resource "$absolutePath" not found.'));
     }
 
     final path = absolutePath.substring(basePath.length);
 
     return endpoints
-            .firstOrNullWhere((element) => element.routePattern.match(path)) ??
+            .where((element) => element.routePattern.match(path))
+            .firstOrNull ??
         ErrorRequestHandler(ApiRequestException.notFound(
-            'Resource \"$absolutePath\" not found.'));
+            'Resource "$absolutePath" not found.'));
   }
 
   static String _generateRequestId() {

@@ -9,7 +9,9 @@ final class NotNullConstraint extends PostgresqlAttributeConstraint {
 }
 
 final class PrimaryKeyConstraint extends PostgresqlAttributeConstraint {
-  const PrimaryKeyConstraint();
+  final bool auto;
+
+  const PrimaryKeyConstraint({this.auto = true});
 }
 
 final class UniqueConstraint extends PostgresqlAttributeConstraint {

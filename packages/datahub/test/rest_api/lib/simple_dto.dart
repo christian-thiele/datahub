@@ -2,13 +2,15 @@ import 'package:datahub/datahub.dart';
 
 part 'simple_dto.g.dart';
 
-@TransferObject()
-class SimpleDto extends _TransferObject {
+@Data()
+class SimpleDto extends _SimpleDto {
   final String text;
   final int number;
 
-  SimpleDto({
+  const SimpleDto({
     required this.text,
     required this.number,
   });
+
+  static DataBean<SimpleDto> get bean => _SimpleDto.bean;
 }

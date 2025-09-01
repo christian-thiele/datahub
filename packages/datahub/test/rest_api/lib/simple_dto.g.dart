@@ -3,62 +3,73 @@
 part of 'simple_dto.dart';
 
 // **************************************************************************
-// CopyWithExtensionGenerator
+// Generator: DataBuilder
 // **************************************************************************
 
-extension SimpleDtoCopyExtension on SimpleDto {
+abstract class _SimpleDto with DataObject<SimpleDto> {
+  const _SimpleDto();
+  static final $text = DataField<SimpleDto, String>(
+    name: 'text',
+    valueOf: (p) => p.text,
+  );
+
+  static final $number = DataField<SimpleDto, int>(
+    name: 'number',
+    valueOf: (p) => p.number,
+  );
+
+  static final DataBean<SimpleDto> bean = DataBean<SimpleDto>(
+    name: 'SimpleDto',
+    fields: List<DataField<SimpleDto, dynamic>>.unmodifiable([
+      $text,
+      $number,
+    ]),
+    fromValues: fromValues,
+    fromJson: fromJson,
+  );
+
+  @override
+  String get $$name => bean.name;
+  @override
+  List<DataField<SimpleDto, dynamic>> get $$fields => bean.fields;
   SimpleDto copyWith({
     String? text,
     int? number,
   }) {
+    final $data = this as SimpleDto;
     return SimpleDto(
-      text: text ?? this.text,
-      number: number ?? this.number,
+      text: text ?? $data.text,
+      number: number ?? $data.number,
     );
   }
-}
 
-// **************************************************************************
-// TransferBeanGenerator
-// **************************************************************************
+  static SimpleDto fromValues(Map<String, dynamic> data) {
+    return SimpleDto(
+      text: data['text'],
+      number: data['number'],
+    );
+  }
 
-// ignore_for_file: constant_identifier_names
-
-final SimpleDtoTransferBean = _SimpleDtoTransferBeanImpl._();
-
-class _SimpleDtoTransferBeanImpl extends TransferBean<SimpleDto> {
-  _SimpleDtoTransferBeanImpl._();
+  static SimpleDto fromJson(dynamic data, {String? name}) {
+    if (data is! Map<String, dynamic>) {
+      throw CodecException.typeMismatch(SimpleDto, data.runtimeType, name);
+    }
+    final $codec = const JsonDataCodec();
+    return SimpleDto(
+      text: $codec.decodeString(data['text'],
+          name: DataCodec.childName(name, 'text')),
+      number: $codec.decodeInt(data['number'],
+          name: DataCodec.childName(name, 'number')),
+    );
+  }
 
   @override
-  Map<String, dynamic> toMap(SimpleDto transferObject) {
+  Map<String, dynamic> toJson() {
+    final $codec = const JsonDataCodec();
+    final $data = this as SimpleDto;
     return {
-      'text': encodeTyped<String>(transferObject.text),
-      'number': encodeTyped<int>(transferObject.number),
+      'text': $codec.encodeString($data.text),
+      'number': $codec.encodeInt($data.number),
     }..removeWhere((k, v) => v == null);
   }
-
-  @override
-  SimpleDto toObject(Map<String, dynamic> data, {String? name}) {
-    return SimpleDto(
-      text: decodeTyped<String>(data['text'],
-          name: name == null ? 'text' : '$name.text'),
-      number: decodeTyped<int>(data['number'],
-          name: name == null ? 'number' : '$name.number'),
-    );
-  }
-}
-
-// **************************************************************************
-// TransferSuperclassGenerator
-// **************************************************************************
-
-abstract class _TransferObject extends TransferObjectBase<void> {
-  @override
-  dynamic toJson() => SimpleDtoTransferBean.toMap(this as SimpleDto);
-
-  @override
-  TransferBean<SimpleDto> get bean => SimpleDtoTransferBean;
-
-  @override
-  void getId() {}
 }

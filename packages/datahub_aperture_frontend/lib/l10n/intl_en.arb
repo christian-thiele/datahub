@@ -27,5 +27,6 @@
   "revisionHistory": "Revision History",
   "byUsername": "by {userName}",
   "draft": "Draft",
-  "refresh": "Refresh"
+  "refresh": "Refresh",
+  "resourceDeleted": "Resource Deleted."
 }

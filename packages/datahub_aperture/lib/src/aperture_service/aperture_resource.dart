@@ -1,7 +1,6 @@
-import 'package:datahub_aperture/src/aperture_service/resource_element_endpoint.dart';
+import 'package:datahub_aperture/api.dart';
 
 import 'aperture_resource_repository.dart';
-import 'models/api.dart';
 
 class ApertureResource {
   final ResourceDescription description;

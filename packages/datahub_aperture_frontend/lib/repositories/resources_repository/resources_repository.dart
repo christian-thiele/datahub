@@ -36,4 +36,11 @@ abstract interface class ResourcesRepository implements Repository {
     Map<String, dynamic> changes,
     DateTime? revisionLive,
   );
+
+  Future<ResourceData?> deleteElement(
+    Authentication authentication,
+    String resourceId,
+    String elementId,
+    DateTime? revisionLive,
+  );
 }

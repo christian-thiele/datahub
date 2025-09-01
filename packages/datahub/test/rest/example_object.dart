@@ -4,9 +4,11 @@ import 'slideshow.dart';
 
 part 'example_object.g.dart';
 
-@TransferObject()
-class ExampleObject extends _TransferObject {
+@Data()
+class ExampleObject extends _ExampleObject {
   final Slideshow slideshow;
 
-  ExampleObject(this.slideshow);
+  const ExampleObject({required this.slideshow});
+
+  static DataBean<ExampleObject> get bean => _ExampleObject.bean;
 }

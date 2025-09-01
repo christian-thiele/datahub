@@ -51,8 +51,7 @@ Future<void> _testClient(RestClient client) async {
   final text = await client.get('/html').thenGetTextBody();
   expect(text, contains('<html>'));
 
-  final dto =
-      await client.get('/json').thenGetBody(decoder: ExampleObjectTransferBean);
+  final dto = await client.get('/json').thenGetData(ExampleObject.bean);
   expect(dto.slideshow.author, equals('Yours Truly'));
   expect(dto.slideshow.date, equals('date of publication'));
   expect(dto.slideshow.title, equals('Sample Slide Show'));
@@ -85,8 +84,7 @@ Future<void> _testListRequest() async {
       Uri.parse('https://jsonplaceholder.typicode.com'));
   try {
     expect(
-      await client1.get('/users').thenGetBody<List<PlaceholderUser>>(
-          decoder: PlaceholderUserTransferBean),
+      await client1.get('/users').thenGetList(PlaceholderUser.bean),
       allOf(isA<List<PlaceholderUser>>(), hasLength(10)),
     );
   } finally {

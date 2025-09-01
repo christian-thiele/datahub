@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'dart:io' as io;
 import 'package:boost/boost.dart';
+import 'package:datahub/datahub.dart';
 import 'package:http/http.dart' as http;
 import 'package:http2/http2.dart' as http2;
 
-import 'http_request.dart';
-import 'http_response.dart';
 import 'utils.dart';
 
 abstract class HttpClient {
@@ -19,8 +18,7 @@ abstract class HttpClient {
           {io.SecurityContext? securityContext}) =>
       _Http11Client(address, securityContext);
 
-  static HttpClient http2(
-    Uri address, {
+  static HttpClient http2(Uri address, {
     io.SecurityContext? securityContext,
     bool Function(io.X509Certificate certificate)? onBadCertificate,
     Duration? timeout,
@@ -33,8 +31,7 @@ abstract class HttpClient {
         null,
       );
 
-  static Future<HttpClient> autodetect(
-    Uri address, {
+  static Future<HttpClient> autodetect(Uri address, {
     io.SecurityContext? securityContext,
     bool Function(io.X509Certificate certificate)? onBadCertificate,
     Duration? timeout,
@@ -131,13 +128,11 @@ class _Http2Client extends HttpClient {
   @override
   final bool isHttp2 = true;
 
-  _Http2Client(
-    super.address,
-    this.securityContext,
-    this.onBadCertificate,
-    this.timeout,
-    this.initialSocket,
-  );
+  _Http2Client(super.address,
+      this.securityContext,
+      this.onBadCertificate,
+      this.timeout,
+      this.initialSocket,);
 
   Future<http2.ClientTransportConnection> _connect() async {
     final useSSL = address.scheme == 'https';
@@ -199,7 +194,7 @@ class _Http2Client extends HttpClient {
     final connection = await _connection.get();
 
     final path = httpRequest.requestUri.hasQuery
-        ? httpRequest.path + '?' + httpRequest.requestUri.query
+        ? '${httpRequest.path}?${httpRequest.requestUri.query}'
         : httpRequest.path;
 
     final requestHeaders = [
@@ -228,12 +223,12 @@ class _Http2Client extends HttpClient {
 
     final response = Completer<HttpResponse>();
     stream.incomingMessages.listen(
-      (event) {
+          (event) {
         try {
           if (event is http2.HeadersStreamMessage) {
             final responseHeaders = http2Headers(event.headers);
             final statusCode =
-                int.tryParse(responseHeaders.a[':status'] ?? '') ??
+                int.tryParse(responseHeaders.$1[':status'] ?? '') ??
                     (throw Exception('Missing status code in response.'));
 
             if (event.endStream) {
@@ -244,7 +239,7 @@ class _Http2Client extends HttpClient {
               HttpResponse(
                 httpRequest.requestUri,
                 statusCode,
-                responseHeaders.b,
+                responseHeaders.$2,
                 bodyStream.stream,
               ),
             );

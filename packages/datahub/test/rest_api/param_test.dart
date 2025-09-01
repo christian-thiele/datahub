@@ -76,6 +76,7 @@ void _queryStringList() {
 }
 
 void _queryIntList() {
+  print('this');
   expect(
       _request('http://localhost/?list=2&list=4&list=6&other=8')
           .getParam<List<int>>('list'),

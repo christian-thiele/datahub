@@ -22,4 +22,6 @@ abstract interface class ApertureResourceWriteRepository
     Map<String, dynamic> data,
     DateTime? revisionLive,
   );
+
+  Future<ResourceData> deleteElement(String id, DateTime? revisionLive);
 }

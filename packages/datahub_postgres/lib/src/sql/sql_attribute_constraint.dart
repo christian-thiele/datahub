@@ -8,7 +8,10 @@ class SqlAttributeConstraint {
   Sql toSql() {
     return switch (constraint) {
       NotNullConstraint() => Sql('NOT NULL'),
-      PrimaryKeyConstraint() => Sql('PRIMARY KEY'),
+      PrimaryKeyConstraint(:final auto) => Sql.ofSegments([
+          SqlTextSegment('PRIMARY KEY'),
+          if (auto) SqlTextSegment(' GENERATED ALWAYS AS IDENTITY'),
+        ]),
       UniqueConstraint() => Sql('UNIQUE'),
       DefaultConstraint(:final value, :final type) => Sql.ofSegments([
           SqlTextSegment('DEFAULT '),

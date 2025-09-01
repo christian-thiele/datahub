@@ -9,7 +9,7 @@ environment:
   sdk: ^3.6.0
 
 dependencies:
-  boost: ^1.8.10
+  boost: ^2.0.0-dev.1
   buffer: ^1.2.3
   datahub: ^0.18.0-dev.1
   postgres: ^3.5.6

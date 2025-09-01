@@ -31,7 +31,10 @@ class ResourcePage extends StatelessWidget {
           builder: (context, state) {
             return switch (state) {
               ResourceLoading() => LoadingView(),
-              ResourceError(:final message) => ErrorView(message: message),
+              ResourceError(:final message) => ErrorView(
+                message: message,
+                onRetryPressed: () => context.read<ResourceCubit>().update(),
+              ),
               ResourceValue(:final resource, :final data, :final filter) =>
                 Column(
                   spacing: 16,

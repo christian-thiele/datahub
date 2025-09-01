@@ -2,13 +2,19 @@ import 'package:datahub/datahub.dart';
 
 part 'slideshow.g.dart';
 
-@TransferObject()
-class Slideshow extends _TransferObject {
+@Data()
+class Slideshow extends _Slideshow {
   final String author;
   final String date;
   final String title;
 
-  Slideshow(this.author, this.date, this.title);
+  const Slideshow({
+    required this.author,
+    required this.date,
+    required this.title,
+  });
+
+  static get bean => _Slideshow.bean;
 
   @override
   bool operator ==(Object other) {

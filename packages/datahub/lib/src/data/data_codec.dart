@@ -84,58 +84,63 @@ abstract class DataCodec {
   }
 
   T decodeTyped<T>(dynamic value, {String? name}) {
-    if (value is T) {
+    return decodeType(TypeCheck<T>(), value) as T;
+  }
+
+  dynamic decodeType(TypeCheck type, dynamic value, {String? name}) {
+    if (type.accepts(value)) {
       return value;
     }
 
-    if (TypeCheck<T>().isSupertypeOf<String>()) {
-      return decodeString(value, name: name) as T;
+    if (type.isSupertypeOf<String>()) {
+      return decodeString(value, name: name);
     }
 
-    if (TypeCheck<T>().isSupertypeOf<int>()) {
-      return decodeInt(value, name: name) as T;
+    if (type.isSupertypeOf<int>()) {
+      return decodeInt(value, name: name);
     }
 
-    if (TypeCheck<T>().isSupertypeOf<double>()) {
-      return decodeDouble(value, name: name) as T;
+    if (type.isSupertypeOf<double>()) {
+      return decodeDouble(value, name: name);
     }
-    if (TypeCheck<T>().isSupertypeOf<bool>()) {
-      return decodeBool(value, name: name) as T;
+    if (type.isSupertypeOf<bool>()) {
+      return decodeBool(value, name: name);
     }
-    if (TypeCheck<T>().isSupertypeOf<DateTime>()) {
-      return decodeDateTime(value, name: name) as T;
+    if (type.isSupertypeOf<DateTime>()) {
+      return decodeDateTime(value, name: name);
     }
-    if (TypeCheck<T>().isSupertypeOf<Duration>()) {
-      return decodeDuration(value, name: name) as T;
-    }
-    if (TypeCheck<T>().isSupertypeOf<Uint8List>()) {
-      return decodeUint8List(value, name: name) as T;
+    if (type.isSupertypeOf<Duration>()) {
+      return decodeDuration(value, name: name);
     }
 
-    if (TypeCheck<T>().isListOf<String>()) {
-      return decodeList<String>(value, decodeString, name: name) as T;
+    if (type.isListOf<String>()) {
+      return decodeList(value, decodeString);
     }
 
-    if (TypeCheck<T>().isListOf<int>()) {
-      return decodeList<int>(value, decodeInt, name: name) as T;
-    }
-    if (TypeCheck<T>().isListOf<double>()) {
-      return decodeList<double>(value, decodeDouble, name: name) as T;
-    }
-    if (TypeCheck<T>().isListOf<bool>()) {
-      return decodeList<bool>(value, decodeBool, name: name) as T;
-    }
-    if (TypeCheck<T>().isListOf<DateTime>()) {
-      return decodeList<DateTime>(value, decodeDateTime, name: name) as T;
-    }
-    if (TypeCheck<T>().isListOf<Duration>()) {
-      return decodeList<Duration>(value, decodeDuration, name: name) as T;
-    }
-    if (TypeCheck<T>().isListOf<Uint8List>()) {
-      return decodeList<Uint8List>(value, decodeUint8List, name: name) as T;
+    if (type.isExact<Uint8List>() || type.isExact<Uint8List?>()) {
+      return decodeUint8List(value, name: name);
     }
 
-    throw CodecException('Cannot decode $T typed.');
+    if (type.isSupertypeOf<List<int>>()) {
+      return decodeList<int>(value, decodeInt, name: name);
+    }
+    if (type.isSupertypeOf<List<double>>()) {
+      return decodeList<double>(value, decodeDouble, name: name);
+    }
+    if (type.isSupertypeOf<List<bool>>()) {
+      return decodeList<bool>(value, decodeBool, name: name);
+    }
+    if (type.isSupertypeOf<List<DateTime>>()) {
+      return decodeList<DateTime>(value, decodeDateTime, name: name);
+    }
+    if (type.isSupertypeOf<List<Duration>>()) {
+      return decodeList<Duration>(value, decodeDuration, name: name);
+    }
+    if (type.isSupertypeOf<List<Uint8List>>()) {
+      return decodeList<Uint8List>(value, decodeUint8List, name: name);
+    }
+
+    throw CodecException('Cannot decode ${type.name} typed.');
   }
 
   static String? childName(String? parent, String? child) {

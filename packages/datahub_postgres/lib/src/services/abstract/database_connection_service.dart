@@ -85,11 +85,10 @@ abstract class DatabaseConnectionService<TConnection extends DatabaseConnection>
     final connection = await _pool.take(
         timeout: timeout ?? Duration(seconds: connectionPoolTimeout));
 
-    final completer = Completer<_Box<TResult>>();
-    runZonedGuarded(
+    return await runZoned(
       () async {
         try {
-          completer.complete(_Box<TResult>.value(await delegate(connection)));
+          return await delegate(connection);
         } on SocketException catch (e, stack) {
           resolve<LogService?>()?.warn(
             'Socket exception in database connection.',
@@ -113,48 +112,15 @@ abstract class DatabaseConnectionService<TConnection extends DatabaseConnection>
           _pool.give(connection);
         }
       },
-      (error, stack) {
-        if (!completer.isCompleted) {
-          completer.complete(_Box<TResult>.error(error, stack));
-        } else {
-          resolve<LogService?>()?.warn(
-            'Unhandled error in DatabaseAdapter.',
-            error: error,
-            trace: stack,
-          );
-        }
-      },
       zoneValues: {
         '$_adapterId/connection': connection,
       },
     );
-
-    return (await completer.future).value;
   }
 
   void _updateMetrics() {
     _poolTargetMetric?.set(_pool.targetSize);
     _poolTotalMetric?.set(_pool.total);
     _poolAvailableMetric?.set(_pool.available);
-  }
-}
-
-class _Box<T> {
-  final dynamic error;
-  final StackTrace? stack;
-  final T? _value;
-
-  _Box.error(this.error, this.stack) : _value = null;
-
-  _Box.value(this._value)
-      : error = null,
-        stack = null;
-
-  Future<T> get value {
-    if (error != null) {
-      return Future<T>.error(error, stack);
-    } else {
-      return Future<T>.value(_value);
-    }
   }
 }

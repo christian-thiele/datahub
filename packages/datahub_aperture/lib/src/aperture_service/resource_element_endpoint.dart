@@ -5,7 +5,7 @@ import 'package:datahub/api.dart';
 import 'package:datahub_aperture/src/aperture_service/aperture_resource.dart';
 import 'package:datahub_aperture/src/aperture_service/aperture_resource_repository.dart';
 
-import 'models/api.dart';
+import 'package:datahub_aperture/api.dart';
 
 class ResourceElementEndpoint extends ApiEndpoint {
   final ApertureResource resource;
@@ -42,7 +42,7 @@ class ResourceElementEndpoint extends ApiEndpoint {
     if (resource.repository
         case final ApertureResourceWriteRepository repository) {
       final data = await request
-          .getData<ResourceRevisionRequest>(ResourceRevisionRequest.fromJson);
+          .getData<ResourceRevisionRequest>(ResourceRevisionRequest.bean);
       return await repository.createElement(
         data.fieldData,
         data.revisionLive,
@@ -55,8 +55,7 @@ class ResourceElementEndpoint extends ApiEndpoint {
   @override
   Future<ResourceData> patch(ApiRequest request) async {
     if (request.route.getParam<String?>('id') case final id?) {
-      final data = await request
-          .getData<ResourceRevisionRequest>(ResourceRevisionRequest.fromJson);
+      final data = await request.getData(ResourceRevisionRequest.bean);
 
       if (resource.repository
           case final ApertureResourceWriteRepository repository) {
@@ -65,6 +64,22 @@ class ResourceElementEndpoint extends ApiEndpoint {
           data.fieldData,
           data.revisionLive,
         );
+      } else {
+        throw ApiRequestException.methodNotAllowed();
+      }
+    }
+
+    throw ApiRequestException.methodNotAllowed();
+  }
+
+  @override
+  Future<ResourceData> delete(ApiRequest request) async {
+    if (request.route.getParam<String?>('id') case final id?) {
+      final revisionLive = request.getParam<DateTime?>('revisionLive');
+
+      if (resource.repository
+          case final ApertureResourceWriteRepository repository) {
+        return await repository.deleteElement(id, revisionLive);
       } else {
         throw ApiRequestException.methodNotAllowed();
       }

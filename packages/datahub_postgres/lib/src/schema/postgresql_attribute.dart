@@ -1,5 +1,5 @@
 import 'postgresql_attribute_constraint.dart';
-import 'postgresql_data_type.dart';
+import '../types/postgresql_data_type.dart';
 
 class PostgresqlAttribute {
   final String name;

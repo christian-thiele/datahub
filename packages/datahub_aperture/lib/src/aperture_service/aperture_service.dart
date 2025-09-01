@@ -9,7 +9,7 @@ import 'package:datahub_aperture/src/aperture_service/resources_endpoint.dart';
 class ApertureService extends ApiService {
   ApertureService({
     String? config,
-    required ApertureConfig apertureConfig,
+    required ApertureConfigDelegate apertureConfig,
   }) : super(
           config,
           [

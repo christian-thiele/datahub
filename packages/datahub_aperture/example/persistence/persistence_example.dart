@@ -1,12 +1,12 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
-import 'package:datahub_aperture/src/aperture_service/aperture_config.dart';
-import 'package:datahub_aperture/src/data/aperture_data_repository.dart';
+import 'package:datahub_aperture/src/data/aperture_config_data_delegate.dart';
 import 'package:datahub_aperture/src/data/aperture_data_resource.dart';
 import 'package:datahub_postgres/data.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 
 import 'data/city.dart';
+import 'data/parking_spot.dart';
 import 'data/zone.dart';
 
 void main() {
@@ -18,23 +18,30 @@ void main() {
               relations: [
                 PostgresqlDataTable(City.bean),
                 PostgresqlDataTable(Zone.bean),
+                PostgresqlDataTable(ParkingSpot.bean),
               ],
             ),
           ),
       () => PostgresqlDataRepository(bean: City.bean),
       () => PostgresqlDataRepository(bean: Zone.bean),
+      () => PostgresqlDataRepository(bean: ParkingSpot.bean),
       () => ApertureService(
-            apertureConfig: ApertureConfig(
-              resources: [
+            apertureConfig: ApertureConfigDataDelegate(
+              dataResources: [
                 ApertureDataResource(
                   City.bean,
-                  repository: ApertureDataRepositoryDelegate<City,
-                      PostgresqlDataRepository<City>>(City.bean),
+                  ApertureDataRepositoryResolver<City,
+                      PostgresqlDataRepository<City>>(),
                 ),
                 ApertureDataResource(
                   Zone.bean,
-                  repository: ApertureDataRepositoryDelegate<Zone,
-                      PostgresqlDataRepository<Zone>>(Zone.bean),
+                  ApertureDataRepositoryResolver<Zone,
+                      PostgresqlDataRepository<Zone>>(),
+                ),
+                ApertureDataResource(
+                  ParkingSpot.bean,
+                  ApertureDataRepositoryResolver<ParkingSpot,
+                      PostgresqlDataRepository<ParkingSpot>>(),
                 ),
               ],
             ),
@@ -47,6 +54,7 @@ void main() {
         'username': 'postgres',
         'password': 'postgres',
         'useSsl': false,
+        'logStatements': true,
       },
     },
   ).run();

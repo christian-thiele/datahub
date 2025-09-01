@@ -10,7 +10,10 @@ class ApiResourcesRepository implements ResourcesRepository {
 
   @override
   Future<void> initialize() async {
-    _restClient = await RestClient.connect(Uri.parse('http://localhost:8080'));
+    _restClient = await RestClient.connect(
+      Uri.parse('http://localhost:8080'),
+      timeout: const Duration(seconds: 10),
+    );
   }
 
   @override
@@ -112,5 +115,28 @@ class ApiResourcesRepository implements ResourcesRepository {
           urlParams: {'resourceId': resourceId, 'elementId': elementId},
         )
         .thenGetData(ResourceData.bean);
+  }
+
+  @override
+  Future<ResourceData?> deleteElement(
+    Authentication auth,
+    String resourceId,
+    String elementId,
+    DateTime? revisionLive,
+  ) async {
+    final response = await _restClient.delete(
+      '/api/resources/{resourceId}/elements/{elementId}',
+      urlParams: {'resourceId': resourceId, 'elementId': elementId},
+      query: {
+        if (revisionLive != null)
+          'revisionLive': [revisionLive.toIso8601String()],
+      },
+    );
+
+    try {
+      return await response.getData(ResourceData.bean);
+    } on CodecException catch (_) {
+      return null;
+    }
   }
 }

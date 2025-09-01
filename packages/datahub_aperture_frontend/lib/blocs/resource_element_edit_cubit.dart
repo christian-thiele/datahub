@@ -147,7 +147,27 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
     }
   }
 
-  void startAction(String id) {}
+  Future<void> delete({DateTime? revisionLive}) async {
+    if (state case final ResourceElementEditValue state) {
+      try {
+        final savingState = state.saving();
+        emit(savingState);
+        final updated = await _resourceRepository.deleteElement(
+          _authentication,
+          resourceId,
+          elementId,
+          revisionLive,
+        );
+        if (updated != null) {
+          emit(savingState.saved(updated));
+        } else {
+          emit(ResourceElementEditDeleted());
+        }
+      } catch (e) {
+        emit(ResourceElementEditError(message: e.toString()));
+      }
+    }
+  }
 
-  void delete() {}
+  void startAction(String id) {}
 }

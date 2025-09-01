@@ -1,5 +1,3 @@
-import 'package:boost/boost.dart';
-
 class Mime {
   static const plainText = 'text/plain';
   static const html = 'text/html';
@@ -35,7 +33,7 @@ class Mime {
 
   static String? getExtension(String mime) {
     final entry =
-        _extensionToMime.entries.firstOrNullWhere((e) => e.value == mime);
+        _extensionToMime.entries.where((e) => e.value == mime).firstOrNull;
     return entry?.key;
   }
 

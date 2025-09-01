@@ -2,7 +2,7 @@ import 'expression.dart';
 
 /// Representing filter arguments in a uniform, abstract way.
 sealed class Filter {
-  static const Filter empty = _EmptyFilter();
+  static const Filter empty = EmptyFilter();
 
   const Filter();
 
@@ -135,8 +135,8 @@ final class CompareFilter extends Filter {
   Filter reduce() => this;
 }
 
-final class _EmptyFilter extends Filter {
-  const _EmptyFilter();
+final class EmptyFilter extends Filter {
+  const EmptyFilter();
 
   @override
   final bool isEmpty = true;

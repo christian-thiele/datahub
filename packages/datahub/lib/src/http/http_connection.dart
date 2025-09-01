@@ -15,12 +15,12 @@ class HttpConnection {
     Function onError,
   ) {
     readConnectionPreface(socket).then((value) {
-      switch (value.b) {
+      switch (value.$2) {
         case HttpVersion.HTTP11:
-          http1(DetachedSocket(socket, value.a));
+          http1(DetachedSocket(socket, value.$1));
           break;
         case HttpVersion.HTTP2:
-          http2(DetachedSocket(socket, value.a));
+          http2(DetachedSocket(socket, value.$1));
           break;
       }
     }).catchError(onError);
@@ -32,7 +32,7 @@ class HttpConnection {
         .sequenceEquals(CONNECTION_PREFACE);
   }
 
-  static Future<Tuple<Stream<Uint8List>, HttpVersion>> readConnectionPreface(
+  static Future<(Stream<Uint8List>, HttpVersion)> readConnectionPreface(
     Stream<Uint8List> socket,
   ) async {
     final controller = StreamController<Uint8List>();
@@ -92,6 +92,6 @@ class HttpConnection {
       ..onResume = subscription.resume
       ..onCancel = subscription.cancel;
 
-    return Tuple(controller.stream, await completer.future);
+    return (controller.stream, await completer.future);
   }
 }

@@ -77,7 +77,13 @@ class _ApertureAppState extends State<ApertureApp> {
         builder: (context, state) {
           return Scaffold(
             body: Center(
-              child: ErrorView(onRetryPressed: () => context.go('/')),
+              child: ErrorView(
+                message: switch (state.extra) {
+                  {'error': final String message} => message,
+                  _ => null,
+                },
+                onRetryPressed: () => context.go('/'),
+              ),
             ),
           );
         },

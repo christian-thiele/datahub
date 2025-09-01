@@ -45,6 +45,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "newResource": m1,
     "noElements": MessageLookupByLibrary.simpleMessage("No Elements"),
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
+    "resourceDeleted": MessageLookupByLibrary.simpleMessage(
+      "Resource Deleted.",
+    ),
     "resourceSaved": MessageLookupByLibrary.simpleMessage("Saved!"),
     "revisionHistory": MessageLookupByLibrary.simpleMessage("Revision History"),
     "revisionId": MessageLookupByLibrary.simpleMessage("Revision ID"),

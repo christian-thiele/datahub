@@ -20,7 +20,7 @@ class PostgresqlDataTable<T extends DataObject<T>> extends PostgresqlTable
       : super(
           name: translateName(bean.name),
           attributes: [
-            for (final field in bean.fields) PostgresqlDataAttribute<T>(field),
+            for (final field in bean.fields) PostgresqlDataAttribute(field),
           ],
         );
 }

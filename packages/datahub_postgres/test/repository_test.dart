@@ -3,7 +3,6 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 import 'package:datahub_postgres/data.dart';
-import 'package:datahub_postgres/src/services/postgresql_repository.dart';
 
 import 'data/person.dart';
 
@@ -35,10 +34,10 @@ void main() {
       final repo = resolve<PostgresqlDataRepository<Person>>();
       await postgres.useConnection((connection) async {
         await connection.runTransaction((context) async {
-          final data = await repo.getData();
+          final data = await repo.getAll();
           final id = data.max((e) => e.id).id + 1;
 
-          await repo.createData(
+          await repo.create(
             Person(
               id: id,
               firstName: 'Something',
@@ -46,8 +45,6 @@ void main() {
               birthday: null,
             ),
           );
-
-
         });
       });
     });

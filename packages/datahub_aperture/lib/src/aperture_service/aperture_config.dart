@@ -1,7 +1,12 @@
 import 'package:datahub_aperture/src/aperture_service/aperture_resource.dart';
 
-class ApertureConfig {
+abstract interface class ApertureConfigDelegate {
+  List<ApertureResource> get resources;
+}
+
+class ApertureConfigStaticDelegate implements ApertureConfigDelegate {
+  @override
   final List<ApertureResource> resources;
 
-  ApertureConfig({required this.resources});
+  ApertureConfigStaticDelegate({this.resources = const []});
 }

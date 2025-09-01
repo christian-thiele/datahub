@@ -248,6 +248,16 @@ class S {
   String get refresh {
     return Intl.message('Refresh', name: 'refresh', desc: '', args: []);
   }
+
+  /// `Resource Deleted.`
+  String get resourceDeleted {
+    return Intl.message(
+      'Resource Deleted.',
+      name: 'resourceDeleted',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

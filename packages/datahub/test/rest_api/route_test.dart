@@ -1,6 +1,5 @@
 import 'package:datahub/datahub.dart';
 import 'package:test/test.dart';
-import 'package:boost/boost.dart';
 
 void main() {
   group('RoutePattern', () {
@@ -32,72 +31,97 @@ final invalid1 = '/invalid/path/{stuff}/and/*/no';
 final invalid2 = '/*invalid/path/{stuff}/and/*/no';
 
 final tests = [
-  Triple(pattern1, '/path/to/some/articles/article_328',
-      {'stuff': 'some', 'articleId': '328'}),
-  Triple(pattern1, '/path/to/some/articles/article', null),
-  Triple(pattern1, '/path/to/some/ArTiClEs/article_1',
-      {'stuff': 'some', 'articleId': '1'}),
-  Triple(pattern1, '/path/to/some/articles/article_', null),
-  Triple(pattern1, '/path/to/some/ArTiClEs/article_', null),
-  Triple(pattern1, '/path/to/articles/article_1', null),
-  Triple(pattern1, '/path/to//articles/article_1', null),
-  Triple(pattern2, '/path/to/some/article/article_328', null),
-  Triple(pattern2, '/path/to/some/articles', null),
-  Triple(pattern2, '/path/to/some/articles/', null),
-  Triple(pattern2, '/path/to/some/articles/abc123', null),
-  Triple(pattern2, '/path/to/some/articles/abc123/', null),
-  Triple(pattern3, 'articles/test', null),
-  Triple(pattern3, 'articles/test/', null),
-  Triple(pattern3, '/articles/test', {}),
-  Triple(pattern3, '/articles/test/', {}),
-  Triple(pattern4, '/path/to/some/articles', null),
-  Triple(pattern4, '/path/to/some/and', {'stuff': 'some'}),
-  Triple(pattern4, '/path/to/some/and/more/of/that', {'stuff': 'some'}),
-  Triple(pattern4, '/path/to/some/other/stuff/', null),
-  Triple(pattern5, '/path/to/some/articles', null),
-  Triple(pattern5, '/path/to/some/and', {'stuff': 'some'}),
-  Triple(pattern5, '/path/to/some/and/more/of/that', {'stuff': 'some'}),
-  Triple(pattern5, '/path/to/some/other/stuff/', null),
-  Triple(pattern6, '/path/to/required/and/optional',
-      {'stuff': 'required', 'optionalParam': 'optional'}),
-  Triple(pattern6, '/path/to/required/and/optional/',
-      {'stuff': 'required', 'optionalParam': 'optional'}),
-  Triple(pattern6, '/path/to/required/and', {'stuff': 'required'}),
-  Triple(pattern6, '/path/to/required/and/', {'stuff': 'required'}),
-  Triple(pattern6, '/path/to/required/and/optional/more', null),
-  Triple(pattern6, '/path/to/required/and/optional/more/', null),
-  Triple(pattern6, '/path/to/and/optional', null),
-  Triple(pattern7, '/path/to/required/and/optional',
-      {'stuff': 'required', 'optionalParam': 'optional'}),
-  Triple(pattern7, '/path/to/required/and/optional/',
-      {'stuff': 'required', 'optionalParam': 'optional'}),
-  Triple(pattern7, '/path/to/required/and', {'stuff': 'required'}),
-  Triple(pattern7, '/path/to/required/and/', {'stuff': 'required'}),
-  Triple(pattern7, '/path/to/required/and/optional/more', null),
-  Triple(pattern7, '/path/to/required/and/optional/more/', null),
-  Triple(pattern7, '/path/to/and/optional', null),
-  Triple(pattern8, '/path/to/required/and/optional', null),
-  Triple(pattern8, '/path/to/required/and/optional/', null),
-  Triple(pattern8, '/path/to/required/and', null),
-  Triple(pattern8, '/path/to/required/and/', null),
-  Triple(pattern8, '/path/to/required/and/optional/smth', null),
-  Triple(pattern8, '/path/to/required/and/optional/smth/', null),
-  Triple(pattern8, '/path/to/and/optional', null),
-  Triple(pattern8, '/path/to/required/and/optional/more',
-      {'stuff': 'required', 'optionalParam': 'optional'}),
-  Triple(pattern9, '/path/to/required/and/optional/more',
-      {'stuff': 'required', 'optionalParam': 'optional'}),
-  Triple(pattern9, '/path/to/required/and/optional/more123/test',
-      {'stuff': 'required', 'optionalParam': 'optional'}),
-  Triple('/articles/{articleId?}', '/articles', {}),
-  Triple('/articles/{articleId?}', '/articles/5', {'articleId': '5'}),
-  Triple(
-      '/articles/{articleId?}', '/articles/%24count', {'articleId': '\$count'}),
-  Triple(
-      '/profile/events/{id?}', '/profile/events/%24count', {'id': '\$count'}),
-  Triple('/profile/events/{id?}', '/profile/events/\$count', {'id': '\$count'}),
-  Triple(patternX, '/something/else', {}),
-  Triple(pattern10, '/path/to@special;abc/char-.\$x', {'test': 'abc'}),
+  (
+    pattern1,
+    '/path/to/some/articles/article_328',
+    {'stuff': 'some', 'articleId': '328'}
+  ),
+  (pattern1, '/path/to/some/articles/article', null),
+  (
+    pattern1,
+    '/path/to/some/ArTiClEs/article_1',
+    {'stuff': 'some', 'articleId': '1'}
+  ),
+  (pattern1, '/path/to/some/articles/article_', null),
+  (pattern1, '/path/to/some/ArTiClEs/article_', null),
+  (pattern1, '/path/to/articles/article_1', null),
+  (pattern1, '/path/to//articles/article_1', null),
+  (pattern2, '/path/to/some/article/article_328', null),
+  (pattern2, '/path/to/some/articles', null),
+  (pattern2, '/path/to/some/articles/', null),
+  (pattern2, '/path/to/some/articles/abc123', null),
+  (pattern2, '/path/to/some/articles/abc123/', null),
+  (pattern3, 'articles/test', null),
+  (pattern3, 'articles/test/', null),
+  (pattern3, '/articles/test', {}),
+  (pattern3, '/articles/test/', {}),
+  (pattern4, '/path/to/some/articles', null),
+  (pattern4, '/path/to/some/and', {'stuff': 'some'}),
+  (pattern4, '/path/to/some/and/more/of/that', {'stuff': 'some'}),
+  (pattern4, '/path/to/some/other/stuff/', null),
+  (pattern5, '/path/to/some/articles', null),
+  (pattern5, '/path/to/some/and', {'stuff': 'some'}),
+  (pattern5, '/path/to/some/and/more/of/that', {'stuff': 'some'}),
+  (pattern5, '/path/to/some/other/stuff/', null),
+  (
+    pattern6,
+    '/path/to/required/and/optional',
+    {'stuff': 'required', 'optionalParam': 'optional'}
+  ),
+  (
+    pattern6,
+    '/path/to/required/and/optional/',
+    {'stuff': 'required', 'optionalParam': 'optional'}
+  ),
+  (pattern6, '/path/to/required/and', {'stuff': 'required'}),
+  (pattern6, '/path/to/required/and/', {'stuff': 'required'}),
+  (pattern6, '/path/to/required/and/optional/more', null),
+  (pattern6, '/path/to/required/and/optional/more/', null),
+  (pattern6, '/path/to/and/optional', null),
+  (
+    pattern7,
+    '/path/to/required/and/optional',
+    {'stuff': 'required', 'optionalParam': 'optional'}
+  ),
+  (
+    pattern7,
+    '/path/to/required/and/optional/',
+    {'stuff': 'required', 'optionalParam': 'optional'}
+  ),
+  (pattern7, '/path/to/required/and', {'stuff': 'required'}),
+  (pattern7, '/path/to/required/and/', {'stuff': 'required'}),
+  (pattern7, '/path/to/required/and/optional/more', null),
+  (pattern7, '/path/to/required/and/optional/more/', null),
+  (pattern7, '/path/to/and/optional', null),
+  (pattern8, '/path/to/required/and/optional', null),
+  (pattern8, '/path/to/required/and/optional/', null),
+  (pattern8, '/path/to/required/and', null),
+  (pattern8, '/path/to/required/and/', null),
+  (pattern8, '/path/to/required/and/optional/smth', null),
+  (pattern8, '/path/to/required/and/optional/smth/', null),
+  (pattern8, '/path/to/and/optional', null),
+  (
+    pattern8,
+    '/path/to/required/and/optional/more',
+    {'stuff': 'required', 'optionalParam': 'optional'}
+  ),
+  (
+    pattern9,
+    '/path/to/required/and/optional/more',
+    {'stuff': 'required', 'optionalParam': 'optional'}
+  ),
+  (
+    pattern9,
+    '/path/to/required/and/optional/more123/test',
+    {'stuff': 'required', 'optionalParam': 'optional'}
+  ),
+  ('/articles/{articleId?}', '/articles', {}),
+  ('/articles/{articleId?}', '/articles/5', {'articleId': '5'}),
+  ('/articles/{articleId?}', '/articles/%24count', {'articleId': '\$count'}),
+  ('/profile/events/{id?}', '/profile/events/%24count', {'id': '\$count'}),
+  ('/profile/events/{id?}', '/profile/events/\$count', {'id': '\$count'}),
+  (patternX, '/something/else', {}),
+  (pattern10, '/path/to@special;abc/char-.\$x', {'test': 'abc'}),
 ];
 
 final invalidRoutes = [invalid1, invalid2];
@@ -124,24 +148,24 @@ void _testRouteEncode() {
 
 void _testRouteMatch() {
   for (final test in tests) {
-    final pattern = RoutePattern(test.a);
-    expect(pattern.match(test.b), equals(test.c != null),
-        reason: 'Route:\n  ${test.b}\ndoes not match pattern:\n  ${test.a}');
+    final pattern = RoutePattern(test.$1);
+    expect(pattern.match(test.$2), equals(test.$3 != null),
+        reason: 'Route:\n  ${test.$2}\ndoes not match pattern:\n  ${test.$1}');
   }
 }
 
 void _testRouteDecode() {
   for (final test in tests) {
-    final pattern = RoutePattern(test.a);
-    if (test.c == null) {
-      expect(() => pattern.decode(test.b), throwsA(isA<ApiException>()));
+    final pattern = RoutePattern(test.$1);
+    if (test.$3 == null) {
+      expect(() => pattern.decode(test.$2), throwsA(isA<ApiException>()));
     } else {
       try {
-        final result = pattern.decode(test.b);
-        expect(result.routeParams, equals(test.c));
+        final result = pattern.decode(test.$2);
+        expect(result.routeParams, equals(test.$3));
       } catch (e) {
         fail(
-            'Could not decode:\n  ${test.b}\nfor pattern:\n  ${test.a}\n\nReason:\n${e.toString()}');
+            'Could not decode:\n  ${test.$2}\nfor pattern:\n  ${test.$1}\n\nReason:\n${e.toString()}');
       }
     }
   }
@@ -155,20 +179,20 @@ void _testRouteInvalid() {
 
 void _testIsWildcard() {
   final wildcardTests = [
-    Tuple(pattern1, false),
-    Tuple(pattern2, false),
-    Tuple(pattern3, false),
-    Tuple(pattern4, true),
-    Tuple(pattern5, true),
-    Tuple(pattern6, false),
-    Tuple(pattern7, false),
-    Tuple(pattern8, false),
-    Tuple(pattern9, true),
-    Tuple(patternX, true),
+    (pattern1, false),
+    (pattern2, false),
+    (pattern3, false),
+    (pattern4, true),
+    (pattern5, true),
+    (pattern6, false),
+    (pattern7, false),
+    (pattern8, false),
+    (pattern9, true),
+    (patternX, true),
   ];
   for (final test in wildcardTests) {
-    final pattern = RoutePattern(test.a);
-    expect(pattern.isWildcardPattern, equals(test.b), reason: test.a);
+    final pattern = RoutePattern(test.$1);
+    expect(pattern.isWildcardPattern, equals(test.$2), reason: test.$1);
   }
 }
 

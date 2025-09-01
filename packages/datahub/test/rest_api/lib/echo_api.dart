@@ -36,7 +36,6 @@ class ListBodyEndpoint extends ApiEndpoint {
 
   @override
   Future post(ApiRequest request) async {
-    final body = request.getBody<List<SimpleDto>>(decoder: SimpleDtoTransferBean);
-    return body;
+    return request.getList<SimpleDto>(SimpleDto.bean);
   }
 }

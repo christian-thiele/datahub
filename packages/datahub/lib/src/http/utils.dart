@@ -5,8 +5,8 @@ import 'package:boost/boost.dart';
 
 import 'http_headers.dart';
 
-late final charsetRegExp = RegExp(r'(charset|encoding)=([^;,\n]+)');
-late final headerValueRegExp = RegExp(r'(?:[^;"]|"(?:\\.|[^"])*")+');
+final charsetRegExp = RegExp(r'(charset|encoding)=([^;,\n]+)');
+final headerValueRegExp = RegExp(r'(?:[^;"]|"(?:\\.|[^"])*")+');
 
 Map<String, List<String>> http1Headers(io.HttpHeaders headers) {
   final map = <String, List<String>>{};
@@ -19,17 +19,18 @@ Map<String, List<String>> http1Headers(io.HttpHeaders headers) {
   return map;
 }
 
-/// Splits into [a] Pseudo Headers and [b] HTTP Headers
-Tuple<Map<String, String>, Map<String, List<String>>> http2Headers(
-    List<http2.Header> headers) {
+/// Splits into $1 Pseudo Headers and $2 HTTP Headers
+(Map<String, String>, Map<String, List<String>>) http2Headers(
+  List<http2.Header> headers,
+) {
   final rawHeaders =
       headers.map((e) => MapEntry(utf8.decode(e.name), utf8.decode(e.value)));
 
   final decodedHeaders = rawHeaders.split((h) => h.key.startsWith(':'));
-  final pseudoHeaders = Map.fromEntries(decodedHeaders.a);
+  final pseudoHeaders = Map.fromEntries(decodedHeaders.$1);
 
   final httpHeaders = <String, List<String>>{};
-  for (final entry in decodedHeaders.b) {
+  for (final entry in decodedHeaders.$2) {
     if (!httpHeaders.containsKey(entry.key)) {
       httpHeaders[entry.key] = [];
     }
@@ -39,7 +40,7 @@ Tuple<Map<String, String>, Map<String, List<String>>> http2Headers(
     httpHeaders[entry.key]!.addAll(values);
   }
 
-  return Tuple(pseudoHeaders, httpHeaders);
+  return (pseudoHeaders, httpHeaders);
 }
 
 Encoding? getEncodingFromHeaders(Map<String, List<String>> headers) {
@@ -47,7 +48,7 @@ Encoding? getEncodingFromHeaders(Map<String, List<String>> headers) {
     final contentType = headers[HttpHeaders.contentType]!.first;
     final parts = contentType.split(';');
     final charsetMatch =
-        parts.map((p) => charsetRegExp.firstMatch(p)).whereNotNull.firstOrNull;
+        parts.map((p) => charsetRegExp.firstMatch(p)).nonNulls.firstOrNull;
 
     return Encoding.getByName(charsetMatch?.group(1));
   } else {

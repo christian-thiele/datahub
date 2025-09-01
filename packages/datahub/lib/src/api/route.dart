@@ -183,7 +183,7 @@ class RoutePattern {
             (match.groupNames.contains(e) && match.namedGroup(e) != null)
                 ? MapEntry(e, Uri.decodeComponent(match.namedGroup(e)!))
                 : null)
-        .whereNotNull);
+        .nonNulls);
 
     final wildcard = match.groupNames.contains(_wildcardGroup)
         ? match.namedGroup(_wildcardGroup)
