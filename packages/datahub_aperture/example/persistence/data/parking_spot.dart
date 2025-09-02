@@ -3,6 +3,7 @@ import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/icons.dart';
 
 import 'capacity.dart';
+import 'extra_equipment.dart';
 import 'parking_spot_type.dart';
 import 'zone.dart';
 

@@ -71,11 +71,7 @@ String _dartLiteral(DartObject o) {
   }
 
   if (o.type != null && o.type!.element3 is EnumElement2) {
-    final enumType = o.type!;
-    // Analyzer exposes the enum value name via `getField('index')` etc.;
-    // ConstantReader provides `revive()` for enums too:
-    final rev = r.revive(); // accessor is the enum value name
-    return '${enumType.getDisplayString()}.${rev.accessor}';
+    return r.revive().accessor;
   }
 
   // Nested const objects (e.g., another annotation-like const)

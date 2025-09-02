@@ -14,16 +14,16 @@ abstract class _Capacity with DataObject<Capacity> {
     meta: [
       const Meta(name: 'Type'),
       const ApertureField(enumValues: const [
-        ParkingSpaceType.ParkingSpaceType.total,
-        ParkingSpaceType.ParkingSpaceType.shortTerm,
-        ParkingSpaceType.ParkingSpaceType.longTerm,
-        ParkingSpaceType.ParkingSpaceType.charging,
-        ParkingSpaceType.ParkingSpaceType.handicapped,
-        ParkingSpaceType.ParkingSpaceType.family,
-        ParkingSpaceType.ParkingSpaceType.woman,
-        ParkingSpaceType.ParkingSpaceType.extraLarge,
-        ParkingSpaceType.ParkingSpaceType.motorcycle,
-        ParkingSpaceType.ParkingSpaceType.residents
+        ParkingSpaceType.total,
+        ParkingSpaceType.shortTerm,
+        ParkingSpaceType.longTerm,
+        ParkingSpaceType.charging,
+        ParkingSpaceType.handicapped,
+        ParkingSpaceType.family,
+        ParkingSpaceType.woman,
+        ParkingSpaceType.extraLarge,
+        ParkingSpaceType.motorcycle,
+        ParkingSpaceType.residents
       ]),
     ],
   );

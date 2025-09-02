@@ -125,14 +125,24 @@ void decodeFieldData(
 
 dynamic _decodeField(ResourceFieldType? type, dynamic raw) {
   final codec = const JsonDataCodec();
-  return switch (type) {
-    ResourceFieldType.text => codec.decodeString(raw),
+  return switch(type) {
+    ResourceFieldType.string => codec.decodeString(raw),
+    ResourceFieldType.stringEnum => codec.decodeString(raw),
     ResourceFieldType.int => codec.decodeInt(raw),
     ResourceFieldType.double => codec.decodeDouble(raw),
     ResourceFieldType.bool => codec.decodeBool(raw),
     ResourceFieldType.timestamp => codec.decodeDateTime(raw),
-    ResourceFieldType.file => codec.decodeUint8List(raw),
+    ResourceFieldType.bytes => codec.decodeUint8List(raw),
     ResourceFieldType.geometry => codec.decodeGeometry(raw),
+    ResourceFieldType.object => codec.decodeDynamic(raw),
+    ResourceFieldType.listString => codec.decodeList(raw, codec.decodeString),
+    ResourceFieldType.listEnum => codec.decodeList(raw, codec.decodeString),
+    ResourceFieldType.listInt => codec.decodeList(raw, codec.decodeInt),
+    ResourceFieldType.listDouble => codec.decodeList(raw, codec.decodeDouble),
+    ResourceFieldType.listBool => codec.decodeList(raw, codec.decodeBool),
+    ResourceFieldType.listTimestamp => codec.decodeList(raw, codec.decodeDateTime),
+    ResourceFieldType.listBytes => codec.decodeList(raw, codec.decodeUint8List),
+    ResourceFieldType.listObject => codec.decodeList(raw, codec.decodeDynamic),
     _ => codec.decodeDynamic(raw),
   };
 }

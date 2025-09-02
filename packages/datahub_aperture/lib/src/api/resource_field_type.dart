@@ -1,1 +1,20 @@
-enum ResourceFieldType { text, int, double, bool, timestamp, file, geometry }
+enum ResourceFieldType {
+  string,
+  stringEnum,
+  int,
+  double,
+  bool,
+  timestamp,
+  bytes,
+  geometry,
+  object,
+
+  listString,
+  listEnum,
+  listInt,
+  listDouble,
+  listBool,
+  listTimestamp,
+  listBytes,
+  listObject,
+}

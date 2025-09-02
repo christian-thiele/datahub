@@ -17,4 +17,6 @@ class Capacity extends _Capacity {
     required this.parkingSpaceType,
     required this.capacity,
   });
+
+  static DataBean<Capacity> get bean => _Capacity.bean;
 }

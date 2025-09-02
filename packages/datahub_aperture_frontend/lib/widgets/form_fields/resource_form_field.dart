@@ -28,7 +28,7 @@ class ResourceFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (field.type) {
-      ResourceFieldType.text => ResourceTextFormField(
+      ResourceFieldType.string => ResourceTextFormField(
         field: field,
         value: value,
         isChanged: isChanged,
@@ -70,13 +70,14 @@ class ResourceFormField extends StatelessWidget {
         onChanged: onChanged,
         error: error,
       ),
-      ResourceFieldType.file => ResourceFileFormField(
+      ResourceFieldType.bytes => ResourceFileFormField(
         field: field,
         value: value,
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
       ),
+      _ => SizedBox.shrink(),
     };
   }
 }
