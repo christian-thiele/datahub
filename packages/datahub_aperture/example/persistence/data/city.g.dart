@@ -35,12 +35,40 @@ abstract class _City with DataObject<City> {
     ],
   );
 
+  static final $badge = DataField<City, Uint8List>(
+    name: 'badge',
+    valueOf: (p) => p.badge,
+    meta: [
+      const Meta(name: 'Coat of Arms'),
+    ],
+  );
+
+  static final $location = DataField<City, Geometry>(
+    name: 'location',
+    valueOf: (p) => p.location,
+    meta: [
+      const Meta(name: 'Location'),
+      const ApertureField(readOnly: true),
+    ],
+  );
+
+  static final $clientIds = DataField<City, List<String>>(
+    name: 'clientIds',
+    valueOf: (p) => p.clientIds,
+    meta: [
+      const Meta(name: 'Client IDs'),
+    ],
+  );
+
   static final DataBean<City> bean = DataBean<City>(
     name: 'City',
     fields: List<DataField<City, dynamic>>.unmodifiable([
       $id,
       $name,
       $enabled,
+      $badge,
+      $location,
+      $clientIds,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
@@ -58,12 +86,18 @@ abstract class _City with DataObject<City> {
     int? id,
     String? name,
     bool? enabled,
+    Uint8List? badge,
+    Geometry? location,
+    List<String>? clientIds,
   }) {
     final $data = this as City;
     return City(
       id: id ?? $data.id,
       name: name ?? $data.name,
       enabled: enabled ?? $data.enabled,
+      badge: badge ?? $data.badge,
+      location: location ?? $data.location,
+      clientIds: clientIds ?? $data.clientIds,
     );
   }
 
@@ -72,6 +106,9 @@ abstract class _City with DataObject<City> {
       id: data['id'] ?? 0,
       name: data['name'],
       enabled: data['enabled'] ?? false,
+      badge: data['badge'],
+      location: data['location'],
+      clientIds: data['clientIds'],
     );
   }
 
@@ -87,6 +124,13 @@ abstract class _City with DataObject<City> {
           name: DataCodec.childName(name, 'name')),
       enabled: $codec.decodeBool((data['enabled'] ?? false),
           name: DataCodec.childName(name, 'enabled')),
+      badge: $codec.decodeUint8List(data['badge'],
+          name: DataCodec.childName(name, 'badge')),
+      location: $codec.decodeGeometry(data['location'],
+          name: DataCodec.childName(name, 'location')),
+      clientIds: $codec.decodeList<String>(
+          data['clientIds'], $codec.decodeString,
+          name: DataCodec.childName(name, 'clientIds')),
     );
   }
 
@@ -98,6 +142,10 @@ abstract class _City with DataObject<City> {
       'id': $codec.encodeInt($data.id),
       'name': $codec.encodeString($data.name),
       'enabled': $codec.encodeBool($data.enabled),
+      'badge': $codec.encodeUint8List($data.badge),
+      'location': $codec.encodeGeometry($data.location),
+      'clientIds':
+          $codec.encodeList<String>($data.clientIds, $codec.encodeString),
     }..removeWhere((k, v) => v == null);
   }
 }
