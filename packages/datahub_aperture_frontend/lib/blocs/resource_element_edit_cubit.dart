@@ -43,6 +43,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
         elementId,
         revisionId: revisionId,
       );
+      decodeFieldData(resource, data);
 
       final relations = [
         for (final relation in resource.relations)
@@ -140,6 +141,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
           state.changes.map((k, v) => MapEntry(k.id, v)),
           revisionLive,
         );
+        decodeFieldData(state.resource, updated);
         emit(savingState.saved(updated));
       } catch (e) {
         emit(ResourceElementEditError(message: e.toString()));
@@ -159,6 +161,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
           revisionLive,
         );
         if (updated != null) {
+          decodeFieldData(state.resource, updated);
           emit(savingState.saved(updated));
         } else {
           emit(ResourceElementEditDeleted());

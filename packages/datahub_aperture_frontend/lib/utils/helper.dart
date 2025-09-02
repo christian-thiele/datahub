@@ -1,3 +1,5 @@
+import 'package:datahub/data.dart';
+import 'package:datahub/utils.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/models/view_models/filter_model.dart';
@@ -104,4 +106,33 @@ String? validateFieldValue(ResourceField field, dynamic value) {
   }
 
   return null;
+}
+
+// dirty little hack
+void decodeFieldData(
+  ResourceDescription resource,
+  ResourceData data,
+) {
+  final decoded = {
+    for (final (key, value) in data.fieldData.tuples)
+      key: _decodeField(
+        resource.fields.where((e) => e.id == key).firstOrNull?.type,
+        value,
+      ),
+  };
+  data.fieldData.addAll(decoded);
+}
+
+dynamic _decodeField(ResourceFieldType? type, dynamic raw) {
+  final codec = const JsonDataCodec();
+  return switch (type) {
+    ResourceFieldType.text => codec.decodeString(raw),
+    ResourceFieldType.int => codec.decodeInt(raw),
+    ResourceFieldType.double => codec.decodeDouble(raw),
+    ResourceFieldType.bool => codec.decodeBool(raw),
+    ResourceFieldType.timestamp => codec.decodeDateTime(raw),
+    ResourceFieldType.file => codec.decodeUint8List(raw),
+    ResourceFieldType.geometry => codec.decodeGeometry(raw),
+    _ => codec.decodeDynamic(raw),
+  };
 }

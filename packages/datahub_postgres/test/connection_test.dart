@@ -7,7 +7,7 @@ void main() {
   TestHost(
     [
       () => PostgresqlService(
-          schema: PostgresqlSchema(name: 'postgres', relations: [])),
+          schema: PostgresqlSchema(name: 'test', relations: [])),
     ],
     config: {
       'postgresql': {

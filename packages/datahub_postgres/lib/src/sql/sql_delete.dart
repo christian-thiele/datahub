@@ -1,4 +1,3 @@
-import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 
 class SqlDelete implements SqlBuilder {
@@ -10,7 +9,7 @@ class SqlDelete implements SqlBuilder {
   @override
   Sql toSql() => Sql.combine([
         Sql('DELETE FROM '),
-        Sql(relation.toString()),
+        relation.toSql(),
         if (where != null) ...[
           Sql(' WHERE '),
           where!,

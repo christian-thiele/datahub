@@ -50,15 +50,26 @@ class PostgresqlService
             ]),
           ),
         );
+        final viewResults = await context.execute(
+          SqlSelect(
+            SqlQualifiedRelation('information_schema', 'views'),
+            [SqlAttribute('table_name')],
+            where: Sql.ofSegments([
+              SqlTextSegment('table_schema = '),
+              SqlParamSegment<String>(schema.name, const PostgresqlString())
+            ]),
+          ),
+        );
 
         // TODO maybe move this to repos so they are more independent
-        final tables = tableResults.map((e) => e.first.toString());
+        final existingRelations =
+            tableResults.followedBy(viewResults).map((e) => e.first.toString());
 
         for (final relation in schema.relations) {
-          if (!tables.contains(relation.name)) {
+          if (!existingRelations.contains(relation.name)) {
             resolve<LogService?>()?.warn(
                 'Relation "${relation.name}" does not exist. Creating relation.');
-            await context.execute(SqlCreateRelation(schema, relation));
+            await context.executeLiteral(SqlCreateRelation(schema, relation));
           }
         }
       });
@@ -90,6 +101,12 @@ class PostgresqlService
             _ => null,
           },
           queryMode: pg.QueryMode.extended,
+          typeRegistry: pg.TypeRegistry(encoders: [
+            // this "hack" allows PostgresqlDataTypes to return EncodedValues
+            (value, _) => value.value is pg.EncodedValue
+                ? value.value as pg.EncodedValue
+                : null
+          ]),
         ),
       ),
     );

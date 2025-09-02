@@ -36,6 +36,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
             fields: fields,
             changes: {},
             validation: {},
+            description: resource,
           ),
         );
       }
@@ -47,7 +48,11 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
   }
 
   void setFieldValue(String fieldId, dynamic value) {
-    if (state case ResourceElementCreateValue(:final fields, :final changes)) {
+    if (state case ResourceElementCreateValue(
+      :final fields,
+      :final changes,
+      :final description,
+    )) {
       final field = fields.firstWhere((e) => e.id == fieldId);
       if (field.readOnly) {
         return;
@@ -70,6 +75,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
           fields: fields,
           changes: {...changes, field: value},
           validation: validation,
+          description: description,
         ),
       );
     }
@@ -89,6 +95,8 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
           state.changes.map((key, value) => MapEntry(key.id, value)),
           revisionLive,
         );
+        decodeFieldData(state.description, updated);
+
         emit(savingState.saved(updated.id, updated.revisionId));
       } catch (e) {
         emit(ResourceElementCreateError(message: e.toString()));

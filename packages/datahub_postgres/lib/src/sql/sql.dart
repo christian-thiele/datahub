@@ -20,7 +20,11 @@ class Sql implements SqlBuilder {
   Sql(String sql) : this.ofSegments([if (sql.isNotEmpty) SqlTextSegment(sql)]);
 
   Sql.name(String name) : this(escapeName(name));
-  Sql.qualifiedName(Iterable<String> parts) : this(parts.map(escapeName).join('.'));
+
+  Sql.text(String text) : this(escapeText(text));
+
+  Sql.qualifiedName(Iterable<String> parts)
+      : this(parts.map(escapeName).join('.'));
 
   void add(Sql sql) => segments.addAll(sql.segments);
 
@@ -42,7 +46,19 @@ class Sql implements SqlBuilder {
       for (final segment in segments)
         switch (segment) {
           SqlTextSegment(:final text) => text,
-          SqlParamSegment() => '\$${++paramId}',
+          SqlParamSegment(type: PostgresqlDataType(:final name)) =>
+            '\$${++paramId}::$name',
+        }
+    ].join();
+  }
+
+  String toLiteralString() {
+    return [
+      for (final segment in segments)
+        switch (segment) {
+          SqlTextSegment(:final text) => text,
+          SqlParamSegment(:final type, :final value) =>
+            type.sqlLiteral(value).toLiteralString(),
         }
     ].join();
   }
@@ -55,11 +71,22 @@ class Sql implements SqlBuilder {
     return segments.whereType<SqlParamSegment>().map((e) => e.value).toList();
   }
 
+  List<dynamic> getEncodedParameters() {
+    return segments
+        .whereType<SqlParamSegment>()
+        .map((e) => e.type.encode(e.value))
+        .toList();
+  }
+
   void addParam<T>(T value, PostgresqlDataType<T> type) {
     addSegment(SqlParamSegment<T>(value, type));
   }
 
   Sql clone() => Sql.ofSegments(segments.toList());
+
+  static String escapeText(String text) {
+    return "'${text.replaceAll(r'\', r'\\').replaceAll("'", "''")}'";
+  }
 
   static String escapeName(String name) {
     if (name.isEmpty || name.length > 128) {

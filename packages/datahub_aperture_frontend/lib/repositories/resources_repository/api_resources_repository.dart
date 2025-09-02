@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/models/authentication.dart';
 import 'package:datahub/datahub.dart';
+import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'resources_repository.dart';
 
 class ApiResourcesRepository implements ResourcesRepository {

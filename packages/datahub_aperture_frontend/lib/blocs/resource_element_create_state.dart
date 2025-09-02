@@ -6,13 +6,21 @@ sealed class ResourceElementCreateState {}
 final class ResourceElementCreateLoading extends ResourceElementCreateState {}
 
 abstract class ResourceElementCreateValue extends ResourceElementCreateState {
+  final ResourceDescription description;
   final List<ResourceField> fields;
   final Map<ResourceField, dynamic> changes;
 
-  ResourceElementCreateValue({required this.fields, required this.changes});
+  ResourceElementCreateValue({
+    required this.description,
+    required this.fields,
+    required this.changes,
+  });
 
-  ResourceElementCreateSaving saving() =>
-      ResourceElementCreateSaving(fields: fields, changes: changes);
+  ResourceElementCreateSaving saving() => ResourceElementCreateSaving(
+    fields: fields,
+    changes: changes,
+    description: description,
+  );
 }
 
 final class ResourceElementCreateEditing extends ResourceElementCreateValue {
@@ -21,6 +29,7 @@ final class ResourceElementCreateEditing extends ResourceElementCreateValue {
   bool get isValid => validation.isEmpty;
 
   ResourceElementCreateEditing({
+    required super.description,
     required super.fields,
     required super.changes,
     required this.validation,
@@ -28,7 +37,11 @@ final class ResourceElementCreateEditing extends ResourceElementCreateValue {
 }
 
 final class ResourceElementCreateSaving extends ResourceElementCreateValue {
-  ResourceElementCreateSaving({required super.fields, required super.changes});
+  ResourceElementCreateSaving({
+    required super.description,
+    required super.fields,
+    required super.changes,
+  });
 
   ResourceElementCreateState saved(String id, String? revisionId) =>
       ResourceElementCreateSaved(
@@ -36,6 +49,7 @@ final class ResourceElementCreateSaving extends ResourceElementCreateValue {
         changes: changes,
         id: id,
         revisionId: revisionId,
+        description: description,
       );
 }
 
@@ -48,6 +62,7 @@ final class ResourceElementCreateSaved extends ResourceElementCreateValue {
     required this.revisionId,
     required super.fields,
     required super.changes,
+    required super.description,
   });
 }
 

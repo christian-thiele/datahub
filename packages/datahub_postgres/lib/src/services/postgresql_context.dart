@@ -10,6 +10,22 @@ class PostgresqlContext extends DatabaseContext {
 
   const PostgresqlContext(this._service, this._session);
 
+  Future<pg.Result> executeLiteral(
+    SqlBuilder sqlBuilder, {
+    Duration? timeout,
+  }) async {
+    final sql = sqlBuilder.toSql().toLiteralString();
+    if (_service.logStatements) {
+      resolve<LogService?>()?.debug('QUERY: $sql', sender: 'datahub_postgres');
+    }
+
+    return await _session.execute(
+      pg.Sql(sql),
+      queryMode: pg.QueryMode.simple,
+      timeout: timeout,
+    );
+  }
+
   Future<pg.Result> execute(SqlBuilder sqlBuilder, {Duration? timeout}) async {
     final sql = sqlBuilder.toSql();
     if (_service.logStatements) {
@@ -21,7 +37,7 @@ class PostgresqlContext extends DatabaseContext {
         sql.toString(),
         types: sql.getParameterTypes().map((e) => e.pgType).toList(),
       ),
-      parameters: sql.getParameters(),
+      parameters: sql.getEncodedParameters(),
       queryMode: pg.QueryMode.extended,
       timeout: timeout,
     );

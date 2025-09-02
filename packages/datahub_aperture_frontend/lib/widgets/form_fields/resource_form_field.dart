@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 
 import 'resource_bool_form_field.dart';
 import 'resource_double_form_field.dart';
-import 'resource_geo_json_form_field.dart';
+import 'resource_geometry_form_field.dart';
 import 'resource_int_form_field.dart';
 import 'resource_text_form_field.dart';
 import 'resource_file_form_field.dart';
@@ -63,7 +63,7 @@ class ResourceFormField extends StatelessWidget {
         onChanged: onChanged,
         error: error,
       ),
-      ResourceFieldType.geoJson => ResourceGeoJsonFormField(
+      ResourceFieldType.geometry => ResourceGeometryFormField(
         field: field,
         value: value,
         isChanged: isChanged,

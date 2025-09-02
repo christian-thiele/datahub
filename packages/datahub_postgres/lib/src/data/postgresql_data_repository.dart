@@ -8,7 +8,7 @@ import 'package:postgres/postgres.dart' as pg;
 class PostgresqlDataRepository<DataType extends DataObject<DataType>>
     extends PostgresqlRepository implements DataRepository<DataType> {
   final String? relation;
-  late final PostgresqlDataRelation _relation;
+  late final PostgresqlDataRelation dataRelation;
   @override
   final DataBean<DataType> bean;
 
@@ -27,13 +27,13 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
         orElse: () => throw ApiError('Relation "$relation" not found.'),
       );
 
-      _relation = switch (named) {
+      dataRelation = switch (named) {
         final PostgresqlDataRelation named => named,
         _ => throw ApiError(
             'Relation "$relation" is not a PostgresqlDataRelation.'),
       };
     } else {
-      _relation =
+      dataRelation =
           schema.relations.whereType<PostgresqlDataRelation>().firstWhere(
                 (e) => e.bean == bean,
                 orElse: () =>
@@ -50,7 +50,7 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
           .firstOrNull;
       final result = await context.execute(
         SqlInsert(
-          SqlQualifiedRelation(schema.name, _relation.name),
+          SqlQualifiedRelation(schema.name, dataRelation.name),
           {
             for (final attribute in _dataAttributes.where(
                 (e) => !e.hasConstraint<PrimaryKeyConstraint>((e) => e.auto)))
@@ -81,16 +81,16 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
     final result = await runTransaction((context) async {
       return await context.execute(
         SqlSelect(
-          SqlQualifiedRelation(schema.name, _relation.name),
+          SqlQualifiedRelation(schema.name, dataRelation.name),
           [SqlWildcard()],
           offset: offset ?? 0,
           limit: limit ?? -1,
-          where: _buildFilterSql(filter),
+          where: buildFilterSql(filter),
         ),
       );
     });
 
-    return _mapResult(result);
+    return mapResult(result);
   }
 
   @override
@@ -98,8 +98,8 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
     return await runTransaction((context) async {
       await context.execute(
         SqlDelete(
-          SqlQualifiedRelation(schema.name, _relation.name),
-          _buildFilterSql(_identityFilter(id)),
+          SqlQualifiedRelation(schema.name, dataRelation.name),
+          buildFilterSql(identityFilter(id)),
         ),
       );
     });
@@ -107,23 +107,23 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
 
   @override
   Future<DataType?> get(dynamic id) async {
-    return await first(filter: _identityFilter(id));
+    return await first(filter: identityFilter(id));
   }
 
   Future<DataType?> first({Filter filter = Filter.empty}) async {
     final result = await runTransaction((context) async {
       return await context.execute(
         SqlSelect(
-          SqlQualifiedRelation(schema.name, _relation.name),
+          SqlQualifiedRelation(schema.name, dataRelation.name),
           [SqlWildcard()],
           limit: 1,
-          where: _buildFilterSql(filter),
+          where: buildFilterSql(filter),
         ),
       );
     });
 
     if (result.isNotEmpty) {
-      return _mapResultRow(result.first);
+      return mapResultRow(result.first);
     } else {
       return null;
     }
@@ -134,8 +134,8 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
     return await runTransaction((context) async {
       await context.execute(
         SqlUpdate(
-          SqlQualifiedRelation(schema.name, _relation.name),
-          _buildFilterSql(_identityFilter(id)),
+          SqlQualifiedRelation(schema.name, dataRelation.name),
+          buildFilterSql(identityFilter(id)),
           {
             for (final attribute in _dataAttributes.where(
                 (e) => !e.hasConstraint<PrimaryKeyConstraint>((e) => e.auto)))
@@ -149,37 +149,48 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
     });
   }
 
-  List<DataType> _mapResult(pg.Result result) {
+  List<DataType> mapResult(pg.Result result) {
     final mapping = {
       for (final attribute
-          in _relation.attributes.whereType<PostgresqlDataAttribute>())
+          in dataRelation.attributes.whereType<PostgresqlDataAttribute>())
         attribute.field: result.schema.columns.indexWhere(
           (e) => e.columnName == attribute.name,
         )
     };
 
+    final typeMapping = {
+      for (final attribute
+          in dataRelation.attributes.whereType<PostgresqlDataAttribute>())
+        attribute.field: PostgresqlDataType.findForType(attribute.field.type),
+    };
+
     return result
         .map(
-          (row) => bean.fromValues(
-              mapping.map((field, idx) => MapEntry(field.name, row[idx]))),
+          (row) => bean.fromValues(mapping.map((field, idx) =>
+              MapEntry(field.name, typeMapping[field]!.decode(row[idx])))),
         )
         .toList();
   }
 
-  DataType _mapResultRow(pg.ResultRow row) {
+  DataType mapResultRow(pg.ResultRow row) {
     final mapping = {
       for (final attribute in _dataAttributes)
         attribute.field: row.schema.columns.indexWhere(
           (e) => e.columnName == attribute.name,
-        )
+        ),
     };
 
     return bean.fromValues(
-      mapping.map((field, idx) => MapEntry(field.name, row[idx])),
+      mapping.map(
+        (field, idx) => MapEntry(
+          field.name,
+          PostgresqlDataType.findForType(field.type).decode(row[idx]),
+        ),
+      ),
     );
   }
 
-  Filter _identityFilter(dynamic id) {
+  Filter identityFilter(dynamic id) {
     return Filter.equals(
       bean.idField ?? (throw MissingIdFieldError(bean)),
       _typedId(id),
@@ -200,11 +211,11 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
     };
   }
 
-  Sql? _buildFilterSql(Filter filter) {
+  Sql? buildFilterSql(Filter filter) {
     return switch (filter) {
       EmptyFilter() => null,
       FilterGroup() => filter.filters
-          .map(_buildFilterSql)
+          .map(buildFilterSql)
           .nonNulls
           .joinSql(filter.isConjunction ? ' AND ' : ' OR ')
         ..wrap(),
@@ -228,13 +239,13 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
 
     final leftSql = switch (effectiveLeft) {
       PostgresqlAttribute(:final name) =>
-        Sql.qualifiedName([_relation.name, name]),
+        Sql.qualifiedName([dataRelation.name, name]),
       final value => PostgresqlDataType.findForDynamic(value).sqlParam(value),
     };
 
     final rightSql = switch (effectiveRight) {
       PostgresqlAttribute(:final name) =>
-        Sql.qualifiedName([_relation.name, name]),
+        Sql.qualifiedName([dataRelation.name, name]),
       final value => PostgresqlDataType.findForDynamic(value).sqlParam(value),
     };
 
@@ -259,7 +270,7 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
       _dataAttributes.firstWhere((a) => a.field == field);
 
   Iterable<PostgresqlDataAttribute> get _dataAttributes =>
-      _relation.attributes.whereType<PostgresqlDataAttribute<DataType>>();
+      dataRelation.attributes.whereType<PostgresqlDataAttribute<DataType>>();
 }
 
 // UTILS

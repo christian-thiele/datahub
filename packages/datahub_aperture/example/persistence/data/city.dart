@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:datahub/data.dart';
 import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/icons.dart';
@@ -22,10 +24,23 @@ class City extends _City {
   @Meta(name: 'Enabled', description: 'Show in PARCO App')
   final bool enabled;
 
+  @Meta(name: 'Coat of Arms')
+  final Uint8List badge;
+
+  @Meta(name: 'Location')
+  @ApertureField(readOnly: true)
+  final Geometry location;
+
+  @Meta(name: 'Client IDs')
+  final List<String> clientIds;
+
   const City({
     this.id = 0,
     required this.name,
     this.enabled = false,
+    required this.badge,
+    required this.location,
+    required this.clientIds,
   });
 
   static DataBean<City> get bean => _City.bean;

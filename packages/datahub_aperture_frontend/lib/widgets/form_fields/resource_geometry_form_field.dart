@@ -1,19 +1,18 @@
+import 'package:datahub/data.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/widgets/map/editor_layer.dart';
-import 'package:datahub_aperture_frontend/widgets/map/utils.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_map/flutter_map.dart';
-import 'package:geojson_vi/geojson_vi.dart';
+import 'package:flutter_map/flutter_map.dart' hide Polygon;
 import 'package:latlong2/latlong.dart';
 
-class ResourceGeoJsonFormField extends StatefulWidget {
+class ResourceGeometryFormField extends StatefulWidget {
   final ResourceField field;
-  final String? value;
+  final Geometry? value;
   final String? error;
   final bool isChanged;
-  final ValueChanged<String>? onChanged;
+  final ValueChanged<Geometry?>? onChanged;
 
-  const ResourceGeoJsonFormField({
+  const ResourceGeometryFormField({
     super.key,
     required this.field,
     this.value,
@@ -23,11 +22,11 @@ class ResourceGeoJsonFormField extends StatefulWidget {
   });
 
   @override
-  State<ResourceGeoJsonFormField> createState() =>
-      _ResourceGeoJsonFormFieldState();
+  State<ResourceGeometryFormField> createState() =>
+      _ResourceGeometryFormFieldState();
 }
 
-class _ResourceGeoJsonFormFieldState extends State<ResourceGeoJsonFormField>
+class _ResourceGeometryFormFieldState extends State<ResourceGeometryFormField>
     with SingleTickerProviderStateMixin {
   late final MapControllerImpl _controller;
   var features = <EditorPolygon>[];
@@ -50,19 +49,21 @@ class _ResourceGeoJsonFormFieldState extends State<ResourceGeoJsonFormField>
       return;
     }
 
-    final jsonFeatures = GeoJSONFeatureCollection.fromJSON(
-      widget.value!,
-    ).features.nonNulls.toList();
-
-    features = jsonFeatures
-        .map((e) => e.geometry)
-        .whereType<GeoJSONPolygon>()
-        .map(geoJSONPolygonToEditorPolygon)
-        .toList();
+    features = [];
+    if (widget.value case Polygon polygon) {
+      features.add(
+        EditorPolygon(
+          bounds: polygon.rings.first.points.map((e) => LatLng(e.y, e.x)),
+          holes: polygon.rings
+              .skip(1)
+              .map((e) => e.points.map((e) => LatLng(e.y, e.x))),
+        ),
+      );
+    }
   }
 
   @override
-  void didUpdateWidget(covariant ResourceGeoJsonFormField oldWidget) {
+  void didUpdateWidget(covariant ResourceGeometryFormField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
       _update();
@@ -97,12 +98,11 @@ class _ResourceGeoJsonFormFieldState extends State<ResourceGeoJsonFormField>
           EditorLayer(
             features: features,
             onChanged: (List<EditorPolygon> value) {
-              final polygons = value.map(editorPolygonToGeoJSONPolygon);
-              final features = polygons.map(GeoJSONFeature.new);
-
-              widget.onChanged?.call(
-                GeoJSONFeatureCollection(features.toList()).toJSON(),
-              );
+              if (value.isEmpty) {
+                widget.onChanged?.call(null);
+              } else if (value.length == 1) {
+                widget.onChanged?.call(value.first.toGeometry());
+              }
             },
           ),
         ],

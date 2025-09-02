@@ -1,1 +1,1 @@
-enum ResourceFieldType { text, int, double, bool, timestamp, file, geoJson }
+enum ResourceFieldType { text, int, double, bool, timestamp, file, geometry }

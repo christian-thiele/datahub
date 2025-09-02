@@ -15,21 +15,39 @@ class Zone extends _Zone {
   @Meta(name: 'Zone ID')
   final String id;
 
+  @Meta(name: 'Client ID')
+  final String clientId;
+
   @Meta(name: 'City ID')
   @RelationId<City>()
   final int cityId;
 
-  @Meta(name: 'State Code')
-  final String stateCode;
+  @Meta(name: 'Payable per App')
+  final bool payablePerApp;
+
+  @Meta(name: 'Service Fee')
+  final bool withParcoServiceFee;
 
   @Meta(name: 'Country Code')
+  @Validation(length: 2)
   final String countryCode;
+
+  @Meta(name: 'State Code')
+  @Validation(length: 2)
+  final String stateCode;
+
+  @Meta(name: 'Vignette Required')
+  final bool vignette;
 
   const Zone({
     required this.id,
+    required this.clientId,
     required this.cityId,
-    required this.stateCode,
+    required this.payablePerApp,
+    required this.withParcoServiceFee,
     required this.countryCode,
+    required this.stateCode,
+    required this.vignette,
   });
 
   static DataBean<Zone> get bean => _Zone.bean;

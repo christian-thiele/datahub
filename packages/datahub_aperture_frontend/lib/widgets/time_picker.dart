@@ -37,7 +37,6 @@ class _NumberDial extends StatelessWidget {
   final int max;
 
   const _NumberDial({
-    super.key,
     required this.onChanged,
     required this.value,
     required this.min,

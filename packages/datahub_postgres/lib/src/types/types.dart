@@ -1,4 +1,3 @@
-import 'package:datahub/data.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 import 'package:postgres/src/types/type_registry.dart';
 import 'package:postgres/postgres.dart' as pg;
@@ -41,10 +40,6 @@ class PostgresqlJsonMap extends PostgresqlDataType<Map<String, dynamic>> {
 
 class PostgresqlJsonList extends PostgresqlDataType<List<dynamic>> {
   const PostgresqlJsonList() : super(TypeOid.jsonb, 'jsonb', pg.Type.jsonb);
-}
-
-class PostgresqlObject extends PostgresqlDataType<DataObject> {
-  const PostgresqlObject() : super(TypeOid.jsonb, 'jsonb', pg.Type.jsonb);
 }
 
 class PostgresqlDynamic extends PostgresqlDataType<dynamic> {

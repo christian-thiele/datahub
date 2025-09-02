@@ -4,6 +4,7 @@ import 'package:boost/boost.dart';
 
 import 'codec_exception.dart';
 import 'data_object.dart';
+import 'types/geometry/geometry.dart';
 
 typedef Encoder<T> = dynamic Function(T value);
 typedef Decoder<T> = T Function(dynamic value, {String? name});
@@ -27,6 +28,8 @@ abstract class DataCodec {
 
   dynamic encodeEnum(Enum value);
 
+  dynamic encodeGeometry(Geometry value);
+
   dynamic encodeList<T>(List<T> value, Encoder<T> encodeItem);
 
   dynamic encodeMap<T>(Map<String, T> value, Encoder<T> encodeItem);
@@ -40,6 +43,8 @@ abstract class DataCodec {
       DateTime() => encodeDateTime(value),
       Duration() => encodeDuration(value),
       Uint8List() => encodeUint8List(value),
+      Enum() => encodeEnum(value),
+      Geometry() => encodeGeometry(value),
       DataObject() => value.toJson(),
       List<dynamic>() => encodeList(value, encodeDynamic),
       Map<String, dynamic>() => encodeMap(value, encodeDynamic),
@@ -68,6 +73,8 @@ abstract class DataCodec {
   Uint8List decodeUint8List(dynamic value, {String? name});
 
   T decodeEnum<T extends Enum>(dynamic value, List<T> values, {String? name});
+
+  Geometry decodeGeometry(dynamic value, {String? name});
 
   List<T> decodeList<T>(dynamic v, Decoder<T> decodeItem, {String? name});
 
@@ -200,6 +207,9 @@ class JsonDataCodec extends DataCodec {
   String encodeEnum(Enum value) => value.name;
 
   @override
+  dynamic encodeGeometry(Geometry value) => base64Encode(value.toEWKB());
+
+  @override
   String decodeString(dynamic e, {String? name}) {
     if (e is String || e is num || e is bool) {
       return e.toString();
@@ -279,6 +289,15 @@ class JsonDataCodec extends DataCodec {
       String() when values.any((e) => e.name == value) =>
         values.firstWhere((e) => e.name == value),
       _ => throw CodecException.typeMismatch(T, value.runtimeType, name),
+    };
+  }
+
+  @override
+  Geometry decodeGeometry(dynamic value, {String? name}) {
+    return switch (value) {
+      String() => Geometry.parseEWKB(base64Decode(value)),
+      Uint8List() => Geometry.parseEWKB(value),
+      _ => throw CodecException.typeMismatch(Geometry, value.runtimeType, name),
     };
   }
 

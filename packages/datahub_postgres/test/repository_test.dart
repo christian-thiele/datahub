@@ -34,17 +34,17 @@ void main() {
       final repo = resolve<PostgresqlDataRepository<Person>>();
       await postgres.useConnection((connection) async {
         await connection.runTransaction((context) async {
-          final data = await repo.getAll();
-          final id = data.max((e) => e.id).id + 1;
-
           await repo.create(
             Person(
-              id: id,
               firstName: 'Something',
               lastName: 'Something',
               birthday: null,
+              isSpecial: false,
             ),
           );
+
+          final data = await repo.getAll();
+          final id = data.max((e) => e.id).id + 1;
         });
       });
     });

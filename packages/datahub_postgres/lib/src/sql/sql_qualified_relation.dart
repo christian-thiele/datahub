@@ -1,6 +1,7 @@
 import 'sql.dart';
+import 'sql_select.dart';
 
-class SqlQualifiedRelation {
+class SqlQualifiedRelation implements SqlSelectTarget {
   final String? schema;
   final String relation;
 
@@ -16,6 +17,9 @@ class SqlQualifiedRelation {
     buffer.write(Sql.escapeName(relation));
     return buffer.toString();
   }
+
+  @override
+  String get name => relation;
 
   Sql toSql() => Sql(toString());
 }

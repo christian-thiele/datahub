@@ -1,3 +1,4 @@
+import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:datahub_aperture_frontend/widgets/utils/immutable_list_utils.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/models/authentication.dart';
@@ -87,6 +88,7 @@ class ResourceCubit extends Cubit<ResourceState> {
         offset: state.offset,
         limit: state.pageSize,
       );
+      response.data.forEach((d) => decodeFieldData(resource, d));
 
       if (!isClosed) {
         emit(

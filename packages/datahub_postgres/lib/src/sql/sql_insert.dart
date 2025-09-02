@@ -9,17 +9,20 @@ class SqlInsert implements SqlBuilder {
   SqlInsert(this.relation, this.values, {this.returning});
 
   @override
-  Sql toSql() => Sql.ofSegments([
-        SqlTextSegment('INSERT INTO '),
-        SqlTextSegment(relation.toString()),
-        SqlTextSegment(' ('),
-        SqlTextSegment(values.keys.join(', ')),
-        SqlTextSegment(') VALUES ('),
+  Sql toSql() => Sql.combine([
+        Sql('INSERT INTO '),
+        Sql(relation.toString()),
+        Sql(' ('),
+        values.keys.map((e) => e.toSql()).joinSql(', '),
+        Sql(') VALUES ('),
         for (final (idx, (key, value)) in values.tuples.indexed) ...[
-          if (idx > 0) SqlTextSegment(', '),
-          SqlParamSegment(value, key.type),
+          if (idx > 0) Sql(', '),
+          Sql.param(value, key.type),
         ],
-        SqlTextSegment(')'),
-        if (returning != null) SqlTextSegment(' RETURNING $returning'),
+        Sql(')'),
+        if (returning != null) ...[
+          Sql(' RETURNING '),
+          returning!.toSql(),
+        ],
       ]);
 }

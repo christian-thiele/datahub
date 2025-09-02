@@ -1,3 +1,4 @@
+import 'package:datahub/data.dart' as data;
 import 'package:datahub_aperture_frontend/widgets/map/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/utils/immutable_list_utils.dart';
 import 'package:flutter/material.dart';
@@ -63,6 +64,26 @@ class EditorPolygon {
     }
 
     return false;
+  }
+
+  data.Polygon toGeometry() {
+    return data.Polygon(
+      data.wgs84,
+      [
+        for (final ring in [bounds, ...holes])
+          data.LineString(
+            data.wgs84,
+            [
+              for (final point in ring.followedBy([ring.first]))
+                data.Point(data.wgs84, point.longitude, point.latitude),
+            ],
+            false,
+            false,
+          ),
+      ],
+      false,
+      false,
+    );
   }
 }
 

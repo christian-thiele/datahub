@@ -8,16 +8,33 @@ part of 'person.dart';
 
 abstract class _Person with DataObject<Person> {
   const _Person();
-  static final $id = DataField<Person, int>(name: 'id', valueOf: (p) => p.id);
+  static final $id = DataField<Person, int>(
+    name: 'id',
+    valueOf: (p) => p.id,
+    meta: [
+      const Id(),
+    ],
+  );
 
-  static final $firstName =
-      DataField<Person, String>(name: 'firstName', valueOf: (p) => p.firstName);
+  static final $firstName = DataField<Person, String>(
+    name: 'firstName',
+    valueOf: (p) => p.firstName,
+  );
 
-  static final $lastName =
-      DataField<Person, String>(name: 'lastName', valueOf: (p) => p.lastName);
+  static final $lastName = DataField<Person, String>(
+    name: 'lastName',
+    valueOf: (p) => p.lastName,
+  );
 
   static final $birthday = DataField<Person, DateTime?>(
-      name: 'birthday', valueOf: (p) => p.birthday);
+    name: 'birthday',
+    valueOf: (p) => p.birthday,
+  );
+
+  static final $isSpecial = DataField<Person, bool>(
+    name: 'isSpecial',
+    valueOf: (p) => p.isSpecial,
+  );
 
   static final DataBean<Person> bean = DataBean<Person>(
     name: 'Person',
@@ -26,10 +43,12 @@ abstract class _Person with DataObject<Person> {
       $firstName,
       $lastName,
       $birthday,
+      $isSpecial,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
   );
+
   @override
   String get $$name => bean.name;
   @override
@@ -40,6 +59,7 @@ abstract class _Person with DataObject<Person> {
     String? lastName,
     DateTime? birthday,
     bool nullBirthday = false,
+    bool? isSpecial,
   }) {
     final $data = this as Person;
     return Person(
@@ -47,15 +67,17 @@ abstract class _Person with DataObject<Person> {
       firstName: firstName ?? $data.firstName,
       lastName: lastName ?? $data.lastName,
       birthday: nullBirthday ? null : (birthday ?? $data.birthday),
+      isSpecial: isSpecial ?? $data.isSpecial,
     );
   }
 
   static Person fromValues(Map<String, dynamic> data) {
     return Person(
-      id: data['id'],
+      id: data['id'] ?? 0,
       firstName: data['firstName'],
       lastName: data['lastName'],
       birthday: data['birthday'],
+      isSpecial: data['isSpecial'],
     );
   }
 
@@ -65,13 +87,16 @@ abstract class _Person with DataObject<Person> {
     }
     final $codec = const JsonDataCodec();
     return Person(
-      id: $codec.decodeInt(data['id'], name: DataCodec.childName(name, 'id')),
+      id: $codec.decodeInt((data['id'] ?? 0),
+          name: DataCodec.childName(name, 'id')),
       firstName: $codec.decodeString(data['firstName'],
           name: DataCodec.childName(name, 'firstName')),
       lastName: $codec.decodeString(data['lastName'],
           name: DataCodec.childName(name, 'lastName')),
       birthday: $codec.decodeNullable(data['birthday'], $codec.decodeDateTime,
           name: DataCodec.childName(name, 'birthday')),
+      isSpecial: $codec.decodeBool(data['isSpecial'],
+          name: DataCodec.childName(name, 'isSpecial')),
     );
   }
 
@@ -84,6 +109,7 @@ abstract class _Person with DataObject<Person> {
       'firstName': $codec.encodeString($data.firstName),
       'lastName': $codec.encodeString($data.lastName),
       'birthday': $codec.encodeNullable($data.birthday, $codec.encodeDateTime),
+      'isSpecial': $codec.encodeBool($data.isSpecial),
     }..removeWhere((k, v) => v == null);
   }
 }

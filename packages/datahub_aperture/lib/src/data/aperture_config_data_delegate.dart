@@ -66,7 +66,7 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
 
     return ResourceDescription(
       id: bean.name,
-      name: meta?.name ?? bean.name,
+      name: meta?.name ?? niceName(bean.name),
       namePlural: meta?.namePlural,
       icon: meta?.icon ?? Icons.data_object,
       readOnly: repository is! ApertureResourceWriteRepository,
@@ -94,7 +94,7 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
 
     return ResourceField(
       id: field.name,
-      name: meta?.name ?? field.name,
+      name: meta?.name ?? niceName(field.name),
       description: meta?.description,
       readOnly: apertureMeta?.readOnly ?? false,
       validation: validation?.expression,
@@ -105,11 +105,19 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
         DataField<dynamic, bool?>() => ResourceFieldType.bool,
         DataField<dynamic, DateTime?>() => ResourceFieldType.timestamp,
         DataField<dynamic, Uint8List?>() => ResourceFieldType.file,
+        DataField<dynamic, Geometry?>() => ResourceFieldType.geometry,
         _ => throw ApiError(
-            'Field ${bean.name}.${field.name} of type ${field.type} is not supported by Aperture.',
+            'Field ${bean.name}.${field.name} of type ${field.type.name} is not supported by Aperture.',
           )
       },
       nullable: field.type.isNullable,
     );
+  }
+
+  static String niceName(String name) {
+    return splitWords(name)
+        .map(firstUpper)
+        .map((e) => (e == 'Id') ? 'ID' : e)
+        .join(' ');
   }
 }

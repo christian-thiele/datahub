@@ -23,7 +23,7 @@ class SqlCreateRelation implements SqlBuilder {
       case final PostgresqlView relation:
         return Sql.combine([
           Sql('CREATE VIEW '),
-          Sql(Sql.escapeName(relation.name)),
+          SqlQualifiedRelation(schema.name, relation.name).toSql(),
           Sql(' AS '),
           relation.sql.toSql(),
         ]);

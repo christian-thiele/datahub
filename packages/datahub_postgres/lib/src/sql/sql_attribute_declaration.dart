@@ -13,7 +13,7 @@ class SqlAttributeDeclaration {
       Sql('${Sql.escapeName(attribute.name)} ${attribute.type.name}'),
       if (attribute.constraints.isNotEmpty) Sql(' '),
       attribute.constraints
-          .map((e) => SqlAttributeConstraint(e).toSql())
+          .map((e) => SqlAttributeConstraint(attribute, e).toSql())
           .joinSql(' '),
     ]);
   }
