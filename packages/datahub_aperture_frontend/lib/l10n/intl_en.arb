@@ -28,5 +28,6 @@
   "byUsername": "by {userName}",
   "draft": "Draft",
   "refresh": "Refresh",
-  "resourceDeleted": "Resource Deleted."
+  "resourceDeleted": "Resource Deleted.",
+  "fileSelected": "File selected"
 }

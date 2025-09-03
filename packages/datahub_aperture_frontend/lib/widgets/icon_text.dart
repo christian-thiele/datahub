@@ -5,6 +5,7 @@ class IconText extends StatelessWidget {
   final String text;
   final double? iconSize;
   final Color? iconColor;
+  final bool leading;
 
   const IconText(
     this.icon,
@@ -12,6 +13,7 @@ class IconText extends StatelessWidget {
     super.key,
     this.iconSize,
     this.iconColor,
+    this.leading = true,
   });
 
   @override
@@ -20,8 +22,9 @@ class IconText extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: 8,
       children: [
-        Icon(icon, size: iconSize, color: iconColor),
+        if (leading) Icon(icon, size: iconSize, color: iconColor),
         Text(text),
+        if (!leading) Icon(icon, size: iconSize, color: iconColor),
       ],
     );
   }

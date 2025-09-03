@@ -47,7 +47,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  lints: ^6.0.0
+  flutter_lints: ^6.0.0
   test: ^1.21.6
   build_runner: ^2.7.0
   datahub_codegen: ^0.18.0-dev.1

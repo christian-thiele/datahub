@@ -109,40 +109,56 @@ String? validateFieldValue(ResourceField field, dynamic value) {
 }
 
 // dirty little hack
-void decodeFieldData(
-  ResourceDescription resource,
-  ResourceData data,
-) {
+void decodeFieldData(ResourceDescription resource, ResourceData data) {
   final decoded = {
     for (final (key, value) in data.fieldData.tuples)
       key: _decodeField(
-        resource.fields.where((e) => e.id == key).firstOrNull?.type,
+        resource.fields.where((e) => e.id == key).firstOrNull,
+        null,
         value,
+        name: key,
       ),
   };
   data.fieldData.addAll(decoded);
 }
 
-dynamic _decodeField(ResourceFieldType? type, dynamic raw) {
+dynamic _decodeField(
+  ResourceField? field,
+  ResourceFieldType? type,
+  dynamic raw, {
+  String? name,
+}) {
   final codec = const JsonDataCodec();
-  return switch(type) {
-    ResourceFieldType.string => codec.decodeString(raw),
-    ResourceFieldType.stringEnum => codec.decodeString(raw),
-    ResourceFieldType.int => codec.decodeInt(raw),
-    ResourceFieldType.double => codec.decodeDouble(raw),
-    ResourceFieldType.bool => codec.decodeBool(raw),
-    ResourceFieldType.timestamp => codec.decodeDateTime(raw),
-    ResourceFieldType.bytes => codec.decodeUint8List(raw),
-    ResourceFieldType.geometry => codec.decodeGeometry(raw),
-    ResourceFieldType.object => codec.decodeDynamic(raw),
-    ResourceFieldType.listString => codec.decodeList(raw, codec.decodeString),
-    ResourceFieldType.listEnum => codec.decodeList(raw, codec.decodeString),
-    ResourceFieldType.listInt => codec.decodeList(raw, codec.decodeInt),
-    ResourceFieldType.listDouble => codec.decodeList(raw, codec.decodeDouble),
-    ResourceFieldType.listBool => codec.decodeList(raw, codec.decodeBool),
-    ResourceFieldType.listTimestamp => codec.decodeList(raw, codec.decodeDateTime),
-    ResourceFieldType.listBytes => codec.decodeList(raw, codec.decodeUint8List),
-    ResourceFieldType.listObject => codec.decodeList(raw, codec.decodeDynamic),
-    _ => codec.decodeDynamic(raw),
+  final elementField = field?.objectDescription
+      ?.where((e) => e.id == '\$element')
+      .firstOrNull;
+
+  return switch (type ?? field?.type) {
+    ResourceFieldType.string => codec.decodeString(raw, name: name),
+    ResourceFieldType.stringEnum => codec.decodeString(raw, name: name),
+    ResourceFieldType.int => codec.decodeInt(raw, name: name),
+    ResourceFieldType.double => codec.decodeDouble(raw, name: name),
+    ResourceFieldType.bool => codec.decodeBool(raw, name: name),
+    ResourceFieldType.timestamp => codec.decodeDateTime(raw, name: name),
+    ResourceFieldType.bytes => codec.decodeUint8List(raw, name: name),
+    ResourceFieldType.geometry => codec.decodeGeometry(raw, name: name),
+    ResourceFieldType.object => codec.decodeDynamic(raw, name: name),
+    ResourceFieldType.list =>
+      elementField != null
+          ? codec.decodeList(
+              raw,
+              (e, {String? name}) =>
+                  _decodeField(field, elementField.type, e, name: name),
+            )
+          : codec.decodeDynamic(raw, name: name),
+    _ => codec.decodeDynamic(raw, name: name),
   };
+}
+
+extension ResourceDescriptionExtension on ResourceDescription {
+  ResourceField getField(String id) => fields.firstWhere(
+    (e) => e.id == id,
+    orElse: () =>
+        throw Exception('Could not find field $id on resource ${this.id}.'),
+  );
 }

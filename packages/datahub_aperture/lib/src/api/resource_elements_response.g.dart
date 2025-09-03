@@ -9,19 +9,31 @@ part of 'resource_elements_response.dart';
 abstract class _ResourceElementsResponse
     with DataObject<ResourceElementsResponse> {
   const _ResourceElementsResponse();
+  static const $$codec = JsonDataCodec();
   static final $total = DataField<ResourceElementsResponse, int?>(
     name: 'total',
     valueOf: (p) => p.total,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeInt, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeInt),
   );
 
   static final $hasNextPage = DataField<ResourceElementsResponse, bool>(
     name: 'hasNextPage',
     valueOf: (p) => p.hasNextPage,
+    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+    toJson: (value) => $$codec.encodeBool(value),
   );
 
   static final $data = DataField<ResourceElementsResponse, List<ResourceData>>(
     name: 'data',
     valueOf: (p) => p.data,
+    dataBean: () => ResourceData.bean,
+    fromJson: (value, {String? name}) => $$codec.decodeList<ResourceData>(
+        value, ResourceData.bean.fromJson,
+        name: name),
+    toJson: (value) =>
+        $$codec.encodeList<ResourceData>(value, (v) => v.toJson()),
   );
 
   static final DataBean<ResourceElementsResponse> bean =
@@ -68,26 +80,23 @@ abstract class _ResourceElementsResponse
       throw CodecException.typeMismatch(
           ResourceElementsResponse, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return ResourceElementsResponse(
-      total: $codec.decodeNullable(data['total'], $codec.decodeInt,
+      total: $total.fromJson(data['total'],
           name: DataCodec.childName(name, 'total')),
-      hasNextPage: $codec.decodeBool(data['hasNextPage'],
+      hasNextPage: $hasNextPage.fromJson(data['hasNextPage'],
           name: DataCodec.childName(name, 'hasNextPage')),
-      data: $codec.decodeList<ResourceData>(
-          data['data'], ResourceData.bean.fromJson,
-          name: DataCodec.childName(name, 'data')),
+      data:
+          $data.fromJson(data['data'], name: DataCodec.childName(name, 'data')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as ResourceElementsResponse;
+    final $$data = this as ResourceElementsResponse;
     return {
-      'total': $codec.encodeNullable($data.total, $codec.encodeInt),
-      'hasNextPage': $codec.encodeBool($data.hasNextPage),
-      'data': $codec.encodeList<ResourceData>($data.data, (v) => v.toJson()),
+      'total': $total.toJson($$data.total),
+      'hasNextPage': $hasNextPage.toJson($$data.hasNextPage),
+      'data': $data.toJson($$data.data),
     }..removeWhere((k, v) => v == null);
   }
 }

@@ -8,50 +8,82 @@ part of 'resource_description.dart';
 
 abstract class _ResourceDescription with DataObject<ResourceDescription> {
   const _ResourceDescription();
+  static const $$codec = JsonDataCodec();
   static final $id = DataField<ResourceDescription, String>(
     name: 'id',
     valueOf: (p) => p.id,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $name = DataField<ResourceDescription, String>(
     name: 'name',
     valueOf: (p) => p.name,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $namePlural = DataField<ResourceDescription, String?>(
     name: 'namePlural',
     valueOf: (p) => p.namePlural,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
   static final $icon = DataField<ResourceDescription, int>(
     name: 'icon',
     valueOf: (p) => p.icon,
+    fromJson: (value, {String? name}) => $$codec.decodeInt(value, name: name),
+    toJson: (value) => $$codec.encodeInt(value),
   );
 
   static final $fields = DataField<ResourceDescription, List<ResourceField>>(
     name: 'fields',
     valueOf: (p) => p.fields,
+    dataBean: () => ResourceField.bean,
+    fromJson: (value, {String? name}) => $$codec.decodeList<ResourceField>(
+        value, ResourceField.bean.fromJson,
+        name: name),
+    toJson: (value) =>
+        $$codec.encodeList<ResourceField>(value, (v) => v.toJson()),
   );
 
   static final $relations =
       DataField<ResourceDescription, List<ResourceRelation>>(
     name: 'relations',
     valueOf: (p) => p.relations,
+    dataBean: () => ResourceRelation.bean,
+    fromJson: (value, {String? name}) => $$codec.decodeList<ResourceRelation>(
+        value, ResourceRelation.bean.fromJson,
+        name: name),
+    toJson: (value) =>
+        $$codec.encodeList<ResourceRelation>(value, (v) => v.toJson()),
   );
 
   static final $idField = DataField<ResourceDescription, String>(
     name: 'idField',
     valueOf: (p) => p.idField,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $displayField = DataField<ResourceDescription, String?>(
     name: 'displayField',
     valueOf: (p) => p.displayField,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
   static final $readOnly = DataField<ResourceDescription, bool>(
     name: 'readOnly',
     valueOf: (p) => p.readOnly,
+    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+    toJson: (value) => $$codec.encodeBool(value),
   );
 
   static final DataBean<ResourceDescription> bean =
@@ -123,50 +155,40 @@ abstract class _ResourceDescription with DataObject<ResourceDescription> {
       throw CodecException.typeMismatch(
           ResourceDescription, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return ResourceDescription(
-      id: $codec.decodeString(data['id'],
-          name: DataCodec.childName(name, 'id')),
-      name: $codec.decodeString(data['name'],
-          name: DataCodec.childName(name, 'name')),
-      namePlural: $codec.decodeNullable(data['namePlural'], $codec.decodeString,
+      id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
+      name:
+          $name.fromJson(data['name'], name: DataCodec.childName(name, 'name')),
+      namePlural: $namePlural.fromJson(data['namePlural'],
           name: DataCodec.childName(name, 'namePlural')),
-      icon: $codec.decodeInt(data['icon'],
-          name: DataCodec.childName(name, 'icon')),
-      fields: $codec.decodeList<ResourceField>(
-          data['fields'], ResourceField.bean.fromJson,
+      icon:
+          $icon.fromJson(data['icon'], name: DataCodec.childName(name, 'icon')),
+      fields: $fields.fromJson(data['fields'],
           name: DataCodec.childName(name, 'fields')),
-      relations: $codec.decodeList<ResourceRelation>(
-          data['relations'], ResourceRelation.bean.fromJson,
+      relations: $relations.fromJson(data['relations'],
           name: DataCodec.childName(name, 'relations')),
-      idField: $codec.decodeString(data['idField'],
+      idField: $idField.fromJson(data['idField'],
           name: DataCodec.childName(name, 'idField')),
-      displayField: $codec.decodeNullable(
-          data['displayField'], $codec.decodeString,
+      displayField: $displayField.fromJson(data['displayField'],
           name: DataCodec.childName(name, 'displayField')),
-      readOnly: $codec.decodeBool(data['readOnly'],
+      readOnly: $readOnly.fromJson(data['readOnly'],
           name: DataCodec.childName(name, 'readOnly')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as ResourceDescription;
+    final $$data = this as ResourceDescription;
     return {
-      'id': $codec.encodeString($data.id),
-      'name': $codec.encodeString($data.name),
-      'namePlural':
-          $codec.encodeNullable($data.namePlural, $codec.encodeString),
-      'icon': $codec.encodeInt($data.icon),
-      'fields':
-          $codec.encodeList<ResourceField>($data.fields, (v) => v.toJson()),
-      'relations': $codec.encodeList<ResourceRelation>(
-          $data.relations, (v) => v.toJson()),
-      'idField': $codec.encodeString($data.idField),
-      'displayField':
-          $codec.encodeNullable($data.displayField, $codec.encodeString),
-      'readOnly': $codec.encodeBool($data.readOnly),
+      'id': $id.toJson($$data.id),
+      'name': $name.toJson($$data.name),
+      'namePlural': $namePlural.toJson($$data.namePlural),
+      'icon': $icon.toJson($$data.icon),
+      'fields': $fields.toJson($$data.fields),
+      'relations': $relations.toJson($$data.relations),
+      'idField': $idField.toJson($$data.idField),
+      'displayField': $displayField.toJson($$data.displayField),
+      'readOnly': $readOnly.toJson($$data.readOnly),
     }..removeWhere((k, v) => v == null);
   }
 }

@@ -3,6 +3,7 @@ import 'package:datahub_postgres/data.dart';
 import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/services.dart';
+import 'package:datahub_postgres/src/types/types.dart';
 import 'package:postgres/postgres.dart' as pg;
 
 class PostgresqlDataRepository<DataType extends DataObject<DataType>>
@@ -161,13 +162,15 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
     final typeMapping = {
       for (final attribute
           in dataRelation.attributes.whereType<PostgresqlDataAttribute>())
-        attribute.field: PostgresqlDataType.findForType(attribute.field.type),
+        attribute.field: attribute.type,
     };
 
     return result
         .map(
-          (row) => bean.fromValues(mapping.map((field, idx) =>
-              MapEntry(field.name, typeMapping[field]!.decode(row[idx])))),
+          (row) => bean.fromValues(
+            mapping.map((field, idx) =>
+                MapEntry(field.name, typeMapping[field]!.decode(row[idx]))),
+          ),
         )
         .toList();
   }
@@ -184,7 +187,7 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
       mapping.map(
         (field, idx) => MapEntry(
           field.name,
-          PostgresqlDataType.findForType(field.type).decode(row[idx]),
+          PostgresqlDataType.findForDataField(field).decode(row[idx]),
         ),
       ),
     );
@@ -237,6 +240,11 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
 
     // TODO some rules and sanity checks maybe?
 
+    final leftType = switch (effectiveLeft) {
+      PostgresqlAttribute(:final type) => type,
+      final value => PostgresqlDataType.findForDynamic(value),
+    };
+
     final leftSql = switch (effectiveLeft) {
       PostgresqlAttribute(:final name) =>
         Sql.qualifiedName([dataRelation.name, name]),
@@ -249,34 +257,41 @@ class PostgresqlDataRepository<DataType extends DataObject<DataType>>
       final value => PostgresqlDataType.findForDynamic(value).sqlParam(value),
     };
 
-    return Sql.combine([
-      leftSql,
-      switch (type) {
-        CompareType.equals ||
-        CompareType.contains ||
-        CompareType.isIn =>
-          Sql(' = '),
-        CompareType.notEquals => Sql(' <> '),
-        CompareType.greaterThan => Sql(' > '),
-        CompareType.lessThan => Sql(' < '),
-        CompareType.greaterOrEqual => Sql(' >= '),
-        CompareType.lessOrEqual => Sql(' <= '),
-      },
-      rightSql,
-    ]);
+    return switch ((leftType, type)) {
+      (PostgresqlString(), CompareType.contains) =>
+        Sql.combine([leftSql, Sql(' ~* '), rightSql]),
+      (
+        PostgresqlStringArray() ||
+            PostgresqlIntArray() ||
+            PostgresqlDoubleArray() ||
+            PostgresqlBoolArray(),
+        CompareType.contains
+      ) =>
+        Sql.combine([rightSql, Sql(' = ANY('), leftSql, Sql(')')]),
+      _ => Sql.combine([
+          leftSql,
+          switch (type) {
+            CompareType.equals ||
+            CompareType.contains ||
+            CompareType.isIn =>
+              Sql(' = '),
+            CompareType.notEquals => Sql(' <> '),
+            CompareType.greaterThan => Sql(' > '),
+            CompareType.lessThan => Sql(' < '),
+            CompareType.greaterOrEqual => Sql(' >= '),
+            CompareType.lessOrEqual => Sql(' <= '),
+          },
+          rightSql,
+        ]),
+    };
   }
 
   PostgresqlAttribute _fieldAttribute(DataField field) =>
       _dataAttributes.firstWhere((a) => a.field == field);
 
   Iterable<PostgresqlDataAttribute> get _dataAttributes =>
-      dataRelation.attributes.whereType<PostgresqlDataAttribute<DataType>>();
+      dataRelation.attributes
+          .whereType<PostgresqlDataAttribute>()
+          .where((attribute) => attribute.field.dataType.isExact<DataType>());
 }
 
-// UTILS
-extension on PostgresqlDataAttribute {
-  bool hasConstraint<T extends PostgresqlAttributeConstraint>(
-      [bool Function(T)? test]) {
-    return constraints.whereType<T>().where(test ?? (_) => true).isNotEmpty;
-  }
-}

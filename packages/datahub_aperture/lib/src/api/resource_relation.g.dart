@@ -8,19 +8,30 @@ part of 'resource_relation.dart';
 
 abstract class _ResourceRelation with DataObject<ResourceRelation> {
   const _ResourceRelation();
+  static const $$codec = JsonDataCodec();
   static final $name = DataField<ResourceRelation, String>(
     name: 'name',
     valueOf: (p) => p.name,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $resourceId = DataField<ResourceRelation, String>(
     name: 'resourceId',
     valueOf: (p) => p.resourceId,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $filter = DataField<ResourceRelation, ResourceRelationFilter>(
     name: 'filter',
     valueOf: (p) => p.filter,
+    dataBean: () => ResourceRelationFilter.bean,
+    fromJson: (value, {String? name}) =>
+        ResourceRelationFilter.bean.fromJson(value, name: name),
+    toJson: (value) => value.toJson(),
   );
 
   static final DataBean<ResourceRelation> bean = DataBean<ResourceRelation>(
@@ -64,25 +75,23 @@ abstract class _ResourceRelation with DataObject<ResourceRelation> {
       throw CodecException.typeMismatch(
           ResourceRelation, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return ResourceRelation(
-      name: $codec.decodeString(data['name'],
-          name: DataCodec.childName(name, 'name')),
-      resourceId: $codec.decodeString(data['resourceId'],
+      name:
+          $name.fromJson(data['name'], name: DataCodec.childName(name, 'name')),
+      resourceId: $resourceId.fromJson(data['resourceId'],
           name: DataCodec.childName(name, 'resourceId')),
-      filter: ResourceRelationFilter.bean
-          .fromJson(data['filter'], name: DataCodec.childName(name, 'filter')),
+      filter: $filter.fromJson(data['filter'],
+          name: DataCodec.childName(name, 'filter')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as ResourceRelation;
+    final $$data = this as ResourceRelation;
     return {
-      'name': $codec.encodeString($data.name),
-      'resourceId': $codec.encodeString($data.resourceId),
-      'filter': $data.filter.toJson(),
+      'name': $name.toJson($$data.name),
+      'resourceId': $resourceId.toJson($$data.resourceId),
+      'filter': $filter.toJson($$data.filter),
     }..removeWhere((k, v) => v == null);
   }
 }

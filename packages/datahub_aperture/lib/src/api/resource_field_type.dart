@@ -8,13 +8,5 @@ enum ResourceFieldType {
   bytes,
   geometry,
   object,
-
-  listString,
-  listEnum,
-  listInt,
-  listDouble,
-  listBool,
-  listTimestamp,
-  listBytes,
-  listObject,
+  list,
 }

@@ -58,6 +58,7 @@ class ResourceElementEditPage extends StatelessWidget {
               ) =>
                 LoadingOverlay(
                   loading: state is ResourceElementEditSaving,
+                  message: 'Saving...',
                   child: ResourceElementEditView(
                     title: title,
                     fields: resource.fields,

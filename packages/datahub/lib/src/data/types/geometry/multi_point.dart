@@ -7,7 +7,7 @@ import 'geometry.dart';
 class MultiPoint extends Geometry {
   final List<Point> points;
 
-  MultiPoint(int? srid, this.points, bool hasZ, bool hasM)
+  const MultiPoint(int? srid, this.points, bool hasZ, bool hasM)
       : super(srid, GeometryType.multiPoint, hasZ, hasM);
 
   factory MultiPoint.read(

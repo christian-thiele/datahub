@@ -1,3 +1,6 @@
+import 'dart:math';
+
+import 'package:datahub_aperture_frontend/models/view_models/paging.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:datahub_aperture_frontend/widgets/utils/immutable_list_utils.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
@@ -5,7 +8,6 @@ import 'package:datahub_aperture_frontend/models/authentication.dart';
 import 'package:datahub_aperture_frontend/models/view_models/filter_model.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
 
 import 'filter_state.dart';
 
@@ -25,9 +27,13 @@ class ResourceCubit extends Cubit<ResourceState> {
   }) : super(
          ResourceLoading(
            initial: true,
-           offset: 0,
-           pageSize: 25,
-           total: null,
+           paging: Paging(
+             offset: 0,
+             length: 0,
+             pageSize: 25,
+             total: null,
+             hasMore: false,
+           ),
            filter: null,
          ),
        ) {
@@ -53,7 +59,7 @@ class ResourceCubit extends Cubit<ResourceState> {
     );
   }
 
-  Future<void> update({FilterState? filter}) async {
+  Future<void> update({FilterState? filter, Paging? paging}) async {
     if (state case ResourceLoading(_initial: false)) {
       return;
     }
@@ -70,35 +76,49 @@ class ResourceCubit extends Cubit<ResourceState> {
           FilterState(
             fields: [
               ...resource.fields.where(
-                (e) => [
-                  ResourceFieldType.text,
-                  ResourceFieldType.int,
-                  ResourceFieldType.double,
-                  ResourceFieldType.bool,
-                ].contains(e.type),
+                (e) =>
+                    [
+                      ResourceFieldType.string,
+                      ResourceFieldType.stringEnum,
+                      ResourceFieldType.int,
+                      ResourceFieldType.double,
+                      ResourceFieldType.bool,
+                      ResourceFieldType.timestamp,
+                    ].contains(e.type) ||
+                    (e.type == ResourceFieldType.list &&
+                        e.objectDescription?.firstOrNull?.type ==
+                            ResourceFieldType.string),
               ),
             ],
             filters: [],
           );
 
+      final effectivePaging = paging ?? state.paging;
+
       final response = await _resourceRepository.getResourceElements(
         _authentication,
         resourceId,
         filter: _buildFilter(effectiveFilter),
-        offset: state.offset,
-        limit: state.pageSize,
+        offset: effectivePaging.offset,
+        limit: effectivePaging.pageSize,
       );
-      response.data.forEach((d) => decodeFieldData(resource, d));
+
+      for (final d in response.data) {
+        decodeFieldData(resource, d);
+      }
 
       if (!isClosed) {
         emit(
           ResourceValue(
             resource: resource,
-            hasNextPage: response.hasNextPage,
+            paging: Paging(
+              offset: effectivePaging.offset,
+              length: response.data.length,
+              pageSize: effectivePaging.pageSize,
+              total: response.total,
+              hasMore: response.hasNextPage,
+            ),
             data: response.data,
-            total: response.total,
-            offset: state.offset,
-            pageSize: state.pageSize,
             filter: effectiveFilter,
           ),
         );
@@ -109,24 +129,74 @@ class ResourceCubit extends Cubit<ResourceState> {
   }
 
   void addFilter(FilterModel model) {
-    if (state case ResourceValue(:final filter?)) {
+    if (state case ResourceValue(
+      :final filter?,
+      paging: Paging(:final pageSize),
+    )) {
       update(
         filter: FilterState(
           fields: filter.fields,
           filters: [...filter.filters, model],
         ),
+        paging: Paging.empty(0, pageSize),
       );
     }
   }
 
   void removeFilter(int index) {
-    if (state case ResourceValue(:final filter?)) {
+    if (state case ResourceValue(
+      :final filter?,
+      paging: Paging(:final pageSize),
+    )) {
       update(
         filter: FilterState(
           fields: filter.fields,
           filters: filter.filters.copyWithRemoved(index),
         ),
+        paging: Paging.empty(0, pageSize),
       );
+    }
+  }
+
+  void _pageTo(int offset, int pageSize) {
+    update(
+      paging: Paging(
+        offset: max(0, offset),
+        length: pageSize,
+        pageSize: pageSize,
+        hasMore: false,
+        total: null,
+      ),
+    );
+  }
+
+  void firstPage() {
+    if (state case ResourceValue(:final paging) when paging.offset > 0) {
+      _pageTo(0, paging.pageSize);
+    }
+  }
+
+  void previousPage() {
+    if (state case ResourceValue(
+      paging: Paging(:final offset, :final pageSize),
+    ) when offset > 0) {
+      _pageTo(offset - pageSize, pageSize);
+    }
+  }
+
+  void nextPage() {
+    if (state case ResourceValue(
+      paging: Paging(:final offset, :final length, hasMore: true),
+    )) {
+      _pageTo(offset + length, length);
+    }
+  }
+
+  void lastPage() {
+    if (state case ResourceValue(
+      paging: Paging(:final length, :final total?),
+    )) {
+      _pageTo(total - length, length);
     }
   }
 }

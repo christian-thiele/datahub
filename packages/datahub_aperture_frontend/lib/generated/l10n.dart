@@ -258,6 +258,16 @@ class S {
       args: [],
     );
   }
+
+  /// `File selected`
+  String get fileSelected {
+    return Intl.message(
+      'File selected',
+      name: 'fileSelected',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

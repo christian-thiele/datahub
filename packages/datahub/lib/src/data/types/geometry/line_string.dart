@@ -7,7 +7,7 @@ import 'geometry.dart';
 class LineString extends Geometry {
   final List<Point> points;
 
-  LineString(int? srid, this.points, bool hasZ, bool hasM)
+  const LineString(int? srid, this.points, bool hasZ, bool hasM)
       : super(srid, GeometryType.lineString, hasZ, hasM);
 
   factory LineString.read(

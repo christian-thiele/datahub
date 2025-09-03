@@ -8,28 +8,69 @@ part of 'person.dart';
 
 abstract class _Person with DataObject<Person> {
   const _Person();
-  static final $id = DataField<Person, int>(name: 'id', valueOf: (p) => p.id);
+  static const $$codec = JsonDataCodec();
+  static final $id = DataField<Person, int>(
+    name: 'id',
+    valueOf: (p) => p.id,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeInt((value ?? 0), name: name),
+    toJson: (value) => $$codec.encodeInt(value),
+  );
 
-  static final $firstName =
-      DataField<Person, String>(name: 'firstName', valueOf: (p) => p.firstName);
+  static final $firstName = DataField<Person, String>(
+    name: 'firstName',
+    valueOf: (p) => p.firstName,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
+  );
 
-  static final $lastName =
-      DataField<Person, String>(name: 'lastName', valueOf: (p) => p.lastName);
+  static final $lastName = DataField<Person, String>(
+    name: 'lastName',
+    valueOf: (p) => p.lastName,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
+  );
 
-  static final $phone =
-      DataField<Person, List<String>>(name: 'phone', valueOf: (p) => p.phone);
+  static final $phone = DataField<Person, List<String>>(
+    name: 'phone',
+    valueOf: (p) => p.phone,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+  );
 
-  static final $email =
-      DataField<Person, List<String>>(name: 'email', valueOf: (p) => p.email);
+  static final $email = DataField<Person, List<String>>(
+    name: 'email',
+    valueOf: (p) => p.email,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+  );
 
   static final $birthday = DataField<Person, DateTime?>(
-      name: 'birthday', valueOf: (p) => p.birthday);
+    name: 'birthday',
+    valueOf: (p) => p.birthday,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeDateTime, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeDateTime),
+  );
 
-  static final $isBlocked =
-      DataField<Person, bool>(name: 'isBlocked', valueOf: (p) => p.isBlocked);
+  static final $isBlocked = DataField<Person, bool>(
+    name: 'isBlocked',
+    valueOf: (p) => p.isBlocked,
+    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+    toJson: (value) => $$codec.encodeBool(value),
+  );
 
-  static final $picture =
-      DataField<Person, Uint8List>(name: 'picture', valueOf: (p) => p.picture);
+  static final $picture = DataField<Person, Uint8List>(
+    name: 'picture',
+    valueOf: (p) => p.picture,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeUint8List(value, name: name),
+    toJson: (value) => $$codec.encodeUint8List(value),
+  );
 
   static final DataBean<Person> bean = DataBean<Person>(
     name: 'Person',
@@ -77,7 +118,7 @@ abstract class _Person with DataObject<Person> {
 
   static Person fromValues(Map<String, dynamic> data) {
     return Person(
-      id: data['id'],
+      id: data['id'] ?? 0,
       firstName: data['firstName'],
       lastName: data['lastName'],
       phone: data['phone'],
@@ -92,39 +133,37 @@ abstract class _Person with DataObject<Person> {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(Person, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return Person(
-      id: $codec.decodeInt(data['id'], name: DataCodec.childName(name, 'id')),
-      firstName: $codec.decodeString(data['firstName'],
+      id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
+      firstName: $firstName.fromJson(data['firstName'],
           name: DataCodec.childName(name, 'firstName')),
-      lastName: $codec.decodeString(data['lastName'],
+      lastName: $lastName.fromJson(data['lastName'],
           name: DataCodec.childName(name, 'lastName')),
-      phone: $codec.decodeList<String>(data['phone'], $codec.decodeString,
+      phone: $phone.fromJson(data['phone'],
           name: DataCodec.childName(name, 'phone')),
-      email: $codec.decodeList<String>(data['email'], $codec.decodeString,
+      email: $email.fromJson(data['email'],
           name: DataCodec.childName(name, 'email')),
-      birthday: $codec.decodeNullable(data['birthday'], $codec.decodeDateTime,
+      birthday: $birthday.fromJson(data['birthday'],
           name: DataCodec.childName(name, 'birthday')),
-      isBlocked: $codec.decodeBool(data['isBlocked'],
+      isBlocked: $isBlocked.fromJson(data['isBlocked'],
           name: DataCodec.childName(name, 'isBlocked')),
-      picture: $codec.decodeUint8List(data['picture'],
+      picture: $picture.fromJson(data['picture'],
           name: DataCodec.childName(name, 'picture')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
     final $data = this as Person;
     return {
-      'id': $codec.encodeInt($data.id),
-      'firstName': $codec.encodeString($data.firstName),
-      'lastName': $codec.encodeString($data.lastName),
-      'phone': $codec.encodeList<String>($data.phone, $codec.encodeString),
-      'email': $codec.encodeList<String>($data.email, $codec.encodeString),
-      'birthday': $codec.encodeNullable($data.birthday, $codec.encodeDateTime),
-      'isBlocked': $codec.encodeBool($data.isBlocked),
-      'picture': $codec.encodeUint8List($data.picture),
+      'id': $id.toJson($id.valueOf($data)),
+      'firstName': $firstName.toJson($firstName.valueOf($data)),
+      'lastName': $lastName.toJson($lastName.valueOf($data)),
+      'phone': $phone.toJson($phone.valueOf($data)),
+      'email': $email.toJson($email.valueOf($data)),
+      'birthday': $birthday.toJson($birthday.valueOf($data)),
+      'isBlocked': $isBlocked.toJson($isBlocked.valueOf($data)),
+      'picture': $picture.toJson($picture.valueOf($data)),
     }..removeWhere((k, v) => v == null);
   }
 }

@@ -1,16 +1,20 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:flutter/material.dart';
 
+import 'resource_form_field.dart';
+
 class ResourceBoolFormField extends StatelessWidget {
   final ResourceField field;
+  final InputDecoration decoration;
   final bool? value;
   final String? error;
   final bool isChanged;
-  final ValueChanged<bool>? onChanged;
+  final ValueChanged<bool?>? onChanged;
 
   const ResourceBoolFormField({
     super.key,
     required this.field,
+    required this.decoration,
     this.value,
     this.error,
     required this.isChanged,
@@ -20,18 +24,13 @@ class ResourceBoolFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InputDecorator(
-      decoration: InputDecoration(
-        errorText: error,
-        labelText: isChanged ? '${field.name} *' : field.name,
-        labelStyle: TextStyle(fontWeight: isChanged ? FontWeight.bold : null),
-        contentPadding: EdgeInsets.all(4)
-      ),
+      decoration: decoration.copyWith(contentPadding: EdgeInsets.all(4)),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Checkbox(
-          tristate: false,
-          value: value ?? false,
-          onChanged: (_) => onChanged?.call(!(value ?? false)),
+          tristate: value == null || field.nullable,
+          value: value,
+          onChanged: (v) => onChanged?.call(v),
         ),
       ),
     );

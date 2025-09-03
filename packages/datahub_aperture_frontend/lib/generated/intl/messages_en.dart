@@ -38,6 +38,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "draft": MessageLookupByLibrary.simpleMessage("Draft"),
     "emptyFile": MessageLookupByLibrary.simpleMessage("No file selected"),
     "error": MessageLookupByLibrary.simpleMessage("Error"),
+    "fileSelected": MessageLookupByLibrary.simpleMessage("File selected"),
     "filter": MessageLookupByLibrary.simpleMessage("Filter"),
     "liveFrom": MessageLookupByLibrary.simpleMessage("Live from"),
     "liveSince": MessageLookupByLibrary.simpleMessage("Live since"),

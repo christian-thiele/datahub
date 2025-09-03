@@ -8,9 +8,13 @@ part of 'person.dart';
 
 abstract class _Person with DataObject<Person> {
   const _Person();
+  static const $$codec = JsonDataCodec();
   static final $id = DataField<Person, int>(
     name: 'id',
     valueOf: (p) => p.id,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeInt((value ?? 0), name: name),
+    toJson: (value) => $$codec.encodeInt(value),
     meta: [
       const Id(),
     ],
@@ -19,21 +23,32 @@ abstract class _Person with DataObject<Person> {
   static final $firstName = DataField<Person, String>(
     name: 'firstName',
     valueOf: (p) => p.firstName,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $lastName = DataField<Person, String>(
     name: 'lastName',
     valueOf: (p) => p.lastName,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $birthday = DataField<Person, DateTime?>(
     name: 'birthday',
     valueOf: (p) => p.birthday,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeDateTime, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeDateTime),
   );
 
   static final $isSpecial = DataField<Person, bool>(
     name: 'isSpecial',
     valueOf: (p) => p.isSpecial,
+    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+    toJson: (value) => $$codec.encodeBool(value),
   );
 
   static final DataBean<Person> bean = DataBean<Person>(
@@ -85,31 +100,28 @@ abstract class _Person with DataObject<Person> {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(Person, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return Person(
-      id: $codec.decodeInt((data['id'] ?? 0),
-          name: DataCodec.childName(name, 'id')),
-      firstName: $codec.decodeString(data['firstName'],
+      id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
+      firstName: $firstName.fromJson(data['firstName'],
           name: DataCodec.childName(name, 'firstName')),
-      lastName: $codec.decodeString(data['lastName'],
+      lastName: $lastName.fromJson(data['lastName'],
           name: DataCodec.childName(name, 'lastName')),
-      birthday: $codec.decodeNullable(data['birthday'], $codec.decodeDateTime,
+      birthday: $birthday.fromJson(data['birthday'],
           name: DataCodec.childName(name, 'birthday')),
-      isSpecial: $codec.decodeBool(data['isSpecial'],
+      isSpecial: $isSpecial.fromJson(data['isSpecial'],
           name: DataCodec.childName(name, 'isSpecial')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
     final $data = this as Person;
     return {
-      'id': $codec.encodeInt($data.id),
-      'firstName': $codec.encodeString($data.firstName),
-      'lastName': $codec.encodeString($data.lastName),
-      'birthday': $codec.encodeNullable($data.birthday, $codec.encodeDateTime),
-      'isSpecial': $codec.encodeBool($data.isSpecial),
+      'id': $id.toJson($id.valueOf($data)),
+      'firstName': $firstName.toJson($firstName.valueOf($data)),
+      'lastName': $lastName.toJson($lastName.valueOf($data)),
+      'birthday': $birthday.toJson($birthday.valueOf($data)),
+      'isSpecial': $isSpecial.toJson($isSpecial.valueOf($data)),
     }..removeWhere((k, v) => v == null);
   }
 }

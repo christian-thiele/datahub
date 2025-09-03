@@ -8,24 +8,41 @@ part of 'resource_data.dart';
 
 abstract class _ResourceData with DataObject<ResourceData> {
   const _ResourceData();
+  static const $$codec = JsonDataCodec();
   static final $id = DataField<ResourceData, String>(
     name: 'id',
     valueOf: (p) => p.id,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $fieldData = DataField<ResourceData, Map<String, dynamic>>(
     name: 'fieldData',
     valueOf: (p) => p.fieldData,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeMap<dynamic>(value, $$codec.decodeDynamic, name: name),
+    toJson: (value) => $$codec.encodeMap<dynamic>(value, $$codec.encodeDynamic),
   );
 
   static final $revisionId = DataField<ResourceData, String?>(
     name: 'revisionId',
     valueOf: (p) => p.revisionId,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
   static final $revisions = DataField<ResourceData, List<ResourceRevisionInfo>>(
     name: 'revisions',
     valueOf: (p) => p.revisions,
+    dataBean: () => ResourceRevisionInfo.bean,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeList<ResourceRevisionInfo>(
+            (value ?? const []), ResourceRevisionInfo.bean.fromJson,
+            name: name),
+    toJson: (value) =>
+        $$codec.encodeList<ResourceRevisionInfo>(value, (v) => v.toJson()),
   );
 
   static final DataBean<ResourceData> bean = DataBean<ResourceData>(
@@ -73,33 +90,25 @@ abstract class _ResourceData with DataObject<ResourceData> {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(ResourceData, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return ResourceData(
-      id: $codec.decodeString(data['id'],
-          name: DataCodec.childName(name, 'id')),
-      fieldData: $codec.decodeMap<dynamic>(
-          data['fieldData'], $codec.decodeDynamic,
+      id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
+      fieldData: $fieldData.fromJson(data['fieldData'],
           name: DataCodec.childName(name, 'fieldData')),
-      revisionId: $codec.decodeNullable(data['revisionId'], $codec.decodeString,
+      revisionId: $revisionId.fromJson(data['revisionId'],
           name: DataCodec.childName(name, 'revisionId')),
-      revisions: $codec.decodeList<ResourceRevisionInfo>(
-          (data['revisions'] ?? const []), ResourceRevisionInfo.bean.fromJson,
+      revisions: $revisions.fromJson(data['revisions'],
           name: DataCodec.childName(name, 'revisions')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as ResourceData;
+    final $$data = this as ResourceData;
     return {
-      'id': $codec.encodeString($data.id),
-      'fieldData':
-          $codec.encodeMap<dynamic>($data.fieldData, $codec.encodeDynamic),
-      'revisionId':
-          $codec.encodeNullable($data.revisionId, $codec.encodeString),
-      'revisions': $codec.encodeList<ResourceRevisionInfo>(
-          $data.revisions, (v) => v.toJson()),
+      'id': $id.toJson($$data.id),
+      'fieldData': $fieldData.toJson($$data.fieldData),
+      'revisionId': $revisionId.toJson($$data.revisionId),
+      'revisions': $revisions.toJson($$data.revisions),
     }..removeWhere((k, v) => v == null);
   }
 }

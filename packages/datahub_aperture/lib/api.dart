@@ -1,3 +1,5 @@
+export 'src/api/aperture_bootstrap.dart';
+export 'src/api/aperture_theme.dart';
 export 'src/api/resource_revision_request.dart';
 export 'src/api/resource_data.dart';
 export 'src/api/resource_description.dart';

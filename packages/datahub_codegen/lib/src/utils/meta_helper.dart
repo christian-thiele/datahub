@@ -91,12 +91,12 @@ String _dartLiteral(DartObject o) {
 }
 
 String _stringLiteral(String value) {
-  // Basic safe escaping; for full generality you can expand this.
   final escaped = value
       .replaceAll(r'\', r'\\')
       .replaceAll("'", r"\'")
       .replaceAll('\n', r'\n')
       .replaceAll('\r', r'\r')
-      .replaceAll('\t', r'\t');
+      .replaceAll('\t', r'\t')
+      .replaceAll('\$', r'\$');
   return "'$escaped'";
 }

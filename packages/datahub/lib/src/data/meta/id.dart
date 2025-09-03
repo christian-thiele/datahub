@@ -1,5 +1,7 @@
 import 'meta_data.dart';
 
 final class Id extends MetaData {
-  const Id();
+  final bool auto;
+
+  const Id({this.auto = false});
 }

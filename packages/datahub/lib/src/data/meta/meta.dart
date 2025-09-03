@@ -6,13 +6,11 @@ final class Meta extends MetaData {
   final String? namePlural;
   final String? description;
   final int? icon;
-  final dynamic prefill;
 
   const Meta({
     this.name,
     this.namePlural,
     this.description,
     this.icon,
-    this.prefill,
   });
 }

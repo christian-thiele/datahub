@@ -5,6 +5,7 @@ import 'package:datahub_aperture_frontend/widgets/filter/text_filter_section.dar
 import 'package:datahub_aperture_frontend/widgets/icon_text.dart';
 import 'package:flutter/material.dart';
 
+import 'bool_filter_section.dart';
 import 'double_filter_section.dart';
 import 'int_filter_section.dart';
 
@@ -61,6 +62,13 @@ class FilterView extends StatelessWidget {
                             },
                           ),
                           ResourceFieldType.double => DoubleFilterSection(
+                            name: field.name,
+                            onSubmit: (type, value) {
+                              MenuController.maybeOf(context)?.close();
+                              onAdd(FilterModel(field, type, value));
+                            },
+                          ),
+                          ResourceFieldType.bool => BoolFilterSection(
                             name: field.name,
                             onSubmit: (type, value) {
                               MenuController.maybeOf(context)?.close();

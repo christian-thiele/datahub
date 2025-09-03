@@ -2,8 +2,10 @@ import 'package:datahub_aperture_frontend/widgets/form_fields/date_time_form_fie
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:flutter/material.dart';
 
+import 'resource_form_field.dart';
+
 class ResourceTimestampFormField extends StatelessWidget {
-  final ResourceField field;
+  final InputDecoration decoration;
   final String? value;
   final String? error;
   final bool isChanged;
@@ -11,7 +13,7 @@ class ResourceTimestampFormField extends StatelessWidget {
 
   const ResourceTimestampFormField({
     super.key,
-    required this.field,
+    required this.decoration,
     required this.value,
     this.error,
     this.isChanged = false,
@@ -21,11 +23,7 @@ class ResourceTimestampFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DateTimeFormField(
-      decoration: InputDecoration(
-        errorText: error,
-        labelText: isChanged ? '${field.name} *' : field.name,
-        labelStyle: TextStyle(fontWeight: isChanged ? FontWeight.bold : null),
-      ),
+      decoration: decoration,
       value: value != null ? DateTime.tryParse(value!) : null,
       onChanged: onChanged != null
           ? (date) => onChanged?.call(date.toIso8601String())

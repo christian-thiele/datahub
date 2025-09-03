@@ -8,34 +8,56 @@ part of 'resource_revision_info.dart';
 
 abstract class _ResourceRevisionInfo with DataObject<ResourceRevisionInfo> {
   const _ResourceRevisionInfo();
+  static const $$codec = JsonDataCodec();
   static final $id = DataField<ResourceRevisionInfo, String>(
     name: 'id',
     valueOf: (p) => p.id,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $type = DataField<ResourceRevisionInfo, ResourceRevisionType>(
     name: 'type',
     valueOf: (p) => p.type,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeEnum(value, ResourceRevisionType.values, name: name),
+    toJson: (value) => $$codec.encodeEnum(value),
+    constraints: [
+      EnumConstraint(values: ResourceRevisionType.values),
+    ],
   );
 
   static final $timestamp = DataField<ResourceRevisionInfo, DateTime>(
     name: 'timestamp',
     valueOf: (p) => p.timestamp,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeDateTime(value, name: name),
+    toJson: (value) => $$codec.encodeDateTime(value),
   );
 
   static final $live = DataField<ResourceRevisionInfo, DateTime?>(
     name: 'live',
     valueOf: (p) => p.live,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeDateTime, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeDateTime),
   );
 
   static final $userId = DataField<ResourceRevisionInfo, String>(
     name: 'userId',
     valueOf: (p) => p.userId,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $userName = DataField<ResourceRevisionInfo, String>(
     name: 'userName',
     valueOf: (p) => p.userName,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final DataBean<ResourceRevisionInfo> bean =
@@ -93,34 +115,31 @@ abstract class _ResourceRevisionInfo with DataObject<ResourceRevisionInfo> {
       throw CodecException.typeMismatch(
           ResourceRevisionInfo, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return ResourceRevisionInfo(
-      id: $codec.decodeString(data['id'],
-          name: DataCodec.childName(name, 'id')),
-      type: $codec.decodeEnum(data['type'], ResourceRevisionType.values,
-          name: name),
-      timestamp: $codec.decodeDateTime(data['timestamp'],
+      id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
+      type:
+          $type.fromJson(data['type'], name: DataCodec.childName(name, 'type')),
+      timestamp: $timestamp.fromJson(data['timestamp'],
           name: DataCodec.childName(name, 'timestamp')),
-      live: $codec.decodeNullable(data['live'], $codec.decodeDateTime,
-          name: DataCodec.childName(name, 'live')),
-      userId: $codec.decodeString(data['userId'],
+      live:
+          $live.fromJson(data['live'], name: DataCodec.childName(name, 'live')),
+      userId: $userId.fromJson(data['userId'],
           name: DataCodec.childName(name, 'userId')),
-      userName: $codec.decodeString(data['userName'],
+      userName: $userName.fromJson(data['userName'],
           name: DataCodec.childName(name, 'userName')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as ResourceRevisionInfo;
+    final $$data = this as ResourceRevisionInfo;
     return {
-      'id': $codec.encodeString($data.id),
-      'type': $codec.encodeEnum($data.type),
-      'timestamp': $codec.encodeDateTime($data.timestamp),
-      'live': $codec.encodeNullable($data.live, $codec.encodeDateTime),
-      'userId': $codec.encodeString($data.userId),
-      'userName': $codec.encodeString($data.userName),
+      'id': $id.toJson($$data.id),
+      'type': $type.toJson($$data.type),
+      'timestamp': $timestamp.toJson($$data.timestamp),
+      'live': $live.toJson($$data.live),
+      'userId': $userId.toJson($$data.userId),
+      'userName': $userName.toJson($$data.userName),
     }..removeWhere((k, v) => v == null);
   }
 }

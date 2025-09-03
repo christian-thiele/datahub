@@ -1,7 +1,12 @@
 import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
+import 'package:datahub_aperture_frontend/blocs/bootstrap/bootstrap_cubit.dart';
+import 'package:datahub_aperture_frontend/utils/bootstrap.dart';
+import 'package:datahub_aperture_frontend/widgets/aperture_animation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+
+import 'utils/dynamic_memory_image.dart';
 
 class WebAppBar extends StatelessWidget implements PreferredSizeWidget {
   static const height = 84.0;
@@ -28,8 +33,14 @@ class WebAppBar extends StatelessWidget implements PreferredSizeWidget {
                 mainAxisSize: MainAxisSize.max,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  SizedBox(width: 32),
-                  SvgPicture.asset('assets/rd.svg', width: 128),
+                  SizedBox(width: 24),
+                  DynamicMemoryImage(
+                    bytes: Bootstrap.of(context).theme.logo,
+                    width: 128,
+                    height: 48,
+                    color: Theme.of(context).colorScheme.primary,
+                    fallback: ApertureLogo(),
+                  ),
                   SizedBox(width: 64),
                   if (title != null)
                     Text(

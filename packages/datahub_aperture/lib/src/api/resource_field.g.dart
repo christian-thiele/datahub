@@ -8,44 +8,99 @@ part of 'resource_field.dart';
 
 abstract class _ResourceField with DataObject<ResourceField> {
   const _ResourceField();
+  static const $$codec = JsonDataCodec();
   static final $id = DataField<ResourceField, String>(
     name: 'id',
     valueOf: (p) => p.id,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $name = DataField<ResourceField, String>(
     name: 'name',
     valueOf: (p) => p.name,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $type = DataField<ResourceField, ResourceFieldType>(
     name: 'type',
     valueOf: (p) => p.type,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeEnum(value, ResourceFieldType.values, name: name),
+    toJson: (value) => $$codec.encodeEnum(value),
+    constraints: [
+      EnumConstraint(values: ResourceFieldType.values),
+    ],
   );
 
   static final $nullable = DataField<ResourceField, bool>(
     name: 'nullable',
     valueOf: (p) => p.nullable,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? false), name: name),
+    toJson: (value) => $$codec.encodeBool(value),
   );
 
   static final $description = DataField<ResourceField, String?>(
     name: 'description',
     valueOf: (p) => p.description,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
   static final $readOnly = DataField<ResourceField, bool>(
     name: 'readOnly',
     valueOf: (p) => p.readOnly,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? false), name: name),
+    toJson: (value) => $$codec.encodeBool(value),
   );
 
   static final $length = DataField<ResourceField, int?>(
     name: 'length',
     valueOf: (p) => p.length,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeInt, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeInt),
   );
 
   static final $validation = DataField<ResourceField, String?>(
     name: 'validation',
     valueOf: (p) => p.validation,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
+  );
+
+  static final $objectDescription =
+      DataField<ResourceField, List<ResourceField>?>(
+    name: 'objectDescription',
+    valueOf: (p) => p.objectDescription,
+    dataBean: () => ResourceField.bean,
+    fromJson: (value, {String? name}) => $$codec.decodeNullable(
+        value,
+        (v, {String? name}) => $$codec.decodeList<ResourceField>(
+            v, ResourceField.bean.fromJson,
+            name: name),
+        name: name),
+    toJson: (value) => $$codec.encodeNullable(
+        value, (v) => $$codec.encodeList<ResourceField>(v, (v) => v.toJson())),
+  );
+
+  static final $enumValues = DataField<ResourceField, List<String>?>(
+    name: 'enumValues',
+    valueOf: (p) => p.enumValues,
+    fromJson: (value, {String? name}) => $$codec.decodeNullable(
+        value,
+        (v, {String? name}) =>
+            $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+        name: name),
+    toJson: (value) => $$codec.encodeNullable(
+        value, (v) => $$codec.encodeList<String>(v, $$codec.encodeString)),
   );
 
   static final DataBean<ResourceField> bean = DataBean<ResourceField>(
@@ -59,6 +114,8 @@ abstract class _ResourceField with DataObject<ResourceField> {
       $readOnly,
       $length,
       $validation,
+      $objectDescription,
+      $enumValues,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
@@ -80,6 +137,10 @@ abstract class _ResourceField with DataObject<ResourceField> {
     bool nullLength = false,
     String? validation,
     bool nullValidation = false,
+    List<ResourceField>? objectDescription,
+    bool nullObjectDescription = false,
+    List<String>? enumValues,
+    bool nullEnumValues = false,
   }) {
     final $data = this as ResourceField;
     return ResourceField(
@@ -91,6 +152,10 @@ abstract class _ResourceField with DataObject<ResourceField> {
       readOnly: readOnly ?? $data.readOnly,
       length: nullLength ? null : (length ?? $data.length),
       validation: nullValidation ? null : (validation ?? $data.validation),
+      objectDescription: nullObjectDescription
+          ? null
+          : (objectDescription ?? $data.objectDescription),
+      enumValues: nullEnumValues ? null : (enumValues ?? $data.enumValues),
     );
   }
 
@@ -104,6 +169,8 @@ abstract class _ResourceField with DataObject<ResourceField> {
       readOnly: data['readOnly'] ?? false,
       length: data['length'],
       validation: data['validation'],
+      objectDescription: data['objectDescription'],
+      enumValues: data['enumValues'],
     );
   }
 
@@ -111,43 +178,43 @@ abstract class _ResourceField with DataObject<ResourceField> {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(ResourceField, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return ResourceField(
-      id: $codec.decodeString(data['id'],
-          name: DataCodec.childName(name, 'id')),
-      name: $codec.decodeString(data['name'],
-          name: DataCodec.childName(name, 'name')),
+      id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
+      name:
+          $name.fromJson(data['name'], name: DataCodec.childName(name, 'name')),
       type:
-          $codec.decodeEnum(data['type'], ResourceFieldType.values, name: name),
-      nullable: $codec.decodeBool((data['nullable'] ?? false),
+          $type.fromJson(data['type'], name: DataCodec.childName(name, 'type')),
+      nullable: $nullable.fromJson(data['nullable'],
           name: DataCodec.childName(name, 'nullable')),
-      description: $codec.decodeNullable(
-          data['description'], $codec.decodeString,
+      description: $description.fromJson(data['description'],
           name: DataCodec.childName(name, 'description')),
-      readOnly: $codec.decodeBool((data['readOnly'] ?? false),
+      readOnly: $readOnly.fromJson(data['readOnly'],
           name: DataCodec.childName(name, 'readOnly')),
-      length: $codec.decodeNullable(data['length'], $codec.decodeInt,
+      length: $length.fromJson(data['length'],
           name: DataCodec.childName(name, 'length')),
-      validation: $codec.decodeNullable(data['validation'], $codec.decodeString,
+      validation: $validation.fromJson(data['validation'],
           name: DataCodec.childName(name, 'validation')),
+      objectDescription: $objectDescription.fromJson(data['objectDescription'],
+          name: DataCodec.childName(name, 'objectDescription')),
+      enumValues: $enumValues.fromJson(data['enumValues'],
+          name: DataCodec.childName(name, 'enumValues')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as ResourceField;
+    final $$data = this as ResourceField;
     return {
-      'id': $codec.encodeString($data.id),
-      'name': $codec.encodeString($data.name),
-      'type': $codec.encodeEnum($data.type),
-      'nullable': $codec.encodeBool($data.nullable),
-      'description':
-          $codec.encodeNullable($data.description, $codec.encodeString),
-      'readOnly': $codec.encodeBool($data.readOnly),
-      'length': $codec.encodeNullable($data.length, $codec.encodeInt),
-      'validation':
-          $codec.encodeNullable($data.validation, $codec.encodeString),
+      'id': $id.toJson($$data.id),
+      'name': $name.toJson($$data.name),
+      'type': $type.toJson($$data.type),
+      'nullable': $nullable.toJson($$data.nullable),
+      'description': $description.toJson($$data.description),
+      'readOnly': $readOnly.toJson($$data.readOnly),
+      'length': $length.toJson($$data.length),
+      'validation': $validation.toJson($$data.validation),
+      'objectDescription': $objectDescription.toJson($$data.objectDescription),
+      'enumValues': $enumValues.toJson($$data.enumValues),
     }..removeWhere((k, v) => v == null);
   }
 }

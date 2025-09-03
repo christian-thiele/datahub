@@ -21,7 +21,7 @@ class MinLengthConstraint<FieldType extends String?>
       return true;
     }
 
-    return value.length <= length;
+    return value.length >= length;
   }
 
   @override
@@ -88,4 +88,17 @@ class RegExpConstraint<FieldType extends String?>
 
     return RegExp(expression).hasMatch(value as String);
   }
+}
+
+class EnumConstraint<FieldType extends Enum?>
+    extends DataFieldConstraint<FieldType> {
+  final List<Enum> values;
+
+  const EnumConstraint({
+    required this.values,
+    super.name = 'default.enum',
+  });
+
+  @override
+  bool check(FieldType value) => values.contains(value);
 }

@@ -8,19 +8,29 @@ part of 'slideshow.dart';
 
 abstract class _Slideshow with DataObject<Slideshow> {
   const _Slideshow();
+  static const $$codec = JsonDataCodec();
   static final $author = DataField<Slideshow, String>(
     name: 'author',
     valueOf: (p) => p.author,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $date = DataField<Slideshow, String>(
     name: 'date',
     valueOf: (p) => p.date,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $title = DataField<Slideshow, String>(
     name: 'title',
     valueOf: (p) => p.title,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final DataBean<Slideshow> bean = DataBean<Slideshow>(
@@ -63,25 +73,23 @@ abstract class _Slideshow with DataObject<Slideshow> {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(Slideshow, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return Slideshow(
-      author: $codec.decodeString(data['author'],
+      author: $author.fromJson(data['author'],
           name: DataCodec.childName(name, 'author')),
-      date: $codec.decodeString(data['date'],
-          name: DataCodec.childName(name, 'date')),
-      title: $codec.decodeString(data['title'],
+      date:
+          $date.fromJson(data['date'], name: DataCodec.childName(name, 'date')),
+      title: $title.fromJson(data['title'],
           name: DataCodec.childName(name, 'title')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as Slideshow;
+    final $$data = this as Slideshow;
     return {
-      'author': $codec.encodeString($data.author),
-      'date': $codec.encodeString($data.date),
-      'title': $codec.encodeString($data.title),
+      'author': $author.toJson($$data.author),
+      'date': $date.toJson($$data.date),
+      'title': $title.toJson($$data.title),
     }..removeWhere((k, v) => v == null);
   }
 }

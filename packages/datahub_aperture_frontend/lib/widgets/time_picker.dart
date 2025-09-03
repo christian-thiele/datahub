@@ -13,8 +13,7 @@ class TimePicker extends StatelessWidget {
       spacing: 16,
       children: [
         _NumberDial(
-          onChanged: (v) =>
-              onChanged(TimeOfDay(hour: v, minute: value.minute)),
+          onChanged: (v) => onChanged(TimeOfDay(hour: v, minute: value.minute)),
           value: value.hour,
           min: 0,
           max: 23,

@@ -7,8 +7,12 @@ import 'geometry.dart';
 class GeometryCollection extends Geometry {
   final List<Geometry> geometry;
 
-  GeometryCollection(int? srid, this.geometry, bool hasZ, bool hasM)
+  const GeometryCollection(int? srid, this.geometry, bool hasZ, bool hasM)
       : super(srid, GeometryType.geometryCollection, hasZ, hasM);
+
+  const GeometryCollection.empty(
+      {int? srid, bool hasZ = false, bool hasM = false})
+      : this(srid, const <Geometry>[], hasZ, hasM);
 
   factory GeometryCollection.read(
       int? srid, ByteDataReader reader, bool hasZ, bool hasM) {

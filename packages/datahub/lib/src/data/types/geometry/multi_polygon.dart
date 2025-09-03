@@ -7,7 +7,7 @@ import 'geometry.dart';
 class MultiPolygon extends Geometry {
   final List<Polygon> polygons;
 
-  MultiPolygon(int? srid, this.polygons, bool hasZ, bool hasM)
+  const MultiPolygon(int? srid, this.polygons, bool hasZ, bool hasM)
       : super(srid, GeometryType.multiPolygon, hasZ, hasM);
 
   factory MultiPolygon.read(

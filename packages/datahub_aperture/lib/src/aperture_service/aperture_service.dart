@@ -3,6 +3,8 @@ import 'package:datahub_aperture/src/aperture_service/aperture_config.dart';
 import 'package:datahub_aperture/src/aperture_service/resource_element_endpoint.dart';
 import 'package:datahub_aperture/src/aperture_service/resources_endpoint.dart';
 
+import 'bootstrap_endpoint.dart';
+
 /// This service provides Endpoints for serving the Aperture frontend.
 ///
 /// TODO(CTH): docs
@@ -13,6 +15,7 @@ class ApertureService extends ApiService {
   }) : super(
           config,
           [
+            BootstrapEndpoint(config: apertureConfig),
             ResourcesEndpoint(resources: apertureConfig.resources),
             for (final resource in apertureConfig.resources)
               ResourceElementEndpoint(resource: resource),

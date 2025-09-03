@@ -8,9 +8,14 @@ part of 'example_object.dart';
 
 abstract class _ExampleObject with DataObject<ExampleObject> {
   const _ExampleObject();
+  static const $$codec = JsonDataCodec();
   static final $slideshow = DataField<ExampleObject, Slideshow>(
     name: 'slideshow',
     valueOf: (p) => p.slideshow,
+    dataBean: Slideshow.bean,
+    fromJson: (value, {String? name}) =>
+        Slideshow.bean.fromJson(value, name: name),
+    toJson: (value) => value.toJson(),
   );
 
   static final DataBean<ExampleObject> bean = DataBean<ExampleObject>(
@@ -45,19 +50,17 @@ abstract class _ExampleObject with DataObject<ExampleObject> {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(ExampleObject, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return ExampleObject(
-      slideshow: Slideshow.bean.fromJson(data['slideshow'],
+      slideshow: $slideshow.fromJson(data['slideshow'],
           name: DataCodec.childName(name, 'slideshow')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as ExampleObject;
+    final $$data = this as ExampleObject;
     return {
-      'slideshow': $data.slideshow.toJson(),
+      'slideshow': $slideshow.toJson($$data.slideshow),
     }..removeWhere((k, v) => v == null);
   }
 }

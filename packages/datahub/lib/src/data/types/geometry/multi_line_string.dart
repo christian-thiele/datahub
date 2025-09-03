@@ -7,7 +7,7 @@ import 'geometry.dart';
 class MultiLineString extends Geometry {
   final List<LineString> lineStrings;
 
-  MultiLineString(int? srid, this.lineStrings, bool hasZ, bool hasM)
+  const MultiLineString(int? srid, this.lineStrings, bool hasZ, bool hasM)
       : super(srid, GeometryType.multiLineString, hasZ, hasM);
 
   factory MultiLineString.read(

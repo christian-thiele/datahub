@@ -10,8 +10,16 @@ class ApertureDataRepositoryResolver<T extends DataObject<T>,
   Future<ResourceData> createElement(
       Map<String, dynamic> data, DateTime? revisionLive) async {
     final repo = resolve<Repo>();
-    final object = await repo.create(repo.bean.fromJson(data));
-    return _toResourceData(object);
+    final T object;
+    try {
+      object = repo.bean.fromJson(data);
+    } on CodecException catch (e) {
+      _throwCodecApiException(e);
+    }
+
+    repo.bean.validateConstraints(object);
+    final result = await repo.create(object);
+    return _toResourceData(result);
   }
 
   @override
@@ -61,19 +69,26 @@ class ApertureDataRepositoryResolver<T extends DataObject<T>,
       ...data,
     };
 
-    final updated = await repo.update(id, repo.bean.fromJson(combined));
+    final T object;
+    try {
+      object = repo.bean.fromJson(combined);
+    } on CodecException catch (e) {
+      _throwCodecApiException(e);
+    }
+
+    repo.bean.validateConstraints(object);
+    final updated = await repo.update(id, object);
     return _toResourceData(updated);
   }
 
   @override
-  Future<ResourceData> deleteElement(
+  Future<ResourceData?> deleteElement(
     String id,
     DateTime? revisionLive,
   ) async {
     final repo = resolve<Repo>();
     await repo.delete(id);
-    // TODO what to return here?
-    return ResourceData(id: id, fieldData: {});
+    return null;
   }
 
   ResourceData _toResourceData(T object) {
@@ -123,6 +138,23 @@ class ApertureDataRepositoryResolver<T extends DataObject<T>,
       return value;
     }
 
+    if (field.type.isSubtypeOf<List?>()) {
+      return value;
+    }
+
     return const JsonDataCodec().decodeType(field.type, value);
+  }
+
+  Never _throwCodecApiException(CodecException e) {
+    throw ApiRequestException(
+      400,
+      e.message,
+      data: {
+        if (e.name != null)
+          'fields': {
+            e.name: [e.message],
+          },
+      },
+    );
   }
 }

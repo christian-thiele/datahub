@@ -1,10 +1,14 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/widgets/icon_text.dart';
 import 'package:flutter/material.dart';
 
 import 'resource_bool_form_field.dart';
 import 'resource_double_form_field.dart';
+import 'resource_enum_form_field.dart';
 import 'resource_geometry_form_field.dart';
 import 'resource_int_form_field.dart';
+import 'resource_list_form_field.dart';
+import 'resource_object_form_field.dart';
 import 'resource_text_form_field.dart';
 import 'resource_file_form_field.dart';
 import 'resource_timestamp_form_field.dart';
@@ -14,29 +18,53 @@ class ResourceFormField extends StatelessWidget {
   final String? error;
   final dynamic value;
   final bool isChanged;
-  final ValueChanged<dynamic>? onChanged;
+  final ValueChanged? onChanged;
 
   const ResourceFormField({
     super.key,
     required this.field,
-    this.value,
-    this.error,
-    required this.isChanged,
-    this.onChanged,
+    this.value = null,
+    this.error = null,
+    this.isChanged = false,
+    this.onChanged = null,
   });
+
+  InputDecoration decoration(BuildContext context) => InputDecoration(
+    errorText: error,
+    label: isChanged
+        ? IconText(
+            Icons.circle_sharp,
+            field.name,
+            iconSize: 6,
+            leading: false,
+            iconColor: Theme.of(context).colorScheme.primary,
+          )
+        : Text(field.name),
+    labelStyle: TextStyle(fontWeight: isChanged ? FontWeight.bold : null),
+    enabledBorder: switch ((field.readOnly, isChanged)) {
+      (true, _) => OutlineInputBorder(
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
+      ),
+      (false, true) => OutlineInputBorder(
+        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+      ),
+      _ => null,
+    },
+  );
 
   @override
   Widget build(BuildContext context) {
+    final fieldDecoration = decoration(context);
     return switch (field.type) {
       ResourceFieldType.string => ResourceTextFormField(
-        field: field,
+        decoration: fieldDecoration,
         value: value,
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
       ),
       ResourceFieldType.int => ResourceIntFormField(
-        field: field,
+        decoration: fieldDecoration,
         value: value,
         isChanged: isChanged,
         onChanged: onChanged,
@@ -44,40 +72,71 @@ class ResourceFormField extends StatelessWidget {
       ),
       ResourceFieldType.bool => ResourceBoolFormField(
         field: field,
+        decoration: fieldDecoration,
         value: value,
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
       ),
       ResourceFieldType.double => ResourceDoubleFormField(
-        field: field,
+        decoration: fieldDecoration,
         value: value,
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
       ),
       ResourceFieldType.timestamp => ResourceTimestampFormField(
+        decoration: fieldDecoration,
+        value: value,
+        isChanged: isChanged,
+        onChanged: onChanged,
+        error: error,
+      ),
+      ResourceFieldType.stringEnum => ResourceEnumFormField(
         field: field,
+        decoration: fieldDecoration,
         value: value,
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
       ),
       ResourceFieldType.geometry => ResourceGeometryFormField(
+        decoration: fieldDecoration,
+        value: value,
+        isChanged: isChanged,
+        onChanged: onChanged,
+        error: error,
+      ),
+      ResourceFieldType.object => ResourceObjectFormField(
         field: field,
+        decoration: fieldDecoration,
+        value: value,
+        isChanged: isChanged,
+        onChanged: onChanged,
+        error: error,
+      ),
+      ResourceFieldType.list => ResourceListFormField(
+        field: field,
+        decoration: fieldDecoration,
         value: value,
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
       ),
       ResourceFieldType.bytes => ResourceFileFormField(
-        field: field,
+        decoration: fieldDecoration,
         value: value,
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
       ),
-      _ => SizedBox.shrink(),
+      _ => SizedBox(
+        height: 32,
+        child: Align(
+          alignment: AlignmentGeometry.centerLeft,
+          child: Text(field.name),
+        ),
+      ),
     };
   }
 }

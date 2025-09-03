@@ -14,8 +14,10 @@ class ResourceField extends _ResourceField {
   final bool readOnly;
   final int? length;
   final String? validation;
+  final List<ResourceField>? objectDescription;
+  final List<String>? enumValues;
 
-const ResourceField({
+  const ResourceField({
     required this.id,
     required this.name,
     required this.type,
@@ -24,6 +26,8 @@ const ResourceField({
     this.readOnly = false,
     this.length,
     this.validation,
+    this.objectDescription,
+    this.enumValues,
   });
 
   static DataBean<ResourceField> get bean => _ResourceField.bean;

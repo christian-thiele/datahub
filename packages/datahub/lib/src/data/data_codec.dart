@@ -49,8 +49,8 @@ abstract class DataCodec {
       List<dynamic>() => encodeList(value, encodeDynamic),
       Map<String, dynamic>() => encodeMap(value, encodeDynamic),
       null => null,
-      _ =>
-        throw CodecException('Cannot encode ${value.runtimeType} dynamically.'),
+      _ => throw CodecException(
+          'Cannot encode ${value.runtimeType} dynamically.', null),
     };
   }
 
@@ -147,7 +147,7 @@ abstract class DataCodec {
       return decodeList<Uint8List>(value, decodeUint8List, name: name);
     }
 
-    throw CodecException('Cannot decode ${type.name} typed.');
+    throw CodecException('Cannot decode ${type.name} typed.', null);
   }
 
   static String? childName(String? parent, String? child) {
@@ -295,6 +295,7 @@ class JsonDataCodec extends DataCodec {
   @override
   Geometry decodeGeometry(dynamic value, {String? name}) {
     return switch (value) {
+      Geometry() => value,
       String() => Geometry.parseEWKB(base64Decode(value)),
       Uint8List() => Geometry.parseEWKB(value),
       _ => throw CodecException.typeMismatch(Geometry, value.runtimeType, name),

@@ -5,7 +5,7 @@ import 'package:datahub_postgres/datahub_postgres.dart';
 import 'package:postgres/postgres.dart' as pg;
 
 class PostgisGeography extends PostgresqlDataType<Geometry> {
-  const PostgisGeography() : super(null, 'geography', const _PgGeometryType());
+  const PostgisGeography() : super('geography', const _PgGeometryType());
 
   @override
   dynamic encode(Geometry? value) => switch (value) {

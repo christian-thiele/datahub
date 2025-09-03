@@ -16,7 +16,7 @@ Builder dataBuilder(BuilderOptions options) =>
 class MetaField {
   final FieldElement2 element;
   final List<DartObject> constraints;
-  final List<DartObject>? meta;
+  final List<DartObject> meta;
   final String? defaultValueExpression;
 
   String get name => element.displayName;
@@ -37,10 +37,10 @@ class MetaField {
   );
 
   String buildEncodingStatement(String value) =>
-      CodecHelper.encodingStatement(type, '\$codec', value);
+      CodecHelper.encodingStatement(type, '\$\$codec', value);
 
   String buildDecodingStatement(String value, String name) =>
-      CodecHelper.decodingStatement(type, '\$codec', value, name);
+      CodecHelper.decodingStatement(type, '\$\$codec', value, name);
 }
 
 class DataBuilder extends Generator {
@@ -89,6 +89,7 @@ class DataBuilder extends Generator {
     final ln = Writer();
     ln('abstract class _$className with DataObject<$className> {');
     ln('const _$className();');
+    ln('static const \$\$codec = JsonDataCodec();');
 
     for (final field in fields) {
       ln(generateField(className, field));
@@ -111,10 +112,68 @@ class DataBuilder extends Generator {
   String generateField(String className, MetaField field) {
     final ln = Writer();
     ln('static final \$${field.name} = DataField<$className, ${field.typeName}>(');
-    ln('name: \'${field.name}\', valueOf: (p)=>p.${field.name},');
-    final meta = TypeChecker.typeNamed(MetaData).annotationsOf(field.element);
-    if (meta.isNotEmpty) {
-      ln('meta: [${meta.map(metaInvocation).join(', ')},],');
+    ln('name: \'${field.name}\',');
+    ln('valueOf: (p)=>p.${field.name},');
+
+    final valueWithDefault = switch (field.defaultValueExpression) {
+      final val? => '(value ?? $val)',
+      _ => 'value',
+    };
+    final decodingStatement =
+        field.buildDecodingStatement(valueWithDefault, 'name');
+    final encodingStatement = field.buildEncodingStatement('value');
+
+    if (TypeChecker.typeNamed(Data).hasAnnotationOf(field.type.element3!)) {
+      ln('dataBean: () => ${field.typeName}.bean,');
+    } else if (field.type
+        case ParameterizedType(
+          isDartCoreList: true,
+          typeArguments: [final type]
+        )
+        when type.element3 != null &&
+            TypeChecker.typeNamed(Data).hasAnnotationOf(type.element3!)) {
+      ln('dataBean: () => ${type.element3!.displayName}.bean,');
+    } else if (field.type
+        case ParameterizedType(
+          isDartCoreMap: true,
+          typeArguments: [..., final type]
+        )
+        when type.element3 != null &&
+            TypeChecker.typeNamed(Data).hasAnnotationOf(type.element3!)) {
+      ln('dataBean: () => ${type.element3!.displayName}.bean,');
+    }
+
+    ln('fromJson: (value, {String? name}) => $decodingStatement,');
+    ln('toJson: (value) => $encodingStatement,');
+
+    if (field.meta.isNotEmpty) {
+      ln('meta: [${field.meta.map(metaInvocation).join(', ')},],');
+    }
+
+    final constraintInvocations =
+        field.constraints.map(metaInvocation).toList();
+    if (field.type.element3 is EnumElement2) {
+      constraintInvocations
+          .add('EnumConstraint(values: ${field.typeName}.values)');
+    } else if (field.type
+        case ParameterizedType(
+          isDartCoreList: true,
+          typeArguments: [DartType(element3: EnumElement2(:final displayName))]
+        )) {
+      constraintInvocations.add('EnumConstraint(values: $displayName.values)');
+    } else if (field.type
+        case ParameterizedType(
+          isDartCoreMap: true,
+          typeArguments: [
+            ...,
+            DartType(element3: EnumElement2(:final displayName))
+          ]
+        )) {
+      constraintInvocations.add('EnumConstraint(values: $displayName.values)');
+    }
+
+    if (constraintInvocations.isNotEmpty) {
+      ln('constraints: [${constraintInvocations.join(', ')},],');
     }
     ln(');');
     return ln.toString();
@@ -173,19 +232,9 @@ class DataBuilder extends Generator {
     ln('throw CodecException.typeMismatch($className, data.runtimeType, name);');
     ln('}');
 
-    ln('final \$codec = const JsonDataCodec();');
     ln('return $className(');
     for (final field in fields) {
-      final accessor = switch (field.defaultValueExpression) {
-        final val? => '(data[\'${field.key}\'] ?? $val)',
-        _ => 'data[\'${field.key}\']',
-      };
-
-      final decodingStatement = field.buildDecodingStatement(
-        accessor,
-        'DataCodec.childName(name, \'${field.key}\')',
-      );
-      ln("${field.name}: $decodingStatement,");
+      ln('${field.name}: \$${field.name}.fromJson(data[\'${field.key}\'], name: DataCodec.childName(name, \'${field.key}\')),');
     }
     ln(');');
     ln('}');
@@ -195,13 +244,10 @@ class DataBuilder extends Generator {
   String generateToJson(String className, List<MetaField> fields) {
     final ln = Writer();
     ln('@override Map<String, dynamic> toJson() {');
-    ln('final \$codec = const JsonDataCodec();');
-    ln('final \$data = this as $className;');
+    ln('final \$\$data = this as $className;');
     ln('return {');
     for (final field in fields) {
-      final encodingStatement =
-          field.buildEncodingStatement('\$data.${field.name}');
-      ln("'${field.key}': $encodingStatement,");
+      ln("'${field.key}': \$${field.name}.toJson(\$\$data.${field.name}),");
     }
     ln('}..removeWhere((k, v) => v == null); }');
     return ln.toString();

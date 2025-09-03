@@ -31,16 +31,26 @@ class ResourceFieldForm extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       spacing: 12,
       children: [
-        for (final field in fields)
-          ResourceFormField(
-            field: field,
-            value: changes[field] ?? data.fieldData[field.id],
-            error: validations[field],
-            isChanged: changes.containsKey(field),
-            onChanged: field.readOnly
-                ? null
-                : (value) => onFieldValueChanged(field, value),
-          ),
+        BreakpointLayout(
+          breakPoint: 1024,
+          spacing: 12,
+          layoutSpacing: 24,
+          children: [
+            for (final field in fields)
+              LayoutItem(
+                preferSide: field.type == ResourceFieldType.geometry,
+                child: ResourceFormField(
+                  field: field,
+                  value: changes[field] ?? data.fieldData[field.id],
+                  error: validations[field],
+                  isChanged: changes.containsKey(field),
+                  onChanged: field.readOnly
+                      ? null
+                      : (value) => onFieldValueChanged(field, value),
+                ),
+              ),
+          ],
+        ),
         Align(
           alignment: Alignment.bottomRight,
           child: OptionsButton(
@@ -75,6 +85,79 @@ class ResourceFieldForm extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class LayoutItem extends StatelessWidget {
+  final bool preferSide;
+  final Widget child;
+
+  const LayoutItem({super.key, required this.child, this.preferSide = false});
+
+  @override
+  Widget build(BuildContext context) => child;
+}
+
+class BreakpointLayout extends StatelessWidget {
+  final double breakPoint;
+  final double spacing;
+  final double layoutSpacing;
+
+  final List<LayoutItem> children;
+
+  const BreakpointLayout({
+    super.key,
+    required this.breakPoint,
+    this.spacing = 0,
+    this.layoutSpacing = 0,
+    required this.children,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth > breakPoint) {
+          late final Iterable<LayoutItem> left;
+          late final Iterable<LayoutItem> right;
+
+          if (children.any((e) => e.preferSide)) {
+            left = children.where((e) => !e.preferSide);
+            right = children.where((e) => e.preferSide);
+          } else {
+            left = children.take(children.length ~/ 2);
+            right = children.skip(children.length ~/ 2);
+          }
+
+          return Row(
+            mainAxisSize: MainAxisSize.max,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            spacing: layoutSpacing,
+            children: [
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  spacing: spacing,
+                  children: [for (final item in left) item],
+                ),
+              ),
+              Expanded(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  spacing: spacing,
+                  children: [for (final item in right) item],
+                ),
+              ),
+            ],
+          );
+        } else {
+          return Column(
+            spacing: spacing,
+            children: [for (final item in children) item],
+          );
+        }
+      },
     );
   }
 }

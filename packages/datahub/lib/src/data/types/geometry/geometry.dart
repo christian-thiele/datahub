@@ -12,6 +12,7 @@ import 'multi_polygon.dart';
 import 'point.dart';
 import 'polygon.dart';
 
+export 'geometry_collection.dart';
 export 'byte_order.dart';
 export 'geometry_type.dart';
 export 'geometry.dart';
@@ -35,7 +36,7 @@ abstract class Geometry {
   final bool hasZ;
   final bool hasM;
 
-  Geometry(this.srid, this.type, this.hasZ, this.hasM);
+  const Geometry(this.srid, this.type, this.hasZ, this.hasM);
 
   static Geometry parseEWKB(Uint8List bytes) {
     final byteOrder = ByteOrder.read(bytes.first);

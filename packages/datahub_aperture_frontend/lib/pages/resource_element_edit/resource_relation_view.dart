@@ -44,6 +44,11 @@ class ResourceRelationView extends StatelessWidget {
                       resource: resource,
                       entries: data,
                       shrinkWrap: true,
+                      paging: state.paging,
+                      onFirstPressed: () => context.read<ResourceCubit>().firstPage(),
+                      onPreviousPressed: () => context.read<ResourceCubit>().previousPage(),
+                      onNextPressed: () => context.read<ResourceCubit>().nextPage(),
+                      onLastPressed: state.paging.total != null ? () => context.read<ResourceCubit>().lastPage() : null,
                     ),
                   };
                 },

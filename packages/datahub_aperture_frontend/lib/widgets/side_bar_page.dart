@@ -2,6 +2,7 @@ import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
 import 'package:datahub_aperture_frontend/blocs/configuration_cubit.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
+import 'package:datahub_aperture_frontend/widgets/aperture_animation.dart';
 import 'package:datahub_aperture_frontend/widgets/side_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -51,7 +52,7 @@ class NavBarPage extends StatelessWidget {
                 Expanded(child: child),
               ],
             ),
-            _ => Center(child: CircularProgressIndicator()),
+            _ => Center(child: ApertureSpinner()),
           };
         },
       ),

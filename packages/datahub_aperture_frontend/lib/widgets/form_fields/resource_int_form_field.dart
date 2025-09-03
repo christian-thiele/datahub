@@ -1,9 +1,10 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/widgets/form_fields/resource_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ResourceIntFormField extends StatefulWidget {
-  final ResourceField field;
+  final InputDecoration decoration;
   final int? value;
   final String? error;
   final bool isChanged;
@@ -11,7 +12,7 @@ class ResourceIntFormField extends StatefulWidget {
 
   const ResourceIntFormField({
     super.key,
-    required this.field,
+    required this.decoration,
     required this.value,
     this.error,
     this.isChanged = false,
@@ -53,15 +54,7 @@ class _ResourceIntFormFieldState extends State<ResourceIntFormField> {
   Widget build(BuildContext context) {
     return TextFormField(
       controller: _controller,
-      decoration: InputDecoration(
-        errorText: widget.error,
-        labelText: widget.isChanged
-            ? '${widget.field.name} *'
-            : widget.field.name,
-        labelStyle: TextStyle(
-          fontWeight: widget.isChanged ? FontWeight.bold : null,
-        ),
-      ),
+      decoration: widget.decoration,
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))],
       readOnly: widget.onChanged == null,
       onChanged: (_) {

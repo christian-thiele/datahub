@@ -13,9 +13,17 @@ import 'meta/aperture_display_field.dart';
 
 class ApertureConfigDataDelegate implements ApertureConfigDelegate {
   @override
+  final String title;
+
+  @override
+  final ApertureTheme theme;
+
+  @override
   late final List<ApertureResource> resources;
 
   ApertureConfigDataDelegate({
+    this.title = 'Aperture',
+    this.theme = const ApertureTheme(),
     List<ApertureDataResource> dataResources = const [],
   }) {
     resources = [
@@ -90,7 +98,8 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
   static ResourceField _fieldDescription(DataBean bean, DataField field) {
     final meta = field.meta.whereType<Meta>().firstOrNull;
     final apertureMeta = field.meta.whereType<ApertureField>().firstOrNull;
-    final validation = field.meta.whereType<Validation>().firstOrNull;
+    final validation = field.constraintOfType<RegExpConstraint>();
+    final length = field.constraintOfType<MaxLengthConstraint>();
 
     return ResourceField(
       id: field.name,
@@ -98,30 +107,48 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
       description: meta?.description,
       readOnly: apertureMeta?.readOnly ?? false,
       validation: validation?.expression,
-      type: switch (field) {
-        DataField<dynamic, String?>() => ResourceFieldType.string,
-        DataField<dynamic, Enum?>() => ResourceFieldType.stringEnum,
-        DataField<dynamic, int?>() => ResourceFieldType.int,
-        DataField<dynamic, double?>() => ResourceFieldType.double,
-        DataField<dynamic, bool?>() => ResourceFieldType.bool,
-        DataField<dynamic, DateTime?>() => ResourceFieldType.timestamp,
-        DataField<dynamic, Uint8List?>() => ResourceFieldType.bytes,
-        DataField<dynamic, Geometry?>() => ResourceFieldType.geometry,
-        DataField<dynamic, DataObject?>() => ResourceFieldType.object,
-        DataField<dynamic, List<String>>() => ResourceFieldType.listString,
-        DataField<dynamic, List<Enum>>() => ResourceFieldType.listEnum,
-        DataField<dynamic, List<int>>() => ResourceFieldType.listInt,
-        DataField<dynamic, List<double>>() => ResourceFieldType.listDouble,
-        DataField<dynamic, List<bool>>() => ResourceFieldType.listBool,
-        DataField<dynamic, List<DateTime>>() => ResourceFieldType.listTimestamp,
-        DataField<dynamic, List<Uint8List>>() => ResourceFieldType.listBytes,
-        DataField<dynamic, List<DataObject>>() => ResourceFieldType.listObject,
-        _ => throw ApiError(
-            'Field ${bean.name}.${field.name} of type ${field.type.name} is not supported by Aperture.',
-          )
-      },
+      length: length?.length,
+      type: _fieldType(field),
       nullable: field.type.isNullable,
+      objectDescription: _objectDescription(field, meta, apertureMeta),
+      enumValues: field
+          .constraintOfType<EnumConstraint>()
+          ?.values
+          .map((e) => e.name)
+          .toList(),
     );
+  }
+
+  static List<ResourceField>? _objectDescription(
+    DataField field,
+    Meta? meta,
+    ApertureField? apertureMeta,
+  ) {
+    if (field case DataField<dynamic, List?>()) {
+      return [
+        ResourceField(
+          id: 'element',
+          name: '',
+          type: _fieldListElementType(field),
+          readOnly: apertureMeta?.readOnly ?? false,
+          nullable: false,
+          objectDescription: [
+            if (field.dataBean case final bean?)
+              for (final field in bean.fields) _fieldDescription(bean, field),
+          ],
+          enumValues: field
+              .constraintOfType<EnumConstraint>()
+              ?.values
+              .map((e) => e.name)
+              .toList(),
+        ),
+      ];
+    }
+
+    return [
+      if (field.dataBean case final bean?)
+        for (final field in bean.fields) _fieldDescription(bean, field),
+    ];
   }
 
   static String niceName(String name) {
@@ -129,5 +156,41 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
         .map(firstUpper)
         .map((e) => (e == 'Id') ? 'ID' : e)
         .join(' ');
+  }
+
+  static ResourceFieldType _fieldType(DataField<dynamic, dynamic> field) {
+    return switch (field) {
+      DataField<dynamic, String?>() => ResourceFieldType.string,
+      DataField<dynamic, Enum?>() => ResourceFieldType.stringEnum,
+      DataField<dynamic, int?>() => ResourceFieldType.int,
+      DataField<dynamic, double?>() => ResourceFieldType.double,
+      DataField<dynamic, bool?>() => ResourceFieldType.bool,
+      DataField<dynamic, DateTime?>() => ResourceFieldType.timestamp,
+      DataField<dynamic, Uint8List?>() => ResourceFieldType.bytes,
+      DataField<dynamic, Geometry?>() => ResourceFieldType.geometry,
+      DataField<dynamic, DataObject?>() => ResourceFieldType.object,
+      DataField<dynamic, List>() => ResourceFieldType.list,
+      _ => throw ApiError(
+          'Field ${field.name} of type ${field.type.name} is not supported by Aperture.',
+        )
+    };
+  }
+
+  static ResourceFieldType _fieldListElementType(
+      DataField<dynamic, dynamic> field) {
+    return switch (field) {
+      DataField<dynamic, List<String>?>() => ResourceFieldType.string,
+      DataField<dynamic, List<Enum>?>() => ResourceFieldType.stringEnum,
+      DataField<dynamic, List<int>?>() => ResourceFieldType.int,
+      DataField<dynamic, List<double>?>() => ResourceFieldType.double,
+      DataField<dynamic, List<bool>?>() => ResourceFieldType.bool,
+      DataField<dynamic, List<DateTime>?>() => ResourceFieldType.timestamp,
+      DataField<dynamic, List<Uint8List>?>() => ResourceFieldType.bytes,
+      DataField<dynamic, List<Geometry>?>() => ResourceFieldType.geometry,
+      DataField<dynamic, List<DataObject>?>() => ResourceFieldType.object,
+      _ => throw ApiError(
+          'Field ${field.name} of type ${field.type.name} is not supported by Aperture.',
+        )
+    };
   }
 }

@@ -1,6 +1,7 @@
 import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
+import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +21,7 @@ class AuthPage extends StatelessWidget {
         child: BlocBuilder<AuthCubit, AuthState>(
           builder: (context, state) {
             if (state case AuthStateLoading() || AuthStateAuthorized()) {
-              return Center(child: CircularProgressIndicator());
+              return LoadingView();
             }
             return Center(
               child: Column(

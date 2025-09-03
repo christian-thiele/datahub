@@ -1,6 +1,7 @@
 import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
 import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
+import 'package:datahub_aperture_frontend/models/view_models/paging.dart';
 import 'package:datahub_aperture_frontend/widgets/filter/filter_view.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
@@ -75,7 +76,15 @@ class ResourcePage extends StatelessWidget {
                             context.read<ResourceCubit>().removeFilter(idx),
                       ),
                     Expanded(
-                      child: ResourceList(resource: resource, entries: data),
+                      child: ResourceList(
+                        resource: resource,
+                        entries: data,
+                        paging: state.paging,
+                        onFirstPressed: () => context.read<ResourceCubit>().firstPage(),
+                        onPreviousPressed: () => context.read<ResourceCubit>().previousPage(),
+                        onNextPressed: () => context.read<ResourceCubit>().nextPage(),
+                        onLastPressed: state.paging.total != null ? () => context.read<ResourceCubit>().lastPage() : null,
+                      ),
                     ),
                   ],
                 ),

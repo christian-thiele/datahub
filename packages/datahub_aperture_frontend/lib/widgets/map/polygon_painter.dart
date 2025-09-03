@@ -44,7 +44,7 @@ class _Painter extends CustomPainter {
   });
 
   late final fillPaint = Paint()
-    ..color = colorScheme.primary.withAlpha(100)
+    ..color = colorScheme.primaryContainer.withAlpha(150)
     ..style = PaintingStyle.fill;
 
   late final linePaint = Paint()

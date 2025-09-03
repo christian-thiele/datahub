@@ -1,5 +1,5 @@
+import 'package:datahub_aperture_frontend/widgets/aperture_animation.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
-import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:flutter/material.dart';
 
 class DashboardPage extends StatelessWidget {
@@ -8,7 +8,12 @@ class DashboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BasePage(
-      child: Center(child: ErrorView(message: 'Dashboard not implemented yet')),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [ApertureLogo()],
+        ),
+      ),
     );
   }
 }

@@ -1,20 +1,20 @@
+import 'dart:typed_data';
+
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
-import 'package:datahub_aperture_frontend/models/file_value.dart';
-import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 
 class ResourceFileFormField extends StatelessWidget {
-  final ResourceField field;
-  final FileValue? value;
+  final InputDecoration decoration;
+  final Uint8List? value;
   final String? error;
   final bool isChanged;
-  final ValueChanged<FileValue?>? onChanged;
+  final ValueChanged<Uint8List?>? onChanged;
 
   const ResourceFileFormField({
     super.key,
-    required this.field,
+    required this.decoration,
     this.value,
     this.error,
     required this.isChanged,
@@ -24,11 +24,7 @@ class ResourceFileFormField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InputDecorator(
-      decoration: InputDecoration(
-        errorText: error,
-        labelText: isChanged ? '${field.name} *' : field.name,
-        labelStyle: TextStyle(fontWeight: isChanged ? FontWeight.bold : null),
-      ),
+      decoration: decoration,
       child: Align(
         alignment: Alignment.centerLeft,
         child: Column(
@@ -47,11 +43,11 @@ class ResourceFileFormField extends StatelessWidget {
                     children: [
                       if (value case final value?) ...[
                         Text(
-                          value.name,
+                          S.of(context).fileSelected,
                           style: Theme.of(context).textTheme.labelLarge,
                         ),
                         Text(
-                          formatFileSize(value.data.length),
+                          formatFileSize(value.length),
                           style: Theme.of(context).textTheme.labelSmall,
                         ),
                       ],
@@ -81,7 +77,8 @@ class ResourceFileFormField extends StatelessWidget {
                           :final name,
                           :final bytes?,
                         )) {
-                          onChanged?.call(FileValue(name: name, data: bytes));
+                          //onChanged?.call(FileValue(name: name, data: bytes));
+                          onChanged?.call(bytes);
                         }
                       }
                     },
@@ -90,13 +87,16 @@ class ResourceFileFormField extends StatelessWidget {
               ],
             ),
 
-            if (value case final value?
-                when value.name.endsWith('.png') ||
-                    value.name.endsWith('.jpg') ||
-                    value.name.endsWith('.jpeg'))
+            if (value case final value?)
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: 256, maxHeight: 256),
-                child: Image.memory(value.data, fit: BoxFit.contain),
+                child: Image.memory(
+                  value,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, _, _) {
+                    return SizedBox.shrink();
+                  },
+                ),
               ),
           ],
         ),

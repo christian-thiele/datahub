@@ -8,14 +8,20 @@ part of 'simple_dto.dart';
 
 abstract class _SimpleDto with DataObject<SimpleDto> {
   const _SimpleDto();
+  static const $$codec = JsonDataCodec();
   static final $text = DataField<SimpleDto, String>(
     name: 'text',
     valueOf: (p) => p.text,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $number = DataField<SimpleDto, int>(
     name: 'number',
     valueOf: (p) => p.number,
+    fromJson: (value, {String? name}) => $$codec.decodeInt(value, name: name),
+    toJson: (value) => $$codec.encodeInt(value),
   );
 
   static final DataBean<SimpleDto> bean = DataBean<SimpleDto>(
@@ -54,22 +60,20 @@ abstract class _SimpleDto with DataObject<SimpleDto> {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(SimpleDto, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return SimpleDto(
-      text: $codec.decodeString(data['text'],
-          name: DataCodec.childName(name, 'text')),
-      number: $codec.decodeInt(data['number'],
+      text:
+          $text.fromJson(data['text'], name: DataCodec.childName(name, 'text')),
+      number: $number.fromJson(data['number'],
           name: DataCodec.childName(name, 'number')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as SimpleDto;
+    final $$data = this as SimpleDto;
     return {
-      'text': $codec.encodeString($data.text),
-      'number': $codec.encodeInt($data.number),
+      'text': $text.toJson($$data.text),
+      'number': $number.toJson($$data.number),
     }..removeWhere((k, v) => v == null);
   }
 }

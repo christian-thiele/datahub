@@ -1,3 +1,5 @@
+import 'package:datahub/api.dart';
+import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture_frontend/models/authentication.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
@@ -53,7 +55,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
       :final changes,
       :final description,
     )) {
-      final field = fields.firstWhere((e) => e.id == fieldId);
+      final field = description.getField(fieldId);
       if (field.readOnly) {
         return;
       }
@@ -86,7 +88,24 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
         when state is! ResourceElementCreateSaving &&
             state.changes.isNotEmpty) {
       try {
-        // TODO validate all
+        final validation = <ResourceField, String>{
+          for (final field in state.description.fields)
+            if (validateFieldValue(field, state.changes[field])
+                case final error?)
+              field: error,
+        };
+
+        if (validation.isNotEmpty) {
+          return emit(
+            ResourceElementCreateEditing(
+              fields: state.fields,
+              changes: state.changes,
+              validation: validation,
+              description: state.description,
+            ),
+          );
+        }
+
         final savingState = state.saving();
         emit(savingState);
         final updated = await _resourceRepository.createElement(
@@ -99,7 +118,30 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
 
         emit(savingState.saved(updated.id, updated.revisionId));
       } catch (e) {
-        emit(ResourceElementCreateError(message: e.toString()));
+        if (e case ApiRequestException(
+          data: {'fields': final Map<String, dynamic> fieldErrors},
+        )) {
+          if (fieldErrors.keys.any(
+            (e) => state.description.getField(e).readOnly,
+          )) {
+            return emit(ResourceElementCreateError(message: e.toString()));
+          }
+
+          emit(
+            ResourceElementCreateEditing(
+              description: state.description,
+              fields: state.fields,
+              changes: state.changes,
+              validation: {
+                for (final (field, errors) in fieldErrors.tuples)
+                  state.description.fields.firstWhere((e) => e.id == field):
+                      errors.first,
+              },
+            ),
+          );
+        } else {
+          emit(ResourceElementCreateError(message: e.toString()));
+        }
       }
     }
   }

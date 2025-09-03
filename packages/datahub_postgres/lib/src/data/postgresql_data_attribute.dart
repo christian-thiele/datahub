@@ -1,11 +1,10 @@
 import 'package:datahub/data.dart';
 import 'package:datahub_postgres/schema.dart';
-import 'package:datahub_postgres/src/types/types.dart';
 
 import 'data_utils.dart';
 
-class PostgresqlDataAttribute<T> extends PostgresqlAttribute {
-  final DataField<T, dynamic> field;
+class PostgresqlDataAttribute extends PostgresqlAttribute {
+  final DataField field;
 
   PostgresqlDataAttribute._({
     required this.field,
@@ -14,18 +13,25 @@ class PostgresqlDataAttribute<T> extends PostgresqlAttribute {
     super.constraints,
   });
 
-  factory PostgresqlDataAttribute(DataField<T, dynamic> field) {
+  factory PostgresqlDataAttribute(DataField field) {
     // TODO read postgres meta annotations to override default behavior
-    final isId = field.meta.any((e) => e is Id);
-    final type = PostgresqlDataType.findForType(field.type);
+    final type = PostgresqlDataType.findForDataField(field);
     return PostgresqlDataAttribute._(
       field: field,
       name: translateName(field.name),
       type: type,
       constraints: [
-        if (isId) PrimaryKeyConstraint(auto: type.type.isExact<int>()),
-        if (field is DataField<T, Object>) NotNullConstraint(),
+        if (field.hasMetaOfType<Id>())
+          PrimaryKeyConstraint(
+            auto: field.hasMetaOfType<Id>((id) => id.auto),
+          ),
+        if (field is DataField<dynamic, Object>) NotNullConstraint(),
       ],
     );
+  }
+
+  bool hasConstraint<T extends PostgresqlAttributeConstraint>(
+      [bool Function(T)? test]) {
+    return constraints.whereType<T>().where(test ?? (_) => true).isNotEmpty;
   }
 }

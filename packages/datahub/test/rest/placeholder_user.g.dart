@@ -8,14 +8,21 @@ part of 'placeholder_user.dart';
 
 abstract class _PlaceholderUser with DataObject<PlaceholderUser> {
   const _PlaceholderUser();
+  static const $$codec = JsonDataCodec();
   static final $id = DataField<PlaceholderUser, String>(
     name: 'id',
     valueOf: (p) => p.id,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final $name = DataField<PlaceholderUser, String>(
     name: 'name',
     valueOf: (p) => p.name,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
   );
 
   static final DataBean<PlaceholderUser> bean = DataBean<PlaceholderUser>(
@@ -55,22 +62,19 @@ abstract class _PlaceholderUser with DataObject<PlaceholderUser> {
       throw CodecException.typeMismatch(
           PlaceholderUser, data.runtimeType, name);
     }
-    final $codec = const JsonDataCodec();
     return PlaceholderUser(
-      id: $codec.decodeString(data['id'],
-          name: DataCodec.childName(name, 'id')),
-      name: $codec.decodeString(data['name'],
-          name: DataCodec.childName(name, 'name')),
+      id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
+      name:
+          $name.fromJson(data['name'], name: DataCodec.childName(name, 'name')),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $codec = const JsonDataCodec();
-    final $data = this as PlaceholderUser;
+    final $$data = this as PlaceholderUser;
     return {
-      'id': $codec.encodeString($data.id),
-      'name': $codec.encodeString($data.name),
+      'id': $id.toJson($$data.id),
+      'name': $name.toJson($$data.name),
     }..removeWhere((k, v) => v == null);
   }
 }

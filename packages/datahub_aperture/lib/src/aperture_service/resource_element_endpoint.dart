@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:math';
 
 import 'package:datahub/api.dart';
+import 'package:datahub/data.dart';
 import 'package:datahub_aperture/src/aperture_service/aperture_resource.dart';
 import 'package:datahub_aperture/src/aperture_service/aperture_resource_repository.dart';
 
@@ -34,25 +35,6 @@ class ResourceElementEndpoint extends ApiEndpoint {
   }
 
   @override
-  Future<ResourceData> post(ApiRequest request) async {
-    if (request.route.getParam<String?>('id') case String()) {
-      throw ApiRequestException.methodNotAllowed();
-    }
-
-    if (resource.repository
-        case final ApertureResourceWriteRepository repository) {
-      final data = await request
-          .getData<ResourceRevisionRequest>(ResourceRevisionRequest.bean);
-      return await repository.createElement(
-        data.fieldData,
-        data.revisionLive,
-      );
-    } else {
-      throw ApiRequestException.methodNotAllowed();
-    }
-  }
-
-  @override
   Future<ResourceData> patch(ApiRequest request) async {
     if (request.route.getParam<String?>('id') case final id?) {
       final data = await request.getData(ResourceRevisionRequest.bean);
@@ -73,7 +55,26 @@ class ResourceElementEndpoint extends ApiEndpoint {
   }
 
   @override
-  Future<ResourceData> delete(ApiRequest request) async {
+  Future<ResourceData> post(ApiRequest request) async {
+    if (request.route.getParam<String?>('id') case String()) {
+      throw ApiRequestException.methodNotAllowed();
+    }
+
+    if (resource.repository
+        case final ApertureResourceWriteRepository repository) {
+      final data = await request
+          .getData<ResourceRevisionRequest>(ResourceRevisionRequest.bean);
+      return await repository.createElement(
+        data.fieldData,
+        data.revisionLive,
+      );
+    } else {
+      throw ApiRequestException.methodNotAllowed();
+    }
+  }
+
+  @override
+  Future<ResourceData?> delete(ApiRequest request) async {
     if (request.route.getParam<String?>('id') case final id?) {
       final revisionLive = request.getParam<DateTime?>('revisionLive');
 

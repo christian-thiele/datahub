@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:datahub/data.dart' as data;
 import 'package:datahub_aperture_frontend/widgets/map/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/utils/immutable_list_utils.dart';
@@ -89,7 +91,7 @@ class EditorPolygon {
 
 class EditorLayer extends StatefulWidget {
   final List<EditorPolygon> features;
-  final ValueChanged<List<EditorPolygon>> onChanged;
+  final ValueChanged<List<EditorPolygon>>? onChanged;
 
   const EditorLayer({
     super.key,
@@ -141,43 +143,48 @@ class _EditorLayerState extends State<EditorLayer> {
             },
           ),
 
-        if (mode == EditorMode.edit && selected >= 0)
-          PolygonEditor(
-            value: widget.features[selected],
-            onChanged: (value) {
-              if (value == null) {
-                widget.onChanged(widget.features.copyWithRemoved(selected));
+        if (widget.onChanged != null) ...[
+          if (mode == EditorMode.edit &&
+              min(widget.features.length - 1, selected) >= 0)
+            PolygonEditor(
+              value: widget.features[min(widget.features.length - 1, selected)],
+              onChanged: (value) {
+                if (value == null) {
+                  widget.onChanged?.call(
+                    widget.features.copyWithRemoved(selected),
+                  );
+                  setState(() {
+                    selected = -1;
+                  });
+                } else {
+                  widget.onChanged?.call(
+                    widget.features.copyWithReplaced(selected, value),
+                  );
+                }
+              },
+            ),
+
+          if (mode == EditorMode.create)
+            RingCreator(
+              onDone: (ring) {
+                widget.onChanged?.call(
+                  widget.features.copyWithAdded(EditorPolygon(bounds: ring)),
+                );
                 setState(() {
+                  mode = EditorMode.edit;
+                  selected = widget.features.length;
+                });
+              },
+              onCancel: () {
+                setState(() {
+                  mode = EditorMode.select;
                   selected = -1;
                 });
-              } else {
-                widget.onChanged(
-                  widget.features.copyWithReplaced(selected, value),
-                );
-              }
-            },
-          ),
-
-        if (mode == EditorMode.create)
-          RingCreator(
-            onDone: (ring) {
-              widget.onChanged(
-                widget.features.copyWithAdded(EditorPolygon(bounds: ring)),
-              );
-              setState(() {
-                mode = EditorMode.edit;
-                selected = widget.features.length;
-              });
-            },
-            onCancel: () {
-              setState(() {
-                mode = EditorMode.select;
-                selected = -1;
-              });
-            },
-          ),
-
+              },
+            ),
+        ],
         EditorControls(
+          readOnly: widget.onChanged == null,
           mode: mode,
           onFocusPressed: () => controller.focusOnAll(widget.features),
           onAddPressed: () {

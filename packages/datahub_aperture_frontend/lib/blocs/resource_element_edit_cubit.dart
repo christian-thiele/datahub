@@ -1,3 +1,4 @@
+import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture_frontend/models/authentication.dart';
 import 'package:datahub_aperture_frontend/models/filtered_resource.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
@@ -132,6 +133,26 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
     if (state case final ResourceElementEditValue state
         when state is! ResourceElementEditSaving && state.changes.isNotEmpty) {
       try {
+        final validation = <ResourceField, String>{
+          for (final field in state.resource.fields)
+            if (validateFieldValue(field, state.changes[field] ?? state.data.fieldData[field.id])
+            case final error?)
+              field: error,
+        };
+
+        if (validation.isNotEmpty) {
+          return emit(
+            ResourceElementEditValue(
+              title: state.title,
+              resource: state.resource,
+              data: state.data,
+              relations: state.relations,
+              changes: state.changes,
+              validations: validation,
+            ),
+          );
+        }
+
         final savingState = state.saving();
         emit(savingState);
         final updated = await _resourceRepository.updateElement(
@@ -144,7 +165,32 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
         decodeFieldData(state.resource, updated);
         emit(savingState.saved(updated));
       } catch (e) {
-        emit(ResourceElementEditError(message: e.toString()));
+        if (e case ApiRequestException(
+        data: {'fields': final Map<String, dynamic> fieldErrors},
+        )) {
+          if (fieldErrors.keys.any(
+                (e) => state.resource.getField(e).readOnly,
+          )) {
+            return emit(ResourceElementEditError(message: e.toString()));
+          }
+
+          emit(
+            ResourceElementEditValue(
+              title: state.title,
+              resource: state.resource,
+              data: state.data,
+              relations: state.relations,
+              changes: state.changes,
+              validations: {
+                for (final (field, errors) in fieldErrors.tuples)
+                  state.resource.fields.firstWhere((e) => e.id == field):
+                  errors.first,
+              },
+            ),
+          );
+        } else {
+          emit(ResourceElementEditError(message: e.toString()));
+        }
       }
     }
   }

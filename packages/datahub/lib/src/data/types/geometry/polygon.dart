@@ -7,7 +7,7 @@ import 'geometry.dart';
 class Polygon extends Geometry {
   final List<LineString> rings;
 
-  Polygon(int? srid, this.rings, bool hasZ, bool hasM)
+  const Polygon(int? srid, this.rings, bool hasZ, bool hasM)
       : super(srid, GeometryType.polygon, hasZ, hasM);
 
   factory Polygon.read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {

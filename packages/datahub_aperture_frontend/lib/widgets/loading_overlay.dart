@@ -4,8 +4,14 @@ import 'package:flutter/material.dart';
 class LoadingOverlay extends StatelessWidget {
   final Widget child;
   final bool loading;
+  final String? message;
 
-  const LoadingOverlay({super.key, required this.child, required this.loading});
+  const LoadingOverlay({
+    super.key,
+    required this.child,
+    required this.loading,
+    this.message,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +30,7 @@ class LoadingOverlay extends StatelessWidget {
               color: Theme.of(context).dialogTheme.barrierColor,
             ),
           ),
-        if (loading) Center(child: Card(child: LoadingView())),
+        if (loading) Center(child: LoadingView(message: message)),
       ],
     );
   }
