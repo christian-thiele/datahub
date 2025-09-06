@@ -30,10 +30,13 @@ final class DataBean<T extends DataObject<T>> {
   DataField<T, dynamic>? get idField =>
       fields.where((field) => field.meta.any((e) => e is Id)).firstOrNull;
 
+  DataField<T, dynamic> get requireIdField => idField ?? (throw MissingIdFieldError(this));
+
   Map<DataField, List<DataFieldConstraint>> checkConstraints(T object) {
     return {
       for (final field in fields)
-        if (field.checkConstraints(field.valueOf(object)) case final result when result.isNotEmpty)
+        if (field.checkConstraints(field.valueOf(object)) case final result
+            when result.isNotEmpty)
           field: result,
     };
   }
@@ -46,4 +49,13 @@ final class DataBean<T extends DataObject<T>> {
       throw ValidationException(violatedConstraints);
     }
   }
+
+  bool hasMetaOfType<M extends MetaData>([bool Function(M)? test]) =>
+      allMetaOfType<M>(test).isNotEmpty;
+
+  M? metaOfType<M extends MetaData>([bool Function(M)? test]) =>
+      allMetaOfType<M>(test).firstOrNull;
+
+  Iterable<M> allMetaOfType<M extends MetaData>([bool Function(M)? test]) =>
+      meta.whereType<M>().where(test ?? (_) => true);
 }

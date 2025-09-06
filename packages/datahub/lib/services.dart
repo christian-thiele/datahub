@@ -1,5 +1,5 @@
 /// Built-In Services
-library services;
+library;
 
 export 'src/services/config_service/config_exception.dart';
 export 'src/services/config_service/config_path.dart';

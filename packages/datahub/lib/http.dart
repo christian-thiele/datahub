@@ -1,7 +1,7 @@
 /// HTTP 1.1 / HTTP 2
 ///
 /// HTTP multi-version client and server classes.
-library http;
+library;
 
 export 'src/http/basic_auth.dart';
 export 'src/http/bearer_auth.dart';

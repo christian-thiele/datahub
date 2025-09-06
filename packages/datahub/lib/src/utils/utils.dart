@@ -218,3 +218,9 @@ extension TupleMapExtension<K, V> on Map<K, V> {
 extension NanoSecondsDateTimeExtension on DateTime {
   Int64 get nanosecondsSinceEpoch => Int64(microsecondsSinceEpoch) * 1000;
 }
+
+typedef Test<T> = bool Function(T e);
+
+bool always(dynamic _) => true;
+
+T pass<T>(T e) => e;

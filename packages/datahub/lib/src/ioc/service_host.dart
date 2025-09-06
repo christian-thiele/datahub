@@ -130,7 +130,11 @@ abstract class ServiceHost extends ServiceResolver {
   }
 
   void _onError(
-      String msg, dynamic exception, StackTrace trace, bool critical) {
+    String msg,
+    dynamic exception,
+    StackTrace trace,
+    bool critical,
+  ) {
     final logService = resolveService<LogService?>();
     if (logService != null) {
       final method = critical ? logService.c : logService.e;

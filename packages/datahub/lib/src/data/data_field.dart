@@ -49,11 +49,14 @@ class DataField<Data, FieldType> {
     ];
   }
 
-  bool hasMetaOfType<T extends MetaData>([bool Function(T)? test]) =>
-      meta.whereType<T>().any(test ?? (_) => true);
+  bool hasMetaOfType<M extends MetaData>([bool Function(M)? test]) =>
+      allMetaOfType<M>(test).isNotEmpty;
 
-  T? metaOfType<T extends MetaData>([bool Function(T)? test]) =>
-      meta.whereType<T>().where(test ?? (_) => true).firstOrNull;
+  M? metaOfType<M extends MetaData>([bool Function(M)? test]) =>
+      allMetaOfType<M>(test).firstOrNull;
+
+  Iterable<M> allMetaOfType<M extends MetaData>([bool Function(M)? test]) =>
+      meta.whereType<M>().where(test ?? (_) => true);
 
   bool hasConstraintOfType<T extends DataFieldConstraint>(
           [bool Function(T)? test]) =>
