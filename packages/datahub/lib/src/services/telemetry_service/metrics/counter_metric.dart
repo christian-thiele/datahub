@@ -30,14 +30,14 @@ import 'sample_group.dart';
 class CounterMetric extends Metric {
   final _series = <_CounterSeries>[];
 
-  CounterMetric(
-    super.name, {
-    super.help,
-    Map<String, List<String>>? labels,
-  }) : super(type: MetricType.counter) {
+  CounterMetric(super.name, {super.help, Map<String, List<String>>? labels})
+    : super(type: MetricType.counter) {
     if (labels != null) {
-      final combinations = everyCombination(labels.entries
-          .map((e) => e.value.map((value) => MapEntry(e.key, value))));
+      final combinations = everyCombination(
+        labels.entries.map(
+          (e) => e.value.map((value) => MapEntry(e.key, value)),
+        ),
+      );
       for (final combination in combinations) {
         _series.add(_CounterSeries(Map.fromEntries(combination)));
       }
@@ -48,18 +48,10 @@ class CounterMetric extends Metric {
 
   @override
   SampleGroup collect() {
-    return SampleGroup(
-      this,
-      [
-        for (final series in _series)
-          MetricSample(
-            name,
-            series.labels,
-            series._value,
-            DateTime.timestamp(),
-          ),
-      ],
-    );
+    return SampleGroup(this, [
+      for (final series in _series)
+        MetricSample(name, series.labels, series._value, DateTime.timestamp()),
+    ]);
   }
 
   _CounterSeries _findSeries(Map<String, String> labels) {

@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io' as io;
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
 import 'package:http/http.dart' as http;
 import 'package:http2/http2.dart' as http2;
 
+import 'http_request.dart';
+import 'http_response.dart';
 import 'utils.dart';
 
 abstract class HttpClient {
@@ -14,24 +15,20 @@ abstract class HttpClient {
 
   HttpClient(this.address);
 
-  static HttpClient http11(Uri address,
-          {io.SecurityContext? securityContext}) =>
-      _Http11Client(address, securityContext);
+  static HttpClient http11(
+    Uri address, {
+    io.SecurityContext? securityContext,
+  }) => _Http11Client(address, securityContext);
 
-  static HttpClient http2(Uri address, {
+  static HttpClient http2(
+    Uri address, {
     io.SecurityContext? securityContext,
     bool Function(io.X509Certificate certificate)? onBadCertificate,
     Duration? timeout,
-  }) =>
-      _Http2Client(
-        address,
-        securityContext,
-        onBadCertificate,
-        timeout,
-        null,
-      );
+  }) => _Http2Client(address, securityContext, onBadCertificate, timeout, null);
 
-  static Future<HttpClient> autodetect(Uri address, {
+  static Future<HttpClient> autodetect(
+    Uri address, {
     io.SecurityContext? securityContext,
     bool Function(io.X509Certificate certificate)? onBadCertificate,
     Duration? timeout,
@@ -83,10 +80,13 @@ class _Http11Client extends HttpClient {
   @override
   Future<HttpResponse> request(HttpRequest httpRequest) async {
     final request = http.StreamedRequest(
-        httpRequest.method.name.toUpperCase(), httpRequest.requestUri);
+      httpRequest.method.name.toUpperCase(),
+      httpRequest.requestUri,
+    );
 
-    request.headers.addAll(httpRequest.headers
-        .map((key, value) => MapEntry(key, value.join(', '))));
+    request.headers.addAll(
+      httpRequest.headers.map((key, value) => MapEntry(key, value.join(', '))),
+    );
 
     httpRequest.bodyData.listen(
       request.sink.add,
@@ -100,8 +100,10 @@ class _Http11Client extends HttpClient {
     return HttpResponse(
       httpRequest.requestUri,
       response.statusCode,
-      response.headers.map((key, value) =>
-          MapEntry(key, value.split(',').map((e) => e.trim()).toList())),
+      response.headers.map(
+        (key, value) =>
+            MapEntry(key, value.split(',').map((e) => e.trim()).toList()),
+      ),
       response.stream,
     );
   }
@@ -128,16 +130,19 @@ class _Http2Client extends HttpClient {
   @override
   final bool isHttp2 = true;
 
-  _Http2Client(super.address,
-      this.securityContext,
-      this.onBadCertificate,
-      this.timeout,
-      this.initialSocket,);
+  _Http2Client(
+    super.address,
+    this.securityContext,
+    this.onBadCertificate,
+    this.timeout,
+    this.initialSocket,
+  );
 
   Future<http2.ClientTransportConnection> _connect() async {
     final useSSL = address.scheme == 'https';
     if (useSSL) {
-      var secureSocket = initialSocket ??
+      var secureSocket =
+          initialSocket ??
           await io.SecureSocket.connect(
             address.host,
             address.port,
@@ -155,9 +160,7 @@ class _Http2Client extends HttpClient {
 
       final connection = http2.ClientTransportConnection.viaSocket(
         secureSocket,
-        settings: http2.ClientSettings(
-          allowServerPushes: false,
-        ),
+        settings: http2.ClientSettings(allowServerPushes: false),
       );
 
       _disconnect = () async {
@@ -175,9 +178,7 @@ class _Http2Client extends HttpClient {
 
       final connection = http2.ClientTransportConnection.viaSocket(
         socket,
-        settings: http2.ClientSettings(
-          allowServerPushes: false,
-        ),
+        settings: http2.ClientSettings(allowServerPushes: false),
       );
 
       _disconnect = () async {
@@ -202,8 +203,9 @@ class _Http2Client extends HttpClient {
       http2.Header.ascii(':path', path),
       http2.Header.ascii(':scheme', httpRequest.requestUri.scheme),
       http2.Header.ascii(':authority', httpRequest.requestUri.host),
-      ...httpRequest.headers.entries
-          .expand((h) => h.value.map((v) => http2.Header.ascii(h.key, v))),
+      ...httpRequest.headers.entries.expand(
+        (h) => h.value.map((v) => http2.Header.ascii(h.key, v)),
+      ),
     ];
 
     var stream = connection.makeRequest(requestHeaders, endStream: false);
@@ -223,13 +225,13 @@ class _Http2Client extends HttpClient {
 
     final response = Completer<HttpResponse>();
     stream.incomingMessages.listen(
-          (event) {
+      (event) {
         try {
           if (event is http2.HeadersStreamMessage) {
             final responseHeaders = http2Headers(event.headers);
             final statusCode =
                 int.tryParse(responseHeaders.$1[':status'] ?? '') ??
-                    (throw Exception('Missing status code in response.'));
+                (throw Exception('Missing status code in response.'));
 
             if (event.endStream) {
               bodyStream.close();

@@ -1,23 +1,43 @@
 import 'dart:async';
 
-import 'package:datahub/ioc.dart';
-
 import 'overlap_behaviour.dart';
 import 'schedule.dart';
 import 'scheduled_task.dart';
 
-/// Provides a pattern for creating scheduled execution of tasks.
-class SchedulerService extends BaseService {
+import 'package:datahub/scaffold.dart';
+// TODO rework this whole concept
+
+abstract interface class Scheduler {
+  void schedule(
+    Task task,
+    Schedule schedule, {
+    OverlapBehaviour overlap = OverlapBehaviour.concurrent,
+  });
+}
+
+class SchedulerService implements Service {
+  @override
+  ServiceInstance<SchedulerService> createInstance() =>
+      _SchedulerServiceInstance();
+}
+
+class _SchedulerServiceInstance extends ServiceInstance<SchedulerService>
+    implements Scheduler {
   final _tasks = <ScheduledTask>[];
 
-  //TODO possibility to cancel task
-  void schedule(Task task, Schedule schedule,
-      {OverlapBehaviour overlap = OverlapBehaviour.concurrent}) {
+  @override
+  void schedule(
+    Task task,
+    Schedule schedule, {
+    OverlapBehaviour overlap = OverlapBehaviour.concurrent,
+  }) {
     _tasks.add(ScheduledTask(task, _tasks.length + 1, schedule, overlap));
   }
 
   @override
-  Future<void> shutdown() async {
-    _tasks.forEach((task) => task.cancel());
+  Future<void> dispose() async {
+    for (final task in _tasks) {
+      task.cancel();
+    }
   }
 }

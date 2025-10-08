@@ -23,34 +23,47 @@ class ResourceFormField extends StatelessWidget {
   const ResourceFormField({
     super.key,
     required this.field,
-    this.value = null,
-    this.error = null,
+    this.value,
+    this.error,
     this.isChanged = false,
-    this.onChanged = null,
+    this.onChanged,
   });
 
-  InputDecoration decoration(BuildContext context) => InputDecoration(
-    errorText: error,
-    label: isChanged
-        ? IconText(
-            Icons.circle_sharp,
-            field.name,
-            iconSize: 6,
-            leading: false,
-            iconColor: Theme.of(context).colorScheme.primary,
-          )
-        : Text(field.name),
-    labelStyle: TextStyle(fontWeight: isChanged ? FontWeight.bold : null),
-    enabledBorder: switch ((field.readOnly, isChanged)) {
-      (true, _) => OutlineInputBorder(
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.outlineVariant),
-      ),
-      (false, true) => OutlineInputBorder(
-        borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
-      ),
-      _ => null,
-    },
-  );
+  InputDecoration decoration(BuildContext context) {
+    final Widget? label;
+    if (field.name.isNotEmpty) {
+      if (isChanged) {
+        label = IconText(
+          Icons.circle_sharp,
+          field.name,
+          iconSize: 6,
+          leading: false,
+          iconColor: Theme.of(context).colorScheme.primary,
+        );
+      } else {
+        label = Text(field.name);
+      }
+    } else {
+      label = null;
+    }
+
+    return InputDecoration(
+      errorText: error,
+      label: label,
+      labelStyle: TextStyle(fontWeight: isChanged ? FontWeight.bold : null),
+      enabledBorder: switch ((field.readOnly, isChanged)) {
+        (true, _) => OutlineInputBorder(
+          borderSide: BorderSide(
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
+        (false, true) => OutlineInputBorder(
+          borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
+        ),
+        _ => null,
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +75,7 @@ class ResourceFormField extends StatelessWidget {
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
+        lookup: field.lookup,
       ),
       ResourceFieldType.int => ResourceIntFormField(
         decoration: fieldDecoration,
@@ -69,6 +83,7 @@ class ResourceFormField extends StatelessWidget {
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
+        lookup: field.lookup,
       ),
       ResourceFieldType.bool => ResourceBoolFormField(
         field: field,

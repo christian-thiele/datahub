@@ -5,7 +5,7 @@ import 'resource_filter_type.dart';
 part 'resource_filter.g.dart';
 
 @Data()
-class ResourceFilter extends _ResourceFilter {
+class ResourceFilter extends $ResourceFilter {
   final List<ResourceFilter>? or;
   final List<ResourceFilter>? and;
   final String? fieldId;
@@ -19,6 +19,4 @@ class ResourceFilter extends _ResourceFilter {
     this.type,
     this.value,
   });
-
-  static DataBean<ResourceFilter> get bean => _ResourceFilter.bean;
 }

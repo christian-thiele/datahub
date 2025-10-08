@@ -1,4 +1,5 @@
-String createHelloWorldMain(String projectName) => '''import 'dart:io';
+String createHelloWorldMain(String projectName) =>
+    '''import 'dart:io';
 
 
 import 'package:$projectName/$projectName.dart';

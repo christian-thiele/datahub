@@ -1,9 +1,11 @@
 library;
 
 export 'api.dart';
+export 'auth.dart';
+export 'config.dart';
 export 'data.dart';
 export 'http.dart';
-export 'ioc.dart';
 export 'rest_client.dart';
-export 'services.dart';
+export 'scaffold.dart';
+export 'telemetry.dart';
 export 'utils.dart';

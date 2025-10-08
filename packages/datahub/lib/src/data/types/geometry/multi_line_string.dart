@@ -8,17 +8,18 @@ class MultiLineString extends Geometry {
   final List<LineString> lineStrings;
 
   const MultiLineString(int? srid, this.lineStrings, bool hasZ, bool hasM)
-      : super(srid, GeometryType.multiLineString, hasZ, hasM);
+    : super(srid, GeometryType.multiLineString, hasZ, hasM);
 
   factory MultiLineString.read(
-      int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
+    int? srid,
+    ByteDataReader reader,
+    bool hasZ,
+    bool hasM,
+  ) {
     final length = reader.readUint32();
     return MultiLineString(
       srid,
-      List.generate(
-        length,
-        (i) => LineString.read(srid, reader, hasZ, hasM),
-      ),
+      List.generate(length, (i) => LineString.read(srid, reader, hasZ, hasM)),
       hasZ,
       hasM,
     );

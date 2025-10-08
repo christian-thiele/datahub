@@ -6,7 +6,7 @@ import 'resource_relation.dart';
 part 'resource_description.g.dart';
 
 @Data()
-class ResourceDescription extends _ResourceDescription {
+class ResourceDescription extends $ResourceDescription {
   final String id;
   final String name;
   final String? namePlural;
@@ -28,6 +28,4 @@ class ResourceDescription extends _ResourceDescription {
     this.displayField,
     required this.readOnly,
   });
-
-  static DataBean<ResourceDescription> get bean => _ResourceDescription.bean;
 }

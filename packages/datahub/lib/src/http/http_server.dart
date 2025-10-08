@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:boost/boost.dart';
-import 'package:datahub/ioc.dart';
-import 'package:datahub/services.dart';
+import 'package:datahub/config.dart';
+import 'package:datahub/scaffold.dart';
 import 'package:datahub/src/http/http_response.dart';
 import 'package:datahub/src/http/server_socket_adapter.dart';
+import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
 import 'package:http2/http2.dart' as http2;
 
@@ -16,15 +17,16 @@ import 'http_request.dart';
 typedef HttpRequestHandler = Future<HttpResponse> Function(HttpRequest);
 
 class HttpServer {
-  final _logService = resolve<LogService>();
   final dynamic _serverSocket;
   final HttpRequestHandler requestHandler;
   final void Function(dynamic error, StackTrace stack) onSocketError;
   final void Function(dynamic error, StackTrace stack) onProtocolError;
   final void Function(dynamic error, StackTrace stack) onStreamError;
 
-  late final _http1Adapter =
-      ServerSocketAdapter(_serverSocket.address, _serverSocket.port);
+  late final _http1Adapter = ServerSocketAdapter(
+    _serverSocket.address,
+    _serverSocket.port,
+  );
 
   late final io.HttpServer _http1;
 
@@ -44,8 +46,9 @@ class HttpServer {
       (socket) {
         socket.setOption(io.SocketOption.tcpNoDelay, true);
         if (socket is io.SecureSocket) {
-          _logService.debug(
-              'Incoming secure connection with selected protocol ${socket.selectedProtocol}.');
+          log(
+            'Incoming secure connection with selected protocol ${socket.selectedProtocol}.',
+          );
           // ALPN first
           switch (socket.selectedProtocol) {
             case 'h2':
@@ -85,8 +88,9 @@ class HttpServer {
     try {
       var result = await requestHandler(HttpRequest.http1(request));
 
-      result.headers.entries
-          .forEach((h) => request.response.headers.add(h.key, h.value));
+      for (var h in result.headers.entries) {
+        request.response.headers.add(h.key, h.value);
+      }
 
       request.response.statusCode = result.statusCode;
       await request.response.addStream(result.bodyData);
@@ -95,13 +99,13 @@ class HttpServer {
     } catch (e, stack) {
       try {
         request.response.statusCode = 500;
-        if (resolve<ConfigService>().environment == Environment.dev) {
+        if (Context.maybeOfZone()?.environment == Environment.dev) {
           request.response.writeln('500 - Internal Server Error\n$e\n$stack');
         } else {
           request.response.writeln('500 - Internal Server Error');
         }
       } on StateError catch (stateError) {
-        _logService.warn('Could not send error response.', error: stateError);
+        log.warn('Could not send error response.', error: stateError);
       }
 
       var errorMessage = 'Error while handling request.';
@@ -109,12 +113,7 @@ class HttpServer {
         errorMessage = 'Error while handling request to "${request.uri}".';
       } catch (_) {}
 
-      _logService.error(
-        errorMessage,
-        sender: 'DataHub',
-        error: e,
-        trace: stack,
-      );
+      log.error(errorMessage, error: e, stack: stack);
     }
 
     await request.response.close();
@@ -144,8 +143,9 @@ class HttpServer {
               unawaited(dataController.close());
             }
 
-            requestCompleter
-                .complete(HttpRequest.http2(event, dataController.stream));
+            requestCompleter.complete(
+              HttpRequest.http2(event, dataController.stream),
+            );
           } else if (event is http2.DataStreamMessage) {
             dataController.add(event.bytes);
             if (event.endStream) {
@@ -167,8 +167,10 @@ class HttpServer {
 
         final headers = [
           http2.Header.ascii(':status', response.statusCode.toString()),
-          ...response.headers.entries.expand((h) =>
-              h.value.map((v) => http2.Header.ascii(h.key.toLowerCase(), v))),
+          ...response.headers.entries.expand(
+            (h) =>
+                h.value.map((v) => http2.Header.ascii(h.key.toLowerCase(), v)),
+          ),
         ];
 
         stream.sendHeaders(headers);
@@ -239,18 +241,14 @@ class HttpServer {
           errorMessage = 'Error while handling request to "${request.path}".';
         } catch (_) {}
 
-        _logService.error(
-          errorMessage,
-          sender: 'DataHub',
-          error: e,
-          trace: stack,
-        );
+        log.error(errorMessage, error: e, stack: stack);
 
         if (!terminated.cancellationRequested) {
           stream.sendHeaders([http2.Header.ascii(':status', '500')]);
-          if (resolve<ConfigService>().environment == Environment.dev) {
+          if (Context.maybeOfZone()?.environment == Environment.dev) {
             stream.sendData(
-                utf8.encode('500 - Internal Server Error\n$e\n$stack'));
+              utf8.encode('500 - Internal Server Error\n$e\n$stack'),
+            );
           } else {
             stream.sendData(utf8.encode('500 - Internal Server Error'));
           }
@@ -259,12 +257,7 @@ class HttpServer {
         await stream.outgoingMessages.close();
       }
     } catch (e, stack) {
-      _logService.error(
-        'Error while handling HTTP2 stream.',
-        sender: 'DataHub',
-        error: e,
-        trace: stack,
-      );
+      log.error('Error while handling HTTP2 stream.', error: e, stack: stack);
     }
   }
 

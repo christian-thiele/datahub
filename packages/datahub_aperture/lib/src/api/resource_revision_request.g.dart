@@ -6,9 +6,9 @@ part of 'resource_revision_request.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ResourceRevisionRequest
+abstract interface class $ResourceRevisionRequest
     with DataObject<ResourceRevisionRequest> {
-  const _ResourceRevisionRequest();
+  const $ResourceRevisionRequest();
   static const $$codec = JsonDataCodec();
   static final $fieldData =
       DataField<ResourceRevisionRequest, Map<String, dynamic>>(

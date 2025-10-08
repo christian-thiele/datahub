@@ -5,6 +5,7 @@ import 'package:datahub/utils.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/icons.dart';
 import 'package:datahub_aperture/services.dart';
+import 'package:datahub_aperture/src/data/aperture_data_repository_adapter.dart';
 import 'package:datahub_aperture/src/data/aperture_data_resource.dart';
 
 import 'meta/aperture_relation.dart';
@@ -21,17 +22,21 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
   @override
   late final List<ApertureResource> resources;
 
+  @override
+  final String baseUrl;
+
   ApertureConfigDataDelegate({
     this.title = 'Aperture',
     this.theme = const ApertureTheme(),
     List<ApertureDataResource> dataResources = const [],
+    required this.baseUrl,
   }) {
     resources = [
       for (final res in dataResources)
         ApertureResource(
           description: buildDescription(res, dataResources.map((e) => e.bean)),
-          repository: res.repository,
-        )
+          repository: ApertureDataRepositoryAdapter(repository: res.repository),
+        ),
     ];
   }
 
@@ -42,9 +47,7 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
     final bean = resource.bean;
     final repository = resource.repository;
 
-    final relations = bean.meta.whereType<ApertureRelation>().map((meta) {
-      final idField = bean.idField ?? (throw MissingIdFieldError(bean));
-
+    final relations = bean.allMetaOfType<ApertureRelation>().map((meta) {
       final relatedBean = beans.firstWhere(
         (e) => e.type == meta.type,
         orElse: () => throw ApiError(
@@ -52,7 +55,7 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
       );
 
       final relationIdField = relatedBean.fields.firstWhere(
-        (f) => f.meta.whereType<RelationId>().any((m) => m.type == bean.type),
+        (f) => f.hasMetaOfType<RelationId>((m) => m.type == bean.type),
         orElse: () => throw ApiError(
           'Data class ${relatedBean.name} does not provide RelationId for relation to ${bean.name}.',
         ),
@@ -65,12 +68,12 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
         filter: ResourceRelationFilter(
           fieldId: relationIdField.name,
           type: ResourceFilterType.equals,
-          valueFieldId: idField.name,
+          valueFieldId: bean.requireIdField.name,
         ),
       );
     }).toList();
 
-    final meta = bean.meta.whereType<Meta>().firstOrNull;
+    final meta = bean.metaOfType<Meta>();
 
     return ResourceDescription(
       id: bean.name,
@@ -79,7 +82,7 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
       icon: meta?.icon ?? Icons.data_object,
       readOnly: repository is! ApertureResourceWriteRepository,
       fields: [
-        for (final field in bean.fields) _fieldDescription(bean, field),
+        for (final field in bean.fields) _fieldDescription(bean, field, beans),
       ],
       relations: relations,
       idField: bean.fields
@@ -95,11 +98,24 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
     );
   }
 
-  static ResourceField _fieldDescription(DataBean bean, DataField field) {
-    final meta = field.meta.whereType<Meta>().firstOrNull;
-    final apertureMeta = field.meta.whereType<ApertureField>().firstOrNull;
+  static ResourceField _fieldDescription(
+      DataBean bean, DataField field, Iterable<DataBean> beans) {
+    final meta = field.metaOfType<Meta>();
+    final apertureMeta = field.metaOfType<ApertureField>();
     final validation = field.constraintOfType<RegExpConstraint>();
     final length = field.constraintOfType<MaxLengthConstraint>();
+
+    final ResourceFieldLookup? lookup;
+    if (field.metaOfType<RelationId>() case final relationId?) {
+      final relationBean = beans.firstWhere((e) => e.type == relationId.type);
+      lookup = ResourceFieldLookup(
+        resourceId: relationBean.name,
+        resourceFieldId: relationBean.requireIdField.name,
+        filter: ResourceRelationFilter(),
+      );
+    } else {
+      lookup = null;
+    }
 
     return ResourceField(
       id: field.name,
@@ -110,19 +126,19 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
       length: length?.length,
       type: _fieldType(field),
       nullable: field.type.isNullable,
-      objectDescription: _objectDescription(field, meta, apertureMeta),
+      objectDescription: _objectDescription(field, beans),
       enumValues: field
           .constraintOfType<EnumConstraint>()
           ?.values
           .map((e) => e.name)
           .toList(),
+      lookup: lookup,
     );
   }
 
   static List<ResourceField>? _objectDescription(
     DataField field,
-    Meta? meta,
-    ApertureField? apertureMeta,
+    Iterable<DataBean> beans,
   ) {
     if (field case DataField<dynamic, List?>()) {
       return [
@@ -130,11 +146,12 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
           id: 'element',
           name: '',
           type: _fieldListElementType(field),
-          readOnly: apertureMeta?.readOnly ?? false,
+          readOnly: field.metaOfType<ApertureField>()?.readOnly ?? false,
           nullable: false,
           objectDescription: [
             if (field.dataBean case final bean?)
-              for (final field in bean.fields) _fieldDescription(bean, field),
+              for (final field in bean.fields)
+                _fieldDescription(bean, field, beans),
           ],
           enumValues: field
               .constraintOfType<EnumConstraint>()
@@ -147,7 +164,7 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
 
     return [
       if (field.dataBean case final bean?)
-        for (final field in bean.fields) _fieldDescription(bean, field),
+        for (final field in bean.fields) _fieldDescription(bean, field, beans),
     ];
   }
 

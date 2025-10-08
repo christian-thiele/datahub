@@ -8,17 +8,18 @@ class LineString extends Geometry {
   final List<Point> points;
 
   const LineString(int? srid, this.points, bool hasZ, bool hasM)
-      : super(srid, GeometryType.lineString, hasZ, hasM);
+    : super(srid, GeometryType.lineString, hasZ, hasM);
 
   factory LineString.read(
-      int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
+    int? srid,
+    ByteDataReader reader,
+    bool hasZ,
+    bool hasM,
+  ) {
     final length = reader.readUint32();
     return LineString(
       srid,
-      List.generate(
-        length,
-        (i) => Point.read(srid, reader, hasZ, hasM),
-      ),
+      List.generate(length, (i) => Point.read(srid, reader, hasZ, hasM)),
       hasZ,
       hasM,
     );

@@ -8,14 +8,20 @@ class GeometryCollection extends Geometry {
   final List<Geometry> geometry;
 
   const GeometryCollection(int? srid, this.geometry, bool hasZ, bool hasM)
-      : super(srid, GeometryType.geometryCollection, hasZ, hasM);
+    : super(srid, GeometryType.geometryCollection, hasZ, hasM);
 
-  const GeometryCollection.empty(
-      {int? srid, bool hasZ = false, bool hasM = false})
-      : this(srid, const <Geometry>[], hasZ, hasM);
+  const GeometryCollection.empty({
+    int? srid,
+    bool hasZ = false,
+    bool hasM = false,
+  }) : this(srid, const <Geometry>[], hasZ, hasM);
 
   factory GeometryCollection.read(
-      int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
+    int? srid,
+    ByteDataReader reader,
+    bool hasZ,
+    bool hasM,
+  ) {
     final length = reader.readUint32();
     return GeometryCollection(
       srid,

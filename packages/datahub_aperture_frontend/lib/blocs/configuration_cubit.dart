@@ -8,9 +8,8 @@ part 'configuration_state.dart';
 
 class ConfigurationCubit extends Cubit<ConfigurationState> {
   final ResourcesRepository _resourcesRepository;
-  final Authentication _authentication;
 
-  ConfigurationCubit(this._resourcesRepository, this._authentication)
+  ConfigurationCubit(this._resourcesRepository)
     : super(ConfigurationLoading(initial: true)) {
     update();
   }
@@ -21,9 +20,7 @@ class ConfigurationCubit extends Cubit<ConfigurationState> {
     }
 
     try {
-      final resources = await _resourcesRepository.getDescriptions(
-        _authentication,
-      );
+      final resources = await _resourcesRepository.getDescriptions();
 
       emit(ConfigurationValue(resources: resources));
     } catch (e) {

@@ -12,7 +12,7 @@ class ServerSocketAdapter extends StreamView<io.Socket>
   final StreamController<io.Socket> _controller;
 
   ServerSocketAdapter._(this.address, this.port, this._controller)
-      : super(_controller.stream);
+    : super(_controller.stream);
 
   factory ServerSocketAdapter(io.InternetAddress address, int port) {
     return ServerSocketAdapter._(address, port, StreamController<io.Socket>());

@@ -14,8 +14,10 @@ bool isValidPackageName(String packageName) {
 
 void assertValidPackageName(String packageName) {
   if (!isValidPackageName(packageName)) {
-    throw CliException('Invalid project name "$packageName".\n'
-        'Valid project are lower snake case and must not start with a number.');
+    throw CliException(
+      'Invalid project name "$packageName".\n'
+      'Valid project are lower snake case and must not start with a number.',
+    );
   }
 }
 
@@ -40,18 +42,28 @@ Future<YamlMap> readPubspec() async {
   return loadYaml(pubspecRaw);
 }
 
-Future<void> dart(String args,
-    {Directory? baseDir, bool verbose = false}) async {
+Future<void> dart(
+  String args, {
+  Directory? baseDir,
+  bool verbose = false,
+}) async {
   await command('dart', args, baseDir: baseDir, verbose: verbose);
 }
 
-Future<void> docker(String args,
-    {Directory? baseDir, bool verbose = false}) async {
+Future<void> docker(
+  String args, {
+  Directory? baseDir,
+  bool verbose = false,
+}) async {
   await command('docker', args, baseDir: baseDir, verbose: verbose);
 }
 
-Future<void> command(String program, String args,
-    {Directory? baseDir, bool verbose = false}) async {
+Future<void> command(
+  String program,
+  String args, {
+  Directory? baseDir,
+  bool verbose = false,
+}) async {
   final process = await Process.start(
     program,
     args.split(' '),
@@ -66,16 +78,14 @@ Future<void> command(String program, String args,
     ]);
     stdout.writeln();
   } else {
-    await Future.wait([
-      process.stdout.drain(),
-      process.stderr.drain(),
-    ]);
+    await Future.wait([process.stdout.drain(), process.stderr.drain()]);
   }
 
   final exitCode = await process.exitCode;
   if (exitCode > 0) {
     throw CliException(
-        'Call "$program $args" failed with exit code $exitCode.');
+      'Call "$program $args" failed with exit code $exitCode.',
+    );
   }
 }
 
@@ -130,19 +140,21 @@ class LineTransformer extends StreamTransformerBase<Uint8List, String> {
   }
 
   void _onListen() {
-    _subscription = _source.transform(utf8.decoder).listen(
-      (event) {
-        final lines = '${_current ?? ''}$event'.split('\n');
-        for (final l in lines.take(lines.length - 1)) {
-          _controller.add(l);
-        }
-        _current = lines.last;
-      },
-      onDone: () {
-        _current?.apply(_controller.add);
-        _controller.close();
-      },
-      onError: _controller.addError,
-    );
+    _subscription = _source
+        .transform(utf8.decoder)
+        .listen(
+          (event) {
+            final lines = '${_current ?? ''}$event'.split('\n');
+            for (final l in lines.take(lines.length - 1)) {
+              _controller.add(l);
+            }
+            _current = lines.last;
+          },
+          onDone: () {
+            _current?.apply(_controller.add);
+            _controller.close();
+          },
+          onError: _controller.addError,
+        );
   }
 }

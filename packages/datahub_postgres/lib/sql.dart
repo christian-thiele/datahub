@@ -9,3 +9,4 @@ export 'src/sql/sql_qualified_relation.dart';
 export 'src/sql/sql_select.dart';
 export 'src/sql/sql_update.dart';
 export 'src/sql/sql_delete.dart';
+export 'src/sql/sql_join.dart';

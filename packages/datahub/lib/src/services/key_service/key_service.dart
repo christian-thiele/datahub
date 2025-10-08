@@ -1,38 +1,71 @@
 import 'dart:convert';
 
+import 'package:datahub/config.dart';
 import 'package:pointycastle/pointycastle.dart';
 
-import 'package:datahub/ioc.dart';
 import 'package:datahub/rest_client.dart';
 import 'package:datahub/utils.dart';
 
 import 'cache_key.dart';
+
+import 'dart:async';
+import 'package:datahub/scaffold.dart';
 
 /// This service provides a centralized cache for public keys.
 ///
 /// Keys for JWT validation are often fetched from JSON Web Key Sets (JWKS).
 /// Since key sets provide unique key-ids for every key, fetching the same key
 /// over and over is not necessary when validating keys from the same issuer.
-///
-/// You can disable the key cache by setting the `datahub.enableKeyCache`
-/// configuration value to false.
-class KeyService extends BaseService {
-  late final _enableCache = config<bool?>('enableKeyCache') ?? true;
-
-  final _JWKCache = <CacheKey, RSAPublicKey>{};
-  final _openIdCache = <Uri, Uri>{};
-
-  KeyService() : super('datahub');
-
+abstract interface class KeyCache {
   /// Fetches the OAuth public key with id [kid] from [issuer].
   ///
   /// Keys are cached by default to avoid unnecessary requests.
   /// You can disable the key cache by setting the `datahub.enableKeyCache`
   /// configuration value to false.
-  Future<RSAPublicKey> getOAuthKey(Uri issuer, String alg, String kid,
-      {bool forceFetch = false}) async {
-    if (_enableCache && !forceFetch && _openIdCache.containsKey(issuer)) {
-      return await getJWKSKey(_openIdCache[issuer]!, alg, kid);
+  Future<RSAPublicKey> getOAuthKey(
+    Uri issuer,
+    String alg,
+    String kid, {
+    bool forceFetch = false,
+  });
+
+  Future<RSAPublicKey> getJwksKey(
+    Uri jwksUri,
+    String alg,
+    String kid, {
+    bool forceFetch = false,
+  });
+
+  void clearCache();
+}
+
+class KeyService implements Service {
+  final Config<bool> enable;
+
+  KeyService({
+    this.enable = const Config('enableKeyCache', defaultValue: true),
+  });
+
+  @override
+  ServiceInstance<KeyService> createInstance() => _KeyServiceInstance();
+}
+
+class _KeyServiceInstance extends ServiceInstance<KeyService>
+    implements KeyCache {
+  final _jwkCache = <CacheKey, RSAPublicKey>{};
+  final _openIdCache = <Uri, Uri>{};
+
+  @override
+  Future<RSAPublicKey> getOAuthKey(
+    Uri issuer,
+    String alg,
+    String kid, {
+    bool forceFetch = false,
+  }) async {
+    if (read(service.enable) &&
+        !forceFetch &&
+        _openIdCache.containsKey(issuer)) {
+      return await getJwksKey(_openIdCache[issuer]!, alg, kid);
     }
 
     final issuerClient = await RestClient.connect(issuer);
@@ -50,17 +83,24 @@ class KeyService extends BaseService {
       }
 
       final jwksUri = Uri.parse(openIdConfig['jwks_uri']);
-      return await getJWKSKey(jwksUri, alg, kid);
+      return await getJwksKey(jwksUri, alg, kid);
     } finally {
       await issuerClient.close();
     }
   }
 
-  Future<RSAPublicKey> getJWKSKey(Uri jwksUri, String alg, String kid,
-      {bool forceFetch = false}) async {
+  @override
+  Future<RSAPublicKey> getJwksKey(
+    Uri jwksUri,
+    String alg,
+    String kid, {
+    bool forceFetch = false,
+  }) async {
     final cacheKey = CacheKey(jwksUri, alg, kid);
-    if (_enableCache && !forceFetch && _JWKCache.containsKey(cacheKey)) {
-      return _JWKCache[cacheKey]!;
+    if (read(service.enable) &&
+        !forceFetch &&
+        _jwkCache.containsKey(cacheKey)) {
+      return _jwkCache[cacheKey]!;
     }
 
     final jwksClient = await RestClient.connect(jwksUri);
@@ -77,8 +117,8 @@ class KeyService extends BaseService {
             final n = _decodeBigInt(base64Decode(addBase64Padding(key['n'])));
             final e = _decodeBigInt(base64Decode(addBase64Padding(key['e'])));
             final pub = RSAPublicKey(n, e);
-            if (_enableCache) {
-              return _JWKCache[cacheKey] = pub;
+            if (read(service.enable)) {
+              return _jwkCache[cacheKey] = pub;
             } else {
               return pub;
             }
@@ -94,9 +134,9 @@ class KeyService extends BaseService {
     throw Exception('Key not found in JWKS.');
   }
 
-  /// Clear all caches.
+  @override
   void clearCache() {
-    _JWKCache.clear();
+    _jwkCache.clear();
     _openIdCache.clear();
   }
 

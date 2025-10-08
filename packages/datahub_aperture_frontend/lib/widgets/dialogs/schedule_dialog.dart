@@ -3,7 +3,9 @@ import 'package:datahub_aperture_frontend/widgets/form_fields/date_time_form_fie
 import 'package:flutter/material.dart';
 
 class ScheduleDialog extends StatefulWidget {
-  const ScheduleDialog({super.key});
+  final String title;
+
+  const ScheduleDialog({super.key, required this.title});
 
   @override
   State<ScheduleDialog> createState() => _ScheduleDialogState();
@@ -24,10 +26,7 @@ class _ScheduleDialogState extends State<ScheduleDialog> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             spacing: 16,
             children: [
-              Text(
-                S.of(context).scheduleRevision,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
               DateTimeFormField(
                 decoration: InputDecoration(icon: Icon(Icons.calendar_month)),
                 value: value,

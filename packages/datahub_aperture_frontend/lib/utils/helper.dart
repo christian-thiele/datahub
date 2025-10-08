@@ -156,8 +156,26 @@ dynamic _decodeField(
 }
 
 extension ResourceDescriptionExtension on ResourceDescription {
+  ResourceField? _fieldOf(ResourceField? parent, String path) {
+    final parts = path.split('.');
+    final ResourceField? field;
+    if (parent == null) {
+      field = fields.where((e) => e.id == parts.first).firstOrNull;
+    } else {
+      field = parent.objectDescription
+          ?.where((e) => e.id == parts.first)
+          .firstOrNull;
+    }
+
+    if (parts.length > 1 && field != null) {
+      return _fieldOf(field, parts.skip(1).join('.'));
+    } else {
+      return field;
+    }
+  }
+
   ResourceField getField(String id) => fields.firstWhere(
-    (e) => e.id == id,
+    (e) => e.id == id.split('.').first,
     orElse: () =>
         throw Exception('Could not find field $id on resource ${this.id}.'),
   );

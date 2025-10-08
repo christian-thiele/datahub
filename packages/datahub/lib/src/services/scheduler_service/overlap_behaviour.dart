@@ -6,5 +6,5 @@ enum OverlapBehaviour {
   throttle,
 
   /// Execute task regardless of any previous executions.
-  concurrent
+  concurrent,
 }

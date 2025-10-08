@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:math' show Random;
 import 'dart:typed_data';
 
 import 'package:test/test.dart';
@@ -22,13 +23,13 @@ void main() {
     test('List<int>', _encodeListInt);
     test('List<DateTime>', _encodeListDateTime);
   });
-/*
+
   group('Encode Map', () {
     test('Map<String, String>', _encodeMapString);
-    test('Map<String, int>', _encodeMapInt);
+    /*test('Map<String, int>', _encodeMapInt);
     test('Map<String, DateTime>', _encodeMapDateTime);
     test('Map<String, Uint8List>', _encodeMapUint8List);
-    test('Map<String, dynamic>', _encodeMapDynamic);
+    test('Map<String, dynamic>', _encodeMapDynamic);*/
   });
 
   group('Decode', () {
@@ -40,7 +41,7 @@ void main() {
     test('Duration', _decodeDuration);
     test('Uint8List', _decodeUint8List);
   });
-
+  /*
   group('Decode List', () {
     test('List<String>', _decodeListString);
     test('List<int>', _decodeListInt);
@@ -58,15 +59,19 @@ void main() {
 void _encodeString() {
   expect(codec.encodeString('123'), equals('123'));
   expect(
-      codec.encodeNullable<String>('123', codec.encodeString), equals('123'));
+    codec.encodeNullable<String>('123', codec.encodeString),
+    equals('123'),
+  );
   expect(codec.encodeString(''), equals(''));
   expect(codec.encodeNullable<String>(null, codec.encodeString), equals(null));
 }
 
 void _encodeDouble() {
   expect(codec.encodeDouble(123.456), equals(123.456));
-  expect(codec.encodeNullable<double>(123.456, codec.encodeDouble),
-      equals(123.456));
+  expect(
+    codec.encodeNullable<double>(123.456, codec.encodeDouble),
+    equals(123.456),
+  );
   expect(codec.encodeNullable<double>(123, codec.encodeDouble), equals(123.0));
   expect(codec.encodeNullable<double>(null, codec.encodeDouble), equals(null));
 }
@@ -84,58 +89,74 @@ void _encodeBool() {
 }
 
 void _encodeDateTime() {
-  expect(codec.encodeDateTime(DateTime.utc(2022, 06, 15)),
-      equals(DateTime.utc(2022, 06, 15).toIso8601String()));
   expect(
-      codec.encodeNullable<DateTime>(
-          DateTime.utc(1999, 12, 31), codec.encodeDateTime),
-      equals(DateTime.utc(1999, 12, 31).toIso8601String()));
+    codec.encodeDateTime(DateTime.utc(2022, 06, 15)),
+    equals(DateTime.utc(2022, 06, 15).toIso8601String()),
+  );
   expect(
-      codec.encodeNullable<DateTime>(null, codec.encodeDateTime), equals(null));
+    codec.encodeNullable<DateTime>(
+      DateTime.utc(1999, 12, 31),
+      codec.encodeDateTime,
+    ),
+    equals(DateTime.utc(1999, 12, 31).toIso8601String()),
+  );
+  expect(
+    codec.encodeNullable<DateTime>(null, codec.encodeDateTime),
+    equals(null),
+  );
 }
 
 void _encodeDuration() {
-  expect(codec.encodeDuration(Duration(days: 50)),
-      equals(Duration(days: 50).inMilliseconds));
   expect(
-      codec.encodeNullable<Duration>(
-          Duration(seconds: 12), codec.encodeDuration),
-      equals(Duration(seconds: 12).inMilliseconds));
+    codec.encodeDuration(Duration(days: 50)),
+    equals(Duration(days: 50).inMilliseconds),
+  );
   expect(
-      codec.encodeNullable<Duration>(null, codec.encodeDuration), equals(null));
+    codec.encodeNullable<Duration>(Duration(seconds: 12), codec.encodeDuration),
+    equals(Duration(seconds: 12).inMilliseconds),
+  );
+  expect(
+    codec.encodeNullable<Duration>(null, codec.encodeDuration),
+    equals(null),
+  );
 }
 
 void _encodeUint8List() {
   final bytes = randomBytes(256).toList();
 
-  expect(codec.encodeUint8List(Uint8List.fromList(bytes)),
-      equals(base64Encode(bytes)));
+  expect(
+    codec.encodeUint8List(Uint8List.fromList(bytes)),
+    equals(base64Encode(bytes)),
+  );
 }
 
 void _encodeListString() {
-  expect(codec.encodeList<String>(['123', '456', '789'], codec.encodeString),
-      equals(['123', '456', '789']));
+  expect(
+    codec.encodeList<String>(['123', '456', '789'], codec.encodeString),
+    equals(['123', '456', '789']),
+  );
   expect(codec.encodeList<String>([], codec.encodeString), equals([]));
-  expect(codec.encodeList<String>(['123', '456', '789'], codec.encodeString),
-      equals(['123', '456', '789']));
+  expect(
+    codec.encodeList<String>(['123', '456', '789'], codec.encodeString),
+    equals(['123', '456', '789']),
+  );
 }
 
 void _encodeListInt() {
-  expect(codec.encodeList<int>([123, 456, 789], codec.encodeInt),
-      equals([123, 456, 789]));
+  expect(
+    codec.encodeList<int>([123, 456, 789], codec.encodeInt),
+    equals([123, 456, 789]),
+  );
   expect(codec.encodeList<int>([], codec.encodeInt), equals([]));
 }
 
 void _encodeListDateTime() {
   expect(
-    codec.encodeList(
-      [
-        DateTime.utc(2022, 12, 10),
-        DateTime.utc(2020, 2, 5),
-        DateTime.utc(1999, 2, 3),
-      ],
-      codec.encodeDateTime,
-    ),
+    codec.encodeList([
+      DateTime.utc(2022, 12, 10),
+      DateTime.utc(2020, 2, 5),
+      DateTime.utc(1999, 2, 3),
+    ], codec.encodeDateTime),
     equals([
       DateTime.utc(2022, 12, 10).toIso8601String(),
       DateTime.utc(2020, 2, 5).toIso8601String(),
@@ -143,14 +164,11 @@ void _encodeListDateTime() {
     ]),
   );
   expect(
-    codec.encodeList(
-      [
-        DateTime.utc(2022, 12, 10),
-        DateTime.utc(2020, 2, 5),
-        DateTime.utc(1999, 2, 3),
-      ],
-      codec.encodeDateTime,
-    ),
+    codec.encodeList([
+      DateTime.utc(2022, 12, 10),
+      DateTime.utc(2020, 2, 5),
+      DateTime.utc(1999, 2, 3),
+    ], codec.encodeDateTime),
     equals([
       DateTime.utc(2022, 12, 10).toIso8601String(),
       DateTime.utc(2020, 2, 5).toIso8601String(),
@@ -158,14 +176,11 @@ void _encodeListDateTime() {
     ]),
   );
   expect(
-    codec.encodeList<DateTime?>(
-      [
-        DateTime.utc(2022, 12, 10),
-        null,
-        DateTime.utc(1999, 2, 3),
-      ],
-      (v) => codec.encodeNullable(v, codec.encodeDateTime),
-    ),
+    codec.encodeList<DateTime?>([
+      DateTime.utc(2022, 12, 10),
+      null,
+      DateTime.utc(1999, 2, 3),
+    ], (v) => codec.encodeNullable(v, codec.encodeDateTime)),
     equals([
       DateTime.utc(2022, 12, 10).toIso8601String(),
       null,
@@ -173,35 +188,26 @@ void _encodeListDateTime() {
     ]),
   );
 }
-/*
 
 void _encodeMapString() {
   expect(
-    codec.encodeMap<Map<String, String>, String>(
-        {'key1': 'value1', 'key2': 'value2'}),
+    codec.encodeMap({'key1': 'value1', 'key2': 'value2'}, codec.encodeString),
     equals({'key1': 'value1', 'key2': 'value2'}),
   );
   expect(
-    codec.encodeMap<Map<String, String>?, String>(
-        {'key1': 'value1', 'key2': 'value2'}),
+    codec.encodeMap({'key1': 'value1', 'key2': 'value2'}, codec.encodeString),
     equals({'key1': 'value1', 'key2': 'value2'}),
   );
   expect(
-    codec.encodeMap<Map<String, String>?, String>(null),
-    equals(null),
-  );
-  expect(
-    codec.encodeMap<Map<String, String?>, String?>(
-        {'key1': 'value1', 'key2': null}),
-    equals({'key1': 'value1', 'key2': null}),
-  );
-  expect(
-    codec.encodeMap<Map<String, String?>?, String?>(
-        {'key1': 'value1', 'key2': null}),
+    codec.encodeMap<String?>({
+      'key1': 'value1',
+      'key2': null,
+    }, (v) => codec.encodeNullable(v, codec.encodeString)),
     equals({'key1': 'value1', 'key2': null}),
   );
 }
 
+/*
 void _encodeMapInt() {
   expect(
     codec.encodeMap<Map<String, int>, int>({'key1': 123, 'key2': 456}),
@@ -323,108 +329,156 @@ void _encodeMapDynamic() {
     equals(null),
   );
 }
-
+*/
 void _decodeString() {
-  expect(codec.decode<String>('abc'), equals('abc'));
-  expect(codec.decode<String>(123.456), equals('123.456'));
-  expect(codec.decode<String>(true), equals('true'));
+  expect(codec.decodeTyped<String>('abc'), equals('abc'));
+  expect(codec.decodeTyped<String>(123.456), equals('123.456'));
+  expect(codec.decodeTyped<String>(true), equals('true'));
   expect(
-      codec.decodeNullable<String>('abc', codec.decodeString), equals('abc'));
-  expect(codec.decodeNullable<String>(123.456, codec.decodeString),
-      equals('123.456'));
+    codec.decodeNullable<String>('abc', codec.decodeString),
+    equals('abc'),
+  );
   expect(
-      codec.decodeNullable<String>(true, codec.decodeString), equals('true'));
+    codec.decodeNullable<String>(123.456, codec.decodeString),
+    equals('123.456'),
+  );
+  expect(
+    codec.decodeNullable<String>(true, codec.decodeString),
+    equals('true'),
+  );
   expect(codec.decodeNullable<String>(null, codec.decodeString), equals(null));
 
-  expect(() => codec.decode<String>(null), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<String>([]), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<String>(Object()), throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<String>([], codec.decodeString),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<String>(Object(, codec.decodeString)),
-      throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<String>(null), throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<String>([]), throwsA(isA<CodecException>()));
+  expect(
+    () => codec.decodeTyped<String>(Object()),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<String>([], codec.decodeString),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<String>(Object(), codec.decodeString),
+    throwsA(isA<CodecException>()),
+  );
 }
 
 void _decodeDouble() {
-  expect(codec.decode<double>(123.456), equals(123.456));
-  expect(codec.decode<double>('123.456'), equals(123.456));
-  expect(codec.decode<double>(123), equals(123));
-  expect(codec.decode<double>('123'), equals(123));
-  expect(codec.decodeNullable<double>(123.456, codec.decodeDouble),
-      equals(123.456));
-  expect(codec.decodeNullable<double>('123.456', codec.decodeDouble),
-      equals(123.456));
+  expect(codec.decodeTyped<double>(123.456), equals(123.456));
+  expect(codec.decodeTyped<double>('123.456'), equals(123.456));
+  expect(codec.decodeTyped<double>(123), equals(123));
+  expect(codec.decodeTyped<double>('123'), equals(123));
+  expect(
+    codec.decodeNullable<double>(123.456, codec.decodeDouble),
+    equals(123.456),
+  );
+  expect(
+    codec.decodeNullable<double>('123.456', codec.decodeDouble),
+    equals(123.456),
+  );
   expect(codec.decodeNullable<double>(123, codec.decodeDouble), equals(123));
   expect(codec.decodeNullable<double>('123', codec.decodeDouble), equals(123));
   expect(codec.decodeNullable<double>(null, codec.decodeDouble), equals(null));
 
-  expect(() => codec.decode<double>(null), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<double>([]), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<double>(Object()), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<double>(true), throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<double>([], codec.decodeDouble),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<double>(Object(, codec.decodeDouble)),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<double>(true, codec.decodeDouble),
-      throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<double>(null), throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<double>([]), throwsA(isA<CodecException>()));
+  expect(
+    () => codec.decodeTyped<double>(Object()),
+    throwsA(isA<CodecException>()),
+  );
+  expect(() => codec.decodeTyped<double>(true), throwsA(isA<CodecException>()));
+  expect(
+    () => codec.decodeNullable<double>([], codec.decodeDouble),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<double>(Object(), codec.decodeDouble),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<double>(true, codec.decodeDouble),
+    throwsA(isA<CodecException>()),
+  );
 }
 
 void _decodeInt() {
-  expect(codec.decode<int>(123), equals(123));
-  expect(codec.decode<int>('123'), equals(123));
+  expect(codec.decodeTyped<int>(123), equals(123));
+  expect(codec.decodeTyped<int>('123'), equals(123));
   expect(codec.decodeNullable<int>(123, codec.decodeInt), equals(123));
   expect(codec.decodeNullable<int>('123', codec.decodeInt), equals(123));
   expect(codec.decodeNullable<int>(null, codec.decodeInt), equals(null));
 
-  expect(() => codec.decode<int>(null), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<int>([]), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<int>(Object()), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<int>(true), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<int>(123.4), throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<int>([], codec.decodeInt),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<int>(Object(, codec.decodeInt)),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<int>(true, codec.decodeInt),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<int>(123.4, codec.decodeInt),
-      throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<int>(null), throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<int>([]), throwsA(isA<CodecException>()));
+  expect(
+    () => codec.decodeTyped<int>(Object()),
+    throwsA(isA<CodecException>()),
+  );
+  expect(() => codec.decodeTyped<int>(true), throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<int>(123.4), throwsA(isA<CodecException>()));
+  expect(
+    () => codec.decodeNullable<int>([], codec.decodeInt),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<int>(Object(), codec.decodeInt),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<int>(true, codec.decodeInt),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<int>(123.4, codec.decodeInt),
+    throwsA(isA<CodecException>()),
+  );
 }
 
 void _decodeNum() {
-  expect(codec.decode<num>(123.456), equals(123.456));
-  expect(codec.decode<num>('123.456'), equals(123.456));
-  expect(codec.decode<num>(123), equals(123));
-  expect(codec.decode<num>('123'), equals(123));
+  expect(codec.decodeTyped<num>(123.456), equals(123.456));
+  expect(codec.decodeTyped<num>('123.456'), equals(123.456));
+  expect(codec.decodeTyped<num>(123), equals(123));
+  expect(codec.decodeTyped<num>('123'), equals(123));
   expect(codec.decodeNullable<num>(123.456, codec.decodeNum), equals(123.456));
   expect(
-      codec.decodeNullable<num>('123.456', codec.decodeNum), equals(123.456));
+    codec.decodeNullable<num>('123.456', codec.decodeNum),
+    equals(123.456),
+  );
   expect(codec.decodeNullable<num>(123, codec.decodeNum), equals(123));
   expect(codec.decodeNullable<num>('123', codec.decodeNum), equals(123));
   expect(codec.decodeNullable<num>(null, codec.decodeNum), equals(null));
 
-  expect(() => codec.decode<num>(null), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<num>([]), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<num>(Object()), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<num>(true), throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<num>([], codec.decodeNum),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<num>(Object(, codec.decodeNum)),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<num>(true, codec.decodeNum),
-      throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<num>(null), throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<num>([]), throwsA(isA<CodecException>()));
+  expect(
+    () => codec.decodeTyped<num>(Object()),
+    throwsA(isA<CodecException>()),
+  );
+  expect(() => codec.decodeTyped<num>(true), throwsA(isA<CodecException>()));
+  expect(
+    () => codec.decodeNullable<num>([], codec.decodeNum),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<num>(Object(), codec.decodeNum),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<num>(true, codec.decodeNum),
+    throwsA(isA<CodecException>()),
+  );
 }
 
 void _decodeBool() {
-  expect(codec.decode<bool>(1), equals(true));
-  expect(codec.decode<bool>(100), equals(true));
-  expect(codec.decode<bool>(0), equals(false));
-  expect(codec.decode<bool>(-10), equals(false));
-  expect(codec.decode<bool>(true), equals(true));
-  expect(codec.decode<bool>(false), equals(false));
-  expect(codec.decode<bool>('true'), equals(true));
-  expect(codec.decode<bool>('false'), equals(false));
+  expect(codec.decodeTyped<bool>(1), equals(true));
+  expect(codec.decodeTyped<bool>(100), equals(true));
+  expect(codec.decodeTyped<bool>(0), equals(false));
+  expect(codec.decodeTyped<bool>(-10), equals(false));
+  expect(codec.decodeTyped<bool>(true), equals(true));
+  expect(codec.decodeTyped<bool>(false), equals(false));
+  expect(codec.decodeTyped<bool>('true'), equals(true));
+  expect(codec.decodeTyped<bool>('false'), equals(false));
   expect(codec.decodeNullable<bool>(1, codec.decodeBool), equals(true));
   expect(codec.decodeNullable<bool>(100, codec.decodeBool), equals(true));
   expect(codec.decodeNullable<bool>(0, codec.decodeBool), equals(false));
@@ -435,121 +489,193 @@ void _decodeBool() {
   expect(codec.decodeNullable<bool>('false', codec.decodeBool), equals(false));
   expect(codec.decodeNullable<bool>(null, codec.decodeBool), equals(null));
 
-  expect(() => codec.decode<bool>(null), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<bool>('abc'), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<bool>([]), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<bool>(Object()), throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<bool>([], codec.decodeBool),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<bool>(Object(, codec.decodeBool)),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<bool>('abc', codec.decodeBool),
-      throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<bool>(null), throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<bool>('abc'), throwsA(isA<CodecException>()));
+  expect(() => codec.decodeTyped<bool>([]), throwsA(isA<CodecException>()));
+  expect(
+    () => codec.decodeTyped<bool>(Object()),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<bool>([], codec.decodeBool),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<bool>(Object(), codec.decodeBool),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<bool>('abc', codec.decodeBool),
+    throwsA(isA<CodecException>()),
+  );
 }
 
 void _decodeDateTime() {
   //TODO tests for local datetime (problematic on different machines)
   expect(
-      codec.decode<DateTime>(DateTime(2022, 10, 10, 20, 10).toIso8601String()),
-      equals(DateTime(2022, 10, 10, 20, 10)));
-  expect(codec.decode<DateTime>(DateTime(2022, 10, 10, 20, 10).toString()),
-      equals(DateTime(2022, 10, 10, 20, 10)));
+    codec.decodeTyped<DateTime>(
+      DateTime.utc(2022, 10, 10, 20, 10).toIso8601String(),
+    ),
+    equals(DateTime.utc(2022, 10, 10, 20, 10)),
+  );
   expect(
-      codec.decode<DateTime>(
-          DateTime(2022, 10, 10, 20, 10).millisecondsSinceEpoch),
-      equals(DateTime(2022, 10, 10, 20, 10)));
-  expect(codec.decodeNullable<DateTime>(
-      DateTime(2022, 10, 10, 20, 10, codec.decodeDateTime).toIso8601String()),
-      equals(DateTime(2022, 10, 10, 20, 10)));
-  expect(codec.decodeNullable<DateTime>(
-      DateTime(2022, 10, 10, 20, 10, codec.decodeDateTime).toString()),
-      equals(DateTime(2022, 10, 10, 20, 10)));
+    codec.decodeTyped<DateTime>(DateTime.utc(2022, 10, 10, 20, 10).toString()),
+    equals(DateTime.utc(2022, 10, 10, 20, 10)),
+  );
   expect(
-      codec.decodeNullable<DateTime>(
-          DateTime(2022, 10, 10, 20, 10, codec.decodeDateTime)
-              .millisecondsSinceEpoch),
-      equals(DateTime(2022, 10, 10, 20, 10)));
+    codec.decodeTyped<DateTime>(
+      DateTime.utc(2022, 10, 10, 20, 10).millisecondsSinceEpoch,
+    ),
+    equals(DateTime.utc(2022, 10, 10, 20, 10)),
+  );
   expect(
-      codec.decodeNullable<DateTime>(null, codec.decodeDateTime), equals(null));
+    codec.decodeNullable<DateTime>(
+      DateTime.utc(2022, 10, 10, 20, 10).toIso8601String(),
+      codec.decodeDateTime,
+    ),
+    equals(DateTime.utc(2022, 10, 10, 20, 10)),
+  );
+  expect(
+    codec.decodeNullable<DateTime>(
+      DateTime.utc(2022, 10, 10, 20, 10).toString(),
+      codec.decodeDateTime,
+    ),
+    equals(DateTime.utc(2022, 10, 10, 20, 10)),
+  );
+  expect(
+    codec.decodeNullable<DateTime>(
+      DateTime.utc(2022, 10, 10, 20, 10).millisecondsSinceEpoch,
+      codec.decodeDateTime,
+    ),
+    equals(DateTime.utc(2022, 10, 10, 20, 10)),
+  );
+  expect(
+    codec.decodeNullable<DateTime>(null, codec.decodeDateTime),
+    equals(null),
+  );
 
-  expect(() => codec.decode<DateTime>(null), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<DateTime>([]), throwsA(isA<CodecException>()));
   expect(
-          () => codec.decode<DateTime>(Object()),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decode<DateTime>(true), throwsA(isA<CodecException>()));
-  expect(() => codec.decode<DateTime>(123.4), throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<DateTime>([], codec.decodeDateTime),
-      throwsA(isA<CodecException>()));
+    () => codec.decodeTyped<DateTime>(null),
+    throwsA(isA<CodecException>()),
+  );
+  expect(() => codec.decodeTyped<DateTime>([]), throwsA(isA<CodecException>()));
   expect(
-          () => codec.decode<DateTime?>(Object()),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<DateTime>(true, codec.decodeDateTime),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<DateTime>(123.4, codec.decodeDateTime),
-      throwsA(isA<CodecException>()));
+    () => codec.decodeTyped<DateTime>(Object()),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeTyped<DateTime>(true),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeTyped<DateTime>(123.4),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<DateTime>([], codec.decodeDateTime),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeTyped<DateTime?>(Object()),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<DateTime>(true, codec.decodeDateTime),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<DateTime>(123.4, codec.decodeDateTime),
+    throwsA(isA<CodecException>()),
+  );
 }
 
 void _decodeDuration() {
-  expect(codec.decodeDuration(Duration(seconds: 50).inMilliseconds),
-      equals(Duration(seconds: 50)));
-  expect(codec.decodeDuration(Duration(days: 100).inMilliseconds),
-      equals(Duration(days: 100)));
-  expect(codec.decode<Duration?>(Duration(seconds: 50).inMilliseconds),
-      equals(Duration(seconds: 50)));
-  expect(codec.decode<Duration?>(Duration(days: 100).inMilliseconds),
-      equals(Duration(days: 100)));
   expect(
-      codec.decodeNullable<Duration>(null, codec.decodeDuration), equals(null));
+    codec.decodeDuration(Duration(seconds: 50).inMilliseconds),
+    equals(Duration(seconds: 50)),
+  );
+  expect(
+    codec.decodeDuration(Duration(days: 100).inMilliseconds),
+    equals(Duration(days: 100)),
+  );
+  expect(
+    codec.decodeTyped<Duration?>(Duration(seconds: 50).inMilliseconds),
+    equals(Duration(seconds: 50)),
+  );
+  expect(
+    codec.decodeTyped<Duration?>(Duration(days: 100).inMilliseconds),
+    equals(Duration(days: 100)),
+  );
+  expect(
+    codec.decodeNullable<Duration>(null, codec.decodeDuration),
+    equals(null),
+  );
 
   expect(() => codec.decodeDuration(null), throwsA(isA<CodecException>()));
   expect(() => codec.decodeDuration([]), throwsA(isA<CodecException>()));
-  expect(
-          () => codec.decodeDuration(Object()), throwsA(isA<CodecException>()));
+  expect(() => codec.decodeDuration(Object()), throwsA(isA<CodecException>()));
   expect(() => codec.decodeDuration(true), throwsA(isA<CodecException>()));
   expect(() => codec.decodeDuration(123.4), throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<Duration>([], codec.decodeDuration),
-      throwsA(isA<CodecException>()));
   expect(
-          () => codec.decode<Duration?>(Object()),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<Duration>(true, codec.decodeDuration),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<Duration>(123.4, codec.decodeDuration),
-      throwsA(isA<CodecException>()));
+    () => codec.decodeNullable<Duration>([], codec.decodeDuration),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeTyped<Duration?>(Object()),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<Duration>(true, codec.decodeDuration),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<Duration>(123.4, codec.decodeDuration),
+    throwsA(isA<CodecException>()),
+  );
 }
 
 void _decodeUint8List() {
   final random = Random();
-  final bytes =
-  Uint8List.fromList(List.generate(256, (index) => random.nextInt(256)));
+  final bytes = Uint8List.fromList(
+    List.generate(256, (index) => random.nextInt(256)),
+  );
 
   expect(codec.decodeUint8List(bytes), equals(bytes));
   expect(codec.decodeUint8List(base64Encode(bytes)), equals(bytes));
-  expect(codec.decodeNullable<Uint8List>(bytes, codec.decodeUint8List),
-      equals(bytes));
-  expect(codec.decode<Uint8List?>(base64Encode(bytes)), equals(bytes));
-  expect(codec.decodeNullable<Uint8List>(null, codec.decodeUint8List),
-      equals(null));
+  expect(
+    codec.decodeNullable<Uint8List>(bytes, codec.decodeUint8List),
+    equals(bytes),
+  );
+  expect(codec.decodeTyped<Uint8List?>(base64Encode(bytes)), equals(bytes));
+  expect(
+    codec.decodeNullable<Uint8List>(null, codec.decodeUint8List),
+    equals(null),
+  );
 
   expect(() => codec.decodeUint8List(null), throwsA(isA<CodecException>()));
-  expect(
-          () => codec.decodeUint8List(Object()),
-      throwsA(isA<CodecException>()));
+  expect(() => codec.decodeUint8List(Object()), throwsA(isA<CodecException>()));
   expect(() => codec.decodeUint8List(true), throwsA(isA<CodecException>()));
   expect(() => codec.decodeUint8List(123.4), throwsA(isA<CodecException>()));
   expect(() => codec.decodeUint8List('XX'), throwsA(isA<FormatException>()));
   expect(
-          () => codec.decode<Uint8List?>(Object()),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<Uint8List>(true, codec.decodeUint8List),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<Uint8List>(123.4, codec.decodeUint8List),
-      throwsA(isA<CodecException>()));
-  expect(() => codec.decodeNullable<Uint8List>('XX', codec.decodeUint8List),
-      throwsA(isA<FormatException>()));
+    () => codec.decodeTyped<Uint8List?>(Object()),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<Uint8List>(true, codec.decodeUint8List),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<Uint8List>(123.4, codec.decodeUint8List),
+    throwsA(isA<CodecException>()),
+  );
+  expect(
+    () => codec.decodeNullable<Uint8List>('XX', codec.decodeUint8List),
+    throwsA(isA<FormatException>()),
+  );
 }
 
+/*
 void _decodeListString() {
   expect(
       codec.decodeList(['123', '456', '789']), equals(['123', '456', '789']));

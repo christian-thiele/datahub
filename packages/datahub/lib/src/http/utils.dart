@@ -23,8 +23,9 @@ Map<String, List<String>> http1Headers(io.HttpHeaders headers) {
 (Map<String, String>, Map<String, List<String>>) http2Headers(
   List<http2.Header> headers,
 ) {
-  final rawHeaders =
-      headers.map((e) => MapEntry(utf8.decode(e.name), utf8.decode(e.value)));
+  final rawHeaders = headers.map(
+    (e) => MapEntry(utf8.decode(e.name), utf8.decode(e.value)),
+  );
 
   final decodedHeaders = rawHeaders.split((h) => h.key.startsWith(':'));
   final pseudoHeaders = Map.fromEntries(decodedHeaders.$1);
@@ -47,8 +48,10 @@ Encoding? getEncodingFromHeaders(Map<String, List<String>> headers) {
   if (headers.containsKey(HttpHeaders.contentType)) {
     final contentType = headers[HttpHeaders.contentType]!.first;
     final parts = contentType.split(';');
-    final charsetMatch =
-        parts.map((p) => charsetRegExp.firstMatch(p)).nonNulls.firstOrNull;
+    final charsetMatch = parts
+        .map((p) => charsetRegExp.firstMatch(p))
+        .nonNulls
+        .firstOrNull;
 
     return Encoding.getByName(charsetMatch?.group(1));
   } else {

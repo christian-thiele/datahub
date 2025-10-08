@@ -1,7 +1,10 @@
 import 'dart:async';
 
-import 'package:datahub/services.dart';
 import 'package:datahub/utils.dart';
+
+import 'metric.dart';
+import 'metric_sample.dart';
+import 'sample_group.dart';
 
 /// A gauge metric for use with [TelemetryService].
 ///
@@ -25,14 +28,14 @@ import 'package:datahub/utils.dart';
 class GaugeMetric extends Metric {
   final _series = <GaugeSeries>[];
 
-  GaugeMetric(
-    super.name, {
-    super.help,
-    Map<String, List<String>>? labels,
-  }) : super(type: MetricType.counter) {
+  GaugeMetric(super.name, {super.help, Map<String, List<String>>? labels})
+    : super(type: MetricType.counter) {
     if (labels != null) {
-      final combinations = everyCombination(labels.entries
-          .map((e) => e.value.map((value) => MapEntry(e.key, value))));
+      final combinations = everyCombination(
+        labels.entries.map(
+          (e) => e.value.map((value) => MapEntry(e.key, value)),
+        ),
+      );
       for (final combination in combinations) {
         _series.add(GaugeSeries(Map.fromEntries(combination)));
       }
@@ -43,18 +46,10 @@ class GaugeMetric extends Metric {
 
   @override
   SampleGroup collect() {
-    return SampleGroup(
-      this,
-      [
-        for (final series in _series)
-          MetricSample(
-            name,
-            series.labels,
-            series._value,
-            DateTime.timestamp(),
-          ),
-      ],
-    );
+    return SampleGroup(this, [
+      for (final series in _series)
+        MetricSample(name, series.labels, series._value, DateTime.timestamp()),
+    ]);
   }
 
   GaugeSeries _findSeries(Map<String, String> labels) {
@@ -83,13 +78,15 @@ class GaugeMetric extends Metric {
   void setTimestamp(DateTime val, [Map<String, String> labels = const {}]) =>
       _findSeries(labels).setTimestamp(val);
 
-  T measureDuration<T>(T Function() delegate,
-          [Map<String, String> labels = const {}]) =>
-      _findSeries(labels).measureDuration(delegate);
+  T measureDuration<T>(
+    T Function() delegate, [
+    Map<String, String> labels = const {},
+  ]) => _findSeries(labels).measureDuration(delegate);
 
-  Future<T> measureDurationAsync<T>(Future<T> Function() delegate,
-          [Map<String, String> labels = const {}]) =>
-      _findSeries(labels).measureDurationAsync(delegate);
+  Future<T> measureDurationAsync<T>(
+    Future<T> Function() delegate, [
+    Map<String, String> labels = const {},
+  ]) => _findSeries(labels).measureDurationAsync(delegate);
 }
 
 class GaugeSeries {

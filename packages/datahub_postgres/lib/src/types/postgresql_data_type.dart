@@ -27,39 +27,37 @@ abstract class PostgresqlDataType<T> {
     };
   }
 
-  Sql sqlParam(T? value) => Sql.param<T>(value, this);
+  Sql sqlParam(T? value) => ParameterSql<T>(value, this);
 
   // TODO general literals not complete
   Sql sqlLiteral(T? value) => switch (value) {
-        String() => Sql.text(value),
-        Enum() => Sql.text(value.name),
-        int() || double() || bool() => Sql(value.toString()),
-        DateTime() => Sql('"${value.toIso8601String()}"'),
-        Map<String, dynamic>() || List<dynamic>() => Sql.combine([
-            Sql.text(jsonEncode(const JsonDataCodec().encodeDynamic(value))),
-            Sql('::jsonb'),
-          ]),
-        DataObject() => Sql.combine([
-            Sql.text(jsonEncode(value.toJson())),
-            Sql('::jsonb'),
-          ]),
-        Geometry() => Sql.combine([
-            Sql('ST_GeogFromWKB(\'\\x'),
-            Sql(value.toEWKB().toHexString()),
-            Sql('\'::bytea)'),
-          ]),
-        null => Sql('NULL'),
-        _ => throw Exception(
-            'Cannot provide SQL literal for value of type ${value.runtimeType}.'),
-      };
+    String() => Sql.text(value),
+    Enum() => Sql.text(value.name),
+    int() || double() || bool() => RawSql(value.toString()),
+    DateTime() => RawSql('"${value.toIso8601String()}"'),
+    Map<String, dynamic>() || List<dynamic>() => Sql.join([
+      Sql.text(jsonEncode(const JsonDataCodec().encodeDynamic(value))),
+      RawSql('::jsonb'),
+    ]),
+    DataObject() => Sql.text(jsonEncode(value.toJson())) + RawSql('::jsonb'),
+    Geometry() => Sql.function('ST_GeogFromWKB', [
+      RawSql('\'\\x') +
+          RawSql(value.toEWKB().toHexString()) +
+          RawSql('\'::bytea'),
+    ]),
+    null => RawSql('NULL'),
+    _ => throw Exception(
+      'Cannot provide SQL literal for value of type ${value.runtimeType}.',
+    ),
+  };
 
   static PostgresqlDataType findForDataField(DataField field) {
     return switch (field.type) {
       // plain types
       final t when t.isSubtypeOf<String?>() => const PostgresqlString(),
       final t when t.isSubtypeOf<Enum?>() => PostgresqlEnum(
-          values: field.constraints.whereType<EnumConstraint>().first.values,
-        ),
+        values: field.constraints.whereType<EnumConstraint>().first.values,
+      ),
       final t when t.isSubtypeOf<Enum?>() => const PostgresqlEnum(),
       final t when t.isSubtypeOf<int?>() => const PostgresqlInt(),
       final t when t.isSubtypeOf<double?>() => const PostgresqlDouble(),
@@ -67,25 +65,29 @@ abstract class PostgresqlDataType<T> {
       final t when t.isSubtypeOf<DateTime?>() => const PostgresqlDateTime(),
       final t when t.isSubtypeOf<Uint8List?>() => const PostgresqlByteArray(),
       final t when t.isSubtypeOf<Geometry?>() => const PostgisGeography(),
-      final t when t.isSubtypeOf<DataObject?>() =>
-        PostgresqlObject(field.toJson, field.fromJson),
+      final t when t.isSubtypeOf<DataObject?>() => PostgresqlObject(
+        field.toJson,
+        field.fromJson,
+      ),
       // list types
       final t when t.isSubtypeOf<List<String>?>() =>
         const PostgresqlStringArray(),
       final t when t.isSubtypeOf<List<Enum>?>() => PostgresqlEnumArray(
-          values: field.constraints.whereType<EnumConstraint>().first.values,
-        ),
+        values: field.constraints.whereType<EnumConstraint>().first.values,
+      ),
       final t when t.isSubtypeOf<List<int>?>() => const PostgresqlIntArray(),
       final t when t.isSubtypeOf<List<double>?>() =>
         const PostgresqlDoubleArray(),
       final t when t.isSubtypeOf<List<bool>?>() => const PostgresqlBoolArray(),
+
       // TODO not complete
       // map types
       // TODO not complete
       // json types
-
-      final t when t.isSubtypeOf<List<DataObject>?>() =>
-        PostgresqlObject(field.toJson, field.fromJson),
+      final t when t.isSubtypeOf<List<DataObject>?>() => PostgresqlObject(
+        field.toJson,
+        field.fromJson,
+      ),
       final t when t.isSubtypeOf<Map<DataObject, dynamic>?>() =>
         PostgresqlObject(field.toJson, field.fromJson),
       final t when t.isSubtypeOf<Map<String, dynamic>?>() =>

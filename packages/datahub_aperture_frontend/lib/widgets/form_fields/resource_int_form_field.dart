@@ -1,10 +1,11 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
-import 'package:datahub_aperture_frontend/widgets/form_fields/resource_form_field.dart';
+import 'package:datahub_aperture_frontend/widgets/form_fields/lookup_menu.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class ResourceIntFormField extends StatefulWidget {
   final InputDecoration decoration;
+  final ResourceFieldLookup? lookup;
   final int? value;
   final String? error;
   final bool isChanged;
@@ -17,6 +18,7 @@ class ResourceIntFormField extends StatefulWidget {
     this.error,
     this.isChanged = false,
     required this.onChanged,
+    this.lookup,
   });
 
   @override
@@ -24,6 +26,7 @@ class ResourceIntFormField extends StatefulWidget {
 }
 
 class _ResourceIntFormFieldState extends State<ResourceIntFormField> {
+  late final FocusNode _focusNode;
   late final TextEditingController _controller;
 
   String _valueToText(int? value) {
@@ -32,8 +35,16 @@ class _ResourceIntFormFieldState extends State<ResourceIntFormField> {
 
   @override
   void initState() {
-    _controller = TextEditingController(text: _valueToText(widget.value));
     super.initState();
+    _focusNode = FocusNode();
+    _controller = TextEditingController(text: _valueToText(widget.value));
+    _controller.addListener(() {
+      if (_controller.text != _valueToText(widget.value)) {
+        if (int.tryParse(_controller.text) case final value?) {
+          widget.onChanged?.call(value);
+        }
+      }
+    });
   }
 
   @override
@@ -46,24 +57,32 @@ class _ResourceIntFormFieldState extends State<ResourceIntFormField> {
 
   @override
   void dispose() {
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: _controller,
+    final field = TextFormField(
       decoration: widget.decoration,
-      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))],
+      focusNode: _focusNode,
+      controller: _controller,
+      inputFormatters: widget.lookup == null
+          ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))]
+          : null,
       readOnly: widget.onChanged == null,
-      onChanged: (_) {
-        if (_controller.text != _valueToText(widget.value)) {
-          if (int.tryParse(_controller.text) case final value?) {
-            widget.onChanged?.call(value);
-          }
-        }
-      },
     );
+
+    if (widget.lookup case final lookup?) {
+      return LookupMenu(
+        controller: _controller,
+        lookup: lookup,
+        focusNode: _focusNode,
+        child: field,
+      );
+    } else {
+      return field;
+    }
   }
 }

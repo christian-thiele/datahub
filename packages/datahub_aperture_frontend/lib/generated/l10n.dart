@@ -268,6 +268,36 @@ class S {
       args: [],
     );
   }
+
+  /// `Username`
+  String get username {
+    return Intl.message('Username', name: 'username', desc: '', args: []);
+  }
+
+  /// `Password`
+  String get password {
+    return Intl.message('Password', name: 'password', desc: '', args: []);
+  }
+
+  /// `Delete scheduled`
+  String get deleteScheduled {
+    return Intl.message(
+      'Delete scheduled',
+      name: 'deleteScheduled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Login via IDP`
+  String get loginAuthcode {
+    return Intl.message(
+      'Login via IDP',
+      name: 'loginAuthcode',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

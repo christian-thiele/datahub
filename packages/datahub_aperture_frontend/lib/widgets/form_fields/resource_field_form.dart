@@ -38,10 +38,14 @@ class ResourceFieldForm extends StatelessWidget {
           children: [
             for (final field in fields)
               LayoutItem(
-                preferSide: field.type == ResourceFieldType.geometry,
+                preferSide:
+                    field.type == ResourceFieldType.geometry ||
+                    field.type == ResourceFieldType.list,
                 child: ResourceFormField(
                   field: field,
-                  value: changes[field] ?? data.fieldData[field.id],
+                  value: changes.containsKey(field)
+                      ? changes[field]
+                      : data.fieldData[field.id],
                   error: validations[field],
                   isChanged: changes.containsKey(field),
                   onChanged: field.readOnly
@@ -72,7 +76,8 @@ class ResourceFieldForm extends StatelessWidget {
                 onPressed: () {
                   showDialog(
                     context: context,
-                    builder: (context) => ScheduleDialog(),
+                    builder: (context) =>
+                        ScheduleDialog(title: S.of(context).scheduleRevision),
                   ).then((result) {
                     if (result case DateTime liveDate) {
                       onSavePressed?.call(liveDate);

@@ -11,14 +11,12 @@ part 'resource_element_edit_state.dart';
 
 class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
   final ResourcesRepository _resourceRepository;
-  final Authentication _authentication;
   final String resourceId;
   final String elementId;
   final String? revisionId;
 
   ResourceElementEditCubit(
-    this._resourceRepository,
-    this._authentication, {
+    this._resourceRepository, {
     required this.resourceId,
     required this.elementId,
     this.revisionId,
@@ -33,13 +31,9 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
 
     emit(ResourceElementEditLoading());
     try {
-      final resource = await _resourceRepository.getDescription(
-        _authentication,
-        resourceId,
-      );
+      final resource = await _resourceRepository.getDescription(resourceId);
 
       final data = await _resourceRepository.getResourceElement(
-        _authentication,
         resourceId,
         elementId,
         revisionId: revisionId,
@@ -135,8 +129,11 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
       try {
         final validation = <ResourceField, String>{
           for (final field in state.resource.fields)
-            if (validateFieldValue(field, state.changes[field] ?? state.data.fieldData[field.id])
-            case final error?)
+            if (validateFieldValue(
+                  field,
+                  state.changes[field] ?? state.data.fieldData[field.id],
+                )
+                case final error?)
               field: error,
         };
 
@@ -156,7 +153,6 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
         final savingState = state.saving();
         emit(savingState);
         final updated = await _resourceRepository.updateElement(
-          _authentication,
           resourceId,
           elementId,
           state.changes.map((k, v) => MapEntry(k.id, v)),
@@ -166,10 +162,10 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
         emit(savingState.saved(updated));
       } catch (e) {
         if (e case ApiRequestException(
-        data: {'fields': final Map<String, dynamic> fieldErrors},
+          data: {'fields': final Map<String, dynamic> fieldErrors},
         )) {
           if (fieldErrors.keys.any(
-                (e) => state.resource.getField(e).readOnly,
+            (e) => state.resource.getField(e).readOnly,
           )) {
             return emit(ResourceElementEditError(message: e.toString()));
           }
@@ -184,7 +180,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
               validations: {
                 for (final (field, errors) in fieldErrors.tuples)
                   state.resource.fields.firstWhere((e) => e.id == field):
-                  errors.first,
+                      errors.first,
               },
             ),
           );
@@ -201,7 +197,6 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
         final savingState = state.saving();
         emit(savingState);
         final updated = await _resourceRepository.deleteElement(
-          _authentication,
           resourceId,
           elementId,
           revisionLive,

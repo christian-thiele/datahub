@@ -6,9 +6,9 @@ part of 'resource_elements_response.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ResourceElementsResponse
+abstract interface class $ResourceElementsResponse
     with DataObject<ResourceElementsResponse> {
-  const _ResourceElementsResponse();
+  const $ResourceElementsResponse();
   static const $$codec = JsonDataCodec();
   static final $total = DataField<ResourceElementsResponse, int?>(
     name: 'total',
@@ -28,9 +28,9 @@ abstract class _ResourceElementsResponse
   static final $data = DataField<ResourceElementsResponse, List<ResourceData>>(
     name: 'data',
     valueOf: (p) => p.data,
-    dataBean: () => ResourceData.bean,
+    dataBean: () => $ResourceData.bean,
     fromJson: (value, {String? name}) => $$codec.decodeList<ResourceData>(
-        value, ResourceData.bean.fromJson,
+        value, $ResourceData.bean.fromJson,
         name: name),
     toJson: (value) =>
         $$codec.encodeList<ResourceData>(value, (v) => v.toJson()),

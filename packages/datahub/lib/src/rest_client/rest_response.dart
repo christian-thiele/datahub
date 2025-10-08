@@ -3,12 +3,15 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
-
-import 'package:datahub/datahub.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/data.dart';
+import 'package:datahub/http.dart';
+import 'package:datahub/utils.dart';
 
 class RestResponse implements HttpResponse {
-  static final Finalizer<HttpResponse> _finalizer =
-      Finalizer((response) => response.bodyData.drain());
+  static final Finalizer<HttpResponse> _finalizer = Finalizer(
+    (response) => response.bodyData.drain(),
+  );
 
   final HttpResponse _httpResponse;
 
@@ -33,8 +36,9 @@ class RestResponse implements HttpResponse {
   /// Also [throwOnError] will drain the stream to parse error data in the case
   /// of a non-success status code.
   @override
-  Stream<List<int>> get bodyData => _httpResponse.bodyData
-      .transform(StreamListenHook(() => _finalizer.detach(this)));
+  Stream<List<int>> get bodyData => _httpResponse.bodyData.transform(
+    StreamListenHook(() => _finalizer.detach(this)),
+  );
 
   @override
   Encoding get charset => _httpResponse.charset ?? utf8;
@@ -198,13 +202,10 @@ class RestResponse implements HttpResponse {
           final textBody = await getTextBody();
           try {
             final jsonBody = jsonDecode(textBody) as Map<String, dynamic>;
-            throw ApiRequestException.fromResponse(
-              statusCode,
-              {
-                'statusCode': statusCode,
-                ...jsonBody,
-              },
-            );
+            throw ApiRequestException.fromResponse(statusCode, {
+              'statusCode': statusCode,
+              ...jsonBody,
+            });
           } on ApiRequestException catch (_) {
             rethrow;
           } catch (_) {
@@ -216,38 +217,29 @@ class RestResponse implements HttpResponse {
         } on ApiRequestException catch (_) {
           rethrow;
         } catch (e) {
-          throw ApiRequestException.fromResponse(
-            statusCode,
-            {
-              'statusCode': statusCode,
-              'clientError': 'Could not parse error response.',
-              'clientErrorDetails': e.toString(),
-            },
-          );
+          throw ApiRequestException.fromResponse(statusCode, {
+            'statusCode': statusCode,
+            'clientError': 'Could not parse error response.',
+            'clientErrorDetails': e.toString(),
+          });
         }
       } else if (Mime.fromContentType(headers['content-type']?.firstOrNull) ==
           Mime.plainText) {
         // Create exception data that are similar to datahub error responses for
         // servers that are not providing json error data.
         try {
-          throw ApiRequestException.fromResponse(
-            statusCode,
-            {
-              'statusCode': statusCode,
-              'errorMessage': await getTextBody(),
-            },
-          );
+          throw ApiRequestException.fromResponse(statusCode, {
+            'statusCode': statusCode,
+            'errorMessage': await getTextBody(),
+          });
         } on ApiRequestException catch (_) {
           rethrow;
         } catch (e) {
-          throw ApiRequestException.fromResponse(
-            statusCode,
-            {
-              'statusCode': statusCode,
-              'clientError': 'Could not parse error response.',
-              'clientErrorDetails': e.toString(),
-            },
-          );
+          throw ApiRequestException.fromResponse(statusCode, {
+            'statusCode': statusCode,
+            'clientError': 'Could not parse error response.',
+            'clientErrorDetails': e.toString(),
+          });
         }
       }
 
@@ -277,12 +269,12 @@ extension RestResponseFutureExtension on Future<RestResponse> {
       then((response) => response.getBody<TResponse>());
 
   Future<TResponse> thenGetData<TResponse extends DataObject<TResponse>>(
-          DataBean<TResponse> bean) =>
-      then((response) => response.getData<TResponse>(bean));
+    DataBean<TResponse> bean,
+  ) => then((response) => response.getData<TResponse>(bean));
 
   Future<List<TResponse>> thenGetList<TResponse extends DataObject<TResponse>>(
-          DataBean<TResponse> bean) =>
-      then((response) => response.getList<TResponse>(bean));
+    DataBean<TResponse> bean,
+  ) => then((response) => response.getList<TResponse>(bean));
 
   Future<Uint8List> thenGetByteBody<TResponse>() =>
       then((response) => response.getByteBody());

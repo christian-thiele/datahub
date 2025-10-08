@@ -1,8 +1,10 @@
 import 'dart:async';
 
-import 'package:datahub/ioc.dart';
-import 'package:datahub/services.dart';
+import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
+
+import 'overlap_behaviour.dart';
+import 'schedule.dart';
 
 typedef Task = FutureOr<void> Function();
 
@@ -25,11 +27,13 @@ class ScheduledTask {
 
   void _startNext([DateTime? execution]) {
     final nextExecution = schedule.findNext(execution);
-    _timer = Timer(nextExecution.difference(DateTime.now()),
-        () => _trigger(nextExecution));
+    _timer = Timer(
+      nextExecution.difference(DateTime.now()),
+      () => _trigger(nextExecution),
+    );
   }
 
-  Future<void> _trigger(execution) async {
+  Future<void> _trigger(DateTime execution) async {
     _timer = null;
     _startNext(execution);
     if (_running) {
@@ -41,26 +45,27 @@ class ScheduledTask {
       }
     }
     _running = true;
-    unawaited(runZonedGuarded(
-      () async {
-        try {
-          await task();
-        } finally {
-          _running = false;
-        }
-      },
-      (error, stack) {
-        resolve<LogService>().e(
-          'Scheduled execution threw exception:',
-          error: error,
-          trace: stack,
-          sender: 'Scheduler',
-        );
-      },
-      zoneValues: {
-        #schedulerExecutionId:
-            'ST:${taskId.toString().padLeft(2, '0')}:${randomHexId(2)}'
-      },
-    ));
+    unawaited(
+      runZonedGuarded(
+        () async {
+          try {
+            await task();
+          } finally {
+            _running = false;
+          }
+        },
+        (error, stack) {
+          log.error(
+            'Scheduled execution threw exception:',
+            error: error,
+            stack: stack,
+          );
+        },
+        zoneValues: {
+          #schedulerExecutionId:
+              'ST:${taskId.toString().padLeft(2, '0')}:${randomHexId(2)}',
+        },
+      ),
+    );
   }
 }

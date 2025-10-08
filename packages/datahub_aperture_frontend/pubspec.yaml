@@ -24,6 +24,8 @@ flutter_intl:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   flutter_localizations:
     sdk: flutter
 
@@ -43,6 +45,8 @@ dependencies:
 
   datahub: ^0.18.0-dev.1
   datahub_aperture: ^0.1.0-dev.1
+  url_launcher: ^6.3.2
+  pointycastle: ^4.0.0
 
 dev_dependencies:
   flutter_test:

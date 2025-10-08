@@ -1,11 +1,10 @@
 import 'dart:async';
 
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/telemetry.dart';
 
 //TODO docs
 class Pool<T> {
-  final _log = ServiceResolver.maybeCurrent?.resolveService<LogService?>();
   final _items = <_PoolItem<T>>[];
   final _taken = <_PoolItem<T>>{};
   final _queue = <Completer<_PoolItem<T>>>[];
@@ -79,8 +78,10 @@ class Pool<T> {
   /// The [timeout] can be set to null, which means never. In the worst case,
   /// this method can take up to [timeout] + [checkIsLiveTimeout] to complete
   /// with an item or an error.
-  Future<R> use<R>(FutureOr<R> Function(T) delegate,
-      {Duration? timeout}) async {
+  Future<R> use<R>(
+    FutureOr<R> Function(T) delegate, {
+    Duration? timeout,
+  }) async {
     final item = await take(timeout: timeout);
     try {
       return await delegate(item);
@@ -126,7 +127,8 @@ class Pool<T> {
           watch.stop();
           if (timeout == null || watch.elapsed < timeout) {
             return await _takeInternal(
-                timeout?.apply((t) => t - watch.elapsed));
+              timeout?.apply((t) => t - watch.elapsed),
+            );
           } else {
             throw TimeoutException('Pool: take() timed out after $timeout.');
           }
@@ -167,7 +169,7 @@ class Pool<T> {
 
   Future<bool> _isLive(_PoolItem<T> item) async {
     if (maxLifetime != null && item.age > maxLifetime!) {
-      _log?.verbose('Pool: Item reached max lifetime.');
+      log('Pool: Item reached max lifetime.');
       return false;
     }
 
@@ -178,16 +180,20 @@ class Pool<T> {
             try {
               return await isLiveFuture.timeout(checkIsLiveTimeout);
             } on TimeoutException catch (_) {
-              _log?.warn(
-                  'Pool: Liveness check timed out after $checkIsLiveTimeout.');
+              log.warn(
+                'Pool: Liveness check timed out after $checkIsLiveTimeout.',
+              );
               return false;
             }
           case bool isLive:
             return isLive;
         }
       } catch (e, stack) {
-        _log?.error('Pool: Liveness check threw exception.',
-            error: e, trace: stack);
+        log.error(
+          'Pool: Liveness check threw exception.',
+          error: e,
+          stack: stack,
+        );
         return false;
       }
     } else {
@@ -204,17 +210,17 @@ class Pool<T> {
     onChange?.call();
     try {
       onRemoveItem?.call(item).catchError((error, stack) {
-        _log?.warn(
+        log.warn(
           'Pool: onRemoveItem threw exception.',
           error: error,
-          trace: stack,
+          stack: stack,
         );
       });
     } catch (error, stack) {
-      _log?.warn(
+      log.warn(
         'Pool: onRemoveItem threw exception.',
         error: error,
-        trace: stack,
+        stack: stack,
       );
     }
   }

@@ -1,28 +1,25 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 
-class SqlInsert implements SqlBuilder {
+class SqlInsert with SqlBuilder {
   final SqlQualifiedRelation relation;
   final Map<SqlTypedAttribute, dynamic> values;
-  final SqlAttribute? returning;
+  final List<SqlAttribute> returning;
 
-  SqlInsert(this.relation, this.values, {this.returning});
+  const SqlInsert(this.relation, this.values, {this.returning = const []});
 
   @override
-  Sql toSql() => Sql.combine([
-        Sql('INSERT INTO '),
-        Sql(relation.toString()),
-        Sql(' ('),
-        values.keys.map((e) => e.toSql()).joinSql(', '),
-        Sql(') VALUES ('),
-        for (final (idx, (key, value)) in values.tuples.indexed) ...[
-          if (idx > 0) Sql(', '),
-          Sql.param(value, key.type),
-        ],
-        Sql(')'),
-        if (returning != null) ...[
-          Sql(' RETURNING '),
-          returning!.toSql(),
-        ],
-      ]);
+  Sql toSql() => Sql.join([
+    RawSql('INSERT INTO '),
+    relation.toSql(),
+    RawSql(' ('),
+    ...values.keys.map((e) => e.toSqlUnqualified()).separatedBy(RawSql(', ')),
+    RawSql(') VALUES ('),
+    ...values.entries
+        .map<Sql>((e) => ParameterSql(e.value, e.key.type))
+        .separatedBy(RawSql(', ')),
+    RawSql(')'),
+    if (returning.isNotEmpty) RawSql(' RETURNING '),
+    ...returning.cast<Sql>().separatedBy(RawSql(', ')),
+  ]);
 }

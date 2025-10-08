@@ -6,8 +6,8 @@ part of 'resource_data.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ResourceData with DataObject<ResourceData> {
-  const _ResourceData();
+abstract interface class $ResourceData with DataObject<ResourceData> {
+  const $ResourceData();
   static const $$codec = JsonDataCodec();
   static final $id = DataField<ResourceData, String>(
     name: 'id',
@@ -36,10 +36,10 @@ abstract class _ResourceData with DataObject<ResourceData> {
   static final $revisions = DataField<ResourceData, List<ResourceRevisionInfo>>(
     name: 'revisions',
     valueOf: (p) => p.revisions,
-    dataBean: () => ResourceRevisionInfo.bean,
+    dataBean: () => $ResourceRevisionInfo.bean,
     fromJson: (value, {String? name}) =>
         $$codec.decodeList<ResourceRevisionInfo>(
-            (value ?? const []), ResourceRevisionInfo.bean.fromJson,
+            (value ?? const []), $ResourceRevisionInfo.bean.fromJson,
             name: name),
     toJson: (value) =>
         $$codec.encodeList<ResourceRevisionInfo>(value, (v) => v.toJson()),

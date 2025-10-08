@@ -1,297 +1,120 @@
+import 'dart:async';
+
 import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/data.dart';
-import 'package:datahub_postgres/schema.dart';
-import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/services.dart';
-import 'package:datahub_postgres/src/types/types.dart';
-import 'package:postgres/postgres.dart' as pg;
+import 'package:meta/meta.dart';
 
-class PostgresqlDataRepository<DataType extends DataObject<DataType>>
-    extends PostgresqlRepository implements DataRepository<DataType> {
-  final String? relation;
-  late final PostgresqlDataRelation dataRelation;
-  @override
-  final DataBean<DataType> bean;
+@optionalTypeArgs
+mixin PostgresqlDataRepository<
+  TService extends Service,
+  DataType extends DataObject<DataType>
+>
+    on ServiceInstance<TService>
+    implements DataRepository<DataType> {
+  Find<Postgresql> get postgres => const Find<Postgresql>();
 
-  PostgresqlDataRepository({
-    super.config,
-    required this.bean,
-    this.relation,
-  });
+  Config<String> get schemaName =>
+      const Config<String>('schemaName', defaultValue: 'public');
 
-  @override
-  Future<void> initialize() async {
-    await super.initialize();
-    if (relation != null) {
-      final named = schema.relations.firstWhere(
-        (e) => e.name == relation,
-        orElse: () => throw ApiError('Relation "$relation" not found.'),
-      );
+  Config<String?> get relationName => const Config<String?>('relationName');
 
-      dataRelation = switch (named) {
-        final PostgresqlDataRelation named => named,
-        _ => throw ApiError(
-            'Relation "$relation" is not a PostgresqlDataRelation.'),
-      };
-    } else {
-      dataRelation =
-          schema.relations.whereType<PostgresqlDataRelation>().firstWhere(
-                (e) => e.bean == bean,
-                orElse: () =>
-                    throw ApiError('No matching relation found for $DataType.'),
-              );
-    }
-  }
+  late final PostgresqlDataRelation<DataType> dataRelation;
 
   @override
-  Future<DataType> create(DataType object) async {
-    return await runTransaction((context) async {
-      final primaryKey = _dataAttributes
-          .where((e) => e.hasConstraint<PrimaryKeyConstraint>())
-          .firstOrNull;
-      final result = await context.execute(
-        SqlInsert(
-          SqlQualifiedRelation(schema.name, dataRelation.name),
-          {
-            for (final attribute in _dataAttributes.where(
-                (e) => !e.hasConstraint<PrimaryKeyConstraint>((e) => e.auto)))
-              SqlTypedAttribute.of(attribute): attribute.field.valueOf(object),
-          },
-          returning:
-              primaryKey != null ? SqlTypedAttribute.of(primaryKey) : null,
-        ),
-      );
+  @mustCallSuper
+  FutureOr<void> initialize() async {
+    super.initialize();
 
-      if (result.firstOrNull?.firstOrNull case final id?) {
-        return await get(id) ??
-            (throw Exception(
-                'Could not retrieve created object from database.'));
-      } else {
-        return object;
-      }
+    dataRelation = PostgresqlDataTable(
+      bean: bean,
+      schemaName: read(schemaName),
+      name:
+          read(relationName) ??
+          toNamingConvention(bean.name, NamingConvention.lowerSnakeCase),
+    );
+
+    await find(postgres).runTransaction((context) async {
+      await dataRelation.relation.ensureRelation(context);
     });
   }
 
   @override
-  Future<List<DataType>> getAll({
+  Future<DataType> create(DataType object) async {
+    return await find(postgres).runTransaction((context) async {
+      return await dataRelation.insert(context, object);
+    });
+  }
+
+  @override
+  Future<DataType?> readById(dynamic id) async {
+    return await first(filter: identityFilter(bean, id));
+  }
+
+  @override
+  Future<List<DataType>> readAll({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int? offset,
     int? limit,
   }) async {
-    final result = await runTransaction((context) async {
-      return await context.execute(
-        SqlSelect(
-          SqlQualifiedRelation(schema.name, dataRelation.name),
-          [SqlWildcard()],
-          offset: offset ?? 0,
-          limit: limit ?? -1,
-          where: buildFilterSql(filter),
-        ),
-      );
-    });
-
-    return mapResult(result);
-  }
-
-  @override
-  Future<void> delete(dynamic id) async {
-    return await runTransaction((context) async {
-      await context.execute(
-        SqlDelete(
-          SqlQualifiedRelation(schema.name, dataRelation.name),
-          buildFilterSql(identityFilter(id)),
-        ),
+    return await find(postgres).runTransaction((context) async {
+      return await dataRelation.selectData(
+        context,
+        filter: filter,
+        sort: sort,
+        offset: offset ?? 0,
+        limit: limit ?? -1,
       );
     });
   }
 
   @override
-  Future<DataType?> get(dynamic id) async {
-    return await first(filter: identityFilter(id));
-  }
-
-  Future<DataType?> first({Filter filter = Filter.empty}) async {
-    final result = await runTransaction((context) async {
-      return await context.execute(
-        SqlSelect(
-          SqlQualifiedRelation(schema.name, dataRelation.name),
-          [SqlWildcard()],
-          limit: 1,
-          where: buildFilterSql(filter),
-        ),
-      );
-    });
-
-    if (result.isNotEmpty) {
-      return mapResultRow(result.first);
-    } else {
-      return null;
-    }
-  }
-
-  @override
-  Future<DataType> update(dynamic id, DataType object) async {
-    return await runTransaction((context) async {
-      await context.execute(
-        SqlUpdate(
-          SqlQualifiedRelation(schema.name, dataRelation.name),
-          buildFilterSql(identityFilter(id)),
-          {
-            for (final attribute in _dataAttributes.where(
-                (e) => !e.hasConstraint<PrimaryKeyConstraint>((e) => e.auto)))
-              SqlTypedAttribute.of(attribute): attribute.field.valueOf(object),
-          },
-        ),
-      );
-
-      return await get(id) ??
-          (throw Exception('Could not retrieve updated object from database.'));
-    });
-  }
-
-  List<DataType> mapResult(pg.Result result) {
-    final mapping = {
-      for (final attribute
-          in dataRelation.attributes.whereType<PostgresqlDataAttribute>())
-        attribute.field: result.schema.columns.indexWhere(
-          (e) => e.columnName == attribute.name,
-        )
-    };
-
-    final typeMapping = {
-      for (final attribute
-          in dataRelation.attributes.whereType<PostgresqlDataAttribute>())
-        attribute.field: attribute.type,
-    };
-
-    return result
-        .map(
-          (row) => bean.fromValues(
-            mapping.map((field, idx) =>
-                MapEntry(field.name, typeMapping[field]!.decode(row[idx]))),
-          ),
-        )
-        .toList();
-  }
-
-  DataType mapResultRow(pg.ResultRow row) {
-    final mapping = {
-      for (final attribute in _dataAttributes)
-        attribute.field: row.schema.columns.indexWhere(
-          (e) => e.columnName == attribute.name,
-        ),
-    };
-
-    return bean.fromValues(
-      mapping.map(
-        (field, idx) => MapEntry(
-          field.name,
-          PostgresqlDataType.findForDataField(field).decode(row[idx]),
-        ),
-      ),
+  Future<bool> updateById(DataType element) async {
+    final affected = await updateAll(
+      filter: identityFilter(bean, bean.requireIdField.valueOf(element)),
+      values: {
+        for (final field in bean.fields.where((e) => !e.hasMetaOfType<Id>()))
+          field: field.valueOf(element),
+      },
     );
+    return affected > 0;
   }
 
-  Filter identityFilter(dynamic id) {
-    return Filter.equals(
-      bean.idField ?? (throw MissingIdFieldError(bean)),
-      _typedId(id),
+  @override
+  Future<int> updateAll({
+    required Filter filter,
+    required Map<DataField<DataType, dynamic>, dynamic> values,
+  }) async {
+    return await find(postgres).runTransaction((context) async {
+      return await dataRelation.update(context, filter, values);
+    });
+  }
+
+  @override
+  Future<bool> deleteById(dynamic id) async {
+    final affected = await deleteAll(filter: identityFilter(bean, id));
+    return affected > 0;
+  }
+
+  @override
+  Future<int> deleteAll({required Filter filter}) async {
+    return await find(postgres).runTransaction((context) async {
+      return await dataRelation.delete(context, filter);
+    });
+  }
+
+  Future<DataType?> first({
+    Filter filter = Filter.empty,
+    Sort sort = Sort.empty,
+    int offset = 0,
+  }) async {
+    final result = await readAll(
+      filter: filter,
+      sort: sort,
+      offset: offset,
+      limit: 1,
     );
+    return result.firstOrNull;
   }
-
-  dynamic _typedId(dynamic id) {
-    final idField = bean.idField ?? (throw MissingIdFieldError(bean));
-    return switch (idField.type) {
-      final t when t.isExact<int>() => switch (id) {
-          int() => id,
-          String() => int.parse(id),
-          _ => throw CodecException.typeMismatch(
-              int, id.runtimeType, idField.name),
-        },
-      final t when t.isExact<String>() => id.toString(),
-      _ => throw ApiError('Invalid Id type: ${idField.type.name}'),
-    };
-  }
-
-  Sql? buildFilterSql(Filter filter) {
-    return switch (filter) {
-      EmptyFilter() => null,
-      FilterGroup() => filter.filters
-          .map(buildFilterSql)
-          .nonNulls
-          .joinSql(filter.isConjunction ? ' AND ' : ' OR ')
-        ..wrap(),
-      CompareFilter(:final left, :final type, :final right) =>
-        _compareSql(left, type, right),
-    };
-  }
-
-  Sql _compareSql(Expression left, CompareType type, Expression right) {
-    final effectiveLeft = switch (left) {
-      FieldExpression(:final field) => _fieldAttribute(field),
-      ValueExpression(:final value) => value,
-    };
-
-    final effectiveRight = switch (right) {
-      FieldExpression(:final field) => _fieldAttribute(field),
-      ValueExpression(:final value) => value,
-    };
-
-    // TODO some rules and sanity checks maybe?
-
-    final leftType = switch (effectiveLeft) {
-      PostgresqlAttribute(:final type) => type,
-      final value => PostgresqlDataType.findForDynamic(value),
-    };
-
-    final leftSql = switch (effectiveLeft) {
-      PostgresqlAttribute(:final name) =>
-        Sql.qualifiedName([dataRelation.name, name]),
-      final value => PostgresqlDataType.findForDynamic(value).sqlParam(value),
-    };
-
-    final rightSql = switch (effectiveRight) {
-      PostgresqlAttribute(:final name) =>
-        Sql.qualifiedName([dataRelation.name, name]),
-      final value => PostgresqlDataType.findForDynamic(value).sqlParam(value),
-    };
-
-    return switch ((leftType, type)) {
-      (PostgresqlString(), CompareType.contains) =>
-        Sql.combine([leftSql, Sql(' ~* '), rightSql]),
-      (
-        PostgresqlStringArray() ||
-            PostgresqlIntArray() ||
-            PostgresqlDoubleArray() ||
-            PostgresqlBoolArray(),
-        CompareType.contains
-      ) =>
-        Sql.combine([rightSql, Sql(' = ANY('), leftSql, Sql(')')]),
-      _ => Sql.combine([
-          leftSql,
-          switch (type) {
-            CompareType.equals ||
-            CompareType.contains ||
-            CompareType.isIn =>
-              Sql(' = '),
-            CompareType.notEquals => Sql(' <> '),
-            CompareType.greaterThan => Sql(' > '),
-            CompareType.lessThan => Sql(' < '),
-            CompareType.greaterOrEqual => Sql(' >= '),
-            CompareType.lessOrEqual => Sql(' <= '),
-          },
-          rightSql,
-        ]),
-    };
-  }
-
-  PostgresqlAttribute _fieldAttribute(DataField field) =>
-      _dataAttributes.firstWhere((a) => a.field == field);
-
-  Iterable<PostgresqlDataAttribute> get _dataAttributes =>
-      dataRelation.attributes
-          .whereType<PostgresqlDataAttribute>()
-          .where((attribute) => attribute.field.dataType.isExact<DataType>());
 }
-

@@ -11,7 +11,7 @@ class Point extends Geometry {
   final double? m;
 
   const Point(int? srid, this.x, this.y, [this.z, this.m])
-      : super(srid, GeometryType.point, z != null, m != null);
+    : super(srid, GeometryType.point, z != null, m != null);
 
   factory Point.read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
     return Point(

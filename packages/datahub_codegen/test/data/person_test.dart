@@ -17,7 +17,7 @@ void main() {
 
     print(jsonEncode(person));
 
-    final other = Person.bean.fromJson(jsonDecode(jsonEncode(person)));
+    final other = $Person.bean.fromJson(jsonDecode(jsonEncode(person)));
     print(jsonEncode(person));
 
     expect(person == other, isTrue);

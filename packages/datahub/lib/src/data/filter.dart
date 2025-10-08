@@ -1,4 +1,5 @@
 import 'expression.dart';
+import 'sort.dart';
 
 /// Representing filter arguments in a uniform, abstract way.
 sealed class Filter {
@@ -54,10 +55,7 @@ sealed class Filter {
   }
 
   /// Assembles the smallest representation of [filters] combined.
-  static Filter _optimizedGroup(
-    Iterable<Filter> filters,
-    bool isConjunction,
-  ) {
+  static Filter _optimizedGroup(Iterable<Filter> filters, bool isConjunction) {
     return FilterGroup(filters.toList(growable: false), isConjunction).reduce();
   }
 }
@@ -143,4 +141,82 @@ final class EmptyFilter extends Filter {
 
   @override
   Filter reduce() => this;
+}
+
+extension ExpressionFilterExtension on Expression {
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this equals [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter equals(dynamic other) =>
+      CompareFilter(this, CompareType.equals, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this does not equal [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter notEquals(dynamic other) =>
+      CompareFilter(this, CompareType.notEquals, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is greater than [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter greaterThan(dynamic other) =>
+      CompareFilter(this, CompareType.greaterThan, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is greater than or equals [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter greaterOrEqual(dynamic other) => CompareFilter(
+    this,
+    CompareType.greaterOrEqual,
+    Expression.dynamic(other),
+  );
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is less than [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter lessThan(dynamic other) =>
+      CompareFilter(this, CompareType.lessThan, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is less than or equals [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter lessOrEqual(dynamic other) =>
+      CompareFilter(this, CompareType.lessOrEqual, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this contains [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter contains(dynamic other) =>
+      CompareFilter(this, CompareType.contains, Expression.dynamic(other));
+
+  /// Convenience method for creating a CompareFilter which matches
+  /// if this is in [other].
+  ///
+  /// If [other] is not an [Expression], it will be wrapped into
+  /// a [ValueExpression].
+  Filter isIn(dynamic other) =>
+      CompareFilter(this, CompareType.isIn, Expression.dynamic(other));
+
+  /// Creates a [Sort] that orders ascending by this expression.
+  Sort asc() => sort(true);
+
+  /// Creates a [Sort] that orders descending by this expression.
+  Sort desc() => sort(false);
+
+  /// Creates a [Sort] that orders by this expression.
+  Sort sort(bool ascending) => ExpressionSort(this, ascending);
 }

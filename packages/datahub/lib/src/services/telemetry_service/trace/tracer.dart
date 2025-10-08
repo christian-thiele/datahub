@@ -38,21 +38,16 @@ class Tracer implements TelemetryScope {
   ) {
     final span = startSpan(name, attributes);
 
-    return runZoned(
-      () async {
-        try {
-          return await delegate();
-        } catch (error) {
-          span.addExceptionEvent(error);
-          rethrow;
-        } finally {
-          span.stop();
-        }
-      },
-      zoneValues: {
-        _tracerSpanKey: span,
-      },
-    );
+    return runZoned(() async {
+      try {
+        return await delegate();
+      } catch (error) {
+        span.addExceptionEvent(error);
+        rethrow;
+      } finally {
+        span.stop();
+      }
+    }, zoneValues: {_tracerSpanKey: span});
   }
 
   Span startSpan(

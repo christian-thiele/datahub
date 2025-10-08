@@ -11,12 +11,10 @@ part 'resource_element_create_state.dart';
 
 class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
   final ResourcesRepository _resourceRepository;
-  final Authentication _authentication;
   final String resourceId;
 
   ResourceElementCreateCubit(
-    this._resourceRepository,
-    this._authentication, {
+    this._resourceRepository, {
     required this.resourceId,
   }) : super(ResourceElementCreateLoading()) {
     _init();
@@ -25,10 +23,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
   Future<void> _init() async {
     emit(ResourceElementCreateLoading());
     try {
-      final resource = await _resourceRepository.getDescription(
-        _authentication,
-        resourceId,
-      );
+      final resource = await _resourceRepository.getDescription(resourceId);
 
       final fields = resource.fields.where((f) => !f.readOnly).toList();
 
@@ -85,8 +80,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
 
   Future<void> saveChanges({DateTime? revisionLive}) async {
     if (state case final ResourceElementCreateValue state
-        when state is! ResourceElementCreateSaving &&
-            state.changes.isNotEmpty) {
+        when state is! ResourceElementCreateSaving) {
       try {
         final validation = <ResourceField, String>{
           for (final field in state.description.fields)
@@ -109,7 +103,6 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
         final savingState = state.saving();
         emit(savingState);
         final updated = await _resourceRepository.createElement(
-          _authentication,
           resourceId,
           state.changes.map((key, value) => MapEntry(key.id, value)),
           revisionLive,
@@ -121,24 +114,27 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
         if (e case ApiRequestException(
           data: {'fields': final Map<String, dynamic> fieldErrors},
         )) {
-          if (fieldErrors.keys.any(
-            (e) => state.description.getField(e).readOnly,
-          )) {
-            return emit(ResourceElementCreateError(message: e.toString()));
-          }
+          try {
+            if (fieldErrors.keys.any(
+              (e) => state.description.getField(e).readOnly,
+            )) {
+              return emit(ResourceElementCreateError(message: e.toString()));
+            }
 
-          emit(
-            ResourceElementCreateEditing(
-              description: state.description,
-              fields: state.fields,
-              changes: state.changes,
-              validation: {
-                for (final (field, errors) in fieldErrors.tuples)
-                  state.description.fields.firstWhere((e) => e.id == field):
-                      errors.first,
-              },
-            ),
-          );
+            emit(
+              ResourceElementCreateEditing(
+                description: state.description,
+                fields: state.fields,
+                changes: state.changes,
+                validation: {
+                  for (final (field, errors) in fieldErrors.tuples)
+                    state.description.getField(field): errors.first,
+                },
+              ),
+            );
+          } catch (e) {
+            emit(ResourceElementCreateError(message: e.toString()));
+          }
         } else {
           emit(ResourceElementCreateError(message: e.toString()));
         }

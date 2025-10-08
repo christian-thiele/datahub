@@ -6,8 +6,8 @@ part of 'person.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _Person with DataObject<Person> {
-  const _Person();
+abstract interface class $Person with DataObject<Person> {
+  const $Person();
   static const $$codec = JsonDataCodec();
   static final $id = DataField<Person, int>(
     name: 'id',
@@ -15,9 +15,7 @@ abstract class _Person with DataObject<Person> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
-    meta: [
-      const Id(),
-    ],
+    meta: [const Id(auto: true)],
   );
 
   static final $firstName = DataField<Person, String>(
@@ -102,26 +100,34 @@ abstract class _Person with DataObject<Person> {
     }
     return Person(
       id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
-      firstName: $firstName.fromJson(data['firstName'],
-          name: DataCodec.childName(name, 'firstName')),
-      lastName: $lastName.fromJson(data['lastName'],
-          name: DataCodec.childName(name, 'lastName')),
-      birthday: $birthday.fromJson(data['birthday'],
-          name: DataCodec.childName(name, 'birthday')),
-      isSpecial: $isSpecial.fromJson(data['isSpecial'],
-          name: DataCodec.childName(name, 'isSpecial')),
+      firstName: $firstName.fromJson(
+        data['firstName'],
+        name: DataCodec.childName(name, 'firstName'),
+      ),
+      lastName: $lastName.fromJson(
+        data['lastName'],
+        name: DataCodec.childName(name, 'lastName'),
+      ),
+      birthday: $birthday.fromJson(
+        data['birthday'],
+        name: DataCodec.childName(name, 'birthday'),
+      ),
+      isSpecial: $isSpecial.fromJson(
+        data['isSpecial'],
+        name: DataCodec.childName(name, 'isSpecial'),
+      ),
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    final $data = this as Person;
+    final $$data = this as Person;
     return {
-      'id': $id.toJson($id.valueOf($data)),
-      'firstName': $firstName.toJson($firstName.valueOf($data)),
-      'lastName': $lastName.toJson($lastName.valueOf($data)),
-      'birthday': $birthday.toJson($birthday.valueOf($data)),
-      'isSpecial': $isSpecial.toJson($isSpecial.valueOf($data)),
+      'id': $id.toJson($$data.id),
+      'firstName': $firstName.toJson($$data.firstName),
+      'lastName': $lastName.toJson($$data.lastName),
+      'birthday': $birthday.toJson($$data.birthday),
+      'isSpecial': $isSpecial.toJson($$data.isSpecial),
     }..removeWhere((k, v) => v == null);
   }
 }

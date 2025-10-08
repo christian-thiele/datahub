@@ -28,7 +28,11 @@ class StatusCodeMatcher extends Matcher {
 
   @override
   Description describeMismatch(
-      item, Description mismatchDescription, Map matchState, bool verbose) {
+    item,
+    Description mismatchDescription,
+    Map matchState,
+    bool verbose,
+  ) {
     if (item is RestResponse) {
       return mismatchDescription.add('has status code <${item.statusCode}>');
     } else if (item is ApiResponse) {

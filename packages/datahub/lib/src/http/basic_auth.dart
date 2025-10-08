@@ -1,12 +1,11 @@
 import 'dart:convert';
 
 import 'package:boost/boost.dart';
-import 'package:datahub/api.dart';
 
-import 'bearer_auth.dart';
+import 'token_auth.dart';
 import 'http_headers.dart';
 
-class BasicAuth implements BearerAuth {
+class BasicAuth implements TokenAuth {
   @override
   final String prefix;
 
@@ -15,8 +14,10 @@ class BasicAuth implements BearerAuth {
 
   BasicAuth(this.username, this.password, {this.prefix = 'Basic '});
 
-  static BasicAuth? fromAuthorizationHeader(String token,
-      {String prefix = 'Basic '}) {
+  static BasicAuth? fromAuthorizationHeader(
+    String token, {
+    String prefix = 'Basic ',
+  }) {
     if (token.length > prefix.length && token.startsWith(prefix)) {
       final basicToken = token.substring(prefix.length);
       final decodedToken = utf8.decode(base64Decode(basicToken));
@@ -31,9 +32,11 @@ class BasicAuth implements BearerAuth {
     }
   }
 
-  static BasicAuth? fromRequest(ApiRequest request,
-      {String prefix = 'Basic '}) {
-    final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
+  static BasicAuth? fromRequest(
+    Map<String, List<String>> headers, {
+    String prefix = 'Basic ',
+  }) {
+    final token = headers[HttpHeaders.authorization]?.firstOrNull;
     if (nullOrWhitespace(token)) {
       return null;
     }

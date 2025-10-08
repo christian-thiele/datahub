@@ -5,7 +5,7 @@ import 'resource_revision_type.dart';
 part 'resource_revision_info.g.dart';
 
 @Data()
-class ResourceRevisionInfo extends _ResourceRevisionInfo {
+class ResourceRevisionInfo extends $ResourceRevisionInfo {
   final String id;
   final ResourceRevisionType type;
   final DateTime timestamp;
@@ -21,6 +21,4 @@ class ResourceRevisionInfo extends _ResourceRevisionInfo {
     required this.userId,
     required this.userName,
   });
-
-  static DataBean<ResourceRevisionInfo> get bean => _ResourceRevisionInfo.bean;
 }

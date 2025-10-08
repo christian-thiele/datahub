@@ -100,7 +100,8 @@ abstract class Geometry {
   Uint8List toEWKB({ByteOrder byteOrder = ByteOrder.wkbNDR}) {
     final builder = ByteDataWriter(endian: byteOrder.endian);
     builder.writeInt8(byteOrder.id);
-    final typeInt = type.id |
+    final typeInt =
+        type.id |
         (srid != null ? wkbSRID : 0) |
         (hasZ ? wkbZ : 0) |
         (hasM ? wkbM : 0);

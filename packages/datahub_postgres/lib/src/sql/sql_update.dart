@@ -1,7 +1,7 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 
-class SqlUpdate implements SqlBuilder {
+class SqlUpdate with SqlBuilder {
   final SqlQualifiedRelation relation;
   final Sql? where;
   final Map<SqlTypedAttribute, dynamic> values;
@@ -9,19 +9,16 @@ class SqlUpdate implements SqlBuilder {
   SqlUpdate(this.relation, this.where, this.values);
 
   @override
-  Sql toSql() => Sql.combine([
-        Sql('UPDATE '),
-        Sql(relation.toString()),
-        Sql(' SET '),
-        for (final (idx, (key, value)) in values.tuples.indexed) ...[
-          if (idx > 0) Sql(', '),
-          key.toSql(),
-          Sql(' = '),
-          Sql.param(value, key.type),
-        ],
-        if (where != null) ...[
-          Sql(' WHERE '),
-          where!,
-        ],
-      ]);
+  Sql toSql() => Sql.join([
+    RawSql('UPDATE '),
+    RawSql(relation.toString()),
+    RawSql(' SET '),
+    for (final (idx, (key, value)) in values.tuples.indexed) ...[
+      if (idx > 0) RawSql(', '),
+      key.toSql(),
+      RawSql(' = '),
+      ParameterSql(value, key.type),
+    ],
+    if (where != null) ...[RawSql(' WHERE '), where!],
+  ]);
 }

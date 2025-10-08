@@ -6,8 +6,8 @@ part of 'person.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _Person with DataObject<Person> {
-  const _Person();
+abstract interface class $Person with DataObject<Person> {
+  const $Person();
   static const $$codec = JsonDataCodec();
   static final $id = DataField<Person, int>(
     name: 'id',
@@ -154,16 +154,16 @@ abstract class _Person with DataObject<Person> {
 
   @override
   Map<String, dynamic> toJson() {
-    final $data = this as Person;
+    final $$data = this as Person;
     return {
-      'id': $id.toJson($id.valueOf($data)),
-      'firstName': $firstName.toJson($firstName.valueOf($data)),
-      'lastName': $lastName.toJson($lastName.valueOf($data)),
-      'phone': $phone.toJson($phone.valueOf($data)),
-      'email': $email.toJson($email.valueOf($data)),
-      'birthday': $birthday.toJson($birthday.valueOf($data)),
-      'isBlocked': $isBlocked.toJson($isBlocked.valueOf($data)),
-      'picture': $picture.toJson($picture.valueOf($data)),
+      'id': $id.toJson($$data.id),
+      'firstName': $firstName.toJson($$data.firstName),
+      'lastName': $lastName.toJson($$data.lastName),
+      'phone': $phone.toJson($$data.phone),
+      'email': $email.toJson($$data.email),
+      'birthday': $birthday.toJson($$data.birthday),
+      'isBlocked': $isBlocked.toJson($$data.isBlocked),
+      'picture': $picture.toJson($$data.picture),
     }..removeWhere((k, v) => v == null);
   }
 }

@@ -32,7 +32,7 @@ void main() {
           'but',
           'also',
           'By',
-          'Upper'
+          'Upper',
         ]),
       );
     });

@@ -1,7 +1,6 @@
 import 'dart:math';
 
 import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:uuid/uuid.dart';
 
@@ -70,7 +69,7 @@ const Map<int, String> _statusCodes = {
   507: 'Insufficient Storage',
   508: 'Loop Detected',
   510: 'Not Extended',
-  511: 'Network Authentication Required'
+  511: 'Network Authentication Required',
 };
 
 String getHttpStatus(int statusCode) =>
@@ -133,9 +132,9 @@ Iterable<int> randomBytes(int length) {
 }
 
 String randomHexId(int parts) {
-  return randomBytes(parts)
-      .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
-      .join(':');
+  return randomBytes(
+    parts,
+  ).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join(':');
 }
 
 bool deepListEquality<T>(List<T> list1, List<T> list2) {
@@ -224,3 +223,18 @@ typedef Test<T> = bool Function(T e);
 bool always(dynamic _) => true;
 
 T pass<T>(T e) => e;
+
+extension IterableSeparatedExtension<E> on Iterable<E> {
+  Iterable<E> separatedBy(E separator) sync* {
+    Iterator<E> iterator = this.iterator;
+    if (!iterator.moveNext()) {
+      return;
+    }
+    yield iterator.current;
+
+    while (iterator.moveNext()) {
+      yield separator;
+      yield iterator.current;
+    }
+  }
+}

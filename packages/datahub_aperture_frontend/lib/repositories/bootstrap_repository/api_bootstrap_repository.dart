@@ -4,21 +4,21 @@ import 'package:datahub_aperture/api.dart';
 import 'bootstrap_repository.dart';
 
 class ApiBootstrapRepository implements BootstrapRepository {
-  final Uri? selfUri;
+  final Uri baseUri;
 
-  ApiBootstrapRepository({this.selfUri});
+  ApiBootstrapRepository(this.baseUri);
 
   @override
   Future<ApertureBootstrap> fetch() async {
     final client = await RestClient.connect(
-      selfUri ?? Uri(scheme: 'http', host: 'localhost', port: 8080),
+      baseUri,
       timeout: const Duration(seconds: 10),
     );
 
     try {
       return await client
           .get('/api/bootstrap')
-          .thenGetData(ApertureBootstrap.bean);
+          .thenGetData($ApertureBootstrap.bean);
     } finally {
       client.close();
     }

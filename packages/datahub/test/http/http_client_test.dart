@@ -31,12 +31,9 @@ Future<void> _testAuto() async {
 }
 
 Future<void> _testClient(HttpClient httpClient) async {
-  final response = await httpClient.request(HttpRequest(
-    ApiRequestMethod.GET,
-    website,
-    {},
-    Stream.empty(),
-  ));
+  final response = await httpClient.request(
+    HttpRequest(HttpRequestMethod.get, website, {}, Stream.empty()),
+  );
 
   final encoding = getEncodingFromHeaders(response.headers) ?? utf8;
   final content = await encoding.decodeStream(response.bodyData);

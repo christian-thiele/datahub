@@ -1,4 +1,5 @@
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
+import 'package:datahub_aperture_frontend/widgets/dialogs/schedule_dialog.dart';
 import 'package:datahub_aperture_frontend/widgets/resources/revision_view.dart';
 import 'package:datahub_aperture_frontend/widgets/side_panel.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
@@ -23,7 +24,7 @@ class ResourceElementEditView extends StatelessWidget {
   final List<FilteredResource> relations;
 
   final void Function(DateTime? revisionLive)? onSavePressed;
-  final VoidCallback? onDeletePressed;
+  final void Function(DateTime? revisionLive)? onDeletePressed;
 
   final List<ActionModel> actions;
   final void Function(String)? onActionPressed;
@@ -87,10 +88,36 @@ class ResourceElementEditView extends StatelessWidget {
                       ),
 
                     if (onDeletePressed != null)
-                      FilledButton.icon(
-                        icon: Icon(Icons.delete_outline),
-                        label: Text(S.of(context).delete),
-                        onPressed: onDeletePressed,
+                      OptionsButton(
+                        onPressed: switch (onDeletePressed) {
+                          final call? => () => call(DateTime.timestamp()),
+                          _ => null,
+                        },
+                        menuEnabled: onDeletePressed != null,
+                        menuChildren: [
+                          MenuItemButton(
+                            child: IconText(
+                              Icons.schedule,
+                              S.of(context).deleteScheduled,
+                            ),
+                            onPressed: () {
+                              showDialog(
+                                context: context,
+                                builder: (context) => ScheduleDialog(
+                                  title: S.of(context).deleteScheduled,
+                                ),
+                              ).then((result) {
+                                if (result case DateTime liveDate) {
+                                  onDeletePressed?.call(liveDate);
+                                }
+                              });
+                            },
+                          ),
+                        ],
+                        child: IconText(
+                          Icons.delete_outline,
+                          S.of(context).delete,
+                        ),
                       ),
                   ],
                 ),

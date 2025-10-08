@@ -6,18 +6,19 @@ part of 'resource_relation_filter.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ResourceRelationFilter with DataObject<ResourceRelationFilter> {
-  const _ResourceRelationFilter();
+abstract interface class $ResourceRelationFilter
+    with DataObject<ResourceRelationFilter> {
+  const $ResourceRelationFilter();
   static const $$codec = JsonDataCodec();
   static final $or =
       DataField<ResourceRelationFilter, List<ResourceRelationFilter>?>(
     name: 'or',
     valueOf: (p) => p.or,
-    dataBean: () => ResourceRelationFilter.bean,
+    dataBean: () => $ResourceRelationFilter.bean,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
         (value ?? const []),
         (v, {String? name}) => $$codec.decodeList<ResourceRelationFilter>(
-            v, ResourceRelationFilter.bean.fromJson,
+            v, $ResourceRelationFilter.bean.fromJson,
             name: name),
         name: name),
     toJson: (value) => $$codec.encodeNullable(
@@ -30,11 +31,11 @@ abstract class _ResourceRelationFilter with DataObject<ResourceRelationFilter> {
       DataField<ResourceRelationFilter, List<ResourceRelationFilter>?>(
     name: 'and',
     valueOf: (p) => p.and,
-    dataBean: () => ResourceRelationFilter.bean,
+    dataBean: () => $ResourceRelationFilter.bean,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
         (value ?? const []),
         (v, {String? name}) => $$codec.decodeList<ResourceRelationFilter>(
-            v, ResourceRelationFilter.bean.fromJson,
+            v, $ResourceRelationFilter.bean.fromJson,
             name: name),
         name: name),
     toJson: (value) => $$codec.encodeNullable(
@@ -61,7 +62,7 @@ abstract class _ResourceRelationFilter with DataObject<ResourceRelationFilter> {
         name: name),
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeEnum),
     constraints: [
-      EnumConstraint(values: ResourceFilterType?.values),
+      EnumConstraint(values: ResourceFilterType.values),
     ],
   );
 

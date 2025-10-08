@@ -1,7 +1,11 @@
+import 'package:datahub_aperture/api.dart';
 import 'package:flutter/material.dart';
+
+import 'lookup_menu.dart';
 
 class ResourceTextFormField extends StatefulWidget {
   final InputDecoration decoration;
+  final ResourceFieldLookup? lookup;
   final String? value;
   final String? error;
   final bool isChanged;
@@ -10,6 +14,7 @@ class ResourceTextFormField extends StatefulWidget {
   const ResourceTextFormField({
     super.key,
     required this.decoration,
+    required this.lookup,
     required this.value,
     this.error,
     this.isChanged = false,
@@ -22,6 +27,7 @@ class ResourceTextFormField extends StatefulWidget {
 
 class _ResourceTextFormFieldState extends State<ResourceTextFormField> {
   late final TextEditingController _controller;
+  late final FocusNode _focusNode;
 
   String _valueToText(dynamic value) {
     return value?.toString() ?? '';
@@ -29,8 +35,14 @@ class _ResourceTextFormFieldState extends State<ResourceTextFormField> {
 
   @override
   void initState() {
-    _controller = TextEditingController(text: _valueToText(widget.value));
     super.initState();
+    _controller = TextEditingController(text: _valueToText(widget.value));
+    _controller.addListener(() {
+      if (_controller.text != _valueToText(widget.value)) {
+        widget.onChanged?.call(_controller.text);
+      }
+    });
+    _focusNode = FocusNode();
   }
 
   @override
@@ -44,21 +56,29 @@ class _ResourceTextFormFieldState extends State<ResourceTextFormField> {
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
+    final field = TextFormField(
+      focusNode: _focusNode,
       controller: _controller,
       decoration: widget.decoration,
       readOnly: widget.onChanged == null,
       enabled: widget.onChanged != null,
-      onChanged: (_) {
-        if (_controller.text != _valueToText(widget.value)) {
-          widget.onChanged?.call(_controller.text);
-        }
-      },
     );
+
+    if (widget.lookup case final lookup?) {
+      return LookupMenu(
+        controller: _controller,
+        lookup: lookup,
+        focusNode: _focusNode,
+        child: field,
+      );
+    } else {
+      return field;
+    }
   }
 }

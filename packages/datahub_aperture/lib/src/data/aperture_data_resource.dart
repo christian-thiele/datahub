@@ -3,7 +3,7 @@ import 'package:datahub_aperture/services.dart';
 
 class ApertureDataResource {
   final DataBean bean;
-  final ApertureResourceRepository repository;
+  final Find<DataRepository> repository;
 
   const ApertureDataResource(this.bean, this.repository);
 }

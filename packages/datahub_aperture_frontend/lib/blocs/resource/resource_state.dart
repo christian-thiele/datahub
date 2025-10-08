@@ -1,7 +1,7 @@
 part of 'resource_cubit.dart';
 
 sealed class ResourceState {
-  final FilterState? filter;
+  final FilterState filter;
   final Paging paging;
 
   const ResourceState({required this.filter, required this.paging});

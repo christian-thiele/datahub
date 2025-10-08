@@ -5,10 +5,8 @@ import 'slideshow.dart';
 part 'example_object.g.dart';
 
 @Data()
-class ExampleObject extends _ExampleObject {
+class ExampleObject extends $ExampleObject {
   final Slideshow slideshow;
 
   const ExampleObject({required this.slideshow});
-
-  static DataBean<ExampleObject> get bean => _ExampleObject.bean;
 }

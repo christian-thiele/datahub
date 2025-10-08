@@ -6,8 +6,8 @@ part of 'slideshow.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _Slideshow with DataObject<Slideshow> {
-  const _Slideshow();
+abstract interface class $Slideshow with DataObject<Slideshow> {
+  const $Slideshow();
   static const $$codec = JsonDataCodec();
   static final $author = DataField<Slideshow, String>(
     name: 'author',
@@ -48,11 +48,7 @@ abstract class _Slideshow with DataObject<Slideshow> {
   String get $$name => bean.name;
   @override
   List<DataField<Slideshow, dynamic>> get $$fields => bean.fields;
-  Slideshow copyWith({
-    String? author,
-    String? date,
-    String? title,
-  }) {
+  Slideshow copyWith({String? author, String? date, String? title}) {
     final $data = this as Slideshow;
     return Slideshow(
       author: author ?? $data.author,
@@ -74,12 +70,18 @@ abstract class _Slideshow with DataObject<Slideshow> {
       throw CodecException.typeMismatch(Slideshow, data.runtimeType, name);
     }
     return Slideshow(
-      author: $author.fromJson(data['author'],
-          name: DataCodec.childName(name, 'author')),
-      date:
-          $date.fromJson(data['date'], name: DataCodec.childName(name, 'date')),
-      title: $title.fromJson(data['title'],
-          name: DataCodec.childName(name, 'title')),
+      author: $author.fromJson(
+        data['author'],
+        name: DataCodec.childName(name, 'author'),
+      ),
+      date: $date.fromJson(
+        data['date'],
+        name: DataCodec.childName(name, 'date'),
+      ),
+      title: $title.fromJson(
+        data['title'],
+        name: DataCodec.childName(name, 'title'),
+      ),
     );
   }
 

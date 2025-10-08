@@ -5,7 +5,7 @@ import 'package:datahub/data.dart';
 part 'aperture_theme.g.dart';
 
 @Data()
-class ApertureTheme extends _ApertureTheme {
+class ApertureTheme extends $ApertureTheme {
   final int color;
   final Uint8List? logo;
 
@@ -13,6 +13,4 @@ class ApertureTheme extends _ApertureTheme {
     this.color = 0xff295bf0,
     this.logo,
   });
-
-  static DataBean<ApertureTheme> get bean => _ApertureTheme.bean;
 }

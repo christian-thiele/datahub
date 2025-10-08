@@ -7095,8 +7095,10 @@ class Icons {
   static const signal_wifi_statusbar_4_bar_outlined = 0xf397;
   static const signal_wifi_statusbar_connected_no_consternet_4 = 0xe5b5;
   static const signal_wifi_statusbar_connected_no_consternet_4_sharp = 0xecab;
-  static const signal_wifi_statusbar_connected_no_consternet_4_rounded = 0xf018a;
-  static const signal_wifi_statusbar_connected_no_consternet_4_outlined = 0xf398;
+  static const signal_wifi_statusbar_connected_no_consternet_4_rounded =
+      0xf018a;
+  static const signal_wifi_statusbar_connected_no_consternet_4_outlined =
+      0xf398;
   static const signal_wifi_statusbar_null = 0xe5b6;
   static const signal_wifi_statusbar_null_sharp = 0xecac;
   static const signal_wifi_statusbar_null_rounded = 0xf018b;

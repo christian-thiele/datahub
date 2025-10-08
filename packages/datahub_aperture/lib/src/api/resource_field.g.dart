@@ -6,8 +6,8 @@ part of 'resource_field.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ResourceField with DataObject<ResourceField> {
-  const _ResourceField();
+abstract interface class $ResourceField with DataObject<ResourceField> {
+  const $ResourceField();
   static const $$codec = JsonDataCodec();
   static final $id = DataField<ResourceField, String>(
     name: 'id',
@@ -80,11 +80,11 @@ abstract class _ResourceField with DataObject<ResourceField> {
       DataField<ResourceField, List<ResourceField>?>(
     name: 'objectDescription',
     valueOf: (p) => p.objectDescription,
-    dataBean: () => ResourceField.bean,
+    dataBean: () => $ResourceField.bean,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
         value,
         (v, {String? name}) => $$codec.decodeList<ResourceField>(
-            v, ResourceField.bean.fromJson,
+            v, $ResourceField.bean.fromJson,
             name: name),
         name: name),
     toJson: (value) => $$codec.encodeNullable(
@@ -103,6 +103,15 @@ abstract class _ResourceField with DataObject<ResourceField> {
         value, (v) => $$codec.encodeList<String>(v, $$codec.encodeString)),
   );
 
+  static final $lookup = DataField<ResourceField, ResourceFieldLookup?>(
+    name: 'lookup',
+    valueOf: (p) => p.lookup,
+    dataBean: () => $ResourceFieldLookup.bean,
+    fromJson: (value, {String? name}) => $$codec
+        .decodeNullable(value, $ResourceFieldLookup.bean.fromJson, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, (v) => v.toJson()),
+  );
+
   static final DataBean<ResourceField> bean = DataBean<ResourceField>(
     name: 'ResourceField',
     fields: List<DataField<ResourceField, dynamic>>.unmodifiable([
@@ -116,6 +125,7 @@ abstract class _ResourceField with DataObject<ResourceField> {
       $validation,
       $objectDescription,
       $enumValues,
+      $lookup,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
@@ -141,6 +151,8 @@ abstract class _ResourceField with DataObject<ResourceField> {
     bool nullObjectDescription = false,
     List<String>? enumValues,
     bool nullEnumValues = false,
+    ResourceFieldLookup? lookup,
+    bool nullLookup = false,
   }) {
     final $data = this as ResourceField;
     return ResourceField(
@@ -156,6 +168,7 @@ abstract class _ResourceField with DataObject<ResourceField> {
           ? null
           : (objectDescription ?? $data.objectDescription),
       enumValues: nullEnumValues ? null : (enumValues ?? $data.enumValues),
+      lookup: nullLookup ? null : (lookup ?? $data.lookup),
     );
   }
 
@@ -171,6 +184,7 @@ abstract class _ResourceField with DataObject<ResourceField> {
       validation: data['validation'],
       objectDescription: data['objectDescription'],
       enumValues: data['enumValues'],
+      lookup: data['lookup'],
     );
   }
 
@@ -198,6 +212,8 @@ abstract class _ResourceField with DataObject<ResourceField> {
           name: DataCodec.childName(name, 'objectDescription')),
       enumValues: $enumValues.fromJson(data['enumValues'],
           name: DataCodec.childName(name, 'enumValues')),
+      lookup: $lookup.fromJson(data['lookup'],
+          name: DataCodec.childName(name, 'lookup')),
     );
   }
 
@@ -215,6 +231,7 @@ abstract class _ResourceField with DataObject<ResourceField> {
       'validation': $validation.toJson($$data.validation),
       'objectDescription': $objectDescription.toJson($$data.objectDescription),
       'enumValues': $enumValues.toJson($$data.enumValues),
+      'lookup': $lookup.toJson($$data.lookup),
     }..removeWhere((k, v) => v == null);
   }
 }

@@ -7,10 +7,5 @@ final class Meta extends MetaData {
   final String? description;
   final int? icon;
 
-  const Meta({
-    this.name,
-    this.namePlural,
-    this.description,
-    this.icon,
-  });
+  const Meta({this.name, this.namePlural, this.description, this.icon});
 }

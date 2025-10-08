@@ -1,9 +1,15 @@
 import 'dart:async';
 
-import 'package:datahub/datahub.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/config.dart';
+import 'package:datahub/utils.dart';
+import 'package:datahub/telemetry.dart';
+import 'package:meta/meta.dart';
 
-import 'service_registry.dart';
 import 'tree_node.dart';
+import 'service_registry.dart';
+
+part 'context.dart';
 
 part 'component.dart';
 
@@ -11,16 +17,13 @@ part 'service.dart';
 
 part 'scope.dart';
 
-enum ServiceHostState {
-  uninitialized,
-  initializing,
-  initialized,
-  shutdown,
-}
+enum ServiceHostState { uninitialized, initializing, initialized, shutdown }
 
 abstract class ServiceHost implements ServiceRegistry {
+  final configuration = Configuration();
+
   TreeNode? _root;
-  final _scopeKeys = <Object, TreeNode>{};
+
   ServiceHostState _state = ServiceHostState.uninitialized;
 
   ServiceHostState get state => _state;
@@ -30,13 +33,20 @@ abstract class ServiceHost implements ServiceRegistry {
   Future<TreeNode> _initializeComponent(
     TreeNode? parent,
     Component component,
+    ConfigPath configScope,
   ) async {
     switch (component) {
       case final Service service:
-        final scopeKey = Object();
         final node = ServiceTreeNode(service: component);
-        _scopeKeys[scopeKey] = node;
         parent?.add(node);
+
+        final context = Context._(
+          environment: configuration.environment,
+          registry: this,
+          scope: node,
+          sessions: [],
+          debugName: '${component.runtimeType}#${component.hashCode}',
+        );
 
         final children = <Component>[];
         _registerHandler = children.add;
@@ -45,27 +55,51 @@ abstract class ServiceHost implements ServiceRegistry {
           final instance = service.createInstance();
           instance.service = service;
           instance.registry = this;
-          instance._scopeKey = scopeKey;
-          await instance.initialize();
+          instance.context = context;
+
+          await context.run(() async {
+            await instance.initialize();
+          });
+
           node.instance = instance;
         } catch (e, stack) {
-          _onError('Could not initialize component.', e, stack);
-          // TODO critical?
+          log.critical(
+            'Could not initialize component ${service.runtimeType}.',
+            error: e,
+            stack: stack,
+          );
+          rethrow;
         }
 
         _registerHandler = null;
 
         for (final child in children) {
-          await _initializeComponent(node, child);
+          await _initializeComponent(node, child, configScope);
         }
+
         return node;
 
       case final Scope scope:
         final node = ScopeTreeNode(scope: scope);
         parent?.add(node);
-        for (final child in scope.components) {
-          await _initializeComponent(node, child);
-        }
+
+        final childConfigScope = scope.config != null
+            ? configScope[scope.config!]
+            : configScope;
+
+        final context = Context._(
+          environment: configuration.environment,
+          registry: this,
+          scope: node,
+          sessions: [],
+          debugName: '${component.runtimeType}#${component.hashCode}',
+        );
+
+        await context.run(() async {
+          for (final child in scope.components) {
+            await _initializeComponent(node, child, childConfigScope);
+          }
+        });
         return node;
     }
   }
@@ -78,10 +112,10 @@ abstract class ServiceHost implements ServiceRegistry {
         try {
           await node.instance?.dispose();
         } catch (e, stack) {
-          _onError(
+          log.error(
             'Could not shutdown component ${node.instance?.runtimeType}',
-            e,
-            stack,
+            error: e,
+            stack: stack,
           );
         }
     }
@@ -96,8 +130,8 @@ abstract class ServiceHost implements ServiceRegistry {
   Future<void> initialize() async {
     if (_root == null) {
       _state = ServiceHostState.initializing;
-      _scopeKeys.clear();
-      _root = await _initializeComponent(null, buildRoot());
+      _root = await _initializeComponent(null, buildRoot(), ConfigPath.root());
+
       _state = ServiceHostState.initialized;
     } else {
       throw ApiException('ServiceHost already initialized.');
@@ -108,6 +142,7 @@ abstract class ServiceHost implements ServiceRegistry {
     if (_root case final root?) {
       _state = ServiceHostState.shutdown;
       await _shutdownComponent(root);
+      _root = null;
       _state = ServiceHostState.uninitialized;
     } else {
       throw ApiException('ServiceHost not initialized.');
@@ -123,7 +158,7 @@ abstract class ServiceHost implements ServiceRegistry {
     }
   }
 
-  @override
+  /*
   void deRegister<T extends Service>(ServiceInstance<T> instance) {
     void removeFrom(TreeNode node, ServiceInstance instance) {
       if (node case ServiceTreeNode(:final instance?)
@@ -139,13 +174,14 @@ abstract class ServiceHost implements ServiceRegistry {
     if (_root case final root?) {
       removeFrom(root, instance);
     }
-  }
+  }*/
 
   @override
-  T find<T>(Find<T> finder, Object? scopeKey) {
+  T findComponent<T>(Find<T> finder, TreeNode? scope) {
     TreeNode? search(TreeNode node, Find<T> finder) {
-      if (node case ServiceTreeNode(:final instance?)
-          when finder.isCandidate(instance)) {
+      if (node case ServiceTreeNode(
+        :final instance?,
+      ) when finder.isCandidate(instance)) {
         return node;
       }
 
@@ -173,23 +209,39 @@ abstract class ServiceHost implements ServiceRegistry {
       return null;
     }
 
-    if (_scopeKeys[scopeKey] case final node?) {
-      final resultNode = peerSearch(node, finder) ??
+    if (scope == null) {
+      final resultNode =
+          search(_root!, finder) ??
           (throw Exception('Could not find component with $finder.'));
       return (resultNode as ServiceTreeNode).instance as T;
-    } else {
-      throw Exception('Invalid scope key.');
+    } else if (scope case final node) {
+      final resultNode =
+          peerSearch(node, finder) ??
+          (throw Exception('Could not find component with $finder.'));
+      return (resultNode as ServiceTreeNode).instance as T;
     }
   }
 
-  void _onError(String message, dynamic exception, StackTrace stack) {
-    final buffer = StringBuffer();
-    buffer.write(message);
-    if (exception != null) {
-      buffer.writeln();
-      buffer.write(exception);
-    }
-    print(buffer);
-    // TODO real log
+  @override
+  T readConfig<T>(Config<T> config, TreeNode scope) {
+    final scopePath = scope.getConfigPath();
+    return switch (config) {
+      PathConfig<Enum?>(
+        :final path,
+        :final T defaultValue?,
+        :final List<T> values?,
+      ) =>
+        configuration.readEnum<T?>(scopePath.join(ConfigPath(path)), values) ??
+            defaultValue,
+      PathConfig<Enum?>(:final path, :final List<T> values?) =>
+        configuration.readEnum<T>(scopePath.join(ConfigPath(path)), values),
+      PathConfig<T>(:final path, :final defaultValue?) =>
+        configuration.read<T?>(scopePath.join(ConfigPath(path))) ??
+            defaultValue,
+      PathConfig<T>(:final path) => configuration.read<T>(
+        scopePath.join(ConfigPath(path)),
+      ),
+      ValueConfig<T>(:final value) => value,
+    };
   }
 }

@@ -8,16 +8,13 @@ class Polygon extends Geometry {
   final List<LineString> rings;
 
   const Polygon(int? srid, this.rings, bool hasZ, bool hasM)
-      : super(srid, GeometryType.polygon, hasZ, hasM);
+    : super(srid, GeometryType.polygon, hasZ, hasM);
 
   factory Polygon.read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
     final length = reader.readUint32();
     return Polygon(
       srid,
-      List.generate(
-        length,
-        (i) => LineString.read(srid, reader, hasZ, hasM),
-      ),
+      List.generate(length, (i) => LineString.read(srid, reader, hasZ, hasM)),
       hasZ,
       hasM,
     );

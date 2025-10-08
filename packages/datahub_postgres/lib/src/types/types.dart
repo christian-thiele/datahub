@@ -54,10 +54,11 @@ class PostgresqlEnum extends PostgresqlDataType<Enum> {
       return switch (value) {
         Enum() => value,
         String() => values!.firstWhere(
-            (e) => e.name == value,
-            orElse: () => throw TypeDecodeException(
-                'Invalid enum: "${value.toString().substring(0, 100)}"'),
+          (e) => e.name == value,
+          orElse: () => throw TypeDecodeException(
+            'Invalid enum: "${value.toString().substring(0, 100)}"',
           ),
+        ),
         _ => throw TypeDecodeException.typeMismatch(Enum, value.runtimeType),
       };
     } else {
@@ -67,7 +68,8 @@ class PostgresqlEnum extends PostgresqlDataType<Enum> {
             return value;
           } else {
             throw TypeDecodeException(
-                'Invalid enum: "${value.toString().substring(0, 100)}"');
+              'Invalid enum: "${value.toString().substring(0, 100)}"',
+            );
           }
         case null:
           return null;
@@ -75,7 +77,8 @@ class PostgresqlEnum extends PostgresqlDataType<Enum> {
           return values.firstWhere(
             (e) => e.name == value.toString(),
             orElse: () => throw TypeDecodeException(
-                'Invalid enum: "${value.toString().substring(0, 100)}"'),
+              'Invalid enum: "${value.toString().substring(0, 100)}"',
+            ),
           );
       }
     }
@@ -86,7 +89,7 @@ class PostgresqlEnumArray extends PostgresqlDataType<List<Enum>> {
   final List<Enum>? values;
 
   const PostgresqlEnumArray({this.values})
-      : super('_varchar', pg.Type.varCharArray);
+    : super('_varchar', pg.Type.varCharArray);
 
   @override
   dynamic encode(List<Enum>? value) => value?.map((e) => e.name).toList();
@@ -94,12 +97,15 @@ class PostgresqlEnumArray extends PostgresqlDataType<List<Enum>> {
   @override
   List<Enum>? decode(dynamic value) {
     return switch (value) {
-      List<String>() => value
-          .map((e) => PostgresqlEnum._decodeElement(values, e))
-          .nonNulls
-          .toList(),
-      _ =>
-        throw TypeDecodeException.typeMismatch(List<Enum>, value.runtimeType),
+      List<String>() =>
+        value
+            .map((e) => PostgresqlEnum._decodeElement(values, e))
+            .nonNulls
+            .toList(),
+      _ => throw TypeDecodeException.typeMismatch(
+        List<Enum>,
+        value.runtimeType,
+      ),
     };
   }
 }
@@ -129,8 +135,10 @@ class PostgresqlStringArray extends PostgresqlDataType<List<String>> {
       List<String?>() => value.nonNulls.toList(),
       String() => [value],
       null => null,
-      _ =>
-        throw TypeDecodeException.typeMismatch(List<String>, value.runtimeType),
+      _ => throw TypeDecodeException.typeMismatch(
+        List<String>,
+        value.runtimeType,
+      ),
     };
   }
 }
@@ -158,8 +166,10 @@ class PostgresqlDoubleArray extends PostgresqlDataType<List<double>> {
       List<double?>() => value.nonNulls.toList(),
       double() => [value],
       null => null,
-      _ =>
-        throw TypeDecodeException.typeMismatch(List<double>, value.runtimeType),
+      _ => throw TypeDecodeException.typeMismatch(
+        List<double>,
+        value.runtimeType,
+      ),
     };
   }
 }
@@ -173,8 +183,10 @@ class PostgresqlBoolArray extends PostgresqlDataType<List<bool>> {
       List<bool?>() => value.nonNulls.toList(),
       bool() => [value],
       null => null,
-      _ =>
-        throw TypeDecodeException.typeMismatch(List<bool>, value.runtimeType),
+      _ => throw TypeDecodeException.typeMismatch(
+        List<bool>,
+        value.runtimeType,
+      ),
     };
   }
 }
@@ -184,7 +196,7 @@ class PostgresqlObject<T> extends PostgresqlDataType<T> {
   final Decoder<T> decoder;
 
   const PostgresqlObject(this.encoder, this.decoder)
-      : super('jsonb', pg.Type.jsonb);
+    : super('jsonb', pg.Type.jsonb);
 
   @override
   dynamic encode(T? value) => (value != null) ? encoder(value) : null;

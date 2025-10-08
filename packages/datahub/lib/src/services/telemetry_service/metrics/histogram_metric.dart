@@ -45,7 +45,8 @@ class HistogramMetric extends Metric {
     super.help,
   }) : super(type: MetricType.histogram) {
     _buckets.addAll(
-        Iterable.generate(count, (i) => _Bucket(start + (width / count) * i)));
+      Iterable.generate(count, (i) => _Bucket(start + (width / count) * i)),
+    );
   }
 
   HistogramMetric.exponential(
@@ -56,7 +57,8 @@ class HistogramMetric extends Metric {
     super.help,
   }) : super(type: MetricType.histogram) {
     _buckets.addAll(
-        Iterable.generate(count, (i) => _Bucket(start * pow(factor, i))));
+      Iterable.generate(count, (i) => _Bucket(start * pow(factor, i))),
+    );
   }
 
   void observe(num value) {
@@ -74,22 +76,19 @@ class HistogramMetric extends Metric {
   @override
   SampleGroup collect() {
     final now = DateTime.timestamp();
-    return SampleGroup(
-      this,
-      [
-        ..._buckets.map(
-          (b) => MetricSample(
-            '${name}_bucket',
-            {'le': b.boundary.toString()},
-            b.value,
-            now,
-          ),
+    return SampleGroup(this, [
+      ..._buckets.map(
+        (b) => MetricSample(
+          '${name}_bucket',
+          {'le': b.boundary.toString()},
+          b.value,
+          now,
         ),
-        MetricSample('${name}_bucket', {'le': '+Inf'}, _count, now),
-        MetricSample('${name}_sum', {}, _sum, now),
-        MetricSample('${name}_count', {}, _count, now),
-      ],
-    );
+      ),
+      MetricSample('${name}_bucket', {'le': '+Inf'}, _count, now),
+      MetricSample('${name}_sum', {}, _sum, now),
+      MetricSample('${name}_count', {}, _count, now),
+    ]);
   }
 
   void observeDuration(Duration duration) {

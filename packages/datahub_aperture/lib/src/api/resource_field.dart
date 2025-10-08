@@ -1,11 +1,12 @@
 import 'package:datahub/datahub.dart';
 
+import 'resource_field_lookup.dart';
 import 'resource_field_type.dart';
 
 part 'resource_field.g.dart';
 
 @Data()
-class ResourceField extends _ResourceField {
+class ResourceField extends $ResourceField {
   final String id;
   final String name;
   final ResourceFieldType type;
@@ -16,6 +17,7 @@ class ResourceField extends _ResourceField {
   final String? validation;
   final List<ResourceField>? objectDescription;
   final List<String>? enumValues;
+  final ResourceFieldLookup? lookup;
 
   const ResourceField({
     required this.id,
@@ -28,7 +30,6 @@ class ResourceField extends _ResourceField {
     this.validation,
     this.objectDescription,
     this.enumValues,
+    this.lookup,
   });
-
-  static DataBean<ResourceField> get bean => _ResourceField.bean;
 }

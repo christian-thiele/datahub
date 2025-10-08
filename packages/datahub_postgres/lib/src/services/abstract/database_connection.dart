@@ -1,4 +1,4 @@
-import 'database_connection_service.dart';
+import 'database_connection_manager.dart';
 import 'database_context.dart';
 
 /// Represents a single connection to a database.
@@ -6,7 +6,7 @@ import 'database_context.dart';
 /// A [DatabaseConnection] is acquired by using a [DatabaseConnectionService].
 /// TODO more docs
 abstract class DatabaseConnection {
-  final DatabaseConnectionService adapter;
+  final DatabaseConnectionManager adapter;
 
   DatabaseConnection(this.adapter);
 
@@ -32,5 +32,6 @@ abstract class DatabaseConnection {
   /// If [delegate] throws an exception, the transaction is rolled back
   /// and the exception is rethrown.
   Future<T> runTransaction<T>(
-      Future<T> Function(DatabaseContext context) delegate);
+    Future<T> Function(DatabaseContext context) delegate,
+  );
 }

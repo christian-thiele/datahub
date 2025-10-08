@@ -1,79 +1,66 @@
+import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/types.dart';
 
 import 'sql_attribute.dart';
 import 'sql.dart';
 
-abstract class SqlSelectTarget {
+abstract class SqlSelectTarget with SqlBuilder {
+  const SqlSelectTarget();
+
   String get name;
+
+  @override
   Sql toSql();
 }
 
-class SqlNestedSelect implements SqlSelectTarget {
+class SqlNestedSelect extends SqlSelectTarget {
   @override
   final String name;
   final SqlSelect select;
 
-  SqlNestedSelect({
-    required this.name,
-    required this.select,
-  });
+  const SqlNestedSelect({required this.name, required this.select});
 
   @override
-  Sql toSql() => Sql.combine(
-        [
-          select.toSql()..wrap(),
-          Sql(' '),
-          Sql.name(name),
-        ],
-      );
+  Sql toSql() =>
+      Sql.join([select.toSql()..wrap(), RawSql(' '), Sql.name(name)]);
 }
 
-class SqlSelect implements SqlBuilder {
-  final SqlSelectTarget from;
+class SqlSelect with SqlBuilder {
+  final Sql from;
   final List<SqlAttribute> attributes;
   final SqlAttribute? distinctOn;
-  final int offset;
-  final int limit;
   final Sql? where;
+  final Sql? group;
   final Sql? order;
+  final int limit;
+  final int offset;
 
-  SqlSelect(
+  const SqlSelect(
     this.from,
     this.attributes, {
     this.distinctOn,
-    this.offset = 0,
-    this.limit = -1,
     this.where,
+    this.group,
     this.order,
+    this.limit = -1,
+    this.offset = 0,
   });
 
   @override
   Sql toSql() {
-    return Sql.combine([
-      Sql('SELECT'),
-      if (distinctOn != null) ...[
-        Sql(' DISTINCT ON ('),
-        distinctOn!.toSql(),
-        Sql(')')
-      ],
-      Sql(' ${attributes.map((e) => e.toSql()).joinSql(', ')} FROM '),
-      from.toSql(),
-      if (where case final where?) ...[
-        Sql(' WHERE '),
-        where,
-      ],
-      if (order case final order?) ...[
-        Sql(' ORDER BY '),
-        order,
-      ],
-      if (offset != 0) ...[
-        Sql(' OFFSET '),
-        Sql.param(offset, PostgresqlInt()),
-      ],
-      if (limit != -1) ...[
-        Sql(' LIMIT '),
-        Sql.param(limit, PostgresqlInt()),
-      ],
+    return Sql.join([
+      RawSql('SELECT '),
+      if (distinctOn case final distinctOn?)
+        RawSql('DISTINCT ON (') + distinctOn + RawSql(') '),
+      ...attributes.cast<Sql>().separatedBy(RawSql(', ')),
+      RawSql(' FROM '),
+      from,
+      if (where case final where?) RawSql(' WHERE ') + where,
+      if (group case final group?) RawSql(' GROUP BY ') + group,
+      if (order case final order?) RawSql(' ORDER BY ') + order,
+      if (offset != 0)
+        RawSql(' OFFSET ') + ParameterSql(offset, PostgresqlInt()),
+      if (limit != -1) RawSql(' LIMIT ') + ParameterSql(limit, PostgresqlInt()),
     ]);
   }
 }

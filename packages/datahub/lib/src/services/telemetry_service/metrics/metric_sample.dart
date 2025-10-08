@@ -6,10 +6,5 @@ class MetricSample {
   final num value;
   final DateTime timestamp;
 
-  MetricSample(
-    this.name,
-    this.labels,
-    this.value,
-    this.timestamp,
-  );
+  MetricSample(this.name, this.labels, this.value, this.timestamp);
 }

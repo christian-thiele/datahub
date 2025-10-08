@@ -16,9 +16,10 @@ class ResourceRelationView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: BoxConstraints(minHeight: 128, maxHeight: 256),
+      constraints: BoxConstraints(minHeight: 128),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
+        mainAxisSize: MainAxisSize.min,
         spacing: 8,
         children: [
           Text(
@@ -29,7 +30,6 @@ class ResourceRelationView extends StatelessWidget {
             child: BlocProvider(
               create: (context) => ResourceCubit(
                 context.read<ResourcesRepository>(),
-                (context.read<AuthCubit>().state as AuthStateAuthorized).auth,
                 resourceId: filteredResource.resourceId,
                 defaultFilter: filteredResource.filter,
               ),
@@ -45,10 +45,15 @@ class ResourceRelationView extends StatelessWidget {
                       entries: data,
                       shrinkWrap: true,
                       paging: state.paging,
-                      onFirstPressed: () => context.read<ResourceCubit>().firstPage(),
-                      onPreviousPressed: () => context.read<ResourceCubit>().previousPage(),
-                      onNextPressed: () => context.read<ResourceCubit>().nextPage(),
-                      onLastPressed: state.paging.total != null ? () => context.read<ResourceCubit>().lastPage() : null,
+                      onFirstPressed: () =>
+                          context.read<ResourceCubit>().firstPage(),
+                      onPreviousPressed: () =>
+                          context.read<ResourceCubit>().previousPage(),
+                      onNextPressed: () =>
+                          context.read<ResourceCubit>().nextPage(),
+                      onLastPressed: state.paging.total != null
+                          ? () => context.read<ResourceCubit>().lastPage()
+                          : null,
                     ),
                   };
                 },

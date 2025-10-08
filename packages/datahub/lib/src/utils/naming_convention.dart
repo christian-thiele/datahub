@@ -3,14 +3,18 @@ import 'package:boost/boost.dart';
 enum NamingConvention {
   /// no formatting applied
   none,
+
   /// lower snake case => lower_snake_case
   lowerSnakeCase,
+
   /// upper snake case => UPPER_SNAKE_CASE
   upperSnakeCase,
+
   /// camel case => CamelCase
   camelCase,
+
   /// lower camel case => lowerCamelCase
-  lowerCamelCase
+  lowerCamelCase,
 }
 
 String toNamingConvention(String input, NamingConvention convention) {
@@ -24,9 +28,9 @@ String toNamingConvention(String input, NamingConvention convention) {
     case NamingConvention.camelCase:
       return splitWords(input).map((e) => firstUpper(e)).join();
     case NamingConvention.lowerCamelCase:
-      return splitWords(input)
-          .mapIndexed((e, i) => i == 0 ? e.toLowerCase() : firstUpper(e))
-          .join();
+      return splitWords(
+        input,
+      ).mapIndexed((e, i) => i == 0 ? e.toLowerCase() : firstUpper(e)).join();
   }
 }
 
@@ -45,8 +49,9 @@ Iterable<String> splitWords(String input) sync* {
         buffer.add(it.current);
         canBreak = !isUppercase(it.current);
       }
-    } else if (RegExp('[^a-zA-Z0-9]')
-        .hasMatch(String.fromCharCode(it.current))) {
+    } else if (RegExp(
+      '[^a-zA-Z0-9]',
+    ).hasMatch(String.fromCharCode(it.current))) {
       if (buffer.isNotEmpty) {
         yield String.fromCharCodes(buffer);
         buffer.clear();

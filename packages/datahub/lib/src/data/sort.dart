@@ -17,8 +17,9 @@ sealed class Sort {
       ExpressionSort(Expression.dynamic(expression), false);
 
   static Sort followedBy(Iterable<Sort> sorts) {
-    final notEmpty =
-        sorts.map((e) => e.reduce()).where((element) => !element.isEmpty);
+    final notEmpty = sorts
+        .map((e) => e.reduce())
+        .where((element) => !element.isEmpty);
     if (notEmpty.isEmpty) {
       return Sort.empty;
     } else if (notEmpty.length == 1) {

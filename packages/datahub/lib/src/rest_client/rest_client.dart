@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:typed_data';
 
-import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
+import 'package:datahub/api.dart';
 import 'package:datahub/utils.dart';
 
 import 'rest_response.dart';
@@ -14,10 +14,7 @@ class RestClient {
 
   bool get isHttp2 => _httpClient.isHttp2;
 
-  RestClient(
-    this._httpClient, {
-    this.auth,
-  });
+  RestClient(this._httpClient, {this.auth});
 
   /// Create a [RestClient] that automatically negotiates HTTP versions.
   static Future<RestClient> connect(
@@ -47,10 +44,7 @@ class RestClient {
     Duration? timeout,
   }) {
     return RestClient(
-      HttpClient.http11(
-        address,
-        securityContext: securityContext,
-      ),
+      HttpClient.http11(address, securityContext: securityContext),
       auth: auth,
     );
   }
@@ -84,7 +78,7 @@ class RestClient {
     bool throwOnError = true,
   }) async {
     return await request(
-      ApiRequestMethod.GET,
+      HttpRequestMethod.get,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
@@ -102,7 +96,7 @@ class RestClient {
     bool throwOnError = true,
   }) async {
     return await request(
-      ApiRequestMethod.POST,
+      HttpRequestMethod.post,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
@@ -121,7 +115,7 @@ class RestClient {
     bool throwOnError = true,
   }) async {
     return await request(
-      ApiRequestMethod.PUT,
+      HttpRequestMethod.put,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
@@ -140,7 +134,7 @@ class RestClient {
     bool throwOnError = true,
   }) async {
     return await request(
-      ApiRequestMethod.PATCH,
+      HttpRequestMethod.patch,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
@@ -158,7 +152,7 @@ class RestClient {
     bool throwOnError = true,
   }) async {
     return await request(
-      ApiRequestMethod.DELETE,
+      HttpRequestMethod.delete,
       RoutePattern(endpoint),
       urlParams,
       headers: headers,
@@ -168,7 +162,7 @@ class RestClient {
   }
 
   Future<RestResponse> request(
-    ApiRequestMethod method,
+    HttpRequestMethod method,
     RoutePattern endpoint,
     Map<String, dynamic> urlParams, {
     Map<String, List<String>> headers = const {},
@@ -178,9 +172,9 @@ class RestClient {
   }) async {
     final pathPrefix = _httpClient.address.pathSegments.isNotEmpty
         ? '/' +
-            _httpClient.address.pathSegments
-                .where((e) => e.isNotEmpty)
-                .join('/')
+              _httpClient.address.pathSegments
+                  .where((e) => e.isNotEmpty)
+                  .join('/')
         : '';
     final uri = _httpClient.address.replace(
       path: pathPrefix + endpoint.encode(urlParams),
@@ -201,7 +195,7 @@ class RestClient {
         return Stream.value(body);
       } else if (body is String) {
         requestHeaders[HttpHeaders.contentType] ??= [
-          '${Mime.plainText};charset=UTF-8'
+          '${Mime.plainText};charset=UTF-8',
         ];
 
         return Stream.value(utf8.encode(body));
@@ -210,7 +204,7 @@ class RestClient {
         return Stream.value(utf8.encode(body.toString()));
       } else if (body != null) {
         requestHeaders[HttpHeaders.contentType] ??= [
-          '${Mime.json};charset=UTF-8'
+          '${Mime.json};charset=UTF-8',
         ];
         return Stream.value(utf8.encode(jsonEncode(body)));
       } else {
@@ -218,8 +212,9 @@ class RestClient {
       }
     }();
 
-    final httpResponse = await _httpClient
-        .request(HttpRequest(method, uri, requestHeaders, bodyData));
+    final httpResponse = await _httpClient.request(
+      HttpRequest(method, uri, requestHeaders, bodyData),
+    );
 
     final restResponse = RestResponse(httpResponse);
     if (throwOnError) {

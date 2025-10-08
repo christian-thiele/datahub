@@ -20,12 +20,12 @@ class ResourceElementEditPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final resourceId = routerState.pathParameters['resourceId']!;
     final elementId = routerState.pathParameters['elementId']!;
-    final revisionId = routerState.uri.queryParameters['revisionId'];
+    final revisionId = routerState.uri.queryParameters['revision'];
     return BasePage(
       child: BlocProvider(
+        key: ValueKey('${resourceId}_${elementId}_$revisionId'),
         create: (context) => ResourceElementEditCubit(
           context.read<ResourcesRepository>(),
-          (context.read<AuthCubit>().state as AuthStateAuthorized).auth,
           resourceId: resourceId,
           elementId: elementId,
           revisionId: revisionId,
@@ -78,8 +78,9 @@ class ResourceElementEditPage extends StatelessWidget {
                     onActionPressed: (id) => context
                         .read<ResourceElementEditCubit>()
                         .startAction(id),
-                    onDeletePressed: () =>
-                        context.read<ResourceElementEditCubit>().delete(),
+                    onDeletePressed: (revisionLive) => context
+                        .read<ResourceElementEditCubit>()
+                        .delete(revisionLive: revisionLive),
                   ),
                 ),
               _ => LoadingView(),

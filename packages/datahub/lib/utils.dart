@@ -10,4 +10,3 @@ export 'src/utils/utils.dart';
 export 'src/utils/pool.dart';
 export 'src/utils/naming_convention.dart';
 export 'src/utils/stream_listen_hook.dart';
-

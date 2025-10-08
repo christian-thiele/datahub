@@ -5,7 +5,7 @@ import 'resource_data.dart';
 part 'resource_elements_response.g.dart';
 
 @Data()
-class ResourceElementsResponse extends _ResourceElementsResponse {
+class ResourceElementsResponse extends $ResourceElementsResponse {
   final int? total;
   final bool hasNextPage;
   final List<ResourceData> data;
@@ -15,7 +15,4 @@ class ResourceElementsResponse extends _ResourceElementsResponse {
     required this.hasNextPage,
     required this.data,
   });
-
-  static DataBean<ResourceElementsResponse> get bean =>
-      _ResourceElementsResponse.bean;
 }

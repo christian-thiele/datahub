@@ -6,8 +6,9 @@ part of 'resource_revision_info.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ResourceRevisionInfo with DataObject<ResourceRevisionInfo> {
-  const _ResourceRevisionInfo();
+abstract interface class $ResourceRevisionInfo
+    with DataObject<ResourceRevisionInfo> {
+  const $ResourceRevisionInfo();
   static const $$codec = JsonDataCodec();
   static final $id = DataField<ResourceRevisionInfo, String>(
     name: 'id',

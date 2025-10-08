@@ -19,9 +19,9 @@ final class UniqueConstraint extends PostgresqlAttributeConstraint {
 }
 
 final class DefaultConstraint extends PostgresqlAttributeConstraint {
-  final dynamic value;
-  // TODO necessary? type is on relation attribute already
-  final PostgresqlDataType type;
+  final Sql value;
 
-  const DefaultConstraint(this.value, this.type);
+  const DefaultConstraint(this.value);
+  DefaultConstraint.value(dynamic value, PostgresqlDataType type)
+    : this(ParameterSql(value, type));
 }

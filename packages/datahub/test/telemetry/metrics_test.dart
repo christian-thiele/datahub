@@ -9,12 +9,18 @@ void main() {
       final instrumentation = resolve<TelemetryService>();
       final metrics = await instrumentation.scrapeMetrics();
       expect(metrics, isNotEmpty);
-      expect(metrics.first,
-          isA<SampleGroup>().having((s) => s.samples, 'samples', isNotEmpty));
       expect(
-          metrics.first.samples.first,
-          isA<MetricSample>().having((s) => s.name, 'name',
-              equals('datahub_instrumentation_scrape_duration')));
+        metrics.first,
+        isA<SampleGroup>().having((s) => s.samples, 'samples', isNotEmpty),
+      );
+      expect(
+        metrics.first.samples.first,
+        isA<MetricSample>().having(
+          (s) => s.name,
+          'name',
+          equals('datahub_instrumentation_scrape_duration'),
+        ),
+      );
       expect(metrics.first.samples.first.value, greaterThan(0));
     });
 
@@ -42,20 +48,24 @@ void main() {
         'some_value',
         labels: {
           'yes_or_no': ['yes', 'no'],
-          'version': ['1a', '2b', '3c']
+          'version': ['1a', '2b', '3c'],
         },
       );
 
       expect(() => counter.inc(), throwsApiError());
       expect(() => counter.inc({'yes_or_no': 'no'}), throwsApiError());
-      expect(() => counter.inc({'yes_or_no': 'no', 'version': '4d'}),
-          throwsApiError());
+      expect(
+        () => counter.inc({'yes_or_no': 'no', 'version': '4d'}),
+        throwsApiError(),
+      );
 
       counter.inc({'yes_or_no': 'yes', 'version': '2b'});
       counter.inc({'yes_or_no': 'no', 'version': '3c'});
       counter.incBy(3, {'yes_or_no': 'yes', 'version': '1a'});
-      counter.incBy(
-          -5, {'yes_or_no': 'no', 'version': '1a'}); // should not do anything
+      counter.incBy(-5, {
+        'yes_or_no': 'no',
+        'version': '1a',
+      }); // should not do anything
 
       final metrics = await instrumentation.scrapeMetrics();
       expect(metrics, isNotEmpty);
@@ -143,14 +153,16 @@ void main() {
         'some_value',
         labels: {
           'yes_or_no': ['yes', 'no'],
-          'version': ['1a', '2b', '3c']
+          'version': ['1a', '2b', '3c'],
         },
       );
 
       expect(() => gauge.inc(), throwsApiError());
       expect(() => gauge.inc({'yes_or_no': 'no'}), throwsApiError());
-      expect(() => gauge.inc({'yes_or_no': 'no', 'version': '4d'}),
-          throwsApiError());
+      expect(
+        () => gauge.inc({'yes_or_no': 'no', 'version': '4d'}),
+        throwsApiError(),
+      );
 
       gauge.inc({'yes_or_no': 'yes', 'version': '2b'});
       gauge.incBy(1, {'yes_or_no': 'no', 'version': '3c'});

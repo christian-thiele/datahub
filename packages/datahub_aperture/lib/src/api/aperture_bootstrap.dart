@@ -5,17 +5,25 @@ import 'aperture_theme.dart';
 part 'aperture_bootstrap.g.dart';
 
 @Data()
-class ApertureBootstrap extends _ApertureBootstrap {
+class ApertureBootstrap extends $ApertureBootstrap {
   final String title;
 
   final ApertureTheme theme;
 
-  // TODO auth and stuff
+  final String baseUrl;
+
+  final String oidcIssuer;
+  final List<String> oidcScopes;
+  final String? oidcClientId;
+  final String? oidcClientSecret;
 
   const ApertureBootstrap({
     required this.title,
     required this.theme,
+    required this.baseUrl,
+    required this.oidcIssuer,
+    required this.oidcScopes,
+    required this.oidcClientId,
+    required this.oidcClientSecret,
   });
-
-  static DataBean<ApertureBootstrap> get bean => _ApertureBootstrap.bean;
 }

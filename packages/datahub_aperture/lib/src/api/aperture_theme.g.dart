@@ -6,8 +6,8 @@ part of 'aperture_theme.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ApertureTheme with DataObject<ApertureTheme> {
-  const _ApertureTheme();
+abstract interface class $ApertureTheme with DataObject<ApertureTheme> {
+  const $ApertureTheme();
   static const $$codec = JsonDataCodec();
   static final $color = DataField<ApertureTheme, int>(
     name: 'color',

@@ -42,8 +42,14 @@ class DailySchedule extends Schedule {
       return execution.add(const Duration(days: 1));
     } else {
       final now = DateTime.now();
-      final today =
-          DateTime(now.year, now.month, now.day, hour, minute, second);
+      final today = DateTime(
+        now.year,
+        now.month,
+        now.day,
+        hour,
+        minute,
+        second,
+      );
       if (today.isAfter(now)) {
         return today;
       } else {

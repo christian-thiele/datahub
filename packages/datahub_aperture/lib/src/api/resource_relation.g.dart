@@ -6,8 +6,8 @@ part of 'resource_relation.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ResourceRelation with DataObject<ResourceRelation> {
-  const _ResourceRelation();
+abstract interface class $ResourceRelation with DataObject<ResourceRelation> {
+  const $ResourceRelation();
   static const $$codec = JsonDataCodec();
   static final $name = DataField<ResourceRelation, String>(
     name: 'name',
@@ -28,9 +28,9 @@ abstract class _ResourceRelation with DataObject<ResourceRelation> {
   static final $filter = DataField<ResourceRelation, ResourceRelationFilter>(
     name: 'filter',
     valueOf: (p) => p.filter,
-    dataBean: () => ResourceRelationFilter.bean,
+    dataBean: () => $ResourceRelationFilter.bean,
     fromJson: (value, {String? name}) =>
-        ResourceRelationFilter.bean.fromJson(value, name: name),
+        $ResourceRelationFilter.bean.fromJson(value, name: name),
     toJson: (value) => value.toJson(),
   );
 

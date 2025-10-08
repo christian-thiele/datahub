@@ -25,7 +25,6 @@ class ResourceElementCreatePage extends StatelessWidget {
       child: BlocProvider(
         create: (context) => ResourceElementCreateCubit(
           context.read<ResourcesRepository>(),
-          (context.read<AuthCubit>().state as AuthStateAuthorized).auth,
           resourceId: resourceId,
         ),
         child: BlocConsumer<ResourceElementCreateCubit, ResourceElementCreateState>(

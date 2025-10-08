@@ -1,3 +1,5 @@
+import 'package:datahub/config.dart';
+
 import 'service_host.dart';
 
 sealed class TreeNode {
@@ -23,24 +25,28 @@ sealed class TreeNode {
       _children.remove(childNode);
     }
   }
+
+  ConfigPath getConfigPath() => _parent?.getConfigPath() ?? ConfigPath.root();
 }
 
 class ScopeTreeNode extends TreeNode {
   final Scope scope;
 
-  ScopeTreeNode({
-    required this.scope,
-    super.children,
-  });
+  ScopeTreeNode({required this.scope, super.children});
+
+  @override
+  ConfigPath getConfigPath() {
+    if (scope.config case final config?) {
+      return super.getConfigPath().join(ConfigPath(config));
+    } else {
+      return super.getConfigPath();
+    }
+  }
 }
 
 class ServiceTreeNode<T extends Service> extends TreeNode {
   final T service;
   ServiceInstance<T>? instance;
 
-  ServiceTreeNode({
-    required this.service,
-    super.children,
-    this.instance,
-  });
+  ServiceTreeNode({required this.service, super.children, this.instance});
 }

@@ -8,10 +8,14 @@ class MultiPoint extends Geometry {
   final List<Point> points;
 
   const MultiPoint(int? srid, this.points, bool hasZ, bool hasM)
-      : super(srid, GeometryType.multiPoint, hasZ, hasM);
+    : super(srid, GeometryType.multiPoint, hasZ, hasM);
 
   factory MultiPoint.read(
-      int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
+    int? srid,
+    ByteDataReader reader,
+    bool hasZ,
+    bool hasM,
+  ) {
     final length = reader.readUint32();
     return MultiPoint(
       srid,

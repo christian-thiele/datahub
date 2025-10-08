@@ -61,12 +61,12 @@ class EditorControls extends StatelessWidget {
                       _ => Icon(Icons.add),
                     },
                   ),
-                if (mode == EditorMode.edit)
+                /*if (mode == EditorMode.edit)
                   IconButton.filled(
                     style: style,
                     onPressed: onCutPressed,
                     icon: Icon(Icons.cut),
-                  ),
+                  ),*/
               ],
             ),
           ),

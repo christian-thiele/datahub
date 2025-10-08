@@ -1,56 +1,75 @@
-import 'package:datahub_aperture_frontend/models/authentication.dart';
-import 'package:datahub_aperture_frontend/repositories/auth_repository/auth_repository.dart';
-import 'package:datahub_aperture_frontend/repositories/storage_repository/storage_repository.dart';
+import 'package:datahub/api.dart';
+import 'package:datahub/datahub.dart';
+import 'package:datahub_aperture/api.dart';
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
+import 'package:datahub_aperture_frontend/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> {
-  final StorageRepository _storageRepository;
-  final AuthRepository _authRepository;
-
-  AuthCubit(this._storageRepository, this._authRepository)
+  AuthCubit({required ApertureBootstrap bootstrap})
     : super(AuthStateLoading()) {
-    _init();
+    _init(bootstrap);
   }
 
-  Future<void> _init() async {
-    final storedAuth = await _storageRepository.getStoredAuthentication();
-    if (storedAuth?.isValid ?? false) {
-      final auth = await _authRepository.refreshAuthentication(
-        storedAuth!.refreshToken,
-      );
-      emit(AuthStateAuthorized(auth: auth));
-    } else {
+  Future<void> _init(ApertureBootstrap bootstrap) async {
+    AuthService.instance.stream.listen(_onAuthServiceUpdated);
+    await AuthService.instance.initialize(
+      Uri.parse(bootstrap.oidcIssuer),
+      clientId: bootstrap.oidcClientId,
+      clientSecret: bootstrap.oidcClientSecret,
+    );
+  }
+
+  void _onAuthServiceUpdated(bool authenticated) async {
+    if (authenticated && state is! AuthStateAuthorized) {
+      emit(AuthStateAuthorized());
+    }
+    if (!authenticated &&
+        (state is AuthStateAuthorized || state is AuthStateLoading)) {
       emit(AuthStateUnauthorized());
     }
   }
 
-  Future<void> login() async {
-    if (state is! AuthStateLoading) {
-      await _authRepository.startAuthorizationCodeFlow();
-    }
-  }
-
-  Future<void> receiveAuthorizationCode(String code) async {
+  Future<void> loginAuthCode() async {
     if (state is! AuthStateLoading) {
       emit(AuthStateLoading());
       try {
-        final auth = await _authRepository.signInAuthorizationCode(code);
-        _storageRepository.storeAuthentication(auth);
-        emit(AuthStateAuthorized(auth: auth));
+        final url = await AuthService.instance.createAuthUri(
+          Uri.base.toString(),
+        );
+        if (!await launchUrl(url, webOnlyWindowName: '_self')) {
+          emit(AuthStateError(message: 'Could not launch sign-in page.'));
+        }
       } catch (e) {
-        _storageRepository.clear();
-        emit(AuthStateUnauthorized());
+        if (e case ApiRequestException(:final message)) {
+          emit(AuthStateError(message: message));
+        } else {
+          emit(AuthStateError(message: null));
+        }
+      }
+    }
+  }
+
+  Future<void> receiveAuthorizationCode(String state, String code) async {
+    emit(AuthStateLoading());
+    try {
+      await AuthService.instance.signInAuthorizationCode(state, code);
+    } catch (e) {
+      if (e case ApiRequestException(:final message)) {
+        emit(AuthStateError(message: message));
+      } else {
+        emit(AuthStateError(message: null));
       }
     }
   }
 
   Future<void> logout() async {
-    if (state is! AuthStateLoading) {
-      _storageRepository.clear();
-      emit(AuthStateUnauthorized());
+    try {
+      await AuthService.instance.signOut();
+    } catch (e) {
+      emit(AuthStateError(message: null));
     }
   }
 }

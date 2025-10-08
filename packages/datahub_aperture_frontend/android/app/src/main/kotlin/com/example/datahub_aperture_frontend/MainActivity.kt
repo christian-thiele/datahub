@@ -1,4 +1,4 @@
-package com.example.datahub_aperture_frontend
+package net.datahubproject.datahub_aperture_frontend
 
 import io.flutter.embedding.android.FlutterActivity
 

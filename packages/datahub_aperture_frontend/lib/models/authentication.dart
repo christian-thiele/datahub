@@ -1,30 +1,23 @@
-class Authentication {
-  final String accessToken;
-  final String refreshToken;
-  final DateTime expiration;
+import 'package:datahub/auth.dart';
 
-  Authentication({
-    required this.accessToken,
-    required this.refreshToken,
-    required this.expiration,
-  });
+class Authentication {
+  final Jwt accessToken;
+  final String refreshToken;
+
+  Authentication({required this.accessToken, required this.refreshToken});
 
   bool get isValid =>
-      expiration.isAfter(DateTime.now().add(Duration(minutes: 1)));
+      accessToken.exp?.isAfter(DateTime.now().add(Duration(minutes: 1))) ??
+      true;
 
   Map<String, dynamic> toJson() {
-    return {
-      'accessToken': accessToken,
-      'refreshToken': refreshToken,
-      'expiration': expiration.toIso8601String(),
-    };
+    return {'accessToken': accessToken.token, 'refreshToken': refreshToken};
   }
 
   factory Authentication.fromJson(Map<String, dynamic> data) {
     return Authentication(
-      accessToken: data['accessToken'],
+      accessToken: Jwt(data['accessToken']),
       refreshToken: data['refreshToken'],
-      expiration: DateTime.parse(data['expiration']),
     );
   }
 }

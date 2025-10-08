@@ -19,37 +19,38 @@ class RevisionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final revision = revisions.firstWhere((e) => e.id == currentId);
+    final revision = revisions.where((e) => e.id == currentId).firstOrNull;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       spacing: 8,
       children: [
-        Text(
-          S.of(context).revisionInfo,
-          style: Theme.of(context).textTheme.titleMedium,
-        ),
-        if (revision.live == null) Chip(label: Text(S.of(context).draft)),
-        if (revision.live?.isAfter(DateTime.now()) ?? false)
-          Chip(label: Text('Scheduled')),
-
-        ValueView(label: S.of(context).revisionId, value: Text(revision.id)),
-        ValueView(
-          label: S.of(context).timestamp,
-          value: Text(DateFormat.yMMMd().add_Hm().format(revision.timestamp)),
-        ),
-        if (revision.live != null)
-          ValueView(
-            label: revision.live!.isBefore(DateTime.timestamp())
-                ? S.of(context).liveSince
-                : S.of(context).liveFrom,
-            value: Text(DateFormat.yMMMd().add_Hm().format(revision.live!)),
+        if (revision != null) ...[
+          Text(
+            S.of(context).revisionInfo,
+            style: Theme.of(context).textTheme.titleMedium,
           ),
-        ValueView(
-          label: S.of(context).author,
-          value: UserEntityView(id: revision.userId, name: revision.userName),
-        ),
+          if (revision.live == null) Chip(label: Text(S.of(context).draft)),
+          if (revision.live?.isAfter(DateTime.now()) ?? false)
+            Chip(label: Text('Scheduled')),
 
+          ValueView(label: S.of(context).revisionId, value: Text(revision.id)),
+          ValueView(
+            label: S.of(context).timestamp,
+            value: Text(DateFormat.yMMMd().add_Hm().format(revision.timestamp)),
+          ),
+          if (revision.live != null)
+            ValueView(
+              label: revision.live!.isBefore(DateTime.timestamp())
+                  ? S.of(context).liveSince
+                  : S.of(context).liveFrom,
+              value: Text(DateFormat.yMMMd().add_Hm().format(revision.live!)),
+            ),
+          ValueView(
+            label: S.of(context).author,
+            value: UserEntityView(id: revision.userId, name: revision.userName),
+          ),
+        ],
         Padding(
           padding: const EdgeInsets.only(top: 8.0),
           child: Text(

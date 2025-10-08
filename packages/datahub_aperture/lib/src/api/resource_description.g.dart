@@ -6,8 +6,9 @@ part of 'resource_description.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ResourceDescription with DataObject<ResourceDescription> {
-  const _ResourceDescription();
+abstract interface class $ResourceDescription
+    with DataObject<ResourceDescription> {
+  const $ResourceDescription();
   static const $$codec = JsonDataCodec();
   static final $id = DataField<ResourceDescription, String>(
     name: 'id',
@@ -43,9 +44,9 @@ abstract class _ResourceDescription with DataObject<ResourceDescription> {
   static final $fields = DataField<ResourceDescription, List<ResourceField>>(
     name: 'fields',
     valueOf: (p) => p.fields,
-    dataBean: () => ResourceField.bean,
+    dataBean: () => $ResourceField.bean,
     fromJson: (value, {String? name}) => $$codec.decodeList<ResourceField>(
-        value, ResourceField.bean.fromJson,
+        value, $ResourceField.bean.fromJson,
         name: name),
     toJson: (value) =>
         $$codec.encodeList<ResourceField>(value, (v) => v.toJson()),
@@ -55,9 +56,9 @@ abstract class _ResourceDescription with DataObject<ResourceDescription> {
       DataField<ResourceDescription, List<ResourceRelation>>(
     name: 'relations',
     valueOf: (p) => p.relations,
-    dataBean: () => ResourceRelation.bean,
+    dataBean: () => $ResourceRelation.bean,
     fromJson: (value, {String? name}) => $$codec.decodeList<ResourceRelation>(
-        value, ResourceRelation.bean.fromJson,
+        value, $ResourceRelation.bean.fromJson,
         name: name),
     toJson: (value) =>
         $$codec.encodeList<ResourceRelation>(value, (v) => v.toJson()),

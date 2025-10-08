@@ -8,15 +8,18 @@ import 'utils.dart';
 class BuildCommand extends CliCommand {
   BuildCommand() {
     argParser.addFlag('debug', abbr: 'd', help: 'Build a debug image.');
-    argParser.addFlag('codegen',
-        abbr: 'c',
-        help: 'Run codegen before building debug image.',
-        defaultsTo: true);
+    argParser.addFlag(
+      'codegen',
+      abbr: 'c',
+      help: 'Run codegen before building debug image.',
+      defaultsTo: true,
+    );
     argParser.addOption('version', help: 'Override package version.');
   }
 
   @override
-  String get description => 'Builds a Docker Image.\n'
+  String get description =>
+      'Builds a Docker Image.\n'
       'The image will be tagged with the current version and the "latest" tag.';
 
   @override
@@ -41,15 +44,12 @@ class BuildCommand extends CliCommand {
     } else {
       await buildReleaseStep(argResults!.rest, 'latest');
 
-      await step(
-        'Adding version tag.',
-        () async {
-          await docker(
-            'tag $projectName:latest $projectName:$projectVersion',
-            verbose: verbose,
-          );
-        },
-      );
+      await step('Adding version tag.', () async {
+        await docker(
+          'tag $projectName:latest $projectName:$projectVersion',
+          verbose: verbose,
+        );
+      });
 
       stdout.writeln('\nBuilt release image: $projectName:$projectVersion');
     }

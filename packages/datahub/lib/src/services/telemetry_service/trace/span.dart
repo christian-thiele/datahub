@@ -1,16 +1,14 @@
 import 'dart:collection';
-import 'dart:developer';
+import 'dart:developer' as dev;
 
-import 'package:datahub/ioc.dart';
-import 'package:datahub/services.dart';
+import 'package:datahub/telemetry.dart';
 
-enum SpanType {
-  internal,
-  server,
-  client,
-  producer,
-  consumer,
-}
+import 'event.dart';
+import 'tracer.dart';
+import 'trace_id.dart';
+import 'span_id.dart';
+
+enum SpanType { internal, server, client, producer, consumer }
 
 class Span {
   final Tracer tracer;
@@ -21,7 +19,7 @@ class Span {
   final SpanType? type;
   bool _hasError = false;
 
-  TimelineTask? _timelineTask;
+  dev.TimelineTask? _timelineTask;
   DateTime? _startTimestamp;
   DateTime? _endTimestamp;
 
@@ -53,7 +51,7 @@ class Span {
     try {
       if (_startTimestamp == null) {
         if (tracer.enableDartTimeline) {
-          _timelineTask = TimelineTask(parent: parent?._timelineTask);
+          _timelineTask = dev.TimelineTask(parent: parent?._timelineTask);
           _timelineTask?.start(
             name,
             arguments: {
@@ -66,26 +64,24 @@ class Span {
         _startTimestamp = DateTime.timestamp();
       }
     } catch (e, stack) {
-      resolve<LogService?>()
-          ?.error('Could not start span.', error: e, trace: stack);
+      log.error('Could not start span.', error: e, stack: stack);
     }
   }
 
   void setHasError() => _hasError = true;
 
   void addEvent(String name, {Map<String, dynamic>? arguments}) {
-    _addEvent(Event(
-      name: name,
-      attributes: attributes,
-      timestamp: DateTime.timestamp(),
-    ));
+    _addEvent(
+      Event(
+        name: name,
+        attributes: attributes,
+        timestamp: DateTime.timestamp(),
+      ),
+    );
   }
 
   void addExceptionEvent(dynamic error) {
-    _addEvent(ExceptionEvent(
-      error: error,
-      timestamp: DateTime.timestamp(),
-    ));
+    _addEvent(ExceptionEvent(error: error, timestamp: DateTime.timestamp()));
     setHasError();
   }
 
@@ -93,18 +89,17 @@ class Span {
     try {
       _events.add(event);
       if (_timelineTask != null) {
-        TimelineTask(parent: _timelineTask).instant(
+        dev.TimelineTask(parent: _timelineTask).instant(
           event.name,
           arguments: {
             'traceId': traceId.hexId,
             'spanId': spanId.hexId,
-            ...event.attributes
+            ...event.attributes,
           },
         );
       }
     } catch (e, stack) {
-      resolve<LogService?>()
-          ?.error('Could not add trace event.', error: e, trace: stack);
+      log.error('Could not add trace event.', error: e, stack: stack);
     }
   }
 

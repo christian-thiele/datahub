@@ -1,5 +1,4 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
-import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/models/view_models/paging.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/data/entity_list_view.dart';
@@ -11,6 +10,7 @@ class ResourceList extends StatelessWidget {
   final List<ResourceData> entries;
   final Paging? paging;
   final bool shrinkWrap;
+  final ValueChanged<ResourceData>? onResourceClicked;
   final VoidCallback? onFirstPressed;
   final VoidCallback? onPreviousPressed;
   final VoidCallback? onNextPressed;
@@ -26,6 +26,7 @@ class ResourceList extends StatelessWidget {
     this.onPreviousPressed,
     this.onNextPressed,
     this.onLastPressed,
+    this.onResourceClicked,
   });
 
   @override
@@ -35,9 +36,12 @@ class ResourceList extends StatelessWidget {
       entryBuilder: (context, index) {
         final item = entries[index];
         return EntityListEntry(
-          onPressed: () => context.go(
-            '/resources/${Uri.encodeComponent(resource.id)}/view/${Uri.encodeComponent(item.id)}',
-          ),
+          onPressed: switch (onResourceClicked) {
+            final callback? => () => callback(item),
+            _ => () => context.go(
+              '/resources/${Uri.encodeComponent(resource.id)}/view/${Uri.encodeComponent(item.id)}',
+            ),
+          },
           icon: Icon(getIcon(resource.icon)),
           label: resource.displayField != null
               ? item.fieldData[resource.displayField].toString()

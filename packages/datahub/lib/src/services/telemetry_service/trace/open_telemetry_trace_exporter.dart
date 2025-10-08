@@ -1,10 +1,9 @@
 import 'dart:async';
 import 'dart:io' as io;
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:boost/boost.dart';
-import 'package:datahub/ioc.dart';
-import 'package:datahub/services.dart';
+import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
@@ -12,6 +11,9 @@ import 'package:grpc/grpc.dart';
 import '../opentelemetry-dart/open_telemetry.dart' as otel;
 
 import '../telemetry_scope.dart';
+import 'trace_exporter.dart';
+import 'event.dart';
+import 'span.dart';
 
 class OpenTelemetryTraceExporter extends TraceExporter {
   static const int _maxBufferSize = 100000;
@@ -38,22 +40,24 @@ class OpenTelemetryTraceExporter extends TraceExporter {
     this.securityContext,
     this.maxBatchSize = 500,
     this.resourceAttributes = const <String, dynamic>{},
-  })  : assert(maxBatchSize > 0, 'maxBatchSize must be > 0'),
-        assert(sendInterval > Duration.zero,
-            'sendInterval must be > Duration.zero');
+  }) : assert(maxBatchSize > 0, 'maxBatchSize must be > 0'),
+       assert(
+         sendInterval > Duration.zero,
+         'sendInterval must be > Duration.zero',
+       );
 
   @override
   Future<void> initialize() async {
-    _client = otel.TraceServiceClient(ClientChannel(
-      host,
-      port: port,
-      options: ChannelOptions(
-        credentials: ChannelCredentials.insecure(),
+    _client = otel.TraceServiceClient(
+      ClientChannel(
+        host,
+        port: port,
+        options: ChannelOptions(credentials: ChannelCredentials.insecure()),
+        channelShutdownHandler: () {
+          log.warn('Trace client shut down...');
+        },
       ),
-      channelShutdownHandler: () {
-        resolve<LogService?>()?.warn('Trace client shut down...');
-      },
-    ));
+    );
     _timer = Timer.periodic(sendInterval, _sendBatch);
   }
 
@@ -68,8 +72,7 @@ class OpenTelemetryTraceExporter extends TraceExporter {
     if (_buffer.length > _maxBufferSize) {
       _buffer.removeAt(0);
     } else if (_buffer.length == _warningBufferSize) {
-      resolve<LogService?>()?.warn(
-          'Approaching trace buffer cap. Trace data may be dropped soon.');
+      log.warn('Approaching trace buffer cap. Trace data may be dropped soon.');
     }
   }
 
@@ -85,11 +88,12 @@ class OpenTelemetryTraceExporter extends TraceExporter {
 
     await _sendSemaphore.throttle(() async {
       if (_buffer.length - _lastSendBufferSize > maxBatchSize) {
-        resolve<LogService?>()?.warn(
-            'Trace buffer size is increasing faster than it is being sent. Consider increasing maxBatchSize or decreasing sendInterval.');
+        log.warn(
+          'Trace buffer size is increasing faster than it is being sent. Consider increasing maxBatchSize or decreasing sendInterval.',
+        );
       }
 
-      final bufferSize = min(_buffer.length, maxBatchSize);
+      final bufferSize = math.min(_buffer.length, maxBatchSize);
       final buffer = _buffer.sublist(0, bufferSize);
       _buffer.removeRange(0, bufferSize);
 
@@ -105,16 +109,16 @@ class OpenTelemetryTraceExporter extends TraceExporter {
               ),
               scopeSpans: [
                 ...groups.values.map(
-                    (spans) => _toOtelScopeSpans(spans.first.tracer, spans))
+                  (spans) => _toOtelScopeSpans(spans.first.tracer, spans),
+                ),
               ],
-            )
+            ),
           ],
         );
 
         await _client.export(request);
       } catch (e, stack) {
-        resolve<LogService?>()
-            ?.warn('Could not send traces.', error: e, trace: stack);
+        log.warn('Could not send traces.', error: e, stack: stack);
         // put back
         _buffer.insertAll(0, buffer);
       }
@@ -178,15 +182,11 @@ class OpenTelemetryTraceExporter extends TraceExporter {
       bool v => otel.AnyValue(boolValue: v),
       List<int> v => otel.AnyValue(bytesValue: v),
       List<dynamic> v => otel.AnyValue(
-          arrayValue: otel.ArrayValue(
-            values: _toOtelArray(v),
-          ),
-        ),
+        arrayValue: otel.ArrayValue(values: _toOtelArray(v)),
+      ),
       Map<String, dynamic> v => otel.AnyValue(
-          kvlistValue: otel.KeyValueList(
-            values: _toOtelKeyValues(v),
-          ),
-        ),
+        kvlistValue: otel.KeyValueList(values: _toOtelKeyValues(v)),
+      ),
       Object v => otel.AnyValue(stringValue: v.toString()),
     };
   }

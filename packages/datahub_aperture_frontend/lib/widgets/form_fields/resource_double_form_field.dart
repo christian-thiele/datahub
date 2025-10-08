@@ -29,6 +29,10 @@ class _ResourceDoubleFormFieldState extends State<ResourceDoubleFormField> {
     return (value ?? 0).toString();
   }
 
+  double? _textToValue(String text) {
+    return double.tryParse(text);
+  }
+
   @override
   void initState() {
     _controller = TextEditingController(text: _valueToText(widget.value));
@@ -38,7 +42,7 @@ class _ResourceDoubleFormFieldState extends State<ResourceDoubleFormField> {
   @override
   void didUpdateWidget(covariant ResourceDoubleFormField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_controller.text != _valueToText(widget.value)) {
+    if (_textToValue(_controller.text) != widget.value) {
       _controller.text = _valueToText(widget.value);
     }
   }
@@ -57,7 +61,7 @@ class _ResourceDoubleFormFieldState extends State<ResourceDoubleFormField> {
       readOnly: widget.onChanged == null,
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
       onChanged: (_) {
-        if (_controller.text != _valueToText(widget.value)) {
+        if (_textToValue(_controller.text) != widget.value) {
           if (double.tryParse(_controller.text) case final value?) {
             widget.onChanged?.call(value);
           }

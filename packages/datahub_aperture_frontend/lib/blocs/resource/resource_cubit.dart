@@ -4,7 +4,6 @@ import 'package:datahub_aperture_frontend/models/view_models/paging.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:datahub_aperture_frontend/widgets/utils/immutable_list_utils.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
-import 'package:datahub_aperture_frontend/models/authentication.dart';
 import 'package:datahub_aperture_frontend/models/view_models/filter_model.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:bloc/bloc.dart';
@@ -15,15 +14,14 @@ part 'resource_state.dart';
 
 class ResourceCubit extends Cubit<ResourceState> {
   final ResourcesRepository _resourceRepository;
-  final Authentication _authentication;
   final String resourceId;
   final ResourceFilter? defaultFilter;
 
   ResourceCubit(
-    this._resourceRepository,
-    this._authentication, {
+    this._resourceRepository, {
     required this.resourceId,
     this.defaultFilter,
+    String initialSearch = '',
   }) : super(
          ResourceLoading(
            initial: true,
@@ -34,16 +32,37 @@ class ResourceCubit extends Cubit<ResourceState> {
              total: null,
              hasMore: false,
            ),
-           filter: null,
+           filter: InitialFilterState(search: initialSearch),
          ),
        ) {
     update();
   }
 
-  ResourceFilter? _buildFilter(FilterState? userFilter) {
+  ResourceFilter? _buildFilter(
+    ResourceDescription resource,
+    FilterState? userFilter,
+  ) {
     if (userFilter == null && defaultFilter == null) {
       return null;
     }
+
+    final searchFilter = (userFilter?.search.isNotEmpty ?? false)
+        ? ResourceFilter(
+            and: [
+              for (final word in userFilter!.search.split(RegExp('\\W+')))
+                ResourceFilter(
+                  or: [
+                    for (final field in _getFilterFields(resource))
+                      ResourceFilter(
+                        fieldId: field.id,
+                        type: ResourceFilterType.contains,
+                        value: word,
+                      ),
+                  ],
+                ),
+            ],
+          )
+        : null;
 
     return ResourceFilter(
       and: [
@@ -55,6 +74,7 @@ class ResourceCubit extends Cubit<ResourceState> {
             value: e.value?.toString(),
           ),
         ),
+        ?searchFilter,
       ],
     );
   }
@@ -65,40 +85,24 @@ class ResourceCubit extends Cubit<ResourceState> {
     }
 
     try {
-      final resource = await _resourceRepository.getDescription(
-        _authentication,
-        resourceId,
-      );
+      final resource = await _resourceRepository.getDescription(resourceId);
 
       final effectiveFilter =
           filter ??
-          state.filter ??
-          FilterState(
-            fields: [
-              ...resource.fields.where(
-                (e) =>
-                    [
-                      ResourceFieldType.string,
-                      ResourceFieldType.stringEnum,
-                      ResourceFieldType.int,
-                      ResourceFieldType.double,
-                      ResourceFieldType.bool,
-                      ResourceFieldType.timestamp,
-                    ].contains(e.type) ||
-                    (e.type == ResourceFieldType.list &&
-                        e.objectDescription?.firstOrNull?.type ==
-                            ResourceFieldType.string),
-              ),
-            ],
-            filters: [],
-          );
+          switch (state.filter) {
+            InitialFilterState(:final search) => FilterState(
+              fields: _getFilterFields(resource),
+              filters: [],
+              search: search,
+            ),
+            _ => state.filter,
+          };
 
       final effectivePaging = paging ?? state.paging;
 
       final response = await _resourceRepository.getResourceElements(
-        _authentication,
         resourceId,
-        filter: _buildFilter(effectiveFilter),
+        filter: _buildFilter(resource, effectiveFilter),
         offset: effectivePaging.offset,
         limit: effectivePaging.pageSize,
       );
@@ -130,13 +134,14 @@ class ResourceCubit extends Cubit<ResourceState> {
 
   void addFilter(FilterModel model) {
     if (state case ResourceValue(
-      :final filter?,
+      :final filter,
       paging: Paging(:final pageSize),
     )) {
       update(
         filter: FilterState(
           fields: filter.fields,
           filters: [...filter.filters, model],
+          search: filter.search,
         ),
         paging: Paging.empty(0, pageSize),
       );
@@ -145,13 +150,30 @@ class ResourceCubit extends Cubit<ResourceState> {
 
   void removeFilter(int index) {
     if (state case ResourceValue(
-      :final filter?,
+      :final filter,
       paging: Paging(:final pageSize),
     )) {
       update(
         filter: FilterState(
           fields: filter.fields,
           filters: filter.filters.copyWithRemoved(index),
+          search: filter.search,
+        ),
+        paging: Paging.empty(0, pageSize),
+      );
+    }
+  }
+
+  void updateSearch(String text) {
+    if (state case ResourceValue(
+      :final filter,
+      paging: Paging(:final pageSize),
+    )) {
+      update(
+        filter: FilterState(
+          fields: filter.fields,
+          filters: filter.filters,
+          search: text,
         ),
         paging: Paging.empty(0, pageSize),
       );
@@ -198,5 +220,24 @@ class ResourceCubit extends Cubit<ResourceState> {
     )) {
       _pageTo(total - length, length);
     }
+  }
+
+  List<ResourceField> _getFilterFields(ResourceDescription resource) {
+    return [
+      ...resource.fields.where(
+        (e) =>
+            [
+              ResourceFieldType.string,
+              ResourceFieldType.stringEnum,
+              ResourceFieldType.int,
+              ResourceFieldType.double,
+              ResourceFieldType.bool,
+              ResourceFieldType.timestamp,
+            ].contains(e.type) ||
+            (e.type == ResourceFieldType.list &&
+                e.objectDescription?.firstOrNull?.type ==
+                    ResourceFieldType.string),
+      ),
+    ];
   }
 }

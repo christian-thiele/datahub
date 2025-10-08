@@ -1,0 +1,9 @@
+[Desktop Entry]
+Exec=aperture
+Version=1.0
+Type=Application
+Categories=Development
+Name=Datahub Aperture
+Terminal=false
+MimeType=x-scheme-handler/aperture;
+StartupNotify=false

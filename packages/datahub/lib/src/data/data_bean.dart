@@ -30,7 +30,8 @@ final class DataBean<T extends DataObject<T>> {
   DataField<T, dynamic>? get idField =>
       fields.where((field) => field.meta.any((e) => e is Id)).firstOrNull;
 
-  DataField<T, dynamic> get requireIdField => idField ?? (throw MissingIdFieldError(this));
+  DataField<T, dynamic> get requireIdField =>
+      idField ?? (throw MissingIdFieldError(this));
 
   Map<DataField, List<DataFieldConstraint>> checkConstraints(T object) {
     return {

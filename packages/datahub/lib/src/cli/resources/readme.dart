@@ -1,4 +1,5 @@
-String createReadme(String projectName) => '''# $projectName
+String createReadme(String projectName) =>
+    '''# $projectName
 
 This is a [DataHub][1] service.
 

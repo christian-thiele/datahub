@@ -1,12 +1,14 @@
+import 'package:datahub/config.dart';
+import 'package:datahub/src/scaffold/tree_node.dart';
 import 'package:datahub/utils.dart';
 import 'service_host.dart';
 
 abstract interface class ServiceRegistry {
-  T find<T>(Find<T> finder, Object scopeKey);
+  T findComponent<T>(Find<T> finder, TreeNode scope);
+
+  T readConfig<T>(Config<T> config, TreeNode scope);
 
   void register<T extends Service>(T service);
-
-  void deRegister<T extends Service>(ServiceInstance<T> instance);
 }
 
 class Find<T> {
@@ -16,6 +18,8 @@ class Find<T> {
 
   bool isCandidate(ServiceInstance service) =>
       service is T && test(service as T);
+
+  T find() => Context.ofZone().find(this);
 
   @override
   String toString() => 'Find<$T>';

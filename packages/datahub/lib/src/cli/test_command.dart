@@ -85,20 +85,20 @@ class TestCommand extends CliCommand {
 
     if (argResults!['compose']) {
       await step('Creating docker compose environment.', () async {
-        return await Process.run(
-          'docker',
-          ['compose', '-f', 'test/docker-compose.yml', 'up', '-d'],
-        );
+        return await Process.run('docker', [
+          'compose',
+          '-f',
+          'test/docker-compose.yml',
+          'up',
+          '-d',
+        ]);
       });
 
       final warmup = int.tryParse(argResults!['warmup'].toString()) ?? 0;
       if (warmup > 0) {
-        await step(
-          'Waiting for environment to warm up.',
-          () async {
-            await Future.delayed(Duration(seconds: warmup));
-          },
-        );
+        await step('Waiting for environment to warm up.', () async {
+          await Future.delayed(Duration(seconds: warmup));
+        });
       }
     }
 
@@ -138,10 +138,12 @@ class TestCommand extends CliCommand {
 
     if (argResults!['compose']) {
       await step('Disposing docker compose environment.', () async {
-        final result = await Process.start(
-          'docker',
-          ['compose', '-f', 'test/docker-compose.yml', 'down'],
-        );
+        final result = await Process.start('docker', [
+          'compose',
+          '-f',
+          'test/docker-compose.yml',
+          'down',
+        ]);
         if (await result.exitCode > 0) {
           throw Exception('Exit code ${await result.exitCode}.');
         }
@@ -159,7 +161,7 @@ class Test {
   final StringBuffer log;
 
   Test(this.id, this.name, [this.success, StringBuffer? log])
-      : log = log ?? StringBuffer();
+    : log = log ?? StringBuffer();
 
   Test done(bool success) => Test(id, name, success, log);
 }

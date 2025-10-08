@@ -5,7 +5,7 @@ homepage: https://datahubproject.net/
 resolution: workspace
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.8.0
 
 executables:
   datahub:
@@ -27,11 +27,12 @@ dependencies:
   fixnum: ^1.1.0
   stack_trace: ^1.11.1
   grpc: ^4.1.0
+  meta: ^1.16.0
 
 dev_dependencies:
   datahub_codegen: 0.18.0-dev.1
   lints: ^6.0.0
-  build_runner: ^2.7.0
+  build_runner: ^2.7.1
 
 false_secrets:
   - test/resource_hub/localhost.crt

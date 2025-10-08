@@ -29,5 +29,9 @@
   "draft": "Draft",
   "refresh": "Refresh",
   "resourceDeleted": "Resource Deleted.",
-  "fileSelected": "File selected"
+  "fileSelected": "File selected",
+  "username": "Username",
+  "password": "Password",
+  "deleteScheduled": "Delete scheduled",
+  "loginAuthcode": "Login via IDP"
 }

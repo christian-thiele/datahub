@@ -1,88 +1,72 @@
+import 'package:datahub/datahub.dart';
+
 import 'sql_exception.dart';
 
 import 'package:datahub_postgres/schema.dart';
 
-abstract interface class SqlBuilder {
-  Sql toSql();
+class _Sequence {
+  var _value = 0;
+
+  int get value => ++_value;
 }
 
-class Sql implements SqlBuilder {
-  final List<SqlSegment> segments;
+sealed class Sql {
+  const Sql();
 
-  Sql.ofSegments(this.segments);
+  static const and = RawSql(' AND ');
+  static const or = RawSql(' OR ');
 
-  static Sql param<T>(T? value, PostgresqlDataType<T> type) =>
-      Sql.ofSegments([SqlParamSegment(value, type)]);
+  static const equals = RawSql(' = ');
+  static const notEquals = RawSql(' <> ');
+  static const greaterThan = RawSql(' > ');
+  static const lessThan = RawSql(' < ');
+  static const greaterOrEqual = RawSql(' >= ');
+  static const lessOrEqual = RawSql(' <= ');
 
-  Sql.combine(Iterable<Sql> elements)
-      : segments = elements.expand((e) => e.segments).toList();
+  factory Sql.join(Iterable<Sql> segments) {
+    if (segments.isEmpty) {
+      return RawSql.empty;
+    }
 
-  Sql(String sql) : this.ofSegments([if (sql.isNotEmpty) SqlTextSegment(sql)]);
+    if (segments.length == 1) {
+      return segments.single;
+    }
 
-  Sql.name(String name) : this(escapeName(name));
-
-  Sql.text(String text) : this(escapeText(text));
-
-  Sql.qualifiedName(Iterable<String> parts)
-      : this(parts.map(escapeName).join('.'));
-
-  void add(Sql sql) => segments.addAll(sql.segments);
-
-  void addSegment(SqlSegment segment) => segments.add(segment);
-
-  void addSql(String sql) => segments.add(SqlTextSegment(sql));
-
-  void wrap() {
-    segments.insert(0, SqlTextSegment('('));
-    segments.add(SqlTextSegment(')'));
+    Sql result = segments.first;
+    for (final segment in segments.skip(1)) {
+      result += segment;
+    }
+    return result;
   }
 
-  Sql operator +(Sql sql) => Sql.ofSegments([...segments, ...sql.segments]);
+  factory Sql.joinWrap(Iterable<Sql> segments) => Sql.join(segments).wrap();
+
+  factory Sql.name(String name) => RawSql(escapeName(name));
+
+  factory Sql.qualifiedName(Iterable<String> name) =>
+      RawSql(name.map(escapeName).join('.'));
+
+  factory Sql.text(String text) => RawSql(escapeText(text));
+
+  factory Sql.function(String name, Iterable<Sql> args) =>
+      RawSql(name) + Sql.joinWrap(args.separatedBy(RawSql(', ')));
+
+  Sql operator +(Sql other) => CombinedSql(this, other);
+
+  Iterable<dynamic> getParameters();
+
+  Iterable<PostgresqlDataType> getParameterTypes();
+
+  Iterable<dynamic> getEncodedParameters();
+
+  String toLiteralString();
+
+  Sql wrap() => Sql.join([RawSql('('), this, RawSql(')')]);
 
   @override
-  String toString() {
-    var paramId = 0;
-    return [
-      for (final segment in segments)
-        switch (segment) {
-          SqlTextSegment(:final text) => text,
-          SqlParamSegment(type: PostgresqlDataType(:final name)) =>
-            '\$${++paramId}::$name',
-        }
-    ].join();
-  }
+  String toString() => _toSqlString(_Sequence());
 
-  String toLiteralString() {
-    return [
-      for (final segment in segments)
-        switch (segment) {
-          SqlTextSegment(:final text) => text,
-          SqlParamSegment(:final type, :final value) =>
-            type.sqlLiteral(value).toLiteralString(),
-        }
-    ].join();
-  }
-
-  List<PostgresqlDataType> getParameterTypes() {
-    return segments.whereType<SqlParamSegment>().map((e) => e.type).toList();
-  }
-
-  List<dynamic> getParameters() {
-    return segments.whereType<SqlParamSegment>().map((e) => e.value).toList();
-  }
-
-  List<dynamic> getEncodedParameters() {
-    return segments
-        .whereType<SqlParamSegment>()
-        .map((e) => e.type.encode(e.value))
-        .toList();
-  }
-
-  void addParam<T>(T value, PostgresqlDataType<T> type) {
-    addSegment(SqlParamSegment<T>(value, type));
-  }
-
-  Sql clone() => Sql.ofSegments(segments.toList());
+  String _toSqlString(_Sequence paramSeq);
 
   static String escapeText(String text) {
     return "'${text.replaceAll(r'\', r'\\').replaceAll("'", "''")}'";
@@ -90,8 +74,10 @@ class Sql implements SqlBuilder {
 
   static String escapeName(String name) {
     if (name.isEmpty || name.length > 128) {
-      throw SqlException('Name "$name" has invalid length. '
-          '(Must be in range 1 - 128)');
+      throw SqlException(
+        'Name "$name" has invalid length. '
+        '(Must be in range 1 - 128)',
+      );
     }
 
     if (name.contains('"')) {
@@ -105,38 +91,105 @@ class Sql implements SqlBuilder {
 
     return '"$name"';
   }
+}
+
+abstract mixin class SqlBuilder implements Sql {
+  Sql toSql();
 
   @override
-  Sql toSql() => this;
+  String _toSqlString(_Sequence paramSeq) => toSql()._toSqlString(paramSeq);
+
+  @override
+  Iterable getEncodedParameters() => toSql().getEncodedParameters();
+
+  @override
+  Iterable<PostgresqlDataType> getParameterTypes() =>
+      toSql().getParameterTypes();
+
+  @override
+  Iterable getParameters() => toSql().getParameters();
+
+  @override
+  String toLiteralString() => toSql().toLiteralString();
+
+  @override
+  Sql operator +(Sql other) => toSql() + other;
+
+  @override
+  Sql wrap() => toSql().wrap();
+
+  @override
+  String toString() => _toSqlString(_Sequence());
 }
 
-sealed class SqlSegment {}
+class CombinedSql extends Sql {
+  final Sql left;
+  final Sql right;
 
-final class SqlTextSegment extends SqlSegment {
-  final String text;
+  const CombinedSql(this.left, this.right);
 
-  SqlTextSegment(this.text);
+  @override
+  String toLiteralString() => left.toLiteralString() + right.toLiteralString();
+
+  @override
+  Iterable<PostgresqlDataType> getParameterTypes() =>
+      left.getParameterTypes().followedBy(right.getParameterTypes());
+
+  @override
+  Iterable<dynamic> getParameters() =>
+      left.getParameters().followedBy(right.getParameters());
+
+  @override
+  Iterable<dynamic> getEncodedParameters() =>
+      left.getEncodedParameters().followedBy(right.getEncodedParameters());
+
+  @override
+  String _toSqlString(_Sequence paramSeq) =>
+      left._toSqlString(paramSeq) + right._toSqlString(paramSeq);
 }
 
-final class SqlParamSegment<T> extends SqlSegment {
+class RawSql extends Sql {
+  final String raw;
+
+  const RawSql(this.raw);
+
+  static const empty = RawSql('');
+
+  @override
+  String toLiteralString() => raw;
+
+  @override
+  Iterable<PostgresqlDataType> getParameterTypes() => Iterable.empty();
+
+  @override
+  Iterable<dynamic> getParameters() => Iterable.empty();
+
+  @override
+  Iterable<dynamic> getEncodedParameters() => Iterable.empty();
+
+  @override
+  String _toSqlString(_Sequence paramSeq) => raw;
+}
+
+class ParameterSql<T> extends Sql {
   final T? value;
   final PostgresqlDataType<T> type;
 
-  SqlParamSegment(this.value, this.type);
-}
+  const ParameterSql(this.value, this.type);
 
-extension ParamSqlIterableExtension on Iterable<Sql> {
-  Sql joinSql([String? separator]) {
-    final it = iterator;
-    final sql = Sql.ofSegments([]);
-    if (!it.moveNext()) return sql;
-    sql.add(it.current);
-    while (it.moveNext()) {
-      if (separator?.isNotEmpty == true) {
-        sql.addSql(separator!);
-      }
-      sql.add(it.current);
-    }
-    return sql;
-  }
+  @override
+  String toLiteralString() => type.sqlLiteral(value).toLiteralString();
+
+  @override
+  Iterable<PostgresqlDataType> getParameterTypes() => [type];
+
+  @override
+  Iterable<dynamic> getParameters() => [value];
+
+  @override
+  Iterable<dynamic> getEncodedParameters() => [type.encode(value)];
+
+  @override
+  String _toSqlString(_Sequence paramSeq) =>
+      '\$${paramSeq.value}::${type.name}';
 }

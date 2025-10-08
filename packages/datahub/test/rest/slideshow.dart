@@ -3,7 +3,7 @@ import 'package:datahub/datahub.dart';
 part 'slideshow.g.dart';
 
 @Data()
-class Slideshow extends _Slideshow {
+class Slideshow extends $Slideshow {
   final String author;
   final String date;
   final String title;
@@ -13,8 +13,6 @@ class Slideshow extends _Slideshow {
     required this.date,
     required this.title,
   });
-
-  static get bean => _Slideshow.bean;
 
   @override
   bool operator ==(Object other) {

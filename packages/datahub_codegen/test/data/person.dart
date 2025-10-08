@@ -5,7 +5,7 @@ import 'package:datahub/data.dart';
 part 'person.g.dart';
 
 @Data()
-class Person extends _Person {
+class Person extends $Person {
   final int id;
   final String firstName;
   final String lastName;
@@ -25,6 +25,4 @@ class Person extends _Person {
     required this.isBlocked,
     required this.picture,
   });
-
-  static DataBean<Person> get bean => _Person.bean;
 }

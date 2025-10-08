@@ -9,10 +9,12 @@ class PostgisGeography extends PostgresqlDataType<Geometry> {
 
   @override
   dynamic encode(Geometry? value) => switch (value) {
-        final value? =>
-          pg.EncodedValue(value.toEWKB(), format: pg.EncodingFormat.binary),
-        _ => null,
-      };
+    final value? => pg.EncodedValue(
+      value.toEWKB(),
+      format: pg.EncodingFormat.binary,
+    ),
+    _ => null,
+  };
 
   @override
   Geometry? decode(value) {
@@ -21,8 +23,9 @@ class PostgisGeography extends PostgresqlDataType<Geometry> {
       Uint8List() => Geometry.parseEWKB(value),
       Geometry() => value,
       null => null,
-      _ =>
-        throw Exception('Cannot decode geography from ${value.runtimeType}.'),
+      _ => throw Exception(
+        'Cannot decode geography from ${value.runtimeType}.',
+      ),
     };
   }
 }

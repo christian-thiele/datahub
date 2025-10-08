@@ -22,12 +22,14 @@ class PostgresqlConnection extends DatabaseConnection {
 
   @override
   Future<T> runTransaction<T>(
-      Future<T> Function(PostgresqlContext context) delegate) async {
+    Future<T> Function(PostgresqlContext context) delegate,
+  ) async {
     if (Zone.current[#postgresTransactionConnection] == _connection &&
         Zone.current[#postgresTransactionContext] != null) {
-      final context = await (Zone.current[#postgresTransactionContext]
-              as Completer<PostgresqlContext>)
-          .future;
+      final context =
+          await (Zone.current[#postgresTransactionContext]
+                  as Completer<PostgresqlContext>)
+              .future;
       return await delegate(context);
     }
 
@@ -35,15 +37,14 @@ class PostgresqlConnection extends DatabaseConnection {
     return await runZoned(
       () {
         return _connection.runTx((session) async {
-          final context =
-              PostgresqlContext(adapter as PostgresqlService, session);
+          final context = PostgresqlContext(session, true);
           contextCompleter.complete(context);
           return await delegate(context);
         });
       },
       zoneValues: {
         #postgresTransactionConnection: _connection,
-        #postgresTransactionContext: contextCompleter
+        #postgresTransactionContext: contextCompleter,
       },
     );
   }

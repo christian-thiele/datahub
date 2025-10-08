@@ -5,7 +5,7 @@ import 'resource_revision_info.dart';
 part 'resource_data.g.dart';
 
 @Data()
-class ResourceData extends _ResourceData {
+class ResourceData extends $ResourceData {
   final String id;
   final Map<String, dynamic> fieldData;
   final String? revisionId;
@@ -17,6 +17,4 @@ class ResourceData extends _ResourceData {
     this.revisionId,
     this.revisions = const [],
   });
-
-  static DataBean<ResourceData> get bean => _ResourceData.bean;
 }

@@ -18,7 +18,8 @@ class CreateCommand extends CliCommand {
     argParser.addFlag(
       'force',
       abbr: 'f',
-      help: 'Force create project.\n'
+      help:
+          'Force create project.\n'
           'Does not cancel if the directory already exists.',
     );
   }
@@ -31,28 +32,27 @@ class CreateCommand extends CliCommand {
 
   @override
   Future<void> runCommand() async {
-    final projectName = argResults!.rest.firstOrNull ??
+    final projectName =
+        argResults!.rest.firstOrNull ??
         (throw CliException('Missing project name.'));
 
     assertValidPackageName(projectName);
     stdout.write('Creating project "$projectName"...\n\n');
     final baseDir = Directory(projectName);
 
-    await step(
-      'Creating dart package.',
-      () async {
-        final force = argResults?['force'] ?? false;
-        if (!force && await baseDir.exists()) {
-          throw CliException(
-              'Directory "$projectName" already exists in working dir.');
-        }
-
-        await dart(
-          'create $projectName -t console --no-pub' + (force ? ' --force' : ''),
-          verbose: verbose,
+    await step('Creating dart package.', () async {
+      final force = argResults?['force'] ?? false;
+      if (!force && await baseDir.exists()) {
+        throw CliException(
+          'Directory "$projectName" already exists in working dir.',
         );
-      },
-    );
+      }
+
+      await dart(
+        'create $projectName -t console --no-pub' + (force ? ' --force' : ''),
+        verbose: verbose,
+      );
+    });
 
     await step('Creating DataHub project structure.', () async {
       await createOrReplace(
@@ -101,19 +101,11 @@ class CreateCommand extends CliCommand {
         'void main() {\n// TODO Add tests\n}\n',
       );
 
-      await dart(
-        'format .',
-        baseDir: baseDir,
-        verbose: verbose,
-      );
+      await dart('format .', baseDir: baseDir, verbose: verbose);
     });
 
     await step('Adding dependencies.', () async {
-      await dart(
-        'pub add boost datahub',
-        baseDir: baseDir,
-        verbose: verbose,
-      );
+      await dart('pub add boost datahub', baseDir: baseDir, verbose: verbose);
       await dart(
         'pub add --dev datahub_codegen build_runner',
         baseDir: baseDir,
@@ -122,11 +114,7 @@ class CreateCommand extends CliCommand {
     });
 
     await step('Running pub get.', () async {
-      await dart(
-        'pub get',
-        baseDir: baseDir,
-        verbose: verbose,
-      );
+      await dart('pub get', baseDir: baseDir, verbose: verbose);
     });
   }
 }

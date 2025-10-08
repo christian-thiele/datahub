@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:datahub/ioc.dart';
-import 'package:datahub/services.dart';
+import 'package:datahub/config.dart';
+import 'package:datahub/src/services/telemetry_service/telemetry_service.dart';
 import 'package:datahub/utils.dart';
 
 export 'metrics/metric.dart';
@@ -24,6 +24,8 @@ export 'trace/trace_exporter.dart';
 export 'trace/trace_id.dart';
 export 'trace/trace_group.dart';
 export 'trace/tracer.dart';
+
+import 'package:datahub/scaffold.dart';
 
 /// Internal service for collecting and exposing application metrics.
 ///
@@ -71,74 +73,7 @@ export 'trace/tracer.dart';
 ///
 /// * `dartTimelineExporter.enable`: Enable reporting trace spans as TimelineTasks to the dart developer timeline (default true)
 ///
-class TelemetryService extends BaseService {
-  TelemetryService() : super('datahub.telemetry');
-
-  late final enableEndpoint =
-      config<bool?>('metrics.prometheusExporter.enable') ?? false;
-  late final address = config<String?>('metrics.prometheusExporter.address');
-  late final port = config<int?>('metrics.prometheusExporter.port') ?? 9090;
-  late final path =
-      config<String?>('metrics.prometheusExporter.path') ?? '/metrics';
-
-  late final enableOtelExporter =
-      config<bool?>('traces.openTelemetryExporter.enable') ?? false;
-  late final otelCollectorHost =
-      config<String?>('traces.openTelemetryExporter.host');
-  late final otelCollectorPort =
-      config<int?>('traces.openTelemetryExporter.port') ?? 4317;
-  late final otelExporterSendInterval =
-      config<int?>('traces.openTelemetryExporter.sendInterval') ?? 5;
-  late final enableDartTimeline =
-      config<bool?>('traces.dartTimelineExporter.enable') ?? true;
-
-  late final MetricsExporter? _metricsExporter;
-  late final TraceExporter _traceExporter;
-
-  final _collectors = Set<MetricCollector>();
-  final _metrics = <String, Metric>{};
-  final _tracers = <String, Tracer>{};
-
-  late final Tracer defaultTracer;
-  final _scrapeMetric = GaugeMetric('datahub_instrumentation_scrape_duration');
-
-  @override
-  Future<void> initialize() async {
-    if (enableEndpoint) {
-      _metricsExporter = PrometheusExporter(
-        address: address,
-        port: port,
-        path: path,
-        onScrape: scrapeMetrics,
-      );
-
-      await _metricsExporter!.initialize();
-    } else {
-      _metricsExporter = null;
-    }
-
-    if (enableOtelExporter && otelCollectorHost != null) {
-      _traceExporter = OpenTelemetryTraceExporter(
-        host: otelCollectorHost!,
-        port: otelCollectorPort,
-        sendInterval: Duration(seconds: otelExporterSendInterval),
-        resourceAttributes: {
-          'service.name': resolve<ConfigService>().serviceName,
-          'os.type': Platform.operatingSystem,
-          'os.version': Platform.operatingSystemVersion,
-          'os.hostname': Platform.localHostname,
-          'dart.version': Platform.version,
-        },
-      );
-
-      await _traceExporter.initialize();
-    } else {
-      _traceExporter = DiscardTraceExporter();
-    }
-
-    defaultTracer = getTracer(resolve<ConfigService>().serviceName);
-  }
-
+abstract interface class Telemetry {
   /// Defines a metric of type [CounterMetric].
   ///
   /// If this was defined before, the same instance to the previously
@@ -149,15 +84,7 @@ class TelemetryService extends BaseService {
     String name, {
     Map<String, List<String>>? labels,
     String? help,
-  }) {
-    return switch (_metrics[name]) {
-      final CounterMetric existing => existing,
-      null => _metrics[name] = CounterMetric(name, labels: labels, help: help),
-      final existing => throw ApiError(
-          'Metric $name is already defined with different type: $existing',
-        ),
-    };
-  }
+  });
 
   /// Defines a metric of type [GaugeMetric].
   ///
@@ -169,15 +96,7 @@ class TelemetryService extends BaseService {
     String name, {
     Map<String, List<String>>? labels,
     String? help,
-  }) {
-    return switch (_metrics[name]) {
-      final GaugeMetric existing => existing,
-      null => _metrics[name] = GaugeMetric(name, labels: labels, help: help),
-      final existing => throw ApiError(
-          'Metric $name is already defined with different type: $existing',
-        ),
-    };
-  }
+  });
 
   /// Defines a metric of type [HistogramMetric] with linear bucket
   /// distribution.
@@ -193,21 +112,7 @@ class TelemetryService extends BaseService {
     required num width,
     required int count,
     String? help,
-  }) {
-    return switch (_metrics[name]) {
-      final HistogramMetric existing => existing,
-      null => _metrics[name] = HistogramMetric.linear(
-          name,
-          start: start,
-          width: width,
-          count: count,
-          help: help,
-        ),
-      final existing => throw ApiError(
-          'Metric already defined with different type: $existing',
-        ),
-    };
-  }
+  });
 
   /// Defines a metric of type [HistogramMetric] with exponential bucket
   /// distribution.
@@ -223,28 +128,252 @@ class TelemetryService extends BaseService {
     required num factor,
     required int count,
     String? help,
+  });
+
+  /// Collects all current values of metrics into [SampleGroup]s.
+  Future<List<SampleGroup>> scrapeMetrics();
+
+  /// Registers a custom collector.
+  ///
+  /// Custom collectors can fetch metrics from other services,
+  /// query values from databases or generate values in any other way.
+  ///
+  /// For simple metrics like counters or gauges prefer using one of the
+  /// definition methods:
+  ///  - [counter]
+  ///  - [gauge]
+  ///  - [linearHistogram]
+  ///  - [exponentialHistogram]
+  void registerCollector(MetricCollector metricCollector);
+
+  /// Unregisters a custom collector.
+  void unregisterCollector(MetricCollector metricCollector);
+
+  FutureOr<R> trace<R>(
+    String name,
+    SpanType type,
+    Map<String, dynamic> attributes,
+    FutureOr<R> Function() delegate,
+  );
+}
+
+class TelemetryService implements Service {
+  final Config<String> serviceName;
+  final Config<bool> enableEndpoint;
+  final Config<String?> address;
+  final Config<int> port;
+  final Config<String> path;
+  final Config<bool> enableOtelExporter;
+  final Config<String?> otelCollectorHost;
+  final Config<int> otelCollectorPort;
+  final Config<int> otelExporterSendInterval;
+  final Config<bool> enableDartTimeline;
+
+  TelemetryService({
+    this.serviceName = const Config<String>(
+      'serviceName',
+      defaultValue: 'DataHub',
+    ),
+    this.enableEndpoint = const Config<bool>(
+      'metrics.prometheusExporter.enable',
+      defaultValue: false,
+    ),
+    this.address = const Config<String?>('metrics.prometheusExporter.address'),
+    this.port = const Config<int>(
+      'metrics.prometheusExporter.port',
+      defaultValue: 9090,
+    ),
+    this.path = const Config<String>(
+      'metrics.prometheusExporter.path',
+      defaultValue: 'metrics',
+    ),
+    this.enableOtelExporter = const Config<bool>(
+      'traces.openTelemetryExporter.enable',
+      defaultValue: false,
+    ),
+    this.otelCollectorHost = const Config<String?>(
+      'traces.openTelemetryExporter.host',
+    ),
+    this.otelCollectorPort = const Config<int>(
+      'traces.openTelemetryExporter.port',
+      defaultValue: 4317,
+    ),
+    this.otelExporterSendInterval = const Config<int>(
+      'traces.openTelemetryExporter.sendInterval',
+      defaultValue: 5,
+    ),
+    this.enableDartTimeline = const Config<bool>(
+      'traces.dartTimelineExporter.enable',
+      defaultValue: true,
+    ),
+  });
+
+  @override
+  ServiceInstance<TelemetryService> createInstance() =>
+      _TelemetryServiceInstance();
+}
+
+class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
+    implements Telemetry {
+  late final MetricsExporter? _metricsExporter;
+  late final TraceExporter _traceExporter;
+
+  final _collectors = <MetricCollector>{};
+  final _metrics = <String, Metric>{};
+  final _tracers = <String, Tracer>{};
+
+  late final Tracer defaultTracer;
+  final _scrapeMetric = GaugeMetric('datahub_instrumentation_scrape_duration');
+
+  @override
+  Future<void> initialize() async {
+    if (read(service.enableEndpoint)) {
+      _metricsExporter = PrometheusExporter(
+        address: read(service.address),
+        port: read(service.port),
+        path: read(service.path),
+        onScrape: scrapeMetrics,
+      );
+
+      await _metricsExporter!.initialize();
+    } else {
+      _metricsExporter = null;
+    }
+
+    if (read(service.enableOtelExporter) &&
+        read(service.otelCollectorHost) != null) {
+      _traceExporter = OpenTelemetryTraceExporter(
+        host: read(service.otelCollectorHost)!,
+        port: read(service.otelCollectorPort),
+        sendInterval: Duration(seconds: read(service.otelExporterSendInterval)),
+        resourceAttributes: {
+          'service.name': read(service.serviceName),
+          'os.type': Platform.operatingSystem,
+          'os.version': Platform.operatingSystemVersion,
+          'os.hostname': Platform.localHostname,
+          'dart.version': Platform.version,
+        },
+      );
+
+      await _traceExporter.initialize();
+    } else {
+      _traceExporter = DiscardTraceExporter();
+    }
+
+    defaultTracer = getTracer(read(service.serviceName));
+  }
+
+  /// Defines a metric of type [CounterMetric].
+  ///
+  /// If this was defined before, the same instance to the previously
+  /// defined [CounterMetric] is returned. This allows for
+  /// metric objects to be dependency injected and used across different
+  /// places.
+  @override
+  CounterMetric counter(
+    String name, {
+    Map<String, List<String>>? labels,
+    String? help,
+  }) {
+    return switch (_metrics[name]) {
+      final CounterMetric existing => existing,
+      null => _metrics[name] = CounterMetric(name, labels: labels, help: help),
+      final existing => throw ApiError(
+        'Metric $name is already defined with different type: $existing',
+      ),
+    };
+  }
+
+  /// Defines a metric of type [GaugeMetric].
+  ///
+  /// If this was defined before, the same instance to the previously
+  /// defined [GaugeMetric] is returned. This allows for
+  /// metric objects to be dependency injected and used across different
+  /// places.
+  @override
+  GaugeMetric gauge(
+    String name, {
+    Map<String, List<String>>? labels,
+    String? help,
+  }) {
+    return switch (_metrics[name]) {
+      final GaugeMetric existing => existing,
+      null => _metrics[name] = GaugeMetric(name, labels: labels, help: help),
+      final existing => throw ApiError(
+        'Metric $name is already defined with different type: $existing',
+      ),
+    };
+  }
+
+  /// Defines a metric of type [HistogramMetric] with linear bucket
+  /// distribution.
+  ///
+  /// If this was defined before, the same instance to the previously
+  /// defined [HistogramMetric] is returned. The parameters [start],
+  /// [width] and [count] will be ignored in this case. This allows for
+  /// metric objects to be dependency injected and used across different
+  /// places.
+  @override
+  HistogramMetric linearHistogram(
+    String name, {
+    required num start,
+    required num width,
+    required int count,
+    String? help,
+  }) {
+    return switch (_metrics[name]) {
+      final HistogramMetric existing => existing,
+      null => _metrics[name] = HistogramMetric.linear(
+        name,
+        start: start,
+        width: width,
+        count: count,
+        help: help,
+      ),
+      final existing => throw ApiError(
+        'Metric already defined with different type: $existing',
+      ),
+    };
+  }
+
+  /// Defines a metric of type [HistogramMetric] with exponential bucket
+  /// distribution.
+  ///
+  /// If this was defined before, the same instance to the previously
+  /// defined [HistogramMetric] is returned. The parameters [start],
+  /// [factor] and [count] will be ignored in this case. This allows for
+  /// metric objects to be dependency injected and used across different
+  /// places.
+  @override
+  HistogramMetric exponentialHistogram(
+    String name, {
+    required num start,
+    required num factor,
+    required int count,
+    String? help,
   }) {
     return switch (_metrics[name]) {
       final HistogramMetric existing => existing,
       null => _metrics[name] = HistogramMetric.exponential(
-          name,
-          start: start,
-          factor: factor,
-          count: count,
-          help: help,
-        ),
+        name,
+        start: start,
+        factor: factor,
+        count: count,
+        help: help,
+      ),
       final existing => throw ApiError(
-          'Metric already defined with different type: $existing',
-        ),
+        'Metric already defined with different type: $existing',
+      ),
     };
   }
 
   /// Collects all current values of metrics into [SampleGroup]s.
+  @override
   Future<List<SampleGroup>> scrapeMetrics() async {
     final samples = <SampleGroup>[];
     _scrapeMetric.measureDuration(() async {
-      for (final _metric in _metrics.values) {
-        samples.add(_metric.collect());
+      for (final metric in _metrics.values) {
+        samples.add(metric.collect());
       }
       for (final collector in _collectors) {
         switch (collector) {
@@ -270,15 +399,18 @@ class TelemetryService extends BaseService {
   ///  - [gauge]
   ///  - [linearHistogram]
   ///  - [exponentialHistogram]
+  @override
   void registerCollector(MetricCollector metricCollector) {
     _collectors.add(metricCollector);
   }
 
   /// Unregisters a custom collector.
+  @override
   void unregisterCollector(MetricCollector metricCollector) {
     _collectors.remove(metricCollector);
   }
 
+  @override
   FutureOr<R> trace<R>(
     String name,
     SpanType type,
@@ -300,7 +432,7 @@ class TelemetryService extends BaseService {
   }
 
   @override
-  Future<void> shutdown() async {
+  Future<void> dispose() async {
     await _metricsExporter?.shutdown();
     await _traceExporter.shutdown();
   }

@@ -1,25 +1,19 @@
+import 'package:datahub_postgres/schema.dart';
 import 'sql.dart';
 import 'sql_select.dart';
 
-class SqlQualifiedRelation implements SqlSelectTarget {
+class SqlQualifiedRelation extends SqlSelectTarget {
   final String? schema;
   final String relation;
 
-  SqlQualifiedRelation(this.schema, this.relation);
+  const SqlQualifiedRelation(this.schema, this.relation);
 
-  @override
-  String toString() {
-    final buffer = StringBuffer();
-    if (schema case final schema?) {
-      buffer.write(Sql.escapeName(schema));
-      buffer.write('.');
-    }
-    buffer.write(Sql.escapeName(relation));
-    return buffer.toString();
-  }
+  SqlQualifiedRelation.of(PostgresqlRelation relation)
+    : this(relation.schemaName, relation.name);
 
   @override
   String get name => relation;
 
-  Sql toSql() => Sql(toString());
+  @override
+  Sql toSql() => Sql.qualifiedName([?schema, relation]);
 }

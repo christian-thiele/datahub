@@ -44,10 +44,6 @@ class _ResourceGeometryFormFieldState extends State<ResourceGeometryFormField>
   }
 
   void _update() {
-    if (widget.value == null) {
-      return;
-    }
-
     features = [];
     if (widget.value case Polygon polygon) {
       features.add(
@@ -121,13 +117,15 @@ class _ResourceGeometryFormFieldState extends State<ResourceGeometryFormField>
                   ),
                   EditorLayer(
                     features: features,
-                    onChanged: widget.onChanged != null ? (List<EditorPolygon> value) {
-                      if (value.isEmpty) {
-                        widget.onChanged?.call(null);
-                      } else if (value.length == 1) {
-                        widget.onChanged?.call(value.first.toGeometry());
-                      }
-                    } : null,
+                    onChanged: widget.onChanged != null
+                        ? (List<EditorPolygon> value) {
+                            if (value.isEmpty) {
+                              widget.onChanged?.call(null);
+                            } else if (value.length == 1) {
+                              widget.onChanged?.call(value.first.toGeometry());
+                            }
+                          }
+                        : null,
                   ),
                 ],
               ),

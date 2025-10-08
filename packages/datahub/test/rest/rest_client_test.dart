@@ -51,29 +51,42 @@ Future<void> _testClient(RestClient client) async {
   final text = await client.get('/html').thenGetTextBody();
   expect(text, contains('<html>'));
 
-  final dto = await client.get('/json').thenGetData(ExampleObject.bean);
+  final dto = await client.get('/json').thenGetData($ExampleObject.bean);
   expect(dto.slideshow.author, equals('Yours Truly'));
   expect(dto.slideshow.date, equals('date of publication'));
   expect(dto.slideshow.title, equals('Sample Slide Show'));
 
-  final stream = await client.get('/drip', query: {
-    'numbytes': ['5'],
-    'duration': ['1']
-  }).thenGetBodyData();
+  final stream = await client
+      .get(
+        '/drip',
+        query: {
+          'numbytes': ['5'],
+          'duration': ['1'],
+        },
+      )
+      .thenGetBodyData();
   expect(await stream.expand((element) => element).toList(), hasLength(5));
 }
 
 Future<void> _testPrefix(Uri uri) async {
   final client1 = await RestClient.connect(uri);
   try {
-    expect(await client1.get('/404', throwOnError: false),
-        hasStatusCode(equals(404)));
-    expect(await client1.post('/500', null, throwOnError: false),
-        hasStatusCode(equals(500)));
-    expect(await client1.patch('/200', null, throwOnError: false),
-        hasStatusCode(equals(200)));
-    expect(await client1.delete('/200', throwOnError: false),
-        hasStatusCode(equals(200)));
+    expect(
+      await client1.get('/404', throwOnError: false),
+      hasStatusCode(equals(404)),
+    );
+    expect(
+      await client1.post('/500', null, throwOnError: false),
+      hasStatusCode(equals(500)),
+    );
+    expect(
+      await client1.patch('/200', null, throwOnError: false),
+      hasStatusCode(equals(200)),
+    );
+    expect(
+      await client1.delete('/200', throwOnError: false),
+      hasStatusCode(equals(200)),
+    );
   } finally {
     await client1.close();
   }
@@ -81,10 +94,11 @@ Future<void> _testPrefix(Uri uri) async {
 
 Future<void> _testListRequest() async {
   final client1 = await RestClient.connect(
-      Uri.parse('https://jsonplaceholder.typicode.com'));
+    Uri.parse('https://jsonplaceholder.typicode.com'),
+  );
   try {
     expect(
-      await client1.get('/users').thenGetList(PlaceholderUser.bean),
+      await client1.get('/users').thenGetList($PlaceholderUser.bean),
       allOf(isA<List<PlaceholderUser>>(), hasLength(10)),
     );
   } finally {

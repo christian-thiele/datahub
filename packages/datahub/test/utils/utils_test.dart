@@ -30,8 +30,10 @@ void _combinationTest() {
   for (final combination in combinations) {
     print(combination.join(','));
   }
-  expect(combinations,
-      hasLength(variants.fold<double>(1, (p, c) => p * c.length)));
+  expect(
+    combinations,
+    hasLength(variants.fold<double>(1, (p, c) => p * c.length)),
+  );
 }
 
 void _testTokenEquality() {
@@ -56,24 +58,28 @@ void _testToken() {
 }
 
 Future<void> _lineTransformerTest() async {
-  final stream = Stream.fromIterable([
-    'some',
-    ' stuff\nand \nmore lines',
-    '\ni ',
-    'guess'
-  ].map<List<int>>(utf8.encode))
-      .transform<String>(LineTransformer());
+  final stream = Stream.fromIterable(
+    [
+      'some',
+      ' stuff\nand \nmore lines',
+      '\ni ',
+      'guess',
+    ].map<List<int>>(utf8.encode),
+  ).transform<String>(LineTransformer());
 
   expect(stream, emitsInOrder(['some stuff', 'and ', 'more lines', 'i guess']));
 
-  final stream2 = Stream.fromIterable([
-    'some',
-    ' stuff\nand \nmore lines',
-    '\ni ',
-    'guess\n'
-  ].map<List<int>>(utf8.encode))
-      .transform(LineTransformer());
+  final stream2 = Stream.fromIterable(
+    [
+      'some',
+      ' stuff\nand \nmore lines',
+      '\ni ',
+      'guess\n',
+    ].map<List<int>>(utf8.encode),
+  ).transform(LineTransformer());
 
-  expect(stream2,
-      emitsInOrder(['some stuff', 'and ', 'more lines', 'i guess', '']));
+  expect(
+    stream2,
+    emitsInOrder(['some stuff', 'and ', 'more lines', 'i guess', '']),
+  );
 }

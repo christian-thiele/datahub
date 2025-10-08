@@ -4,30 +4,26 @@ import 'package:datahub_postgres/datahub_postgres.dart';
 import 'package:test/expect.dart';
 
 void main() {
-  TestHost(
+  declareTest(
+    'PostgreSQL Connection',
     [
-      () => PostgresqlService(
-          schema: PostgresqlSchema(name: 'test', relations: [])),
+      PostgresqlService(
+        host: Config.value('192.168.178.85'),
+        database: Config.value('datahub_postgres'),
+        username: Config.value('postgres'),
+        password: Config.value('postgres'),
+        useSsl: Config.value(false),
+      ),
     ],
-    config: {
-      'postgresql': {
-        'host': '192.168.178.85',
-        'database': 'datahub_postgres',
-        'username': 'postgres',
-        'password': 'postgres',
-        'useSsl': false,
-      },
-    },
-  ).declare(($) {
-    $.test('PostgreSQL Connection', () async {
-      final postgres = resolve<PostgresqlService>();
+    () async {
+      final postgres = Find<Postgresql>().find();
       final result = await postgres.useConnection((connection) async {
         return await connection.runTransaction((context) async {
-          return await context.execute(Sql('SELECT 1337;'));
+          return await context.execute(RawSql('SELECT 1337;'));
         });
       });
 
       expect(result.first.first, equals(1337));
-    });
-  });
+    },
+  );
 }

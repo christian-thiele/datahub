@@ -1,34 +1,44 @@
 import 'dart:convert';
 
+import 'package:boost/boost.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
-import 'package:datahub_aperture_frontend/models/authentication.dart';
 import 'package:datahub/datahub.dart';
+import 'package:datahub_aperture_frontend/services.dart';
 import 'resources_repository.dart';
 
 class ApiResourcesRepository implements ResourcesRepository {
-  late final RestClient _restClient;
-
-  @override
-  Future<void> initialize() async {
-    _restClient = await RestClient.connect(
-      Uri.parse('http://localhost:8080'),
+  final String baseUrl;
+  late final Lazy<RestClient> _restClient = Lazy(
+    () => RestClient.connect(
+      Uri.parse(baseUrl),
       timeout: const Duration(seconds: 10),
-    );
+    ),
+  );
+
+  ApiResourcesRepository({required this.baseUrl});
+
+  Future<void> _updateAuth() async {
+    final client = await _restClient.get();
+    client.auth = await AuthService.instance.getValidAccessToken();
   }
 
-  @override
   Future<void> close() async {
-    await _restClient.close();
+    if (_restClient.isInitialized) {
+      final client = await _restClient.get();
+      _restClient.invalidate();
+      await client.close();
+    }
   }
 
   @override
   Future<ResourceData> createElement(
-    Authentication authentication,
     String resourceId,
     Map<String, dynamic> changes,
     DateTime? revisionLive,
   ) async {
-    return await _restClient
+    await _updateAuth();
+    final client = await _restClient.get();
+    return await client
         .post(
           '/api/resources/{resourceId}/elements',
           ResourceRevisionRequest(
@@ -37,35 +47,37 @@ class ApiResourcesRepository implements ResourcesRepository {
           ),
           urlParams: {'resourceId': resourceId},
         )
-        .thenGetData(ResourceData.bean);
+        .thenGetData($ResourceData.bean);
   }
 
   @override
-  Future<ResourceDescription> getDescription(
-    Authentication auth,
-    String id,
-  ) async {
-    final result = await _restClient.get(
+  Future<ResourceDescription> getDescription(String id) async {
+    await _updateAuth();
+    final client = await _restClient.get();
+    final result = await client.get(
       '/api/resources/{id}',
       urlParams: {'id': id},
     );
-    return await result.getData(ResourceDescription.bean);
+    return await result.getData($ResourceDescription.bean);
   }
 
   @override
-  Future<List<ResourceDescription>> getDescriptions(Authentication auth) async {
-    final result = await _restClient.get('/api/resources');
-    return await result.getList(ResourceDescription.bean);
+  Future<List<ResourceDescription>> getDescriptions() async {
+    await _updateAuth();
+    final client = await _restClient.get();
+    final result = await client.get('/api/resources');
+    return await result.getList($ResourceDescription.bean);
   }
 
   @override
   Future<ResourceData> getResourceElement(
-    Authentication auth,
     String resourceId,
     String elementId, {
     String? revisionId,
   }) async {
-    return await _restClient
+    await _updateAuth();
+    final client = await _restClient.get();
+    return await client
         .get(
           '/api/resources/{resourceId}/elements/{elementId}',
           urlParams: {'resourceId': resourceId, 'elementId': elementId},
@@ -73,18 +85,19 @@ class ApiResourcesRepository implements ResourcesRepository {
             if (revisionId != null) 'revisionId': [revisionId],
           },
         )
-        .thenGetData(ResourceData.bean);
+        .thenGetData($ResourceData.bean);
   }
 
   @override
   Future<ResourceElementsResponse> getResourceElements(
-    Authentication authentication,
     String resourceId, {
     ResourceFilter? filter,
     int offset = 0,
     int limit = 25,
   }) async {
-    return await _restClient
+    await _updateAuth();
+    final client = await _restClient.get();
+    return await client
         .get(
           '/api/resources/{resourceId}/elements',
           urlParams: {'resourceId': resourceId},
@@ -94,18 +107,19 @@ class ApiResourcesRepository implements ResourcesRepository {
             if (filter != null) 'filter': [jsonEncode(filter)],
           },
         )
-        .thenGetData(ResourceElementsResponse.bean);
+        .thenGetData($ResourceElementsResponse.bean);
   }
 
   @override
   Future<ResourceData> updateElement(
-    Authentication auth,
     String resourceId,
     String elementId,
     Map<String, dynamic> changes,
     DateTime? revisionLive,
   ) async {
-    return await _restClient
+    await _updateAuth();
+    final client = await _restClient.get();
+    return await client
         .patch(
           '/api/resources/{resourceId}/elements/{elementId}',
           ResourceRevisionRequest(
@@ -114,17 +128,18 @@ class ApiResourcesRepository implements ResourcesRepository {
           ),
           urlParams: {'resourceId': resourceId, 'elementId': elementId},
         )
-        .thenGetData(ResourceData.bean);
+        .thenGetData($ResourceData.bean);
   }
 
   @override
   Future<ResourceData?> deleteElement(
-    Authentication auth,
     String resourceId,
     String elementId,
     DateTime? revisionLive,
   ) async {
-    final response = await _restClient.delete(
+    await _updateAuth();
+    final client = await _restClient.get();
+    final response = await client.delete(
       '/api/resources/{resourceId}/elements/{elementId}',
       urlParams: {'resourceId': resourceId, 'elementId': elementId},
       query: {
@@ -134,8 +149,8 @@ class ApiResourcesRepository implements ResourcesRepository {
     );
 
     try {
-      return await response.getData(ResourceData.bean);
-    } on CodecException catch (_) {
+      return await response.getData($ResourceData.bean);
+    } on ApiException catch (_) {
       return null;
     }
   }

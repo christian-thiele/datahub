@@ -8,6 +8,9 @@ import 'types/geometry/geometry.dart';
 
 typedef Encoder<T> = dynamic Function(T value);
 typedef Decoder<T> = T Function(dynamic value, {String? name});
+typedef CompoundEncoder<C, T> = dynamic Function(C value, Encoder<T> encoder);
+typedef CompoundDecoder<C, T> =
+    C Function(dynamic value, Decoder<T> encoder, {String? name});
 
 abstract class DataCodec {
   const DataCodec();
@@ -50,7 +53,9 @@ abstract class DataCodec {
       Map<String, dynamic>() => encodeMap(value, encodeDynamic),
       null => null,
       _ => throw CodecException(
-          'Cannot encode ${value.runtimeType} dynamically.', null),
+        'Cannot encode ${value.runtimeType} dynamically.',
+        null,
+      ),
     };
   }
 
@@ -191,8 +196,10 @@ class JsonDataCodec extends DataCodec {
     } else {
       final tzPrefix = e.timeZoneOffset.isNegative ? '-' : '+';
       final tzHours = e.timeZoneOffset.inHours.abs().toString().padLeft(2, '0');
-      final tzMinutes =
-          (e.timeZoneOffset.inMinutes % 60).toString().padLeft(2, '0');
+      final tzMinutes = (e.timeZoneOffset.inMinutes % 60).toString().padLeft(
+        2,
+        '0',
+      );
       return '${e.toIso8601String()}$tzPrefix$tzHours:$tzMinutes';
     }
   }
@@ -220,74 +227,106 @@ class JsonDataCodec extends DataCodec {
 
   @override
   double decodeDouble(dynamic e, {String? name}) {
-    return double.tryParse(e.toString()) ??
-        (throw CodecException.typeMismatch(double, e.runtimeType, name));
+    try {
+      return switch (e) {
+        double() => e,
+        int() => e.toDouble(),
+        String() => double.parse(e),
+        _ => throw CodecException.typeMismatch(double, e.runtimeType, name),
+      };
+    } on FormatException catch (_) {
+      throw CodecException.typeMismatch(double, e.runtimeType, name);
+    }
   }
 
   @override
   int decodeInt(dynamic e, {String? name}) {
-    return int.tryParse(e.toString()) ??
-        (throw CodecException.typeMismatch(int, e.runtimeType, name));
+    try {
+      return switch (e) {
+        int() => e,
+        double() when e.toInt() == e => e.toInt(),
+        String() => int.parse(e),
+        _ => throw CodecException.typeMismatch(int, e.runtimeType, name),
+      };
+    } on FormatException catch (_) {
+      throw CodecException.typeMismatch(int, e.runtimeType, name);
+    }
   }
 
   num decodeNum(dynamic e, {String? name}) {
-    return num.tryParse(e.toString()) ??
-        (throw CodecException.typeMismatch(num, e.runtimeType, name));
+    try {
+      return switch (e) {
+        double() => e,
+        int() => e,
+        String() => num.parse(e),
+        _ => throw CodecException.typeMismatch(num, e.runtimeType, name),
+      };
+    } on FormatException catch (_) {
+      throw CodecException.typeMismatch(num, e.runtimeType, name);
+    }
   }
 
   @override
   bool decodeBool(dynamic e, {String? name}) {
-    if (e is num) {
-      return e > 0;
-    }
-
-    final str = e.toString().toLowerCase();
-    if (str == 'true') {
-      return true;
-    } else if (str == 'false') {
-      return false;
-    }
-
-    throw CodecException.typeMismatch(bool, e.runtimeType, name);
+    return switch (e) {
+      bool() => e,
+      num() => e > 0,
+      '0' => false,
+      '1' => true,
+      String() when e.toLowerCase() == 'true' => true,
+      String() when e.toLowerCase() == 'false' => false,
+      _ => throw CodecException.typeMismatch(bool, e.runtimeType, name),
+    };
   }
 
   @override
   DateTime decodeDateTime(dynamic e, {String? name}) {
-    if (e is int) {
-      return DateTime.fromMillisecondsSinceEpoch(e, isUtc: true);
+    try {
+      return switch (e) {
+        DateTime() => e,
+        int() => DateTime.fromMillisecondsSinceEpoch(e, isUtc: true),
+        String() when int.tryParse(e) != null =>
+          DateTime.fromMillisecondsSinceEpoch(int.parse(e), isUtc: true),
+        String() => DateTime.parse(e.toString()),
+        _ => throw CodecException.typeMismatch(DateTime, e.runtimeType, name),
+      };
+    } on FormatException catch (_) {
+      throw CodecException.typeMismatch(DateTime, e.runtimeType, name);
     }
-
-    if (e is String) {
-      final parsed = int.tryParse(e);
-      if (parsed != null) {
-        return DateTime.fromMillisecondsSinceEpoch(parsed, isUtc: true);
-      }
-    }
-
-    return DateTime.tryParse(e.toString()) ??
-        (throw CodecException.typeMismatch(DateTime, e.runtimeType, name));
   }
 
   @override
   Duration decodeDuration(dynamic e, {String? name}) {
-    return int.tryParse(e.toString())
-            ?.apply((millis) => Duration(milliseconds: millis)) ??
-        (throw CodecException.typeMismatch(Duration, e.runtimeType, name));
+    try {
+      return switch (e) {
+        Duration() => e,
+        int() => Duration(milliseconds: e),
+        String() when int.tryParse(e) != null => Duration(
+          milliseconds: int.parse(e),
+        ),
+        _ => throw CodecException.typeMismatch(Duration, e.runtimeType, name),
+      };
+    } on FormatException catch (_) {
+      throw CodecException.typeMismatch(Duration, e.runtimeType, name);
+    }
   }
 
   @override
   Uint8List decodeUint8List(dynamic e, {String? name}) {
-    return e is String
-        ? base64Decode(e)
-        : (throw CodecException.typeMismatch(Uint8List, e.runtimeType, name));
+    return switch (e) {
+      Uint8List() => e,
+      String() => base64Decode(e),
+      _ => throw CodecException.typeMismatch(Uint8List, e.runtimeType, name),
+    };
   }
 
   @override
   T decodeEnum<T extends Enum>(value, List<T> values, {String? name}) {
     return switch (value) {
       T() => value,
-      String() when values.any((e) => e.name == value) =>
-        values.firstWhere((e) => e.name == value),
+      String() when values.any((e) => e.name == value) => values.firstWhere(
+        (e) => e.name == value,
+      ),
       _ => throw CodecException.typeMismatch(T, value.runtimeType, name),
     };
   }
@@ -327,13 +366,18 @@ class JsonDataCodec extends DataCodec {
   }
 
   @override
-  Map<String, T> decodeMap<T>(dynamic value, Decoder<T> decodeItem,
-      {String? name}) {
+  Map<String, T> decodeMap<T>(
+    dynamic value,
+    Decoder<T> decodeItem, {
+    String? name,
+  }) {
     if (value is Map<String, T>) {
       return value;
     } else if (value is Map<String, dynamic>) {
-      return value.map((k, v) =>
-          MapEntry(k, decodeItem(v, name: DataCodec.indexName(name, k))));
+      return value.map(
+        (k, v) =>
+            MapEntry(k, decodeItem(v, name: DataCodec.indexName(name, k))),
+      );
     } else if (value is Map && value.isEmpty) {
       return <String, T>{};
     }

@@ -14,16 +14,18 @@ class HttpConnection {
     void Function(io.Socket) http2,
     Function onError,
   ) {
-    readConnectionPreface(socket).then((value) {
-      switch (value.$2) {
-        case HttpVersion.HTTP11:
-          http1(DetachedSocket(socket, value.$1));
-          break;
-        case HttpVersion.HTTP2:
-          http2(DetachedSocket(socket, value.$1));
-          break;
-      }
-    }).catchError(onError);
+    readConnectionPreface(socket)
+        .then((value) {
+          switch (value.$2) {
+            case HttpVersion.HTTP11:
+              http1(DetachedSocket(socket, value.$1));
+              break;
+            case HttpVersion.HTTP2:
+              http2(DetachedSocket(socket, value.$1));
+              break;
+          }
+        })
+        .catchError(onError);
   }
 
   static bool startsWithHttp2Preface(List<int> data) {

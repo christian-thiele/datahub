@@ -5,41 +5,58 @@ import 'package:postgres/postgres.dart' as pg;
 import 'abstract/database_context.dart';
 
 class PostgresqlContext extends DatabaseContext {
-  final PostgresqlService _service;
   final pg.Session _session;
+  final bool logStatements;
 
-  const PostgresqlContext(this._service, this._session);
+  const PostgresqlContext(this._session, this.logStatements);
 
-  Future<pg.Result> executeLiteral(
-    SqlBuilder sqlBuilder, {
-    Duration? timeout,
-  }) async {
-    final sql = sqlBuilder.toSql().toLiteralString();
-    if (_service.logStatements) {
-      resolve<LogService?>()?.debug('QUERY: $sql', sender: 'datahub_postgres');
+  Future<pg.Result> executeLiteral(Sql sql, {Duration? timeout}) async {
+    final query = sql.toLiteralString();
+    if (logStatements) {
+      log.debug('QUERY: $query');
     }
 
     return await _session.execute(
-      pg.Sql(sql),
+      pg.Sql(query),
       queryMode: pg.QueryMode.simple,
       timeout: timeout,
     );
   }
 
-  Future<pg.Result> execute(SqlBuilder sqlBuilder, {Duration? timeout}) async {
-    final sql = sqlBuilder.toSql();
-    if (_service.logStatements) {
-      resolve<LogService?>()?.debug('QUERY: $sql', sender: 'datahub_postgres');
+  Future<pg.Result> execute(Sql sql, {Duration? timeout}) async {
+    final query = sql.toString();
+    if (logStatements) {
+      log.debug('QUERY: $query');
+      final params = sql.getParameters().toList();
+      if (params.isNotEmpty) {
+        log.debug(
+          'PARAMS: ${params.indexed.map((p) => '${p.$1}: ${p.$2}').join(' ')}',
+        );
+      }
     }
 
     return await _session.execute(
       pg.Sql(
-        sql.toString(),
+        query,
         types: sql.getParameterTypes().map((e) => e.pgType).toList(),
       ),
-      parameters: sql.getEncodedParameters(),
+      parameters: sql.getEncodedParameters().toList(),
       queryMode: pg.QueryMode.extended,
       timeout: timeout,
     );
+  }
+
+  Future<void> ensureSchema(String schemaName) async {
+    final schemaResult = await execute(
+      SqlSelect(SqlQualifiedRelation('information_schema', 'schemata'), [
+        SqlColumnAttribute('schema_name'),
+      ]),
+    );
+
+    final schemaNames = schemaResult.map((e) => e.first.toString()).toList();
+    if (!schemaNames.contains(schemaName)) {
+      log.warn('Schema "$schemaName" does not exist. Creating schema.');
+      await execute(SqlCreateSchema(schemaName));
+    }
   }
 }

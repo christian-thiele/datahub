@@ -6,7 +6,7 @@ repository: https://github.com/christian-thiele/datahub_postgres
 resolution: workspace
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.8.0
 
 dependencies:
   boost: ^2.0.0-dev.1
@@ -14,6 +14,7 @@ dependencies:
   datahub: ^0.18.0-dev.1
   postgres: ^3.5.6
   test: ^1.21.6
+  meta: ^1.16.0
 
 dev_dependencies:
   datahub_codegen: ^0.18.0-dev.1

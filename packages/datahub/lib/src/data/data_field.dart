@@ -4,9 +4,10 @@ import 'meta/meta_data.dart';
 
 import 'data_bean.dart';
 import 'data_codec.dart';
+import 'expression.dart';
 import 'meta/data_field_constraint.dart';
 
-class DataField<Data, FieldType> {
+class DataField<Data, FieldType> implements FieldExpression {
   final String name;
   final FieldType Function(Data) _valueOf;
   final List<MetaData> meta;
@@ -30,10 +31,10 @@ class DataField<Data, FieldType> {
     DataBean Function()? dataBean,
     this.meta = const [],
     this.constraints = const [],
-  })  : _valueOf = ((dynamic value) => valueOf(value as Data)),
-        _toJson = toJson,
-        _fromJson = fromJson,
-        _resolveDataBean = dataBean;
+  }) : _valueOf = ((dynamic value) => valueOf(value as Data)),
+       _toJson = toJson,
+       _fromJson = fromJson,
+       _resolveDataBean = dataBean;
 
   FieldType valueOf(Data object) => _valueOf(object);
 
@@ -44,9 +45,7 @@ class DataField<Data, FieldType> {
 
   /// Validates constraints and returns a list of constraints that are violated.
   List<DataFieldConstraint> checkConstraints(FieldType value) {
-    return [
-      ...constraints.where((constraint) => !constraint.check(value)),
-    ];
+    return [...constraints.where((constraint) => !constraint.check(value))];
   }
 
   bool hasMetaOfType<M extends MetaData>([bool Function(M)? test]) =>
@@ -58,11 +57,14 @@ class DataField<Data, FieldType> {
   Iterable<M> allMetaOfType<M extends MetaData>([bool Function(M)? test]) =>
       meta.whereType<M>().where(test ?? (_) => true);
 
-  bool hasConstraintOfType<T extends DataFieldConstraint>(
-          [bool Function(T)? test]) =>
-      constraints.whereType<T>().any(test ?? (_) => true);
+  bool hasConstraintOfType<T extends DataFieldConstraint>([
+    bool Function(T)? test,
+  ]) => constraints.whereType<T>().any(test ?? (_) => true);
 
-  T? constraintOfType<T extends DataFieldConstraint>(
-          [bool Function(T)? test]) =>
-      constraints.whereType<T>().where(test ?? (_) => true).firstOrNull;
+  T? constraintOfType<T extends DataFieldConstraint>([
+    bool Function(T)? test,
+  ]) => constraints.whereType<T>().where(test ?? (_) => true).firstOrNull;
+
+  @override
+  DataField get field => this;
 }

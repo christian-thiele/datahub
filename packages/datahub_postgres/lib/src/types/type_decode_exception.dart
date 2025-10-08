@@ -4,5 +4,5 @@ class TypeDecodeException implements Exception {
   TypeDecodeException(this.message);
 
   TypeDecodeException.typeMismatch(Type expected, Type actual)
-      : this('Cannot decode $expected from value of type "$actual".');
+    : this('Cannot decode $expected from value of type "$actual".');
 }

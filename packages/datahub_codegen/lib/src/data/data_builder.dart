@@ -6,6 +6,7 @@ import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:datahub/data.dart';
+import 'package:datahub/utils.dart';
 import 'package:datahub_codegen/src/utils/types.dart';
 import 'package:datahub_codegen/utils.dart';
 import 'package:source_gen/source_gen.dart';
@@ -14,33 +15,41 @@ Builder dataBuilder(BuilderOptions options) =>
     SharedPartBuilder([DataBuilder()], 'data');
 
 class MetaField {
+  final LibraryElement2 library;
   final FieldElement2 element;
   final List<DartObject> constraints;
   final List<DartObject> meta;
   final String? defaultValueExpression;
-
-  String get name => element.displayName;
-
-  String get key => name;
+  final String key;
+  final String name;
 
   DartType get type => element.type;
 
-  String get typeName =>
-      typeExpression(type) +
+  String get importPrefix => typeImportPrefix(type, library);
+
+  String get typeName => typeExpression(type, library);
+
+  String get typeNameNullable =>
+      typeName +
       (type.nullabilitySuffix == NullabilitySuffix.question ? '?' : '');
 
-  MetaField(
-    this.element,
-    this.constraints,
-    this.meta,
-    this.defaultValueExpression,
-  );
+  String get prefixedTypeNameNullable => importPrefix + typeNameNullable;
+
+  MetaField({
+    required this.name,
+    required this.key,
+    required this.element,
+    required this.constraints,
+    required this.meta,
+    required this.defaultValueExpression,
+    required this.library,
+  });
 
   String buildEncodingStatement(String value) =>
-      CodecHelper.encodingStatement(type, '\$\$codec', value);
+      CodecHelper.encodingStatement(library, type, '\$\$codec', value);
 
   String buildDecodingStatement(String value, String name) =>
-      CodecHelper.decodingStatement(type, '\$\$codec', value, name);
+      CodecHelper.decodingStatement(library, type, '\$\$codec', value, name);
 }
 
 class DataBuilder extends Generator {
@@ -52,20 +61,30 @@ class DataBuilder extends Generator {
     for (final dataClass in dataClasses) {
       final className = dataClass.displayName;
       final constructor = findDataConstructor(dataClass);
+      final dataAnnotation = dataChecker.firstAnnotationOfExact(dataClass);
+      final namingConventionIndex = ConstantReader(dataAnnotation)
+          .read('defaultNamingConvention')
+          .objectValue
+          .getField('index')!
+          .toIntValue()!;
+      final namingConvention = NamingConvention.values[namingConventionIndex];
 
       final fields = [
         for (final param in constructor.formalParameters
             .whereType<FieldFormalParameterElement2>()
             .where((e) => e.isNamed && e.field2 != null))
           MetaField(
-            param.field2!,
-            TypeChecker.typeNamed(DataFieldConstraint)
+            name: param.field2!.displayName,
+            key: fieldKey(param.field2!, namingConvention),
+            element: param.field2!,
+            constraints: TypeChecker.typeNamed(DataFieldConstraint)
                 .annotationsOf(param.field2!)
                 .toList(),
-            TypeChecker.typeNamed(MetaData)
+            meta: TypeChecker.typeNamed(MetaData)
                 .annotationsOf(param.field2!)
                 .toList(),
-            getDefaultValueExpression(param),
+            defaultValueExpression: getDefaultValueExpression(param),
+            library: param.field2!.library2,
           ),
       ];
 
@@ -87,8 +106,8 @@ class DataBuilder extends Generator {
     List<DartObject> metaAnnotations,
   ) {
     final ln = Writer();
-    ln('abstract class _$className with DataObject<$className> {');
-    ln('const _$className();');
+    ln('abstract interface class \$$className with DataObject<$className> {');
+    ln('const \$$className();');
     ln('static const \$\$codec = JsonDataCodec();');
 
     for (final field in fields) {
@@ -111,7 +130,7 @@ class DataBuilder extends Generator {
 
   String generateField(String className, MetaField field) {
     final ln = Writer();
-    ln('static final \$${field.name} = DataField<$className, ${field.typeName}>(');
+    ln('static final \$${field.name} = DataField<$className, ${field.prefixedTypeNameNullable}>(');
     ln('name: \'${field.name}\',');
     ln('valueOf: (p)=>p.${field.name},');
 
@@ -124,7 +143,7 @@ class DataBuilder extends Generator {
     final encodingStatement = field.buildEncodingStatement('value');
 
     if (TypeChecker.typeNamed(Data).hasAnnotationOf(field.type.element3!)) {
-      ln('dataBean: () => ${field.typeName}.bean,');
+      ln('dataBean: () => ${field.importPrefix}\$${field.typeName}.bean,');
     } else if (field.type
         case ParameterizedType(
           isDartCoreList: true,
@@ -132,7 +151,7 @@ class DataBuilder extends Generator {
         )
         when type.element3 != null &&
             TypeChecker.typeNamed(Data).hasAnnotationOf(type.element3!)) {
-      ln('dataBean: () => ${type.element3!.displayName}.bean,');
+      ln('dataBean: () => ${typeImportPrefix(type, field.library)}\$${type.element3!.displayName}.bean,');
     } else if (field.type
         case ParameterizedType(
           isDartCoreMap: true,
@@ -140,7 +159,7 @@ class DataBuilder extends Generator {
         )
         when type.element3 != null &&
             TypeChecker.typeNamed(Data).hasAnnotationOf(type.element3!)) {
-      ln('dataBean: () => ${type.element3!.displayName}.bean,');
+      ln('dataBean: () => ${typeImportPrefix(type, field.library)}\$${type.element3!.displayName}.bean,');
     }
 
     ln('fromJson: (value, {String? name}) => $decodingStatement,');
@@ -153,23 +172,24 @@ class DataBuilder extends Generator {
     final constraintInvocations =
         field.constraints.map(metaInvocation).toList();
     if (field.type.element3 is EnumElement2) {
-      constraintInvocations
-          .add('EnumConstraint(values: ${field.typeName}.values)');
+      constraintInvocations.add(
+          'EnumConstraint(values: ${field.importPrefix}${field.typeName}.values)');
     } else if (field.type
         case ParameterizedType(
           isDartCoreList: true,
-          typeArguments: [DartType(element3: EnumElement2(:final displayName))]
-        )) {
-      constraintInvocations.add('EnumConstraint(values: $displayName.values)');
+          typeArguments: [final DartType type]
+        ) when type.element3 is EnumElement2) {
+      final typeName = typeImportPrefix(type, field.library) +
+          typeExpression(type, field.library);
+      constraintInvocations.add('EnumConstraint(values: $typeName.values)');
     } else if (field.type
         case ParameterizedType(
           isDartCoreMap: true,
-          typeArguments: [
-            ...,
-            DartType(element3: EnumElement2(:final displayName))
-          ]
-        )) {
-      constraintInvocations.add('EnumConstraint(values: $displayName.values)');
+          typeArguments: [..., final DartType type]
+        ) when type.element3 is EnumElement2) {
+      final typeName = typeImportPrefix(type, field.library) +
+          typeExpression(type, field.library);
+      constraintInvocations.add('EnumConstraint(values: $typeName.values)');
     }
 
     if (constraintInvocations.isNotEmpty) {
@@ -260,7 +280,7 @@ class DataBuilder extends Generator {
     for (final field in fields) {
       final fieldNullable =
           field.type.nullabilitySuffix != NullabilitySuffix.none;
-      ln('${typeExpression(field.type)}? ${field.name},');
+      ln('${field.importPrefix}${field.typeName}? ${field.name},');
       if (fieldNullable) {
         ln('bool null${firstUp(field.name)} = false,');
       }
@@ -312,12 +332,21 @@ class DataBuilder extends Generator {
 
     return ln.toString();
   }
+
+  String fieldKey(
+      FieldElement2 field, NamingConvention defaultNamingConvention) {
+    final checker = TypeChecker.typeNamed(JsonKey);
+    if (checker.firstAnnotationOf(field) case final annotation?) {
+      return annotation.getField('key')!.toStringValue()!;
+    }
+    return toNamingConvention(field.displayName, defaultNamingConvention);
+  }
 }
 
 ConstructorElement2 findDataConstructor(ClassElement2 dataClass) {
   return dataClass.constructors2.firstWhere(
     (e) => e.name3 == 'new' && e.isConst,
     orElse: () => throw Exception(
-        'Data class ${dataClass.displayName} does not provide a unnamed const constructor.'),
+        'Data class ${dataClass.displayName} does not provide an unnamed const constructor.'),
   );
 }

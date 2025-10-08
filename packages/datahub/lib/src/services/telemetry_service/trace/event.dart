@@ -15,14 +15,12 @@ class Event {
 class ExceptionEvent extends Event {
   final dynamic error;
 
-  ExceptionEvent({
-    required this.error,
-    required super.timestamp,
-  }) : super(
-          name: 'Exception: $error',
-          attributes: {
-            'exception.type': error.runtimeType.toString(),
-            if (error is ApiRequestException) 'data': error.data,
-          },
-        );
+  ExceptionEvent({required this.error, required super.timestamp})
+    : super(
+        name: 'Exception: $error',
+        attributes: {
+          'exception.type': error.runtimeType.toString(),
+          if (error is ApiRequestException) 'data': error.data,
+        },
+      );
 }

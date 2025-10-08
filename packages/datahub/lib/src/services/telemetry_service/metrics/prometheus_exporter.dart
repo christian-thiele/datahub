@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:io' as io;
 import 'package:boost/boost.dart';
-import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
-import 'package:datahub/ioc.dart';
-import 'package:datahub/services.dart';
+import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
+
+import 'metrics_exporter.dart';
+import 'sample_group.dart';
 
 // Could be a Service...
 //TODO docs
@@ -51,11 +52,13 @@ class PrometheusExporter extends MetricsExporter {
       for (final sample in group.samples) {
         buffer.write(sample.name);
         if (sample.labels.isNotEmpty) {
-          buffer.write('{' +
-              sample.labels.entries
-                  .map((e) => '${e.key}="${e.value}"')
-                  .join(',') +
-              '}');
+          buffer.write(
+            '{' +
+                sample.labels.entries
+                    .map((e) => '${e.key}="${e.value}"')
+                    .join(',') +
+                '}',
+          );
         }
         buffer.write(' ${sample.value}');
         buffer.write(' ${sample.timestamp.millisecondsSinceEpoch}');
@@ -64,14 +67,9 @@ class PrometheusExporter extends MetricsExporter {
       buffer.writeln();
     }
 
-    return HttpResponse(
-      request.requestUri,
-      200,
-      {
-        HttpHeaders.contentType: [Mime.plainText, 'version=0.0.4'],
-      },
-      Stream.value(utf8.encode(buffer.toString())),
-    );
+    return HttpResponse(request.requestUri, 200, {
+      HttpHeaders.contentType: [Mime.plainText, 'version=0.0.4'],
+    }, Stream.value(utf8.encode(buffer.toString())));
   }
 
   String formatTimestamp(DateTime timestamp) =>
@@ -88,7 +86,7 @@ class PrometheusExporter extends MetricsExporter {
   }
 
   Future<HttpResponse> _handleRequest(HttpRequest httpRequest) async {
-    if (httpRequest.method != ApiRequestMethod.GET) {
+    if (httpRequest.method != HttpRequestMethod.get) {
       return HttpResponse(
         httpRequest.requestUri,
         io.HttpStatus.methodNotAllowed,
@@ -109,41 +107,22 @@ class PrometheusExporter extends MetricsExporter {
     try {
       return createResponse(httpRequest, await onScrape());
     } catch (e, stack) {
-      final logService = resolve<LogService?>();
-      if (logService != null) {
-        logService.error('Error while collecting metrics.',
-            error: e, trace: stack);
-      } else {
-        print('Error while collecting metrics.\n$e');
-      }
+      log.error('Error while collecting metrics.', error: e, stack: stack);
 
       return HttpResponse(httpRequest.requestUri, 500, {}, Stream.empty());
     }
   }
 
   void _onSocketError(dynamic e, StackTrace? trace) {
-    resolve<LogService>().error(
-      'Error while listening to socket.',
-      sender: 'DataHub',
-      error: e,
-      trace: trace,
-    );
+    log.error('Error while listening to socket.', error: e, stack: trace);
   }
 
   void _onProtocolError(dynamic e, StackTrace? trace) {
-    resolve<LogService>().warn(
-      'Error during protocol negotiation.',
-      sender: 'DataHub',
-      error: e,
-      trace: trace,
-    );
+    log.warn('Error during protocol negotiation.', error: e, stack: trace);
   }
 
   void _onStreamError(dynamic e, StackTrace? trace) {
-    resolve<LogService>().verbose(
-      'Error while handling HTTP2 stream.\n$e',
-      sender: 'DataHub',
-    );
+    log('Error while handling HTTP2 stream.\n$e');
   }
 
   @override

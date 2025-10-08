@@ -6,17 +6,17 @@ part of 'resource_filter.dart';
 // Generator: DataBuilder
 // **************************************************************************
 
-abstract class _ResourceFilter with DataObject<ResourceFilter> {
-  const _ResourceFilter();
+abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
+  const $ResourceFilter();
   static const $$codec = JsonDataCodec();
   static final $or = DataField<ResourceFilter, List<ResourceFilter>?>(
     name: 'or',
     valueOf: (p) => p.or,
-    dataBean: () => ResourceFilter.bean,
+    dataBean: () => $ResourceFilter.bean,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
         (value ?? const []),
         (v, {String? name}) => $$codec.decodeList<ResourceFilter>(
-            v, ResourceFilter.bean.fromJson,
+            v, $ResourceFilter.bean.fromJson,
             name: name),
         name: name),
     toJson: (value) => $$codec.encodeNullable(
@@ -26,11 +26,11 @@ abstract class _ResourceFilter with DataObject<ResourceFilter> {
   static final $and = DataField<ResourceFilter, List<ResourceFilter>?>(
     name: 'and',
     valueOf: (p) => p.and,
-    dataBean: () => ResourceFilter.bean,
+    dataBean: () => $ResourceFilter.bean,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
         (value ?? const []),
         (v, {String? name}) => $$codec.decodeList<ResourceFilter>(
-            v, ResourceFilter.bean.fromJson,
+            v, $ResourceFilter.bean.fromJson,
             name: name),
         name: name),
     toJson: (value) => $$codec.encodeNullable(
@@ -55,7 +55,7 @@ abstract class _ResourceFilter with DataObject<ResourceFilter> {
         name: name),
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeEnum),
     constraints: [
-      EnumConstraint(values: ResourceFilterType?.values),
+      EnumConstraint(values: ResourceFilterType.values),
     ],
   );
 

@@ -8,17 +8,18 @@ class MultiPolygon extends Geometry {
   final List<Polygon> polygons;
 
   const MultiPolygon(int? srid, this.polygons, bool hasZ, bool hasM)
-      : super(srid, GeometryType.multiPolygon, hasZ, hasM);
+    : super(srid, GeometryType.multiPolygon, hasZ, hasM);
 
   factory MultiPolygon.read(
-      int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
+    int? srid,
+    ByteDataReader reader,
+    bool hasZ,
+    bool hasM,
+  ) {
     final length = reader.readUint32();
     return MultiPolygon(
       srid,
-      List.generate(
-        length,
-        (i) => Polygon.read(srid, reader, hasZ, hasM),
-      ),
+      List.generate(length, (i) => Polygon.read(srid, reader, hasZ, hasM)),
       hasZ,
       hasM,
     );

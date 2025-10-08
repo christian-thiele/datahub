@@ -2,13 +2,13 @@ name: datahub_workspace
 publish_to: none
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.7.0
 
 dev_dependencies:
   datahub_codegen: 0.18.0-dev.1
   lints: ^6.0.0
   test: ^1.26.2
-  build_runner: ^2.7.0
+  build_runner: ^2.7.1
   melos: ^7.1.0
 
 workspace:

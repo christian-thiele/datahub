@@ -16,10 +16,8 @@ class NavBarPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => ConfigurationCubit(
-        context.read<ResourcesRepository>(),
-        (context.read<AuthCubit>().state as AuthStateAuthorized).auth,
-      ),
+      create: (context) =>
+          ConfigurationCubit(context.read<ResourcesRepository>()),
       child: BlocConsumer<ConfigurationCubit, ConfigurationState>(
         listener: (context, state) {
           if (state case ConfigurationError(:final message)) {
@@ -33,11 +31,6 @@ class NavBarPage extends StatelessWidget {
               children: [
                 SideBar(
                   entries: [
-                    SideBarEntry(
-                      icon: Icon(Icons.dashboard),
-                      label: 'Dashboard',
-                      path: '/',
-                    ),
                     for (final resource in resources)
                       SideBarEntry(
                         icon: Icon(getIcon(resource.icon)),

@@ -35,6 +35,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "byUsername": m0,
     "date": MessageLookupByLibrary.simpleMessage("Date"),
     "delete": MessageLookupByLibrary.simpleMessage("Delete"),
+    "deleteScheduled": MessageLookupByLibrary.simpleMessage("Delete scheduled"),
     "draft": MessageLookupByLibrary.simpleMessage("Draft"),
     "emptyFile": MessageLookupByLibrary.simpleMessage("No file selected"),
     "error": MessageLookupByLibrary.simpleMessage("Error"),
@@ -43,8 +44,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "liveFrom": MessageLookupByLibrary.simpleMessage("Live from"),
     "liveSince": MessageLookupByLibrary.simpleMessage("Live since"),
     "login": MessageLookupByLibrary.simpleMessage("Login"),
+    "loginAuthcode": MessageLookupByLibrary.simpleMessage("Login via IDP"),
     "newResource": m1,
     "noElements": MessageLookupByLibrary.simpleMessage("No Elements"),
+    "password": MessageLookupByLibrary.simpleMessage("Password"),
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "resourceDeleted": MessageLookupByLibrary.simpleMessage(
       "Resource Deleted.",
@@ -63,6 +66,7 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "time": MessageLookupByLibrary.simpleMessage("Time"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Timestamp"),
+    "username": MessageLookupByLibrary.simpleMessage("Username"),
     "validationMaxLength": m2,
     "validationPattern": m3,
     "validationRequired": MessageLookupByLibrary.simpleMessage(

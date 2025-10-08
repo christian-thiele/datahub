@@ -94,10 +94,7 @@ class EnumConstraint<FieldType extends Enum?>
     extends DataFieldConstraint<FieldType> {
   final List<Enum> values;
 
-  const EnumConstraint({
-    required this.values,
-    super.name = 'default.enum',
-  });
+  const EnumConstraint({required this.values, super.name = 'default.enum'});
 
   @override
   bool check(FieldType value) => values.contains(value);
