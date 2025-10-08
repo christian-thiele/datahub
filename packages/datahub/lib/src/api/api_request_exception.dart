@@ -1,27 +1,32 @@
 import 'dart:async';
 
-import 'package:datahub/api.dart';
 import 'package:datahub/utils.dart';
 
+import 'api_response.dart';
+
+/// An exception that can explicitly be transformed into an [ApiResponse]
+/// using [toResponse].
 class ApiRequestException extends ApiException {
   final int statusCode;
   final Map<String, dynamic> data;
 
-  ApiRequestException(this.statusCode, String? message,
-      {Map<String, dynamic>? data})
-      : data = {
-          'statusCode': statusCode,
-          'errorMessage': message,
-          if (Zone.current[#apiRequestId] is String)
-            'requestId': Zone.current[#apiRequestId],
-          ...?data,
-        },
-        super('$statusCode ${message ?? getHttpStatus(statusCode)}');
+  ApiRequestException(
+    this.statusCode,
+    String? message, {
+    Map<String, dynamic>? data,
+  }) : data = {
+         'statusCode': statusCode,
+         'errorMessage': message,
+         if (Zone.current[#apiRequestId] is String)
+           'requestId': Zone.current[#apiRequestId],
+         ...?data,
+       },
+       super('$statusCode ${message ?? getHttpStatus(statusCode)}');
 
   ApiRequestException.fromResponse(this.statusCode, this.data)
-      : super(
-          '[$statusCode] ${data['errorMessage']?.toString() ?? getHttpStatus(statusCode)}',
-        );
+    : super(
+        '[$statusCode] ${data['errorMessage']?.toString() ?? getHttpStatus(statusCode)}',
+      );
 
   ApiRequestException.unauthorized([message]) : this(401, message);
 

@@ -45,8 +45,9 @@ abstract class ApiResponse {
       return JsonResponse(body, statusCode);
     } else if (body is Stream<List<int>>) {
       throw ApiError(
-          'A data stream cannot be used as response type without a length argument.'
-          'Use ByteStreamResponse or FileResponse as return type instead to provide the length.');
+        'A data stream cannot be used as response type without a length argument.'
+        'Use ByteStreamResponse or FileResponse as return type instead to provide the length.',
+      );
     } else {
       return TextResponse.plain(body.toString(), statusCode: statusCode);
     }
@@ -59,7 +60,7 @@ abstract class ApiResponse {
 enum ContentDisposition { inline, attachment }
 
 abstract class _SynchronousResponse extends ApiResponse {
-  _SynchronousResponse(int statusCode) : super(statusCode);
+  _SynchronousResponse(super.statusCode);
 
   @override
   Stream<List<int>> getData() {
@@ -87,7 +88,7 @@ class JsonResponse extends _SynchronousResponse {
   @override
   Map<String, List<String>> getHeaders() {
     return {
-      HttpHeaders.contentType: ['${Mime.json};charset=utf-8']
+      HttpHeaders.contentType: ['${Mime.json};charset=utf-8'],
     };
   }
 }
@@ -95,14 +96,23 @@ class JsonResponse extends _SynchronousResponse {
 class TextResponse extends _SynchronousResponse {
   final String _text;
   final String _contentType;
+  final Map<String, dynamic>? _headers;
 
-  TextResponse.plain(this._text, {int statusCode = 200})
-      : _contentType = '${Mime.plainText};charset=utf-8',
-        super(statusCode);
+  TextResponse.plain(
+    this._text, {
+    int statusCode = 200,
+    Map<String, dynamic>? headers,
+  }) : _contentType = '${Mime.plainText};charset=utf-8',
+       _headers = headers,
+       super(statusCode);
 
-  TextResponse.html(this._text, {int statusCode = 200})
-      : _contentType = '${Mime.html};charset=utf-8',
-        super(statusCode);
+  TextResponse.html(
+    this._text, {
+    int statusCode = 200,
+    Map<String, dynamic>? headers,
+  }) : _contentType = '${Mime.html};charset=utf-8',
+       _headers = headers,
+       super(statusCode);
 
   @override
   List<int> getBytes() => utf8.encode(_text);
@@ -110,7 +120,8 @@ class TextResponse extends _SynchronousResponse {
   @override
   Map<String, List<String>> getHeaders() {
     return {
-      HttpHeaders.contentType: [_contentType]
+      HttpHeaders.contentType: [_contentType],
+      ...?_headers,
     };
   }
 }
@@ -119,18 +130,20 @@ class RawResponse extends _SynchronousResponse {
   final String contentType;
   final Uint8List _data;
 
-  RawResponse(this._data,
-      {int statusCode = 200, this.contentType = Mime.octetStream})
-      : super(statusCode);
+  RawResponse(
+    this._data, {
+    int statusCode = 200,
+    this.contentType = Mime.octetStream,
+  }) : super(statusCode);
 
   @override
   List<int> getBytes() => _data;
 
   @override
   Map<String, List<String>> getHeaders() => {
-        HttpHeaders.contentLength: [_data.length.toString()],
-        HttpHeaders.contentType: [contentType],
-      };
+    HttpHeaders.contentLength: [_data.length.toString()],
+    HttpHeaders.contentType: [contentType],
+  };
 }
 
 class EmptyResponse extends _SynchronousResponse {
@@ -164,13 +177,12 @@ class ByteStreamResponse extends ApiResponse {
 
   @override
   Map<String, List<String>> getHeaders() => {
-        if (length != null) HttpHeaders.contentLength: [length.toString()],
-        HttpHeaders.contentType: [contentType],
-        if (nullOrEmpty(fileName))
-          'content-disposition': ['${disposition.name}'],
-        if (!nullOrEmpty(fileName))
-          'content-disposition': ['${disposition.name};filename="$fileName"'],
-      };
+    if (length != null) HttpHeaders.contentLength: [length.toString()],
+    HttpHeaders.contentType: [contentType],
+    if (nullOrEmpty(fileName)) 'content-disposition': ['${disposition.name}'],
+    if (!nullOrEmpty(fileName))
+      'content-disposition': ['${disposition.name};filename="$fileName"'],
+  };
 }
 
 class FileResponse extends ByteStreamResponse {
@@ -181,22 +193,23 @@ class FileResponse extends ByteStreamResponse {
     ContentDisposition disposition = ContentDisposition.inline,
     String? contentType,
   }) : super(
-          file.openRead(),
-          file.lengthSync(),
-          fileName: p.basename(file.path),
-          disposition: disposition,
-          contentType:
-              Mime.fromExtension(p.extension(file.path)) ?? Mime.octetStream,
-        );
+         file.openRead(),
+         file.lengthSync(),
+         fileName: p.basename(file.path),
+         disposition: disposition,
+         contentType:
+             Mime.fromExtension(p.extension(file.path)) ?? Mime.octetStream,
+       );
 }
 
 //TODO nicer debug message
 class DebugResponse extends TextResponse {
   DebugResponse(dynamic error, StackTrace stack, int statusCode)
-      : super.plain(
-            'The following error occurred:\n$error\n$stack\n\nThis is a debug message. '
-            'Messages like this will only be displayed in DEV mode.',
-            statusCode: statusCode);
+    : super.plain(
+        'The following error occurred:\n$error\n$stack\n\nThis is a debug message. '
+        'Messages like this will only be displayed in DEV mode.',
+        statusCode: statusCode,
+      );
 }
 
 class HeadResponse extends EmptyResponse {

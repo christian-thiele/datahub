@@ -1,233 +1,175 @@
 import 'dart:async';
 import 'dart:io' as io;
-import 'dart:math';
 import 'package:boost/boost.dart';
-
-import 'package:datahub/ioc.dart';
-import 'package:datahub/services.dart';
+import 'package:datahub/config.dart';
+import 'package:datahub/telemetry.dart';
 import 'package:datahub/http.dart';
+import 'package:datahub/scaffold.dart';
 
-import 'middleware/error_request_handler.dart';
-import 'middleware/middleware.dart';
-import 'middleware/request_handler.dart';
-
-import 'api_endpoint.dart';
 import 'api_request.dart';
 import 'api_request_exception.dart';
 import 'api_response.dart';
-import 'route.dart';
+import 'api_route.dart';
 
-//TODO docs
-/// A Service that serves HTTP-Requests by calling the provided [ApiEndpoint]s.
+/// A Service that serves HTTP-Requests.
 ///
 /// The ApiService uses the datahub [HTTPServer], therefore supports
 /// HTTP 1.1 and HTTP 2 connections.
-///
-/// Configuration values:
-/// * `address`: the address the HTTP-Server listens to, null means any (default null)
-/// * `port`: the port the HTTP-Server listens on (default 8080)
-/// * `enableMetrics`: enable default metrics (default true)
-/// * `metricPrefix`: prefix for default metrics (default "api")
-///
-class ApiService extends BaseService {
-  final _inst = resolve<TelemetryService>();
-
-  late final address = config<String?>('address');
-  late final port = config<int?>('port') ?? 8080;
-  late final _enableMetrics = config<bool?>('enableMetrics') ?? true;
-  late final _metricPrefix = config<String?>('metricPrefix') ?? 'api';
-  late final HttpServer _server;
-
-  final String basePath;
-  final List<ApiEndpoint> endpoints;
-  final MiddlewareBuilder? middleware;
+class ApiService implements Service {
+  final Config<String?> address;
+  final Config<int> port;
+  final List<ApiNode> routes;
   final io.SecurityContext? securityContext;
 
-  CounterMetric? _metricRequestsTotal;
-  HistogramMetric? _metricRequestDuration;
-
-  ApiService(
-    String? config,
-    this.endpoints, {
-    this.middleware,
-    String? apiBasePath,
+  ApiService({
+    this.address = const Config<String?>('address'),
+    this.port = const Config<int>('port', defaultValue: 8080),
+    required this.routes,
     this.securityContext,
-  })  : basePath = _sanitizeBasePath(apiBasePath),
-        super(config);
+  });
 
   @override
-  Future<void> initialize() async {
-    if (_enableMetrics) {
-      _metricRequestsTotal = _inst.counter(
-        _metricPrefix + '_requests_total',
-        labels: {
-          'status_code': ['1xx', '2xx', '3xx', '4xx', '5xx', '6xx', 'other'],
-        },
-      );
+  ServiceInstance<ApiService> createInstance() => _ApiServiceInstance();
+}
 
-      _metricRequestDuration = _inst.exponentialHistogram(
-        _metricPrefix + '_request_duration',
-        start: 0.01,
-        factor: 2,
-        count: 10,
-      );
-    }
+class _ApiServiceInstance extends ServiceInstance<ApiService> {
+  late final HttpServer _server;
+  late final List<ApiRoute> _routes;
 
-    final serveAddress =
-        nullOrWhitespace(address) ? io.InternetAddress.anyIPv4 : address;
+  @override
+  FutureOr<void> initialize() async {
+    _routes = service.routes.expand((e) => e.buildRoutes()).toList();
 
-    final socket = securityContext != null
-        ? await io.SecureServerSocket.bind(serveAddress, port, securityContext)
-        : await io.ServerSocket.bind(serveAddress, port);
+    final serveAddress = nullOrWhitespace(read(service.address))
+        ? io.InternetAddress.anyIPv4
+        : read(service.address);
 
-    _server = HttpServer(socket, handleRequest, _onSocketError,
-        _onProtocolError, _onStreamError);
+    final socket = service.securityContext != null
+        ? await io.SecureServerSocket.bind(
+            serveAddress,
+            read(service.port),
+            service.securityContext,
+          )
+        : await io.ServerSocket.bind(serveAddress, read(service.port));
+
+    _server = HttpServer(
+      socket,
+      handleRequest,
+      _onSocketError,
+      _onProtocolError,
+      _onStreamError,
+    );
   }
 
   Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
-    final watch = Stopwatch();
-    watch.start();
-    return _inst.trace(
-      'HTTP ${httpRequest.method.name.toUpperCase()}',
-      SpanType.server,
-      {
-        'http.request.route': httpRequest.path,
-        'http.request.method': httpRequest.method.name.toUpperCase(),
-      },
-      () async {
-        try {
-          final response = await runZoned(
-            () async {
-              try {
-                final handler = _findRequestHandler(httpRequest.path);
-                final path = httpRequest.path.startsWith(basePath)
-                    ? httpRequest.path.substring(basePath.length)
-                    : '';
+    try {
+      final request = ApiRequest(
+        httpRequest.requestUri,
+        httpRequest.method,
+        httpRequest.headers,
+        <String, String>{},
+        httpRequest.bodyData,
+      );
 
-                final route = (handler is ApiEndpoint)
-                    ? handler.routePattern.decode(path)
-                    : Route(RoutePattern.any, path, {}, path);
+      final (handler, routeParams) = findEndpoint(_routes, request);
+      request.routeParams.addAll(routeParams);
+      final response = await handler(request);
+      return response.toHttpResponse(httpRequest.requestUri);
+    } on ApiRequestException catch (e) {
+      return e.toResponse().toHttpResponse(httpRequest.requestUri);
+    } catch (e, stack) {
+      if (Context.ofZone().environment == Environment.dev) {
+        return DebugResponse(
+          e,
+          stack,
+          500,
+        ).toHttpResponse(httpRequest.requestUri);
+      } else {
+        return ApiRequestException.internalError(
+          'Internal Server Error',
+        ).toResponse().toHttpResponse(httpRequest.requestUri);
+      }
+    }
+  }
 
-                //TODO cookies
+  static (RequestHandler, Map<String, String>) findEndpoint(
+    List<ApiRoute> routes,
+    ApiRequest request,
+  ) {
+    if (tryFindEndpoint(routes, request) case final endpoint?) {
+      return endpoint;
+    } else {
+      return exceptionHandler(ApiRequestException.notFound());
+    }
+  }
 
-                final request = ApiRequest(
-                  httpRequest.method,
-                  route,
-                  httpRequest.headers,
-                  httpRequest.queryParams,
-                  httpRequest.bodyData,
-                  null,
-                );
+  static (RequestHandler, Map<String, String>)? tryFindEndpoint(
+    List<ApiRoute> routes,
+    ApiRequest request,
+  ) {
+    final matching = routes.where((r) => r.matcher.matches(request));
+    final handlers = matching.map((r) {
+      return switch (r) {
+        ApiEndpoint(:final onRequest) => (
+          wrapDynamic(onRequest),
+          r.matcher.getRouteParams(request),
+        ),
+        ApiMiddleware(:final routes, :final onRequest, :final catchRequests) =>
+          wrapWithMiddleware(
+            onRequest,
+            catchRequests
+                ? findEndpoint(routes, request)
+                : tryFindEndpoint(routes, request),
+            r.matcher.getRouteParams(request),
+          ),
+      };
+    });
 
-                final response = await (middleware?.call(handler) ?? handler)
-                    .handleRequest(request);
+    return handlers.nonNulls.firstOrNull;
+  }
 
-                return response.toHttpResponse(httpRequest.requestUri);
-              } on ApiRequestException catch (e) {
-                // Exceptions should have been handled by ApiEndpoint, this is just
-                // to make sure
-                return e.toResponse().toHttpResponse(httpRequest.requestUri);
-              } catch (e, stack) {
-                // Exceptions should have been handled by ApiEndpoint, this is just
-                // to make sure
-                if (resolve<ConfigService>().environment == Environment.dev) {
-                  return DebugResponse(e, stack, 500)
-                      .toHttpResponse(httpRequest.requestUri);
-                } else {
-                  return ApiRequestException.internalError(
-                          'Internal Server Error')
-                      .toResponse()
-                      .toHttpResponse(httpRequest.requestUri);
-                }
-              }
-            },
-            zoneValues: {
-              #apiRequestId: _generateRequestId(),
-            },
-          );
+  static (RequestHandler, Map<String, String>) exceptionHandler(
+    ApiRequestException exception,
+  ) {
+    return ((request) => exception.toResponse(), {});
+  }
 
-          final statusCodeLabel = switch (response.statusCode) {
-            int i when i >= 100 && i < 700 =>
-              '${(response.statusCode / 100).floor()}xx',
-            _ => 'other',
-          };
-          _metricRequestsTotal?.inc({'status_code': statusCodeLabel});
-          return response;
-        } finally {
-          watch.stop();
-          _metricRequestDuration?.observeDuration(watch.elapsed);
-        }
-      },
-    );
+  static RequestHandler<ApiResponse> wrapDynamic(RequestHandler handler) {
+    return (request) async => ApiResponse.dynamic(await handler(request));
+  }
+
+  static (RequestHandler<ApiResponse>, Map<String, String>)? wrapWithMiddleware(
+    MiddlewareRequestHandler middlewareHandler,
+    (RequestHandler, Map<String, String>)? next,
+    Map<String, String> routeParams,
+  ) {
+    if (next != null) {
+      return (
+        wrapDynamic(
+          (request) async =>
+              await middlewareHandler(request, wrapDynamic(next.$1)),
+        ),
+        {...routeParams, ...next.$2},
+      );
+    } else {
+      return null;
+    }
   }
 
   void _onSocketError(dynamic e, StackTrace? trace) {
-    resolve<LogService>().error(
-      'Error while listening to socket.',
-      sender: 'DataHub',
-      error: e,
-      trace: trace,
-    );
+    log.error('Error while listening to socket.', error: e, stack: trace);
   }
 
   void _onProtocolError(dynamic e, StackTrace? trace) {
-    resolve<LogService>().warn(
-      'Error during protocol negotiation.',
-      sender: 'DataHub',
-      error: e,
-      trace: trace,
-    );
+    log.warn('Error during protocol negotiation.', error: e, stack: trace);
   }
 
   void _onStreamError(dynamic e, StackTrace? trace) {
-    resolve<LogService>().verbose(
-      'Error while handling HTTP2 stream.\n$e',
-      sender: 'DataHub',
-    );
-  }
-
-  // TODO this could be part of RoutePattern instead
-  static String _sanitizeBasePath(String? apiBasePath) {
-    if (nullOrWhitespace(apiBasePath)) {
-      return '';
-    }
-
-    if (!apiBasePath!.startsWith('/')) {
-      apiBasePath = '/$apiBasePath';
-    }
-
-    apiBasePath = apiBasePath.replaceAll(RegExp(r'\/+'), '/');
-
-    if (apiBasePath.endsWith('/')) {
-      apiBasePath = apiBasePath.substring(0, apiBasePath.length - 1);
-    }
-
-    return apiBasePath;
-  }
-
-  RequestHandler _findRequestHandler(String absolutePath) {
-    if (!absolutePath.startsWith(basePath)) {
-      return ErrorRequestHandler(
-          ApiRequestException.notFound('Resource "$absolutePath" not found.'));
-    }
-
-    final path = absolutePath.substring(basePath.length);
-
-    return endpoints
-            .where((element) => element.routePattern.match(path))
-            .firstOrNull ??
-        ErrorRequestHandler(ApiRequestException.notFound(
-            'Resource "$absolutePath" not found.'));
-  }
-
-  static String _generateRequestId() {
-    final r = Random();
-    return Iterable.generate(
-        4, (_) => r.nextInt(255).toRadixString(16).padLeft(2, '0')).join(':');
+    log('Error while handling HTTP2 stream.\n$e');
   }
 
   @override
-  Future<void> shutdown() async {
+  FutureOr<void> dispose() async {
     await _server.close();
   }
 }

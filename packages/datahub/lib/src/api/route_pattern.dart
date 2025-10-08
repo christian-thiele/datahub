@@ -1,8 +1,11 @@
 import 'package:boost/boost.dart';
 
-import 'package:datahub/api.dart';
 import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
+
+import 'api_request.dart';
+import 'api_request_exception.dart';
+import 'route_matcher.dart';
 
 const _wildcardGroup = '_route_wildcard';
 const _prefixGroup = '_prefix';
@@ -26,7 +29,7 @@ const _specialChars = [
   '=',
   ':',
   '@',
-  '%'
+  '%',
 ];
 
 const _segmentChars =
@@ -34,11 +37,13 @@ const _segmentChars =
 
 // placeholder detector regex
 final RegExp _plExp = RegExp(
-    '^(?<$_prefixGroup>$_segmentChars*){((?<$_keyGroup>[\\w-]+)(?<$_optionalGroup>\\??))}\$');
+  '^(?<$_prefixGroup>$_segmentChars*){((?<$_keyGroup>[\\w-]+)(?<$_optionalGroup>\\??))}\$',
+);
 
 // route pattern validation regex
 final RegExp _vrExp = RegExp(
-    '^(\\/($_segmentChars+|$_segmentChars*((?<!\\\\){([\\w-]+)\\??})))*(\\/\\*?)?\/?\$');
+  '^(\\/($_segmentChars+|$_segmentChars*((?<!\\\\){([\\w-]+)\\??})))*(\\/\\*?)?/?\$',
+);
 
 /// Represents a route pattern against which request paths will be matched.
 ///
@@ -113,17 +118,20 @@ final RegExp _vrExp = RegExp(
 ///
 /// The segments matched by the wildcard-suffix is also stored in the [Route]
 /// object. See [Route.wildcard]
-class RoutePattern {
+class RoutePattern implements RouteMatcher {
   final String pattern;
   final List<_Segment> _segments;
-  final RegExp routeMatchExp;
+  final String routeMatchExp;
   final bool isWildcardPattern;
 
-  static final any =
-      RoutePattern._('*', [_WildcardSegment()], RegExp(r'.*'), true);
+  static const any = RoutePattern._('*', [_WildcardSegment()], r'.*', true);
 
   const RoutePattern._(
-      this.pattern, this._segments, this.routeMatchExp, this.isWildcardPattern);
+    this.pattern,
+    this._segments,
+    this.routeMatchExp,
+    this.isWildcardPattern,
+  );
 
   factory RoutePattern(String pattern) {
     if (!_vrExp.hasMatch(pattern)) {
@@ -136,11 +144,14 @@ class RoutePattern {
     for (final segment in patternSegments) {
       final plMatch = _plExp.firstMatch(segment);
       if (plMatch != null) {
-        segments.add(_PLSegment(
+        segments.add(
+          _PLSegment(
             segment,
             plMatch.namedGroup(_prefixGroup)!,
             plMatch.namedGroup(_keyGroup)!,
-            plMatch.namedGroup(_optionalGroup)!.isNotEmpty));
+            plMatch.namedGroup(_optionalGroup)!.isNotEmpty,
+          ),
+        );
         continue;
       }
 
@@ -153,9 +164,7 @@ class RoutePattern {
       segments.add(_Segment(segment));
     }
 
-    final matchExp = RegExp(
-        '^${segments.map((s) => s.toMatchExp()).join()}\\/?\$',
-        caseSensitive: false);
+    final matchExp = '^${segments.map((s) => s.toMatchExp()).join()}\\/?\$';
 
     return RoutePattern._(pattern, segments, matchExp, hasWildcard);
   }
@@ -163,52 +172,59 @@ class RoutePattern {
   /// Encodes url params into a path.
   String encode(Map<String, dynamic> values) {
     final codec = const JsonDataCodec();
-    final stringValues = values.map((key, value) =>
-        MapEntry(key, Uri.encodeComponent(codec.decodeString(value))));
+    final stringValues = values.map(
+      (key, value) =>
+          MapEntry(key, Uri.encodeComponent(codec.decodeString(value))),
+    );
     return _segments.map((s) => s.encode(stringValues)).join();
   }
 
   /// Decodes a path using the route pattern.
   ///
   /// Path parameters will be stored in the returned [Route] object.
-  Route decode(String path) {
-    final match = routeMatchExp.firstMatch(path);
+  RoutePatternMatch? tryMatch(String path) {
+    final match = RegExp(routeMatchExp, caseSensitive: false).firstMatch(path);
     if (match == null) {
-      throw ApiException('Could not match pattern.');
+      return null;
     }
 
-    final pathParams = Map.fromEntries(match.groupNames
-        .where((e) => e != _wildcardGroup)
-        .map((e) =>
-            (match.groupNames.contains(e) && match.namedGroup(e) != null)
+    final pathParams = Map.fromEntries(
+      match.groupNames
+          .where((e) => e != _wildcardGroup)
+          .map(
+            (e) => (match.groupNames.contains(e) && match.namedGroup(e) != null)
                 ? MapEntry(e, Uri.decodeComponent(match.namedGroup(e)!))
-                : null)
-        .nonNulls);
+                : null,
+          )
+          .nonNulls,
+    );
 
     final wildcard = match.groupNames.contains(_wildcardGroup)
         ? match.namedGroup(_wildcardGroup)
         : null;
 
-    return Route(this, path, pathParams, wildcard);
+    return RoutePatternMatch(this, path, pathParams, wildcard);
   }
-
-  bool match(String path) => routeMatchExp.hasMatch(path);
 
   /// Checks if there is a placeholder param with the given key in the pattern.
   bool containsParam(String key) {
-    return _segments
-        .any((element) => element is _PLSegment && element.key == key);
+    return _segments.any(
+      (element) => element is _PLSegment && element.key == key,
+    );
   }
 
   /// Checks whether the placeholder with the given key is optional.
   ///
   /// Throws ApiError when the key is not present in the pattern.
   bool isOptionalParam(String key) {
-    final segment = _segments.firstWhere(
-            (element) => element is _PLSegment && element.key == key,
-            orElse: () => throw ApiError(
-                'Placeholder param "$key" not present in pattern: $pattern'))
-        as _PLSegment;
+    final segment =
+        _segments.firstWhere(
+              (element) => element is _PLSegment && element.key == key,
+              orElse: () => throw ApiError(
+                'Placeholder param "$key" not present in pattern: $pattern',
+              ),
+            )
+            as _PLSegment;
     return segment.optional;
   }
 
@@ -228,6 +244,21 @@ class RoutePattern {
       }
       buffer.write(' parameter "$param".');
       throw ApiError(buffer.toString());
+    }
+  }
+
+  @override
+  bool matches(ApiRequest request) => tryMatch(request.uri.path) != null;
+
+  @override
+  Map<String, String> getRouteParams(ApiRequest request) {
+    if (tryMatch(request.uri.path) case final match?) {
+      return {
+        ...match.routeParams,
+        if (match.wildcard case final wildcard?) '*': wildcard,
+      };
+    } else {
+      return {};
     }
   }
 }
@@ -295,13 +326,18 @@ String _regexEscape(String source) {
 /// and all route parameters defined by the [RoutePattern].
 /// If the pattern uses a wildcard suffix, the wildcard-part of the path
 /// is stored in [Route.wildcard].
-class Route {
+class RoutePatternMatch {
   final RoutePattern pattern;
-  final String url;
+  final String path;
   final Map<String, String> routeParams;
   final String? wildcard;
 
-  Route(this.pattern, this.url, this.routeParams, this.wildcard);
+  const RoutePatternMatch(
+    this.pattern,
+    this.path,
+    this.routeParams,
+    this.wildcard,
+  );
 
   /// Returns the named route parameter.
   ///
@@ -318,10 +354,11 @@ class Route {
       return codec.decodeTyped<T>(routeParams[name]);
     } on CodecException catch (_) {
       throw ApiRequestException.badRequest(
-          'Missing or malformed route parameter: $name');
+        'Missing or malformed route parameter: $name',
+      );
     }
   }
 
   @override
-  String toString() => url;
+  String toString() => path;
 }

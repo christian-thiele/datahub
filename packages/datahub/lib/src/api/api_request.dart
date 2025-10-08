@@ -2,26 +2,28 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
-import 'package:datahub/api.dart';
 import 'package:datahub/data.dart';
+import 'package:datahub/http.dart';
 import 'package:datahub/utils.dart';
 
+import 'api_request_exception.dart';
+
 class ApiRequest {
-  final ApiRequestMethod method;
-  final Route route;
+  final Uri uri;
+  final HttpRequestMethod method;
   final Map<String, List<String>> headers;
-  final Map<String, List<String>> queryParams;
+  final Map<String, String> routeParams;
   final Stream<List<int>> bodyData;
-  final Session? session;
 
   ApiRequest(
+    this.uri,
     this.method,
-    this.route,
     this.headers,
-    this.queryParams,
+    this.routeParams,
     this.bodyData,
-    this.session,
   );
+
+  Map<String, List<String>> get queryParams => uri.queryParametersAll;
 
   /// Returns a [Uint8List] of the body data.
   ///
@@ -104,8 +106,10 @@ class ApiRequest {
   /// Setting [allowSingleFlat] to true enables parsing of a json object
   /// (instead of a list of objects) into a list with one item instead of
   /// throwing a bad-request exception.
-  Future<List<T>> getList<T extends DataObject<T>>(DataBean<T> bean,
-      {bool allowSingleFlat = false}) async {
+  Future<List<T>> getList<T extends DataObject<T>>(
+    DataBean<T> bean, {
+    bool allowSingleFlat = false,
+  }) async {
     final json = jsonDecode(await getTextBody());
     return switch (json) {
       Map<String, dynamic>() when allowSingleFlat => [bean.fromJson(json)],
@@ -134,26 +138,28 @@ class ApiRequest {
       }
     } on CodecException catch (_) {
       throw ApiRequestException.badRequest(
-          'Missing or malformed query parameter: $name');
+        'Missing or malformed query parameter: $name',
+      );
     }
   }
 
-  /// Returns the current session of type [T].
+  /// Returns the named route parameter.
   ///
-  /// Use [AuthProvider] to populate the request session object.
+  /// Throws [ApiRequestException.badRequest] if value does not exist or could
+  /// not be parsed.
+  /// If a null return value is preferred instead, simply set a nullable
+  /// type for [T] and no exception will be thrown.
   ///
-  /// If there is no active session matching type [T], this will throw an
-  /// [ApiRequestException.unauthorized]. If in this case a null return value
-  /// is preferred instead, simply set a nullable type for [T] and no exception
-  /// will be thrown.
-  T getSession<T extends Session>() {
-    if (session is T) {
-      return session as T;
-    } else {
-      throw ApiRequestException.unauthorized();
+  /// Valid types for [T] (nullable, as well as non-nullable)
+  /// are [String], [int], [double], [bool], [DateTime], [Duration] or [Uint8List].
+  T getRouteParam<T>(String name) {
+    try {
+      final codec = const JsonDataCodec();
+      return codec.decodeTyped<T>(routeParams[name]);
+    } on CodecException catch (_) {
+      throw ApiRequestException.badRequest(
+        'Missing or malformed route parameter: $name',
+      );
     }
   }
-
-  ApiRequest withSession(Session? session) =>
-      ApiRequest(method, route, headers, queryParams, bodyData, session);
 }

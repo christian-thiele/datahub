@@ -5,13 +5,13 @@ import 'package:boost/boost.dart';
 
 import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
-import 'package:datahub/ioc.dart';
-import 'package:datahub/services.dart';
+import 'package:datahub/scaffold.dart';
+import 'package:datahub/src/services/key_service/key_service.dart';
 import 'package:datahub/utils.dart';
 
 import 'package:pointycastle/pointycastle.dart';
 
-class JWT extends BearerAuth {
+class Jwt extends TokenAuth {
   static final _jsonBase64 = json.fuse(utf8.fuse(base64Url));
 
   final Map<String, dynamic> header;
@@ -45,12 +45,12 @@ class JWT extends BearerAuth {
       ? null
       : DateTime.fromMillisecondsSinceEpoch((payload['exp'] as int) * 1000);
 
-  JWT(super.token, {super.prefix = 'Bearer '})
-      : header = _readHeader(token),
-        payload = _readPayload(token),
-        signature = _readSignature(token);
+  Jwt(super.token, {super.prefix = 'Bearer '})
+    : header = _readHeader(token),
+      payload = _readPayload(token),
+      signature = _readSignature(token);
 
-  factory JWT.create(
+  factory Jwt.create(
     Map<String, dynamic> header,
     Map<String, dynamic> payload,
     RSAPrivateKey key,
@@ -65,28 +65,33 @@ class JWT extends BearerAuth {
         signer.generateSignature(Uint8List.fromList(body)) as RSASignature;
     final signature = stripBase64Padding(base64UrlEncode(rsaSignature.bytes));
 
-    return JWT('$bodyPart.$signature');
+    return Jwt('$bodyPart.$signature');
   }
 
-  static JWT? fromAuthorizationHeader(String token,
-      {String prefix = 'Bearer '}) {
+  static Jwt? fromAuthorizationHeader(
+    String token, {
+    String prefix = 'Bearer ',
+  }) {
     if (token.length > prefix.length && token.startsWith(prefix)) {
-      return JWT(token.substring(prefix.length), prefix: prefix);
+      return Jwt(token.substring(prefix.length), prefix: prefix);
     } else {
       return null;
     }
   }
 
-  static JWT? fromRequest(ApiRequest request, {String prefix = 'Bearer '}) {
-    final token = request.headers[HttpHeaders.authorization]?.firstOrNull;
+  static Jwt? fromRequest(
+    Map<String, List<String>> headers, {
+    String prefix = 'Bearer ',
+  }) {
+    final token = headers[HttpHeaders.authorization]?.firstOrNull;
     if (nullOrWhitespace(token)) {
       return null;
     }
 
-    return JWT.fromAuthorizationHeader(token!, prefix: prefix);
+    return Jwt.fromAuthorizationHeader(token!, prefix: prefix);
   }
 
-  /// Verify a signed JWT.
+  /// Verify a signed Jwt.
   ///
   /// It is highly recommended to provide the [issuer] param, which
   /// prevents this method from fetching openid-configuration from unknown /
@@ -112,7 +117,8 @@ class JWT extends BearerAuth {
   }) async {
     if (alg != 'RS256') {
       throw ApiRequestException.unauthorized(
-          'Unsupported signing algorithm "$alg".');
+        'Unsupported signing algorithm "$alg".',
+      );
     }
 
     if (iat?.isAfter(DateTime.now()) == true) {
@@ -135,18 +141,23 @@ class JWT extends BearerAuth {
       throw ApiRequestException.unauthorized('Issuer mismatch.');
     }
 
-    if (aud?.contains(audience) != true) {
+    if (audience != null && (aud?.contains(audience) != true)) {
       throw ApiRequestException.unauthorized('Audience mismatch.');
     }
 
-    final key = publicKey ??
-        await resolve<KeyService>().getOAuthKey(Uri.parse(iss!), alg!, kid!);
+    final key =
+        publicKey ??
+        await Context.ofZone()
+            .find(Find<KeyCache>())
+            .getOAuthKey(Uri.parse(iss!), alg!, kid!);
 
     final body = utf8.encode(token.split('.').take(2).join('.'));
     final signer = Signer('SHA-256/RSA');
     signer.init(false, PublicKeyParameter<RSAPublicKey>(key));
     if (signer.verifySignature(
-        Uint8List.fromList(body), RSASignature(signature))) {
+      Uint8List.fromList(body),
+      RSASignature(signature),
+    )) {
       return;
     }
 
@@ -156,7 +167,7 @@ class JWT extends BearerAuth {
   static Map<String, dynamic> _readHeader(String token) {
     final parts = token.split('.');
     if (parts.length != 3) {
-      throw ApiRequestException.unauthorized('Invalid JWT.');
+      throw ApiRequestException.unauthorized('Invalid Jwt.');
     }
     return _jsonBase64.decode(addBase64Padding(parts.first))
         as Map<String, dynamic>;
@@ -165,7 +176,7 @@ class JWT extends BearerAuth {
   static Map<String, dynamic> _readPayload(String token) {
     final parts = token.split('.');
     if (parts.length != 3) {
-      throw ApiRequestException.unauthorized('Invalid JWT.');
+      throw ApiRequestException.unauthorized('Invalid Jwt.');
     }
     return _jsonBase64.decode(addBase64Padding(parts[1]))
         as Map<String, dynamic>;
@@ -174,7 +185,7 @@ class JWT extends BearerAuth {
   static Uint8List _readSignature(String token) {
     final parts = token.split('.');
     if (parts.length != 3) {
-      throw ApiRequestException.unauthorized('Invalid JWT.');
+      throw ApiRequestException.unauthorized('Invalid Jwt.');
     }
     return base64Decode(addBase64Padding(token.split('.')[2]));
   }
