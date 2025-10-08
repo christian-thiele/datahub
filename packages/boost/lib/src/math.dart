@@ -38,3 +38,23 @@ double toRadians(num degrees) => degrees * math.pi / 180.0;
 ///
 /// 1 rad × 180/π = 57,296°
 double toDegrees(num radians) => radians * 180.0 / math.pi;
+
+extension IterableMathExtension<TValue extends num> on Iterable<TValue> {
+  /// Returns the average value of all elements.
+  double avg() {
+    if (isEmpty) {
+      return 0;
+    }
+    return map((e) => e.toDouble()).sum() / length;
+  }
+}
+
+extension IntIterableMathExtension on Iterable<int> {
+  /// Returns the sum of all elements.
+  int sum() => fold(0, (v, e) => v + e);
+}
+
+extension DoubleIterableMathExtension on Iterable<double> {
+  /// Returns the sum of all elements.
+  double sum() => fold<double>(0.0, (v, e) => v + e);
+}

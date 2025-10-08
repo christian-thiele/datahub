@@ -15,7 +15,6 @@ void main() {
   test('triple a/b/c', _tripleIterableTest);
 }
 
-
 void _randomTest() {
   final intList = Iterable.generate(20, (i) => 'str$i');
   final results = Iterable.generate(10, (i) => intList.random);

@@ -68,6 +68,18 @@ class TypeCheck<T> {
     return this is TypeCheck<TSuper>;
   }
 
+  /// Returns true if instance of [T] is applicable to [T] of [other],
+  /// as if you would check `new T() is TOther`.
+  ///
+  /// WARNING:
+  /// `isSubtypeOf<T, void>()`
+  /// will always return true, since void is dynamic at runtime.
+  ///
+  /// To check if T is void, use:
+  /// `TypeCheck<void>().isSubtypeOf<T>()`
+  /// which does not work for dynamic (as stated above).
+  bool isSubtypeOfCheck(TypeCheck other) => other.isSupertypeOf<T>();
+
   /// Returns true if instance of [TSub] is applicable to [T],
   /// as if you would check `new TSub() is T`.
   ///
@@ -83,6 +95,8 @@ class TypeCheck<T> {
   bool isSupertypeOf<TSub>() {
     return TypeCheck<TSub>() is TypeCheck<T>;
   }
+
+  bool isSupertypeOfCheck(TypeCheck other) => other.isSubtypeOf<T>();
 
   /// Returns true if [value] is applicable to [T],
   /// as if you would check `value is T`.

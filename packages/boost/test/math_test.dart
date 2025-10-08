@@ -5,6 +5,8 @@ void main() {
   test('round', _roundTest);
   test('clamp', _clampTest);
   test('deg <-> rad', _degRadTest);
+  test('sum', _sumTest);
+  test('avg', _avgTest);
 }
 
 void _roundTest() {
@@ -52,4 +54,18 @@ void _degRadTest() {
     expect(toRadians(pair.key), pair.value);
     expect(toDegrees(pair.value), pair.key);
   }
+}
+
+void _sumTest() {
+  expect(Iterable.generate(0, (i) => i).sum(), equals(0));
+  expect(Iterable.generate(1, (i) => 1).sum(), equals(1));
+  expect(Iterable.generate(10, (i) => i).sum(), equals(45));
+  expect(Iterable.generate(10, (i) => i * 0.5).sum(), equals(22.5));
+}
+
+void _avgTest() {
+  expect(Iterable.generate(0, (i) => i).avg(), equals(0));
+  expect(Iterable.generate(1, (i) => 1).avg(), equals(1));
+  expect(Iterable.generate(11, (i) => i).avg(), equals(5));
+  expect(Iterable.generate(11, (i) => i * 0.5).avg(), equals(2.5));
 }

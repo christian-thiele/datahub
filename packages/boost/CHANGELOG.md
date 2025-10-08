@@ -5,6 +5,8 @@
 - Types
     - added accepts() method to TypeCheck
     - added toString() method to TypeCheck
+- Math
+    - added sum() and avg() methods for num Iterables
 
 ### Obsolete Features removed:
 
