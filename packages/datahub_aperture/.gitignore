@@ -7,3 +7,5 @@ build/
 **/doc/api/
 
 example/
+
+lib/frontend_bundle.dart

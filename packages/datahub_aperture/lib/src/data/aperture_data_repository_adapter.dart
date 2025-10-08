@@ -31,7 +31,7 @@ class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
   @override
   Future<ResourceData> getElement(String id, String? revisionId) async {
     final repo = repository.find();
-    final dynamic? object = await repo.get(id);
+    final object = await repo.readById(id);
 
     if (object == null) {
       throw ApiRequestException.notFound();
@@ -49,7 +49,7 @@ class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
     // TODO sort
     final repo = repository.find();
 
-    final elements = await repo.getAll(
+    final elements = await repo.readAll(
       filter: _buildFilter(filter),
       offset: offset,
       limit: limit + 1,
@@ -68,7 +68,7 @@ class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
     DateTime? revisionLive,
   ) async {
     final repo = repository.find();
-    final existing = await repo.get(id);
+    final existing = await repo.readById(id);
     if (existing == null) {
       throw ApiRequestException.notFound();
     }
@@ -88,7 +88,7 @@ class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
     repo.bean.validateConstraints(object);
 
     final dynamic updated;
-    updated = await repo.update(id, object);
+    updated = await repo.updateById(object);
 
     return _toResourceData(updated);
   }
@@ -99,7 +99,7 @@ class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
     DateTime? revisionLive,
   ) async {
     final repo = repository.find();
-    await repo.delete(id);
+    await repo.deleteById(id);
     return null;
   }
 
