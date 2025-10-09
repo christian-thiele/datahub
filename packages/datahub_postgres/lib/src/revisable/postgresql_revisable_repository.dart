@@ -116,9 +116,11 @@ mixin PostgresqlRevisableRepository<
               constraints: [
                 if (sequenceFields.contains(field))
                   DefaultConstraint(
-                    RawSql(
-                      'nextval(\'$effectiveSchemaName.${relationName}_${field.name}_seq\')',
-                    ),
+                    Sql.function('nextval', [
+                      Sql.text(
+                        '$effectiveSchemaName.${relationName}_${field.name}_seq',
+                      ),
+                    ]),
                   ),
                 if (uuidFields.contains(field))
                   DefaultConstraint(RawSql('gen_random_uuid()')),
@@ -228,7 +230,10 @@ mixin PostgresqlRevisableRepository<
           SqlUpdate(
             SqlQualifiedRelation(read(schemaName), revisionTable.name),
             Sql.join([
-              ?buildFilterSql(revisionTable, identityFilter(bean, primaryKey)),
+              ?buildFilterSql(
+                identityFilter(bean, primaryKey),
+                dataView.attributes,
+              ),
               RawSql(' AND sys_version = $currentVersion'),
             ]),
             {SqlTypedAttribute.of(_sysTo): effectiveFrom},
@@ -256,7 +261,7 @@ mixin PostgresqlRevisableRepository<
         SqlSelect(
           SqlQualifiedRelation(read(schemaName), revisionView.name),
           [SqlWildcard()],
-          where: buildFilterSql(revisionView, filter),
+          where: buildFilterSql(filter, dataView.attributes),
           offset: offset ?? 0,
           limit: limit ?? -1,
         ),
@@ -284,7 +289,7 @@ mixin PostgresqlRevisableRepository<
         SqlSelect(
           SqlQualifiedRelation(read(schemaName), revisionTable.name),
           [SqlWildcard()],
-          where: buildFilterSql(revisionTable, identityFilter(bean, id)),
+          where: buildFilterSql(identityFilter(bean, id), dataView.attributes),
           order: Sql.join([
             SqlColumnAttribute('revision_timestamp').toSql(),
             RawSql(' DESC'),
@@ -314,7 +319,8 @@ mixin PostgresqlRevisableRepository<
             SqlQualifiedRelation(read(schemaName), revisionTable.name),
             [SqlWildcard()],
             where: Sql.join([
-              buildFilterSql(revisionTable, identityFilter(bean, id))!..wrap(),
+              buildFilterSql(identityFilter(bean, id), dataView.attributes)!
+                ..wrap(),
               RawSql(' AND sys_version = '),
               ParameterSql(version, const PostgresqlInt()),
             ]),
@@ -326,7 +332,10 @@ mixin PostgresqlRevisableRepository<
           SqlSelect(
             SqlQualifiedRelation(read(schemaName), revisionView.name),
             [SqlWildcard()],
-            where: buildFilterSql(revisionView, identityFilter(bean, id)),
+            where: buildFilterSql(
+              identityFilter(bean, id),
+              dataView.attributes,
+            ),
             limit: 1,
           ),
         );

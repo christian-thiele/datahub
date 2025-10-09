@@ -5,6 +5,8 @@ import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/types.dart';
 import 'package:postgres/postgres.dart' as pg;
 
+import 'postgresql_function_expression.dart';
+
 List<DataType> mapResultRowToData<DataType extends DataObject<DataType>>(
   DataBean<DataType> bean,
   pg.ResultRow row,
@@ -100,22 +102,20 @@ dynamic _typedId(DataBean bean, dynamic id) {
   };
 }
 
-Sql buildExpressionSql(Expression expression) {
-  // TODO implement
-  throw UnimplementedError();
-}
-
-Sql? buildFilterSql(PostgresqlRelation relation, Filter filter) {
+Sql? buildFilterSql(
+  Filter filter,
+  Iterable<PostgresqlDataAttribute> attributes,
+) {
   return switch (filter) {
     EmptyFilter() => null,
     FilterGroup() => Sql.joinWrap(
       filter.filters
-          .map((e) => buildFilterSql(relation, e))
+          .map((e) => buildFilterSql(e, attributes))
           .nonNulls
           .separatedBy(filter.isConjunction ? Sql.and : Sql.or),
     ),
     CompareFilter(:final left, :final type, :final right) => _compareSql(
-      relation,
+      attributes,
       left,
       type,
       right,
@@ -123,56 +123,72 @@ Sql? buildFilterSql(PostgresqlRelation relation, Filter filter) {
   };
 }
 
+PostgresqlDataAttribute _findDataAttribute(
+  Iterable<PostgresqlDataAttribute> attributes,
+  DataField field,
+) {
+  return attributes.firstWhere(
+    (e) => e.field == field,
+    orElse: () => throw ApiException(
+      'Could not find attribute for field ${field.dataBean.name}.${field.name}',
+    ),
+  );
+}
+
+Sql buildExpressionSql(
+  Expression expression,
+  Iterable<PostgresqlDataAttribute> attributes,
+) {
+  return switch (expression) {
+    ValueExpression(:final value) => PostgresqlDataType.findForDynamic(
+      value,
+    ).sqlParam(value),
+    final DataField field => SqlTypedColumnAttribute.of(
+      _findDataAttribute(attributes, field),
+    ),
+    PostgresqlFunctionExpression(:final name, :final arguments) => Sql.function(
+      name,
+      arguments.map((e) => buildExpressionSql(e, attributes)).toList(),
+    ),
+    _ => throw UnsupportedExpressionError(
+      expression,
+      library: 'datahub_postgres',
+    ),
+  };
+}
+
+PostgresqlDataType? typeOf(
+  Expression expression,
+  Iterable<PostgresqlDataAttribute> attributes,
+) => switch (expression) {
+  ValueExpression(:final value) => PostgresqlDataType.findForDynamic(value),
+  final DataField field => _findDataAttribute(attributes, field).type,
+  PostgresqlFunctionExpression(:final returnType) => returnType,
+  _ => null,
+};
+
 Sql _compareSql(
-  PostgresqlRelation relation,
+  Iterable<PostgresqlDataAttribute> attributes,
   Expression left,
   CompareType type,
   Expression right,
 ) {
-  final effectiveLeft = switch (left) {
-    FieldExpression(:final field) =>
-      relation.attributes.whereType<PostgresqlDataAttribute>().firstWhere(
-        (e) => e.field == field,
-      ),
-    ValueExpression(:final value) => value,
-  };
+  final leftType = typeOf(left, attributes);
+  final rightType = typeOf(right, attributes);
 
-  final effectiveRight = switch (right) {
-    FieldExpression(:final field) =>
-      relation.attributes.whereType<PostgresqlDataAttribute>().firstWhere(
-        (e) => e.field == field,
-      ),
-    ValueExpression(:final value) => value,
-  };
+  final leftSql = buildExpressionSql(left, attributes);
+  final rightSql = buildExpressionSql(right, attributes);
 
-  // TODO some rules and sanity checks maybe?
-
-  final leftType = switch (effectiveLeft) {
-    PostgresqlAttribute(:final type) => type,
-    final value => PostgresqlDataType.findForDynamic(value),
-  };
-
-  final leftSql = switch (effectiveLeft) {
-    PostgresqlAttribute(:final name) => Sql.qualifiedName([
-      relation.name,
-      name,
-    ]),
-    final value => PostgresqlDataType.findForDynamic(value).sqlParam(value),
-  };
-
-  final rightSql = switch (effectiveRight) {
-    PostgresqlAttribute(:final name) => Sql.qualifiedName([
-      relation.name,
-      name,
-    ]),
-    final value => PostgresqlDataType.findForDynamic(value).sqlParam(value),
-  };
-
-  return switch ((leftType, type)) {
-    (PostgresqlString(), CompareType.contains) => Sql.join([
+  return switch ((leftType, type, rightType)) {
+    (PostgresqlString(), CompareType.contains, PostgresqlString()) => Sql.join([
       leftSql,
       RawSql(' ~* '),
       rightSql,
+    ]),
+    (PostgresqlString(), CompareType.isIn, PostgresqlString()) => Sql.join([
+      rightSql,
+      RawSql(' ~* '),
+      leftSql,
     ]),
     (
       PostgresqlStringArray() ||
@@ -180,8 +196,18 @@ Sql _compareSql(
           PostgresqlDoubleArray() ||
           PostgresqlBoolArray(),
       CompareType.contains,
+      _,
     ) =>
       rightSql + RawSql(' = ') + Sql.function('ANY', [leftSql]),
+    (
+      _,
+      CompareType.isIn,
+      PostgresqlStringArray() ||
+          PostgresqlIntArray() ||
+          PostgresqlDoubleArray() ||
+          PostgresqlBoolArray(),
+    ) =>
+      leftSql + RawSql(' = ') + Sql.function('ANY', [rightSql]),
     _ => Sql.join([
       leftSql,
       switch (type) {
