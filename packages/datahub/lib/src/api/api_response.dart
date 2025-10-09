@@ -27,7 +27,7 @@ abstract class ApiResponse {
   ///
   /// Allowed types for [body] are:
   /// null, [ApiResponse], [Uint8List], [ByteData], [File],
-  /// Map<String, dynamic>, List<dynamic> and [TransferObject]
+  /// Map&lt;String, dynamic&gt;, List&lt;dynamic&gt; and [TransferObject]
   factory ApiResponse.dynamic(dynamic body, {int statusCode = 200}) {
     if (body == null) {
       return EmptyResponse(statusCode: statusCode);
@@ -179,7 +179,7 @@ class ByteStreamResponse extends ApiResponse {
   Map<String, List<String>> getHeaders() => {
     if (length != null) HttpHeaders.contentLength: [length.toString()],
     HttpHeaders.contentType: [contentType],
-    if (nullOrEmpty(fileName)) 'content-disposition': ['${disposition.name}'],
+    if (nullOrEmpty(fileName)) 'content-disposition': [disposition.name],
     if (!nullOrEmpty(fileName))
       'content-disposition': ['${disposition.name};filename="$fileName"'],
   };

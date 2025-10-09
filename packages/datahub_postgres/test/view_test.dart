@@ -1,9 +1,6 @@
-import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
-import 'package:datahub_postgres/data.dart';
-import 'package:datahub_postgres/src/types/types.dart';
 
 import 'data/person.dart';
 

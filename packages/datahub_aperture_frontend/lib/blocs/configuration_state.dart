@@ -1,6 +1,5 @@
 part of 'configuration_cubit.dart';
 
-@immutable
 sealed class ConfigurationState {}
 
 final class ConfigurationLoading extends ConfigurationState {

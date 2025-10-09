@@ -11,14 +11,14 @@ import 'sample_group.dart';
 /// response sizes) and counts them in configurable buckets.
 /// It also provides a sum of all observed values.
 ///
-/// A histogram with a base metric name of <basename> exposes multiple time
+/// A histogram with a base metric name of &lt;basename&gt; exposes multiple time
 /// series during a scrape:
 ///
 /// * cumulative counters for the observation buckets, exposed as
-///   <basename>_bucket{le="<upper inclusive bound>"}
-/// * the total sum of all observed values, exposed as <basename>_sum
-/// * the count of events that have been observed, exposed as <basename>_count
-///   (identical to <basename>_bucket{le="+Inf"} above)
+///   &lt;basename&gt;_bucket{le="&lt;upper inclusive bound&gt;"}
+/// * the total sum of all observed values, exposed as &lt;basename&gt;_sum
+/// * the count of events that have been observed, exposed as &lt;basename&gt;_count
+///   (identical to &lt;basename&gt;_bucket{le="+Inf"} above)
 ///
 /// Best practice for creating metric instances is by using the metric
 /// definition methods on [TelemetryService]:

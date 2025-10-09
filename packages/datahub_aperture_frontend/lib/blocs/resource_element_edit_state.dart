@@ -1,6 +1,5 @@
 part of 'resource_element_edit_cubit.dart';
 
-@immutable
 sealed class ResourceElementEditState {
   const ResourceElementEditState();
 }

@@ -1,8 +1,6 @@
-import 'package:datahub_aperture_frontend/models/authentication.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:bloc/bloc.dart';
-import 'package:meta/meta.dart';
 
 part 'configuration_state.dart';
 

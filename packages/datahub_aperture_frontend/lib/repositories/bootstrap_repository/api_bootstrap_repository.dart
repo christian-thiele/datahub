@@ -23,10 +23,4 @@ class ApiBootstrapRepository implements BootstrapRepository {
       client.close();
     }
   }
-
-  @override
-  Future<void> close() async {}
-
-  @override
-  Future<void> initialize() async {}
 }

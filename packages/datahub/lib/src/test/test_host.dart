@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'package:datahub/config.dart';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/telemetry.dart';
 

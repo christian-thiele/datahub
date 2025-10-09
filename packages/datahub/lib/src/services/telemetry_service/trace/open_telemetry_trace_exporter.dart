@@ -11,9 +11,6 @@ import 'package:grpc/grpc.dart';
 import '../opentelemetry-dart/open_telemetry.dart' as otel;
 
 import '../telemetry_scope.dart';
-import 'trace_exporter.dart';
-import 'event.dart';
-import 'span.dart';
 
 class OpenTelemetryTraceExporter extends TraceExporter {
   static const int _maxBufferSize = 100000;

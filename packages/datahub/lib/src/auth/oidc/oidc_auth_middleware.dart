@@ -3,7 +3,6 @@ import 'package:datahub/auth.dart';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/config.dart';
 
-import 'oidc_configuration.dart';
 
 class OidcSession implements Session {
   @override

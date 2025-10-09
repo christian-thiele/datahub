@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/src/http/utils.dart';
 import 'package:test/test.dart';

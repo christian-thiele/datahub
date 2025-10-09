@@ -1,7 +1,5 @@
 import 'dart:collection';
 
-import 'config_exception.dart';
-
 /// Represents a config value path.
 class ConfigPath {
   static final _regex = RegExp(r'^\w+$', multiLine: false);

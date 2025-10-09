@@ -38,6 +38,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
 
   @override
   FutureOr<void> initialize() async {
+    await super.initialize();
     _routes = service.routes.expand((e) => e.buildRoutes()).toList();
 
     final serveAddress = nullOrWhitespace(read(service.address))
@@ -171,5 +172,6 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
   @override
   FutureOr<void> dispose() async {
     await _server.close();
+    await super.dispose();
   }
 }

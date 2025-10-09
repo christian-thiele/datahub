@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:boost/boost.dart';
 import 'package:path/path.dart';
 
 import 'cli_command.dart';
@@ -49,7 +48,7 @@ class CreateCommand extends CliCommand {
       }
 
       await dart(
-        'create $projectName -t console --no-pub' + (force ? ' --force' : ''),
+        'create $projectName -t console --no-pub${force ? ' --force' : ''}',
         verbose: verbose,
       );
     });

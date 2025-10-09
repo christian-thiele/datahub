@@ -6,7 +6,6 @@ import 'package:boost/boost.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/scaffold.dart';
-import 'package:datahub/src/services/key_service/key_service.dart';
 import 'package:datahub/utils.dart';
 
 import 'package:pointycastle/pointycastle.dart';

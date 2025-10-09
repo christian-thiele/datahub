@@ -1,5 +1,3 @@
-import 'package:datahub_postgres/schema.dart';
-
 import 'sql.dart';
 
 class SqlCreateSchema with SqlBuilder {

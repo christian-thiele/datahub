@@ -227,6 +227,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
 
   @override
   Future<void> initialize() async {
+    await super.initialize();
     if (read(service.enableEndpoint)) {
       _metricsExporter = PrometheusExporter(
         address: read(service.address),
@@ -435,5 +436,6 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
   Future<void> dispose() async {
     await _metricsExporter?.shutdown();
     await _traceExporter.shutdown();
+    await super.dispose();
   }
 }

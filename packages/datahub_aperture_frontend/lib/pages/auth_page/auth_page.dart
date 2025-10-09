@@ -1,6 +1,5 @@
 import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
-import 'package:datahub_aperture_frontend/pages/auth_page/login_form.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/icon_text.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';

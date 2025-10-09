@@ -36,6 +36,7 @@ void main() {
     test('String', _decodeString);
     test('double', _decodeDouble);
     test('int', _decodeInt);
+    test('num', _decodeNum);
     test('bool', _decodeBool);
     test('DateTime', _decodeDateTime);
     test('Duration', _decodeDuration);

@@ -63,15 +63,14 @@ class ResourcePage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    if (filter case final filter?)
-                      FilterView(
-                        fields: filter.fields,
-                        filters: filter.filters,
-                        onAdd: (model) =>
-                            context.read<ResourceCubit>().addFilter(model),
-                        onRemove: (idx) =>
-                            context.read<ResourceCubit>().removeFilter(idx),
-                      ),
+                    FilterView(
+                      fields: filter.fields,
+                      filters: filter.filters,
+                      onAdd: (model) =>
+                          context.read<ResourceCubit>().addFilter(model),
+                      onRemove: (idx) =>
+                          context.read<ResourceCubit>().removeFilter(idx),
+                    ),
                     Expanded(
                       child: ResourceList(
                         resource: resource,

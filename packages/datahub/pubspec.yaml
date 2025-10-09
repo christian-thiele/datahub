@@ -28,6 +28,7 @@ dependencies:
   stack_trace: ^1.11.1
   grpc: ^4.1.0
   meta: ^1.16.0
+  buffer: ^1.2.3
 
 dev_dependencies:
   datahub_codegen: 0.18.0-dev.1

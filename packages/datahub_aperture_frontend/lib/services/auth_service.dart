@@ -105,7 +105,7 @@ class AuthService {
             final auth = await client.refreshToken(refreshToken);
             _currentAuth = auth;
             return Jwt(auth.accessToken);
-          } on ApiRequestException catch (e) {
+          } on ApiRequestException catch (_) {
             _controller.add(false);
             rethrow;
           }

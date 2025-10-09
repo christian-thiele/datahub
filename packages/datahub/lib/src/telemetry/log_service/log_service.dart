@@ -33,6 +33,7 @@ class _LogServiceInstance extends ServiceInstance<LogService>
 
   @override
   FutureOr<void> initialize() async {
+    await super.initialize();
     logLevel = read(service.logLevel);
   }
 

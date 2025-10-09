@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:test/expect.dart';

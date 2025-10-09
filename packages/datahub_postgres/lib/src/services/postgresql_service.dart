@@ -75,7 +75,6 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
           sslMode: switch (read(service.useSsl)) {
             true => pg.SslMode.require,
             false => pg.SslMode.disable,
-            _ => null,
           },
           queryMode: pg.QueryMode.extended,
           typeRegistry: pg.TypeRegistry(

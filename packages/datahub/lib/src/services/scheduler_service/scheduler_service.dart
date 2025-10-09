@@ -39,5 +39,6 @@ class _SchedulerServiceInstance extends ServiceInstance<SchedulerService>
     for (final task in _tasks) {
       task.cancel();
     }
+    await super.dispose();
   }
 }

@@ -1,4 +1,3 @@
-import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
 import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/models/filtered_resource.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';

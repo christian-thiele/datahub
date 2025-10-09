@@ -1,6 +1,5 @@
 part of 'resource_element_create_cubit.dart';
 
-@immutable
 sealed class ResourceElementCreateState {}
 
 final class ResourceElementCreateLoading extends ResourceElementCreateState {}
