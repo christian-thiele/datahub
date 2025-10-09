@@ -61,3 +61,23 @@ class MethodRouteMatcher implements RouteMatcher {
   @override
   Map<String, String> getRouteParams(ApiRequest request) => {};
 }
+
+class HeaderRouteMatcher implements RouteMatcher {
+  final String header;
+  final String? value;
+
+  const HeaderRouteMatcher({required this.header, this.value});
+
+  @override
+  bool matches(ApiRequest request) {
+    if (request.headers[header] case final headerValue?) {
+      if (value == null || headerValue.contains(value)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  @override
+  Map<String, String> getRouteParams(ApiRequest request) => {};
+}
