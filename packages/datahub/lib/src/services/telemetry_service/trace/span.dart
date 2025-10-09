@@ -3,10 +3,6 @@ import 'dart:developer' as dev;
 
 import 'package:datahub/telemetry.dart';
 
-import 'event.dart';
-import 'tracer.dart';
-import 'trace_id.dart';
-import 'span_id.dart';
 
 enum SpanType { internal, server, client, producer, consumer }
 

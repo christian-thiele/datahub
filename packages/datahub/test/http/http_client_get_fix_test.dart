@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:datahub/config.dart';
 import 'package:datahub/src/test/test_host.dart';
 import 'package:http/http.dart' as http;
 

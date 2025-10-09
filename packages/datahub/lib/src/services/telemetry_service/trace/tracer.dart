@@ -11,8 +11,11 @@ class Tracer implements TelemetryScope {
   static const _tracerKeyPrefix = 'datahub_instrumentation_tracer';
   late final _tracerSpanKey = '$_tracerKeyPrefix/$key';
 
+  @override
   final String name;
+  @override
   final String? version;
+  @override
   final Map<String, dynamic> attributes;
   late final String key = buildKey(name, version);
 

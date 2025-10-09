@@ -171,10 +171,9 @@ class RestClient {
     bool throwOnError = true,
   }) async {
     final pathPrefix = _httpClient.address.pathSegments.isNotEmpty
-        ? '/' +
-              _httpClient.address.pathSegments
+        ? '/${_httpClient.address.pathSegments
                   .where((e) => e.isNotEmpty)
-                  .join('/')
+                  .join('/')}'
         : '';
     final uri = _httpClient.address.replace(
       path: pathPrefix + endpoint.encode(urlParams),

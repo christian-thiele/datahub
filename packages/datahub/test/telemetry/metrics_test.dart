@@ -27,7 +27,9 @@ void main() {
     host.test('Test counter metrics', () async {
       final instrumentation = resolve<TelemetryService>();
       final counter = instrumentation.counter('some_value');
-      for (var i = 0; i < 3; i++) counter.inc();
+      for (var i = 0; i < 3; i++) {
+        counter.inc();
+      }
 
       final metrics = await instrumentation.scrapeMetrics();
       expect(metrics, isNotEmpty);
@@ -131,7 +133,9 @@ void main() {
     host.test('Test gauge metrics', () async {
       final instrumentation = resolve<TelemetryService>();
       final gauge = instrumentation.gauge('some_value');
-      for (var i = 0; i < 3; i++) gauge.inc();
+      for (var i = 0; i < 3; i++) {
+        gauge.inc();
+      }
       gauge.incBy(-5);
 
       final metrics = await instrumentation.scrapeMetrics();
