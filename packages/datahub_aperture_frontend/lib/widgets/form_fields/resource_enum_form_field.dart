@@ -1,7 +1,6 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:flutter/material.dart';
 
-import 'resource_form_field.dart';
 
 class ResourceEnumFormField extends StatelessWidget {
   final ResourceField field;
@@ -28,7 +27,7 @@ class ResourceEnumFormField extends StatelessWidget {
       initialValue: value,
       items: [
         for (final value in field.enumValues ?? [])
-          DropdownMenuItem<String>(child: Text(value), value: value),
+          DropdownMenuItem<String>(value: value, child: Text(value)),
       ],
       onChanged: onChanged != null ? (value) => onChanged?.call(value) : null,
     );

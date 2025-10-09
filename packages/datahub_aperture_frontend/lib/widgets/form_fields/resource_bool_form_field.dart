@@ -1,7 +1,6 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:flutter/material.dart';
 
-import 'resource_form_field.dart';
 
 class ResourceBoolFormField extends StatelessWidget {
   final ResourceField field;

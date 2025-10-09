@@ -1,5 +1,4 @@
 import 'package:datahub_aperture/api.dart';
-import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
 import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
