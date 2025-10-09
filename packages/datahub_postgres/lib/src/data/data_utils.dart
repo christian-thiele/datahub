@@ -130,7 +130,7 @@ PostgresqlDataAttribute _findDataAttribute(
   return attributes.firstWhere(
     (e) => e.field == field,
     orElse: () => throw ApiException(
-      'Could not find attribute for field ${field.dataBean.name}.${field.name}',
+      'Could not find attribute for field "${field.name}"',
     ),
   );
 }
