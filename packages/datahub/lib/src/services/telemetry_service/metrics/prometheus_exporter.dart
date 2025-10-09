@@ -5,7 +5,6 @@ import 'package:datahub/http.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
 
-
 // Could be a Service...
 //TODO docs
 class PrometheusExporter extends MetricsExporter {
@@ -51,9 +50,7 @@ class PrometheusExporter extends MetricsExporter {
         buffer.write(sample.name);
         if (sample.labels.isNotEmpty) {
           buffer.write(
-            '{${sample.labels.entries
-                    .map((e) => '${e.key}="${e.value}"')
-                    .join(',')}}',
+            '{${sample.labels.entries.map((e) => '${e.key}="${e.value}"').join(',')}}',
           );
         }
         buffer.write(' ${sample.value}');

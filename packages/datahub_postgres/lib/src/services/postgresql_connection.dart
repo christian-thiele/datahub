@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 import 'package:postgres/postgres.dart';
 

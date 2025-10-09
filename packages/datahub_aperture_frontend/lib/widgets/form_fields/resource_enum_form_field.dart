@@ -1,7 +1,6 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:flutter/material.dart';
 
-
 class ResourceEnumFormField extends StatelessWidget {
   final ResourceField field;
   final InputDecoration decoration;

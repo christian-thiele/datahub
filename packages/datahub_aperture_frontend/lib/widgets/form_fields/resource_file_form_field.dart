@@ -74,7 +74,6 @@ class ResourceFileFormField extends StatelessWidget {
 
                       if (result case final result?) {
                         if (result.files.first case PlatformFile(
-                          :final name,
                           :final bytes?,
                         )) {
                           //onChanged?.call(FileValue(name: name, data: bytes));

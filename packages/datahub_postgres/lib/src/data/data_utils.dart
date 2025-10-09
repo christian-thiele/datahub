@@ -1,11 +1,11 @@
 import 'package:datahub/datahub.dart';
-import 'package:datahub_postgres/data.dart';
 import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/types.dart';
 import 'package:postgres/postgres.dart' as pg;
 
 import 'postgresql_function_expression.dart';
+import 'postgresql_data_attribute.dart';
 
 List<DataType> mapResultRowToData<DataType extends DataObject<DataType>>(
   DataBean<DataType> bean,

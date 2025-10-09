@@ -1,7 +1,6 @@
 import 'package:datahub_aperture_frontend/widgets/form_fields/date_time_form_field.dart';
 import 'package:flutter/material.dart';
 
-
 class ResourceTimestampFormField extends StatelessWidget {
   final InputDecoration decoration;
   final String? value;

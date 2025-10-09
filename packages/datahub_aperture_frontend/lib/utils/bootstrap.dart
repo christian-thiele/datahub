@@ -25,8 +25,7 @@ class Bootstrap extends StatelessWidget {
     };
 
     return BlocProvider(
-      create: (context) =>
-          BootstrapCubit(ApiBootstrapRepository(baseUri)..initialize()),
+      create: (context) => BootstrapCubit(ApiBootstrapRepository(baseUri)),
       child: BlocBuilder<BootstrapCubit, BootstrapState>(
         builder: (context, state) {
           return switch (state) {

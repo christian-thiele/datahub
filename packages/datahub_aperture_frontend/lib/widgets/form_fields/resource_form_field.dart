@@ -145,13 +145,6 @@ class ResourceFormField extends StatelessWidget {
         onChanged: onChanged,
         error: error,
       ),
-      _ => SizedBox(
-        height: 32,
-        child: Align(
-          alignment: AlignmentGeometry.centerLeft,
-          child: Text(field.name),
-        ),
-      ),
     };
   }
 }

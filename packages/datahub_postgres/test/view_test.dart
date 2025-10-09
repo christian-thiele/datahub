@@ -2,8 +2,6 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 
-import 'data/person.dart';
-
 void main() {
   declareTest(
     'Postgresql View Repository',
@@ -18,7 +16,6 @@ void main() {
     ],
     () async {
       final postgres = Find<Postgresql>().find();
-      final repo = Find<DataRepository<Person>>().find();
       await postgres.useConnection((connection) async {
         await connection.runTransaction((context) async {
           final result = await postgres.useConnection((connection) async {

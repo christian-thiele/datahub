@@ -3,7 +3,6 @@ import 'dart:developer' as dev;
 
 import 'package:datahub/telemetry.dart';
 
-
 enum SpanType { internal, server, client, producer, consumer }
 
 class Span {

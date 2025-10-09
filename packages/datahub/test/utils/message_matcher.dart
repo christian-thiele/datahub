@@ -1,7 +1,7 @@
 import 'package:test/test.dart';
 
 class MessageMatcher extends CustomMatcher {
-  MessageMatcher(messageMatcher)
+  MessageMatcher(Object messageMatcher)
     : super('with message that is', 'message', messageMatcher);
 
   @override

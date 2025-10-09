@@ -34,4 +34,7 @@ class Token {
 
     return data.buffer.asUint8List();
   }
+
+  @override
+  int get hashCode => Object.hashAll(bytes);
 }
