@@ -20,7 +20,7 @@ class Bootstrap extends StatelessWidget {
   Widget build(BuildContext context) {
     final baseUri = switch (const String.fromEnvironment('API')) {
       String value when value.isNotEmpty => Uri.parse(value),
-      _ when kIsWeb => Uri.base.replace(path: '/'),
+      _ when kIsWeb => Uri.base,
       _ => Uri(scheme: 'http', host: 'localhost', port: 8080),
     };
 

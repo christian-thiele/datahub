@@ -17,7 +17,12 @@ class ApiBootstrapRepository implements BootstrapRepository {
 
     try {
       return await client
-          .get('/api/bootstrap')
+          .get(
+            '/',
+            headers: {
+              'x-aperture-flare': ['bootstrap'],
+            },
+          )
           .thenGetData($ApertureBootstrap.bean);
     } finally {
       client.close();

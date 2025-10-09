@@ -39,7 +39,10 @@ class ApertureApi extends ApiNode {
     final base = basePath.read();
     return [
       ResourceEndpoint(
-        matcher: RoutePattern('$base/api/bootstrap'),
+        matcher: AllOfRouteMatcher(matchers: [
+          RoutePattern('$base/*'),
+          HeaderRouteMatcher(header: 'x-aperture-flare', value: 'bootstrap'),
+        ]),
         get: (request) => ApertureBootstrap(
           title: 'Aperture',
           theme: configDelegate.theme,
@@ -55,19 +58,21 @@ class ApertureApi extends ApiNode {
         audience: oidcAudience,
         routes: [
           ResourceEndpoint(
-            matcher: RoutePattern('$base/api/resources/{id?}'),
+            matcher: RoutePattern('$base/api/resources/'),
             get: (request) async {
-              final id = request.uri.pathSegments.elementAtOrNull(2);
-              if (id case final id?) {
-                return configDelegate.resources
-                    .firstWhere((e) => e.description.id == id,
-                        orElse: () => throw ApiRequestException.notFound())
-                    .description;
-              }
-
               return configDelegate.resources
                   .map((e) => e.description)
                   .toList();
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern('$base/api/resources/{resourceId}'),
+            get: (request) async {
+              final id = request.getRouteParam<String>('resourceId');
+              return configDelegate.resources
+                  .firstWhere((e) => e.description.id == id,
+                      orElse: () => throw ApiRequestException.notFound())
+                  .description;
             },
           ),
           for (final resource in configDelegate.resources)
