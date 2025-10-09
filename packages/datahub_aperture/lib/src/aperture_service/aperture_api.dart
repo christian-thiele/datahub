@@ -10,6 +10,7 @@ import 'package:datahub_aperture/src/utils/static_bundle_endpoint.dart';
 class ApertureApi extends ApiNode {
   final ApertureConfigDelegate configDelegate;
 
+  final Config<String> basePath;
   final Config<String> oidcIssuer;
   final Config<String?> oidcAudience;
   final Config<List<String>> oidcScopes;
@@ -20,6 +21,8 @@ class ApertureApi extends ApiNode {
 
   ApertureApi({
     required this.configDelegate,
+    this.basePath =
+        const Config('aperture.basePath', defaultValue: '/aperture'),
     this.oidcIssuer = const Config('aperture.oidcIssuer'),
     this.oidcAudience = const Config('aperture.oidcAudience'),
     this.oidcScopes = const Config('aperture.oidcScopes', defaultValue: []),
@@ -33,9 +36,10 @@ class ApertureApi extends ApiNode {
 
   @override
   List<ApiRoute> buildRoutes() {
+    final base = basePath.read();
     return [
       ResourceEndpoint(
-        matcher: RoutePattern('/api/bootstrap'),
+        matcher: RoutePattern('$base/api/bootstrap'),
         get: (request) => ApertureBootstrap(
           title: 'Aperture',
           theme: configDelegate.theme,
@@ -51,7 +55,7 @@ class ApertureApi extends ApiNode {
         audience: oidcAudience,
         routes: [
           ResourceEndpoint(
-            matcher: RoutePattern('/api/resources/{id?}'),
+            matcher: RoutePattern('$base/api/resources/{id?}'),
             get: (request) async {
               final id = request.uri.pathSegments.elementAtOrNull(2);
               if (id case final id?) {
@@ -69,7 +73,7 @@ class ApertureApi extends ApiNode {
           for (final resource in configDelegate.resources)
             ResourceEndpoint(
               matcher: RoutePattern(
-                  '/api/resources/${Uri.encodeComponent(resource.description.id)}/elements/{id?}'),
+                  '$base/api/resources/${Uri.encodeComponent(resource.description.id)}/elements/{id?}'),
               get: (request) async {
                 if (request.getRouteParam<String?>('id') case final id?) {
                   final revisionId = request.getParam<String?>('revisionId');
@@ -144,7 +148,7 @@ class ApertureApi extends ApiNode {
         ],
       ),
       StaticBundleEndpoint(
-        matcher: RoutePattern('/*'),
+        matcher: RoutePattern('$base/*'),
         bundle: frontendBundle,
       ),
     ];
