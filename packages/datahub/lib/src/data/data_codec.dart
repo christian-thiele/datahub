@@ -347,17 +347,17 @@ class JsonDataCodec extends DataCodec {
     T Function(dynamic, {String? name}) decodeItem, {
     String? name,
   }) {
-    if (value is List<T>) {
-      return value;
-    } else if (value is List<dynamic>) {
-      return value
-          .mapIndexed(
-            (e, i) => decodeItem(e, name: DataCodec.indexName(name, i)),
-          )
-          .toList();
-    }
-
-    throw CodecException.typeMismatch(List<T>, value.runtimeType, name);
+    return switch (value) {
+      List<T>() => value,
+      List<dynamic>() =>
+        value
+            .mapIndexed(
+              (e, i) => decodeItem(e, name: DataCodec.indexName(name, i)),
+            )
+            .toList(),
+      null => <T>[],
+      _ => throw CodecException.typeMismatch(List<T>, value.runtimeType, name),
+    };
   }
 
   @override
@@ -371,18 +371,20 @@ class JsonDataCodec extends DataCodec {
     Decoder<T> decodeItem, {
     String? name,
   }) {
-    if (value is Map<String, T>) {
-      return value;
-    } else if (value is Map<String, dynamic>) {
-      return value.map(
+    return switch (value) {
+      Map<String, T>() => value,
+      Map<String, dynamic>() => value.map(
         (k, v) =>
             MapEntry(k, decodeItem(v, name: DataCodec.indexName(name, k))),
-      );
-    } else if (value is Map && value.isEmpty) {
-      return <String, T>{};
-    }
-
-    throw CodecException.typeMismatch(Map<String, T>, value.runtimeType, name);
+      ),
+      Map() when value.isEmpty => <String, T>{},
+      null => <String, T>{},
+      _ => throw CodecException.typeMismatch(
+        Map<String, T>,
+        value.runtimeType,
+        name,
+      ),
+    };
   }
 
   @override
