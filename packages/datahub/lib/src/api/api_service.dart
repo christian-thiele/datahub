@@ -97,11 +97,8 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
     List<ApiRoute> routes,
     ApiRequest request,
   ) {
-    if (tryFindEndpoint(routes, request) case final endpoint?) {
-      return endpoint;
-    } else {
-      return exceptionHandler(ApiRequestException.notFound());
-    }
+    return tryFindEndpoint(routes, request) ??
+        exceptionHandler(ApiRequestException.notFound());
   }
 
   static (RequestHandler, Map<String, String>)? tryFindEndpoint(
