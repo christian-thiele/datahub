@@ -124,7 +124,7 @@ class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
           case ResourceFilter(:final type?, :final fieldId?, :final value)) {
         final field = bean.fields.firstWhere((e) => e.name == fieldId);
         elementFilter = CompareFilter(
-          FieldExpression(field),
+          field,
           switch (type) {
             ResourceFilterType.equals => CompareType.equals,
             ResourceFilterType.notEquals => CompareType.notEquals,

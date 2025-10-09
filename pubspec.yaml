@@ -24,6 +24,9 @@ melos:
     analyze:
       exec: dart analyze .
 
+    build_runner:
+      exec: dart run build_runner build
+
     test:
       exec: dart test .
       packageFilters:

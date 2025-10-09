@@ -6,7 +6,7 @@ import 'package:datahub/data.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/utils.dart';
 
-import 'api_request_exception.dart';
+import '../utils/api_request_exception.dart';
 
 class ApiRequest {
   final Uri uri;

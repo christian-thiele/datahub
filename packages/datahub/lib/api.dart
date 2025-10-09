@@ -1,6 +1,6 @@
 export 'src/api/api_service.dart';
 export 'src/api/api_route.dart';
-export 'src/api/api_request_exception.dart';
+export 'src/utils/api_request_exception.dart';
 export 'src/api/api_request.dart';
 export 'src/api/api_response.dart';
 export 'src/api/resource_endpoint.dart';

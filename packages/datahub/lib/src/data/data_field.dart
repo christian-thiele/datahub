@@ -7,7 +7,7 @@ import 'data_codec.dart';
 import 'expression.dart';
 import 'meta/data_field_constraint.dart';
 
-class DataField<Data, FieldType> implements FieldExpression {
+class DataField<Data, FieldType> implements Expression {
   final String name;
   final FieldType Function(Data) _valueOf;
   final List<MetaData> meta;
@@ -64,7 +64,4 @@ class DataField<Data, FieldType> implements FieldExpression {
   T? constraintOfType<T extends DataFieldConstraint>([
     bool Function(T)? test,
   ]) => constraints.whereType<T>().where(test ?? (_) => true).firstOrNull;
-
-  @override
-  DataField get field => this;
 }

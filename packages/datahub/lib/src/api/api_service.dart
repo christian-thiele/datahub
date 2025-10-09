@@ -7,7 +7,7 @@ import 'package:datahub/http.dart';
 import 'package:datahub/scaffold.dart';
 
 import 'api_request.dart';
-import 'api_request_exception.dart';
+import '../utils/api_request_exception.dart';
 import 'api_response.dart';
 import 'api_route.dart';
 
