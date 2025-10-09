@@ -145,8 +145,8 @@ mixin PostgresqlRevisableRepository<
         attributes: revisionTable.attributes,
       );
 
-      revisionTable.ensureRelation(context);
-      revisionView.ensureRelation(context);
+      await revisionTable.ensureRelation(context);
+      await revisionView.ensureRelation(context);
 
       dataView = PostgresqlDataView(
         bean: bean,
