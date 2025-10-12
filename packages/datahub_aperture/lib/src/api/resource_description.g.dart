@@ -87,6 +87,17 @@ abstract interface class $ResourceDescription
     toJson: (value) => $$codec.encodeBool(value),
   );
 
+  static final $actions = DataField<ResourceDescription, List<ResourceAction>>(
+    name: 'actions',
+    valueOf: (p) => p.actions,
+    dataBean: () => $ResourceAction.bean,
+    fromJson: (value, {String? name}) => $$codec.decodeList<ResourceAction>(
+        value, $ResourceAction.bean.fromJson,
+        name: name),
+    toJson: (value) =>
+        $$codec.encodeList<ResourceAction>(value, (v) => v.toJson()),
+  );
+
   static final DataBean<ResourceDescription> bean =
       DataBean<ResourceDescription>(
     name: 'ResourceDescription',
@@ -100,6 +111,7 @@ abstract interface class $ResourceDescription
       $idField,
       $displayField,
       $readOnly,
+      $actions,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
@@ -121,6 +133,7 @@ abstract interface class $ResourceDescription
     String? displayField,
     bool nullDisplayField = false,
     bool? readOnly,
+    List<ResourceAction>? actions,
   }) {
     final $data = this as ResourceDescription;
     return ResourceDescription(
@@ -134,6 +147,7 @@ abstract interface class $ResourceDescription
       displayField:
           nullDisplayField ? null : (displayField ?? $data.displayField),
       readOnly: readOnly ?? $data.readOnly,
+      actions: actions ?? $data.actions,
     );
   }
 
@@ -148,6 +162,7 @@ abstract interface class $ResourceDescription
       idField: data['idField'],
       displayField: data['displayField'],
       readOnly: data['readOnly'],
+      actions: data['actions'],
     );
   }
 
@@ -174,6 +189,8 @@ abstract interface class $ResourceDescription
           name: DataCodec.childName(name, 'displayField')),
       readOnly: $readOnly.fromJson(data['readOnly'],
           name: DataCodec.childName(name, 'readOnly')),
+      actions: $actions.fromJson(data['actions'],
+          name: DataCodec.childName(name, 'actions')),
     );
   }
 
@@ -190,6 +207,7 @@ abstract interface class $ResourceDescription
       'idField': $idField.toJson($$data.idField),
       'displayField': $displayField.toJson($$data.displayField),
       'readOnly': $readOnly.toJson($$data.readOnly),
+      'actions': $actions.toJson($$data.actions),
     }..removeWhere((k, v) => v == null);
   }
 }

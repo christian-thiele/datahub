@@ -1,5 +1,6 @@
 import 'package:datahub/datahub.dart';
 
+import 'resource_action.dart';
 import 'resource_field.dart';
 import 'resource_relation.dart';
 
@@ -16,6 +17,7 @@ class ResourceDescription extends $ResourceDescription {
   final String idField;
   final String? displayField;
   final bool readOnly;
+  final List<ResourceAction> actions;
 
   const ResourceDescription({
     required this.id,
@@ -27,5 +29,6 @@ class ResourceDescription extends $ResourceDescription {
     required this.idField,
     this.displayField,
     required this.readOnly,
+    required this.actions,
   });
 }

@@ -154,4 +154,22 @@ class ApiResourcesRepository implements ResourcesRepository {
       return null;
     }
   }
+
+  @override
+  Future<void> startElementAction(
+    String resourceId,
+    String elementId,
+    String actionId,
+  ) async {
+    final client = await _restClient.get();
+    client.post(
+      '/api/resources/{resourceId}/elements/{elementId}/actions/{actionId}',
+      {},
+      urlParams: {
+        'resourceId': resourceId,
+        'elementId': elementId,
+        'actionId': actionId,
+      },
+    );
+  }
 }
