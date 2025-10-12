@@ -59,4 +59,8 @@ abstract interface class DataRepository<T extends DataObject> {
   ///
   /// Returns the affected element count.
   Future<int> deleteAll({required Filter filter});
+
+  /// Runs all calls to this repository from inside [delegate] inside an
+  /// atomic transaction.
+  Future<R> atomic<R>(Future<R> Function() delegate);
 }

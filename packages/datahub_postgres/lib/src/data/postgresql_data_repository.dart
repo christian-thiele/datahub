@@ -117,4 +117,11 @@ mixin PostgresqlDataRepository<
     );
     return result.firstOrNull;
   }
+
+  @override
+  Future<R> atomic<R>(Future<R> Function() delegate) async {
+    return await find(
+      postgres,
+    ).runTransaction((context) async => await delegate());
+  }
 }
