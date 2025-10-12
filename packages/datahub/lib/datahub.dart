@@ -7,5 +7,6 @@ export 'data.dart';
 export 'http.dart';
 export 'rest_client.dart';
 export 'scaffold.dart';
+export 'tasks.dart';
 export 'telemetry.dart';
 export 'utils.dart';

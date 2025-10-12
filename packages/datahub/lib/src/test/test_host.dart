@@ -36,6 +36,12 @@ class TestHost extends ServiceHost {
       ],
     );
   }
+
+  @override
+  Future<void> initialize() async {
+    configuration.addConfigMap(initialConfig);
+    return await super.initialize();
+  }
 }
 
 void declareTest(
@@ -44,13 +50,14 @@ void declareTest(
   FutureOr<void> Function() body, {
   dart_test.Timeout? timeout,
   Object? skip,
+  Map<String, dynamic> config = const {},
 }) {
   dart_test.group(name, () {
     TestHost? host;
     dart_test.setUp(() async {
       host = TestHost(
         components: components,
-        initialConfig: {},
+        initialConfig: config,
         testBody: body,
       );
       await host?.initialize();

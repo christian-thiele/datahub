@@ -4,7 +4,7 @@ import 'package:datahub/utils.dart';
 
 import 'data_field.dart';
 
-abstract mixin class DataObject<T extends DataObject<T>> {
+abstract mixin class DataObject<T> {
   String get $$name;
 
   List<DataField<T, dynamic>> get $$fields;
