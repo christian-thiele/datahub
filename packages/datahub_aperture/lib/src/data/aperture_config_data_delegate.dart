@@ -5,6 +5,7 @@ import 'package:datahub/utils.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/icons.dart';
 import 'package:datahub_aperture/services.dart';
+import 'package:datahub_aperture/src/api/resource_action.dart';
 import 'package:datahub_aperture/src/data/aperture_data_repository_adapter.dart';
 import 'package:datahub_aperture/src/data/aperture_data_resource.dart';
 
@@ -81,6 +82,14 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
       namePlural: meta?.namePlural,
       icon: meta?.icon ?? Icons.data_object,
       readOnly: repository is! ApertureResourceWriteRepository,
+      actions: [
+        for (final action in resource.actions)
+          ResourceAction(
+            id: action.id,
+            displayName: action.displayName,
+            icon: action.icon,
+          ),
+      ],
       fields: [
         for (final field in bean.fields) _fieldDescription(bean, field, beans),
       ],

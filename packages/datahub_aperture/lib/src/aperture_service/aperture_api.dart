@@ -75,81 +75,126 @@ class ApertureApi extends ApiNode {
                   .description;
             },
           ),
-          for (final resource in configDelegate.resources)
-            ResourceEndpoint(
-              matcher: RoutePattern(
-                  '$base/api/resources/${Uri.encodeComponent(resource.description.id)}/elements/{id?}'),
-              get: (request) async {
-                if (request.getRouteParam<String?>('id') case final id?) {
-                  final revisionId = request.getParam<String?>('revisionId');
-                  return await resource.repository.getElement(id, revisionId);
-                }
+          ResourceEndpoint(
+            matcher: RoutePattern('$base/api/resources/{resourceId}/elements'),
+            get: (request) async {
+              final resourceId = request.getRouteParam<String>('resourceId');
+              final resource = configDelegate.resources.firstWhere(
+                (resource) => resource.description.id == resourceId,
+                orElse: () => throw ApiRequestException.notFound(),
+              );
 
-                final offset = request.getParam<int?>('offset') ?? 0;
-                final limit =
-                    math.min(100, request.getParam<int?>('limit') ?? 50);
-                final encodedFilter = request.getParam<String?>('filter');
-                final filter = encodedFilter != null
-                    ? $ResourceFilter.fromJson(jsonDecode(encodedFilter))
-                    : null;
+              final offset = request.getParam<int?>('offset') ?? 0;
+              final limit =
+                  math.min(100, request.getParam<int?>('limit') ?? 50);
+              final encodedFilter = request.getParam<String?>('filter');
+              final filter = encodedFilter != null
+                  ? $ResourceFilter.fromJson(jsonDecode(encodedFilter))
+                  : null;
 
-                return resource.repository.getElements(filter, offset, limit);
-              },
-              post: (request) async {
-                if (request.getRouteParam<String?>('id') case String()) {
-                  throw ApiRequestException.methodNotAllowed();
-                }
+              return resource.repository.getElements(filter, offset, limit);
+            },
+            post: (request) async {
+              final resourceId = request.getRouteParam<String>('resourceId');
+              final resource = configDelegate.resources.firstWhere(
+                (resource) => resource.description.id == resourceId,
+                orElse: () => throw ApiRequestException.notFound(),
+              );
 
-                if (resource.repository
-                    case final ApertureResourceWriteRepository repository) {
-                  final data = await request.getData<ResourceRevisionRequest>(
-                      $ResourceRevisionRequest.bean);
-                  return await repository.createElement(
-                    data.fieldData,
-                    data.revisionLive,
-                  );
-                } else {
-                  throw ApiRequestException.methodNotAllowed();
-                }
-              },
-              patch: (request) async {
-                if (request.getRouteParam<String?>('id') case final id?) {
-                  final data =
-                      await request.getData($ResourceRevisionRequest.bean);
-
-                  if (resource.repository
-                      case final ApertureResourceWriteRepository repository) {
-                    return await repository.updateElement(
-                      id,
-                      data.fieldData,
-                      data.revisionLive,
-                    );
-                  } else {
-                    throw ApiRequestException.methodNotAllowed();
-                  }
-                }
-
+              if (resource.repository
+                  case final ApertureResourceWriteRepository repository) {
+                final data = await request.getData<ResourceRevisionRequest>(
+                    $ResourceRevisionRequest.bean);
+                return await repository.createElement(
+                  data.fieldData,
+                  data.revisionLive,
+                );
+              } else {
                 throw ApiRequestException.methodNotAllowed();
-              },
-              delete: (request) async {
-                if (request.getRouteParam<String?>('id') case final id?) {
-                  final revisionLive =
-                      request.getParam<DateTime?>('revisionLive');
+              }
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern(
+                '$base/api/resources/{resourceId}/elements/{elementId}'),
+            get: (request) async {
+              final resourceId = request.getRouteParam<String>('resourceId');
+              final resource = configDelegate.resources.firstWhere(
+                (resource) => resource.description.id == resourceId,
+                orElse: () => throw ApiRequestException.notFound(),
+              );
 
-                  if (resource.repository
-                      case final ApertureResourceWriteRepository repository) {
-                    return await repository.deleteElement(
-                      id,
-                      revisionLive,
-                    );
-                  } else {
-                    throw ApiRequestException.methodNotAllowed();
-                  }
-                }
+              final elementId = request.getRouteParam<String>('elementId');
+              final revisionId = request.getParam<String?>('revisionId');
+              return await resource.repository
+                  .getElement(elementId, revisionId);
+            },
+            patch: (request) async {
+              final resourceId = request.getRouteParam<String>('resourceId');
+              final resource = configDelegate.resources.firstWhere(
+                (resource) => resource.description.id == resourceId,
+                orElse: () => throw ApiRequestException.notFound(),
+              );
 
+              final elementId = request.getRouteParam<String>('elementId');
+              final data = await request.getData($ResourceRevisionRequest.bean);
+
+              if (resource.repository
+                  case final ApertureResourceWriteRepository repository) {
+                return await repository.updateElement(
+                  elementId,
+                  data.fieldData,
+                  data.revisionLive,
+                );
+              } else {
                 throw ApiRequestException.methodNotAllowed();
-              },
+              }
+            },
+            delete: (request) async {
+              final resourceId = request.getRouteParam<String>('resourceId');
+              final resource = configDelegate.resources.firstWhere(
+                (resource) => resource.description.id == resourceId,
+                orElse: () => throw ApiRequestException.notFound(),
+              );
+
+              final elementId = request.getRouteParam<String>('elementId');
+              final revisionLive = request.getParam<DateTime?>('revisionLive');
+
+              if (resource.repository
+                  case final ApertureResourceWriteRepository repository) {
+                return await repository.deleteElement(
+                  elementId,
+                  revisionLive,
+                );
+              } else {
+                throw ApiRequestException.methodNotAllowed();
+              }
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern(
+              '$base/api/resources/{resourceId}/elements/{elementId}/actions/{actionId}',
             ),
+            post: (request) async {
+              final resourceId = request.getRouteParam<String>('resourceId');
+              final elementId = request.getRouteParam<String>('elementId');
+              final actionId = request.getRouteParam<String>('actionId');
+
+              final resource = configDelegate.resources.firstWhere(
+                (resource) => resource.description.id == resourceId,
+                orElse: () => throw ApiRequestException.notFound(),
+              );
+
+              final action = resource.actions.firstWhere(
+                (action) => action.id == actionId,
+                orElse: () => throw ApiRequestException.notFound(),
+              );
+
+              final element =
+                  await resource.repository.getElement(elementId, null);
+              await action.callback(element);
+            },
+          ),
         ],
       ),
       StaticBundleEndpoint(

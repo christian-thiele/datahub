@@ -36,4 +36,10 @@ abstract interface class ResourcesRepository {
     String elementId,
     DateTime? revisionLive,
   );
+
+  Future<void> startElementAction(
+    String resourceId,
+    String elementId,
+    String actionId,
+  );
 }

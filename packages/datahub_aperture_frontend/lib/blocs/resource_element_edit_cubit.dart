@@ -211,5 +211,21 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
     }
   }
 
-  void startAction(String id) {}
+  void startAction(String id) async {
+    final previousState = state;
+    if (state is! ResourceElementEditLoading &&
+        state is! ResourceElementEditDeleted) {
+      emit(ResourceElementEditLoading());
+      try {
+        await _resourceRepository.startElementAction(resourceId, elementId, id);
+        emit(previousState);
+      } catch (e) {
+        if (e case ApiRequestException(:final message)) {
+          emit(ResourceElementEditError(message: message));
+        } else {
+          emit(ResourceElementEditError());
+        }
+      }
+    }
+  }
 }
