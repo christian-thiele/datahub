@@ -124,6 +124,25 @@ Sql? buildFilterSql(
   };
 }
 
+Sql? buildSortSql(
+  Sort sort,
+  Iterable<(PostgresqlDataAttribute, PostgresqlRelation)> attributes,
+) {
+  final flat = sort.expand();
+  if (flat.isEmpty) {
+    return null;
+  }
+
+  return Sql.join(
+    flat
+        .map((e) {
+          return buildExpressionSql(e.expression, attributes) +
+              (e.ascending ? RawSql(' ASC') : RawSql(' DESC'));
+        })
+        .separatedBy(RawSql(', ')),
+  );
+}
+
 (PostgresqlDataAttribute, PostgresqlRelation?) _findDataAttribute(
   Iterable<(PostgresqlDataAttribute, PostgresqlRelation?)> attributes,
   DataField field,

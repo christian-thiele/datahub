@@ -265,7 +265,6 @@ mixin PostgresqlRevisableRepository<
     int? offset,
     int? limit,
   }) async {
-    // TODO sort
     return await find(postgresql).runTransaction((context) async {
       final result = await context.execute(
         SqlSelect(
@@ -273,6 +272,10 @@ mixin PostgresqlRevisableRepository<
           [SqlWildcard()],
           where: buildFilterSql(
             filter,
+            dataView.attributes.map((e) => (e, revisionView)),
+          ),
+          order: buildSortSql(
+            sort,
             dataView.attributes.map((e) => (e, revisionView)),
           ),
           offset: offset ?? 0,
@@ -296,7 +299,6 @@ mixin PostgresqlRevisableRepository<
     int? offset,
     int? limit,
   }) async {
-    // TODO sort
     return await find(postgresql).runTransaction((context) async {
       final result = await context.execute(
         SqlSelect(

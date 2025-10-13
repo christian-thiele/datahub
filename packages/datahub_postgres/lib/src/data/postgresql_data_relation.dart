@@ -52,7 +52,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
                     .separatedBy(RawSql(', ')),
               )
             : null,
-        // TODO order by
+        order: buildSortSql(sort, attributes.map((e) => (e, relation))),
         offset: offset,
         limit: limit,
       ),
@@ -81,7 +81,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
         offset: offset,
         limit: limit,
         where: buildFilterSql(filter, attributes.map((e) => (e, relation))),
-        // TODO order by
+        order: buildSortSql(sort, attributes.map((e) => (e, relation))),
       ),
     );
 
@@ -121,7 +121,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
         offset: offset,
         limit: limit,
         where: buildFilterSql(filter, allAttributes),
-        // TODO order by
+        order: buildSortSql(sort, allAttributes),
       ),
     );
 
