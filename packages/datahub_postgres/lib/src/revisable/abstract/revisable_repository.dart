@@ -2,7 +2,7 @@ import 'package:datahub/data.dart';
 
 import 'revision_data.dart';
 
-abstract interface class RevisableRepository<T extends DataObject<T>> {
+abstract interface class RevisableRepository<T extends DataObject> {
   DataBean<T> get bean;
 
   Future<RevisionData<T>?> getData(dynamic id, {String? revisionId});

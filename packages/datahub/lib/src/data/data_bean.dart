@@ -10,7 +10,7 @@ import 'validation_exception.dart';
 import 'missing_id_field_error.dart';
 
 /// Contains all "static" properties of a [DataObject].
-final class DataBean<T extends DataObject<T>> {
+final class DataBean<T extends DataObject> {
   final String name;
   final List<MetaData> meta;
   final List<DataField<T, dynamic>> fields;

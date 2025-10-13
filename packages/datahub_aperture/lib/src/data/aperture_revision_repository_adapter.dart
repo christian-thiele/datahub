@@ -4,7 +4,7 @@ import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/src/aperture_service/aperture_resource_repository.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 
-class ApertureRevisionRepositoryAdapter<T extends DataObject<T>,
+class ApertureRevisionRepositoryAdapter<T extends DataObject,
     Repo extends DataRepository<T>> implements ApertureResourceWriteRepository {
   final Find<RevisionRepository<T>> repository;
 

@@ -97,7 +97,7 @@ class ApiRequest {
   }
 
   /// Returns decoded body data using a [DataBean].
-  Future<T> getData<T extends DataObject<T>>(DataBean<T> bean) async {
+  Future<T> getData<T extends DataObject>(DataBean<T> bean) async {
     return bean.fromJson(await getJsonBody());
   }
 
@@ -106,7 +106,7 @@ class ApiRequest {
   /// Setting [allowSingleFlat] to true enables parsing of a json object
   /// (instead of a list of objects) into a list with one item instead of
   /// throwing a bad-request exception.
-  Future<List<T>> getList<T extends DataObject<T>>(
+  Future<List<T>> getList<T extends DataObject>(
     DataBean<T> bean, {
     bool allowSingleFlat = false,
   }) async {

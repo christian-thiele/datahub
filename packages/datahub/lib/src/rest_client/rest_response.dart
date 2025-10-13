@@ -83,12 +83,12 @@ class RestResponse implements HttpResponse {
     throw ApiError.invalidType(T);
   }
 
-  Future<T> getData<T extends DataObject<T>>(DataBean<T> bean) async {
+  Future<T> getData<T extends DataObject>(DataBean<T> bean) async {
     final json = await getJsonBody();
     return bean.fromJson(json);
   }
 
-  Future<List<T>> getList<T extends DataObject<T>>(DataBean<T> bean) async {
+  Future<List<T>> getList<T extends DataObject>(DataBean<T> bean) async {
     final obj = jsonDecode(await charset.decodeStream(bodyData));
     final codec = const JsonDataCodec();
     return codec.decodeList(obj, bean.fromJson);

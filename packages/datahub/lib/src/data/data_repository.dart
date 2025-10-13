@@ -6,7 +6,7 @@ import 'sort.dart';
 
 /// An interface for [Component]s providing CRUD functionality for a
 /// [DataObject].
-abstract interface class DataRepository<T extends DataObject<T>> {
+abstract interface class DataRepository<T extends DataObject> {
   DataBean<T> get bean;
 
   /// Creates a new element.
