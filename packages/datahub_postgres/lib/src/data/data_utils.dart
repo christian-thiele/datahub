@@ -182,6 +182,9 @@ Sql _compareSql(
   final rightSql = buildExpressionSql(right, attributes);
 
   return switch ((leftType, type, rightType)) {
+    (_, CompareType.equals, PostgresqlNull()) => leftSql + RawSql(' IS NULL'),
+    (_, CompareType.notEquals, PostgresqlNull()) =>
+      leftSql + RawSql(' IS NOT NULL'),
     (PostgresqlString(), CompareType.contains, PostgresqlString()) => Sql.join([
       leftSql,
       RawSql(' ~* '),

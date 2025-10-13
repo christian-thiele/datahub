@@ -114,6 +114,7 @@ abstract class PostgresqlDataType<T> {
       Geometry() => const PostgisGeography(),
       Map<String, dynamic>() => const PostgresqlJsonMap(),
       List<dynamic>() => const PostgresqlJsonList(),
+      null => const PostgresqlNull(),
       _ => const PostgresqlDynamic(),
     };
   }

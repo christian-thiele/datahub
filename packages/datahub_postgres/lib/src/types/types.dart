@@ -209,3 +209,16 @@ class PostgresqlObject<T> extends PostgresqlDataType<T> {
     };
   }
 }
+
+class PostgresqlNull extends PostgresqlDataType<dynamic> {
+  const PostgresqlNull() : super('NULL', pg.Type.unspecified);
+
+  @override
+  dynamic encode(dynamic value) => null;
+
+  @override
+  List<dynamic>? decode(value) => null;
+
+  @override
+  Sql sqlParam(value) => RawSql('NULL');
+}
