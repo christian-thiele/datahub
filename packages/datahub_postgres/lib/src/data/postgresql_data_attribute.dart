@@ -26,10 +26,4 @@ class PostgresqlDataAttribute extends PostgresqlAttribute {
       ],
     );
   }
-
-  bool hasConstraint<T extends PostgresqlAttributeConstraint>([
-    bool Function(T)? test,
-  ]) {
-    return constraints.whereType<T>().where(test ?? (_) => true).isNotEmpty;
-  }
 }

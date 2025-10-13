@@ -11,4 +11,10 @@ class PostgresqlAttribute {
     required this.type,
     this.constraints = const [],
   });
+
+  bool hasConstraint<T extends PostgresqlAttributeConstraint>([
+    bool Function(T)? test,
+  ]) {
+    return constraints.whereType<T>().where(test ?? (_) => true).isNotEmpty;
+  }
 }

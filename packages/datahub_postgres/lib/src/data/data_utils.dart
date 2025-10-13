@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/sql.dart';
@@ -104,7 +105,7 @@ dynamic _typedId(DataBean bean, dynamic id) {
 
 Sql? buildFilterSql(
   Filter filter,
-  Iterable<PostgresqlDataAttribute> attributes,
+  Iterable<(PostgresqlDataAttribute, PostgresqlRelation)> attributes,
 ) {
   return switch (filter) {
     EmptyFilter() => null,
@@ -123,12 +124,12 @@ Sql? buildFilterSql(
   };
 }
 
-PostgresqlDataAttribute _findDataAttribute(
-  Iterable<PostgresqlDataAttribute> attributes,
+(PostgresqlDataAttribute, PostgresqlRelation?) _findDataAttribute(
+  Iterable<(PostgresqlDataAttribute, PostgresqlRelation?)> attributes,
   DataField field,
 ) {
   return attributes.firstWhere(
-    (e) => e.field == field,
+    (e) => e.$1.field == field,
     orElse: () => throw ApiException(
       'Could not find attribute for field "${field.name}"',
     ),
@@ -137,15 +138,16 @@ PostgresqlDataAttribute _findDataAttribute(
 
 Sql buildExpressionSql(
   Expression expression,
-  Iterable<PostgresqlDataAttribute> attributes,
+  Iterable<(PostgresqlDataAttribute, PostgresqlRelation?)> attributes,
 ) {
   return switch (expression) {
     ValueExpression(:final value) => PostgresqlDataType.findForDynamic(
       value,
     ).sqlParam(value),
-    final DataField field => SqlTypedColumnAttribute.of(
-      _findDataAttribute(attributes, field),
-    ),
+    final DataField field => _findDataAttribute(
+      attributes,
+      field,
+    ).apply((e) => SqlTypedColumnAttribute.of(e.$1, relation: e.$2?.name)),
     PostgresqlFunctionExpression(:final name, :final arguments) => Sql.function(
       name,
       arguments.map((e) => buildExpressionSql(e, attributes)).toList(),
@@ -159,16 +161,16 @@ Sql buildExpressionSql(
 
 PostgresqlDataType? typeOf(
   Expression expression,
-  Iterable<PostgresqlDataAttribute> attributes,
+  Iterable<(PostgresqlDataAttribute, PostgresqlRelation?)> attributes,
 ) => switch (expression) {
   ValueExpression(:final value) => PostgresqlDataType.findForDynamic(value),
-  final DataField field => _findDataAttribute(attributes, field).type,
+  final DataField field => _findDataAttribute(attributes, field).$1.type,
   PostgresqlFunctionExpression(:final returnType) => returnType,
   _ => null,
 };
 
 Sql _compareSql(
-  Iterable<PostgresqlDataAttribute> attributes,
+  Iterable<(PostgresqlDataAttribute, PostgresqlRelation?)> attributes,
   Expression left,
   CompareType type,
   Expression right,

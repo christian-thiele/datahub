@@ -32,13 +32,23 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
         SqlQualifiedRelation(relation.schemaName, relation.name),
         [
           for (final expression in select)
-            RawSqlAttribute(buildExpressionSql(expression, attributes)),
+            RawSqlAttribute(
+              buildExpressionSql(
+                expression,
+                attributes.map((e) => (e, relation)),
+              ),
+            ),
         ],
-        where: buildFilterSql(filter, attributes),
+        where: buildFilterSql(filter, attributes.map((e) => (e, relation))),
         group: group.isNotEmpty
             ? Sql.join(
                 group
-                    .map((e) => buildExpressionSql(e, attributes))
+                    .map(
+                      (e) => buildExpressionSql(
+                        e,
+                        attributes.map((e) => (e, relation)),
+                      ),
+                    )
                     .separatedBy(RawSql(', ')),
               )
             : null,
@@ -70,7 +80,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
         attributes.map(SqlTypedAttribute.of).toList(),
         offset: offset,
         limit: limit,
-        where: buildFilterSql(filter, attributes),
+        where: buildFilterSql(filter, attributes.map((e) => (e, relation))),
         // TODO order by
       ),
     );
@@ -89,7 +99,11 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
     int offset = 0,
     int limit = -1,
   }) async {
-    final allAttributes = attributes.followedBy(right.attributes);
+    final allAttributes = attributes
+        .map<(PostgresqlDataAttribute, PostgresqlRelation)>(
+          (e) => (e, relation),
+        )
+        .followedBy(right.attributes.map((e) => (e, right.relation)));
     final result = await context.execute(
       SqlSelect(
         SqlJoin(
@@ -101,7 +115,9 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
           type: SqlJoinType.left,
           on: buildFilterSql(on, allAttributes),
         ),
-        allAttributes.map(SqlTypedAttribute.of).toList(),
+        allAttributes
+            .map((e) => SqlTypedAttribute.of(e.$1, relation: e.$2.name))
+            .toList(),
         offset: offset,
         limit: limit,
         where: buildFilterSql(filter, allAttributes),
@@ -127,10 +143,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
     ).every(row.isSqlNull)) {
       leftResult = null;
     } else {
-      leftResult = mapResultRow(
-        row,
-        columnOffset: columnOffset + attributes.length,
-      );
+      leftResult = mapResultRow(row, columnOffset: leftOffset);
     }
 
     final TRight? rightResult;
@@ -140,10 +153,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
     ).every(row.isSqlNull)) {
       rightResult = null;
     } else {
-      rightResult = right.mapResultRow(
-        row,
-        columnOffset: columnOffset + attributes.length,
-      );
+      rightResult = right.mapResultRow(row, columnOffset: rightOffset);
     }
 
     return (leftResult, rightResult);
@@ -176,7 +186,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
     final result = await context.execute(
       SqlUpdate(
         SqlQualifiedRelation(relation.schemaName, relation.name),
-        buildFilterSql(filter, attributes),
+        buildFilterSql(filter, attributes.map((e) => (e, relation))),
         {
           for (final (field, value) in columns.tuples)
             SqlTypedAttribute.of(
@@ -192,7 +202,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
     final result = await context.execute(
       SqlDelete(
         SqlQualifiedRelation(relation.schemaName, relation.name),
-        buildFilterSql(filter, attributes),
+        buildFilterSql(filter, attributes.map((e) => (e, relation))),
       ),
     );
     return result.affectedRows;

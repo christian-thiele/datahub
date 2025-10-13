@@ -22,7 +22,7 @@ mixin PostgresqlRevisableRepository<
 
   DataBean<TData> get bean;
 
-  late final PostgresqlAttribute _primaryAttribute;
+  late final PostgresqlDataAttribute _primaryAttribute;
   late final PostgresqlTable revisionTable;
   late final PostgresqlView revisionView;
   late final PostgresqlDataView<TData> dataView;
@@ -132,7 +132,7 @@ mixin PostgresqlRevisableRepository<
 
       _primaryAttribute = revisionTable.attributes
           .whereType<PostgresqlDataAttribute>()
-          .firstWhere((e) => e.field == bean.idField);
+          .firstWhere((e) => e.field == bean.requireIdField);
 
       revisionView = PostgresqlView(
         schemaName: effectiveSchemaName,
@@ -199,6 +199,15 @@ mixin PostgresqlRevisableRepository<
 
       final currentVersion = currentRevision?.sysVersion ?? -1;
 
+      final primaryIsAuto = _primaryAttribute.field.hasMetaOfType<Id>(
+        (id) => id.auto,
+      );
+
+      // TODO check if other defaults should be respected here
+      final nonAutoAttributes = revisionTable.attributes
+          .whereType<PostgresqlDataAttribute>()
+          .where((e) => !(primaryIsAuto && e == _primaryAttribute));
+
       final result = await context.execute(
         SqlInsert(
           SqlQualifiedRelation(read(schemaName), revisionTable.name),
@@ -207,13 +216,14 @@ mixin PostgresqlRevisableRepository<
             SqlTypedAttribute.of(_sysCreator): creator,
             SqlTypedAttribute.of(_sysFrom): effectiveFrom,
             SqlTypedAttribute.of(_sysIsDeleted): isDeleted,
-            for (final attribute
-                in revisionTable.attributes
-                    .whereType<PostgresqlDataAttribute>()
-                    .where(
-                      (e) =>
-                          !e.hasConstraint<PrimaryKeyConstraint>((e) => e.auto),
-                    ))
+
+            if (currentRevision case RevisionData(
+              data: final currentData,
+            ) when primaryIsAuto)
+              SqlTypedAttribute.of(_primaryAttribute): bean.requireIdField
+                  .valueOf(currentData),
+
+            for (final attribute in nonAutoAttributes)
               SqlTypedAttribute.of(attribute): attribute.field.valueOf(data),
           },
           returning: [
@@ -232,7 +242,7 @@ mixin PostgresqlRevisableRepository<
             Sql.join([
               ?buildFilterSql(
                 identityFilter(bean, primaryKey),
-                dataView.attributes,
+                dataView.attributes.map((e) => (e, revisionTable)),
               ),
               RawSql(' AND sys_version = $currentVersion'),
             ]),
@@ -261,7 +271,10 @@ mixin PostgresqlRevisableRepository<
         SqlSelect(
           SqlQualifiedRelation(read(schemaName), revisionView.name),
           [SqlWildcard()],
-          where: buildFilterSql(filter, dataView.attributes),
+          where: buildFilterSql(
+            filter,
+            dataView.attributes.map((e) => (e, revisionView)),
+          ),
           offset: offset ?? 0,
           limit: limit ?? -1,
         ),
@@ -289,7 +302,10 @@ mixin PostgresqlRevisableRepository<
         SqlSelect(
           SqlQualifiedRelation(read(schemaName), revisionTable.name),
           [SqlWildcard()],
-          where: buildFilterSql(identityFilter(bean, id), dataView.attributes),
+          where: buildFilterSql(
+            identityFilter(bean, id),
+            dataView.attributes.map((e) => (e, revisionTable)),
+          ),
           order: Sql.join([
             SqlColumnAttribute('revision_timestamp').toSql(),
             RawSql(' DESC'),
@@ -319,8 +335,10 @@ mixin PostgresqlRevisableRepository<
             SqlQualifiedRelation(read(schemaName), revisionTable.name),
             [SqlWildcard()],
             where: Sql.join([
-              buildFilterSql(identityFilter(bean, id), dataView.attributes)!
-                ..wrap(),
+              buildFilterSql(
+                identityFilter(bean, id),
+                dataView.attributes.map((e) => (e, revisionTable)),
+              )!..wrap(),
               RawSql(' AND sys_version = '),
               ParameterSql(version, const PostgresqlInt()),
             ]),
@@ -334,7 +352,7 @@ mixin PostgresqlRevisableRepository<
             [SqlWildcard()],
             where: buildFilterSql(
               identityFilter(bean, id),
-              dataView.attributes,
+              dataView.attributes.map((e) => (e, revisionView)),
             ),
             limit: 1,
           ),
