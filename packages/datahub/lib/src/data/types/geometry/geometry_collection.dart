@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:boost/boost.dart';
 import 'package:buffer/buffer.dart';
 
 import 'geometry.dart';
@@ -62,4 +63,16 @@ class GeometryCollection extends Geometry {
   String toText() {
     return '(${geometry.map((e) => e.toString()).join(', ')})';
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is GeometryCollection &&
+        other.srid == srid &&
+        other.hasZ == hasZ &&
+        other.hasM == hasM &&
+        other.geometry.sequenceEquals(geometry);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([srid, hasZ, hasM, ...geometry]);
 }

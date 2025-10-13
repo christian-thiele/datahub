@@ -66,4 +66,19 @@ class Point extends Geometry {
     buffer.write(')');
     return buffer.toString();
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is Point &&
+        other.x == x &&
+        other.y == y &&
+        other.z == z &&
+        other.m == m &&
+        other.hasZ == hasZ &&
+        other.hasM == hasM &&
+        other.srid == srid;
+  }
+
+  @override
+  int get hashCode => Object.hashAll([x, y, z, m, hasZ, hasM, srid]);
 }

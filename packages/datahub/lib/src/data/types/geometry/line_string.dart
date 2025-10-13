@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:boost/boost.dart';
 import 'package:buffer/buffer.dart';
 
 import 'geometry.dart';
@@ -56,4 +57,16 @@ class LineString extends Geometry {
   String toText() {
     return '(${points.map((e) => e.toText()).join(',')})';
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is LineString &&
+        other.srid == srid &&
+        other.hasZ == hasZ &&
+        other.hasM == hasM &&
+        other.points.sequenceEquals(points);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([srid, hasZ, hasM, ...points]);
 }

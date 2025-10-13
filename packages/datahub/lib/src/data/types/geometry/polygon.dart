@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:boost/boost.dart';
 import 'package:buffer/buffer.dart';
 
 import 'geometry.dart';
@@ -51,4 +52,16 @@ class Polygon extends Geometry {
   String toText() {
     return '(${rings.map((e) => e.toText()).join(',')})';
   }
+
+  @override
+  bool operator ==(Object other) {
+    return other is Polygon &&
+        other.srid == srid &&
+        other.hasZ == hasZ &&
+        other.hasM == hasM &&
+        other.rings.sequenceEquals(rings);
+  }
+
+  @override
+  int get hashCode => Object.hashAll([srid, hasZ, hasM, ...rings]);
 }
