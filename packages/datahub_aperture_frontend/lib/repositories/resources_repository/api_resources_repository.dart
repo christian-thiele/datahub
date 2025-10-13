@@ -17,9 +17,10 @@ class ApiResourcesRepository implements ResourcesRepository {
 
   ApiResourcesRepository({required this.baseUrl});
 
-  Future<void> _updateAuth() async {
+  Future<RestClient> _authClient() async {
     final client = await _restClient.get();
     client.auth = await AuthService.instance.getValidAccessToken();
+    return client;
   }
 
   Future<void> close() async {
@@ -36,8 +37,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     Map<String, dynamic> changes,
     DateTime? revisionLive,
   ) async {
-    await _updateAuth();
-    final client = await _restClient.get();
+    final client = await _authClient();
     return await client
         .post(
           '/api/resources/{resourceId}/elements',
@@ -52,8 +52,7 @@ class ApiResourcesRepository implements ResourcesRepository {
 
   @override
   Future<ResourceDescription> getDescription(String id) async {
-    await _updateAuth();
-    final client = await _restClient.get();
+    final client = await _authClient();
     final result = await client.get(
       '/api/resources/{id}',
       urlParams: {'id': id},
@@ -63,8 +62,7 @@ class ApiResourcesRepository implements ResourcesRepository {
 
   @override
   Future<List<ResourceDescription>> getDescriptions() async {
-    await _updateAuth();
-    final client = await _restClient.get();
+    final client = await _authClient();
     final result = await client.get('/api/resources');
     return await result.getList($ResourceDescription.bean);
   }
@@ -75,8 +73,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     String elementId, {
     String? revisionId,
   }) async {
-    await _updateAuth();
-    final client = await _restClient.get();
+    final client = await _authClient();
     return await client
         .get(
           '/api/resources/{resourceId}/elements/{elementId}',
@@ -95,8 +92,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     int offset = 0,
     int limit = 25,
   }) async {
-    await _updateAuth();
-    final client = await _restClient.get();
+    final client = await _authClient();
     return await client
         .get(
           '/api/resources/{resourceId}/elements',
@@ -117,8 +113,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     Map<String, dynamic> changes,
     DateTime? revisionLive,
   ) async {
-    await _updateAuth();
-    final client = await _restClient.get();
+    final client = await _authClient();
     return await client
         .patch(
           '/api/resources/{resourceId}/elements/{elementId}',
@@ -137,8 +132,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     String elementId,
     DateTime? revisionLive,
   ) async {
-    await _updateAuth();
-    final client = await _restClient.get();
+    final client = await _authClient();
     final response = await client.delete(
       '/api/resources/{resourceId}/elements/{elementId}',
       urlParams: {'resourceId': resourceId, 'elementId': elementId},
@@ -161,7 +155,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     String elementId,
     String actionId,
   ) async {
-    final client = await _restClient.get();
+    final client = await _authClient();
     client.post(
       '/api/resources/{resourceId}/elements/{elementId}/actions/{actionId}',
       {},

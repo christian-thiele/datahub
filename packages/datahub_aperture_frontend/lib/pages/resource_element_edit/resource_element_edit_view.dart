@@ -67,23 +67,26 @@ class ResourceElementEditView extends StatelessWidget {
                     Spacer(),
 
                     if (actions.isNotEmpty && onActionPressed != null)
-                      OptionsButton(
-                        menuChildren: [
-                          for (final action in actions)
-                            MenuItemButton(
-                              onPressed: () => onActionPressed?.call(action.id),
-                              leadingIcon: Icon(
-                                IconData(
-                                  action.icon,
-                                  fontFamily: 'MaterialIcons',
+                      Padding(
+                        padding: const EdgeInsets.only(right: 16.0),
+                        child: OptionsButton(
+                          menuChildren: [
+                            for (final action in actions)
+                              MenuItemButton(
+                                onPressed: () => onActionPressed?.call(action.id),
+                                leadingIcon: Icon(
+                                  IconData(
+                                    action.icon,
+                                    fontFamily: 'MaterialIcons',
+                                  ),
                                 ),
+                                child: Text(action.name),
                               ),
-                              child: Text(action.name),
-                            ),
-                        ],
-                        child: IconText(
-                          Icons.play_circle_outline,
-                          S.of(context).actions,
+                          ],
+                          child: IconText(
+                            Icons.play_circle_outline,
+                            S.of(context).actions,
+                          ),
                         ),
                       ),
 

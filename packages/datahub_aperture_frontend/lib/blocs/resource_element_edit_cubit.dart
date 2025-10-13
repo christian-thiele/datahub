@@ -213,6 +213,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
 
   void startAction(String id) async {
     final previousState = state;
+    // TODO check for changes, ask for discarding
     if (state is! ResourceElementEditLoading &&
         state is! ResourceElementEditDeleted) {
       emit(ResourceElementEditLoading());

@@ -186,13 +186,39 @@ class ApertureApi extends ApiNode {
               );
 
               final action = resource.actions.firstWhere(
-                (action) => action.id == actionId,
+                (action) => action.description.id == actionId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
-              final element =
-                  await resource.repository.getElement(elementId, null);
-              await action.callback(element);
+              final parameters = await request.getJsonBody();
+
+              final taskId = await action.handler(elementId, parameters);
+              return {
+                if (taskId != null) 'taskId': taskId,
+              };
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern('$base/api/actions'),
+            get: (request) async {
+              return configDelegate.actions.map((e) => e.description).toList();
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern('$base/api/actions/{actionId}'),
+            post: (request) async {
+              final actionId = request.getRouteParam<String>('actionId');
+
+              final action = configDelegate.actions.firstWhere(
+                (action) => action.description.id == actionId,
+                orElse: () => throw ApiRequestException.notFound(),
+              );
+
+              final parameters = await request.getJsonBody();
+              final taskId = await action.handler(null, parameters);
+              return {
+                if (taskId != null) 'taskId': taskId,
+              };
             },
           ),
         ],
