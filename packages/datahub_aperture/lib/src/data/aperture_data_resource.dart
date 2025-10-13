@@ -4,6 +4,7 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/icons.dart';
 import 'package:datahub_aperture/services.dart';
+import 'package:datahub_aperture/utils.dart';
 
 import 'aperture_data_action.dart';
 import 'meta/aperture_relation.dart';
@@ -147,13 +148,6 @@ class ApertureDataResource {
         for (final field in bean.fields)
           fieldDescription(bean, field, relatedBeans),
     ];
-  }
-
-  static String niceName(String name) {
-    return splitWords(name)
-        .map(firstUpper)
-        .map((e) => (e == 'Id') ? 'ID' : e)
-        .join(' ');
   }
 
   static ResourceFieldType _fieldType(DataField<dynamic, dynamic> field) {

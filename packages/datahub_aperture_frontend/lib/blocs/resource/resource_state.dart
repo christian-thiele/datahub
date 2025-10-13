@@ -34,7 +34,8 @@ final class ResourceValue extends ResourceState {
   });
 }
 
-final class ResourceError extends ResourceState {
+final class ResourceError extends ResourceState implements ErrorState {
+  @override
   final String? message;
 
   const ResourceError({

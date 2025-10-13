@@ -8,6 +8,7 @@ import 'package:datahub_aperture_frontend/models/view_models/filter_model.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:bloc/bloc.dart';
 
+import '../error_state.dart';
 import 'filter_state.dart';
 
 part 'resource_state.dart';

@@ -1,3 +1,5 @@
+library;
+
 export 'src/api/aperture_bootstrap.dart';
 export 'src/api/aperture_theme.dart';
 export 'src/api/resource_revision_request.dart';
@@ -17,3 +19,5 @@ export 'src/api/resource_revision_type.dart';
 export 'src/api/simple_auth_request.dart';
 export 'src/api/simple_auth_refresh_request.dart';
 export 'src/api/simple_auth_response.dart';
+export 'src/api/module_description.dart';
+export 'src/api/module_type.dart';

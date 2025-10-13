@@ -7,6 +7,7 @@ import 'blocs/auth_cubit.dart';
 import 'generated/l10n.dart';
 import 'pages/auth_page/auth_page.dart';
 import 'pages/dashboard_page.dart';
+import 'pages/module_page/module_page.dart';
 import 'pages/resource_element_create/resource_element_create_page.dart';
 import 'pages/resource_element_edit/resource_element_edit_page.dart';
 import 'pages/resource_page/resource_page.dart';
@@ -101,6 +102,13 @@ class _ApertureAppState extends State<ApertureApp>
                     ),
                   ),
                 ],
+              ),
+              GoRoute(
+                path: '/modules/:moduleId',
+                pageBuilder: (context, state) => MaterialPage(
+                  key: ValueKey(state.matchedLocation),
+                  child: ModulePage(state),
+                ),
               ),
             ],
           ),

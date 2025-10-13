@@ -221,6 +221,15 @@ class ApertureApi extends ApiNode {
               };
             },
           ),
+          ResourceEndpoint(
+            matcher: RoutePattern('$base/api/modules'),
+            get: (request) async {
+              return configDelegate.modules.map((e) => e.description).toList();
+            },
+          ),
+          for (final module in configDelegate.modules)
+            ...module
+                .buildApiRoutes('$base/api/modules/${module.description.id}'),
         ],
       ),
       StaticBundleEndpoint(

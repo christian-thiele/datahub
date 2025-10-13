@@ -10,11 +10,13 @@ final class ConfigurationLoading extends ConfigurationState {
 
 final class ConfigurationValue extends ConfigurationState {
   final List<ResourceDescription> resources;
+  final List<ModuleDescription> modules;
 
-  ConfigurationValue({required this.resources});
+  ConfigurationValue({required this.resources, required this.modules});
 }
 
-final class ConfigurationError extends ConfigurationState {
+final class ConfigurationError extends ConfigurationState implements ErrorState {
+  @override
   final String? message;
 
   ConfigurationError({required this.message});

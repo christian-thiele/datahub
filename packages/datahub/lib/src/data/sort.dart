@@ -32,8 +32,8 @@ sealed class Sort {
   /// Tries to simplify the Sort structure to avoid redundancy.
   Sort reduce();
 
-  /// Returns a linear list of [ExpressionSort].
-  List<ExpressionSort> linear();
+  /// Returns a flat list of [ExpressionSort].
+  List<ExpressionSort> expand();
 }
 
 final class ExpressionSort extends Sort {
@@ -49,7 +49,7 @@ final class ExpressionSort extends Sort {
   Sort reduce() => this;
 
   @override
-  List<ExpressionSort> linear() => [this];
+  List<ExpressionSort> expand() => [this];
 }
 
 final class SortGroup extends Sort {
@@ -75,8 +75,8 @@ final class SortGroup extends Sort {
   bool get isEmpty => sorts.isEmpty;
 
   @override
-  List<ExpressionSort> linear() =>
-      sorts.expand((element) => element.linear()).toList();
+  List<ExpressionSort> expand() =>
+      sorts.expand((element) => element.expand()).toList();
 }
 
 final class _EmptySort implements Sort {
@@ -89,5 +89,5 @@ final class _EmptySort implements Sort {
   Sort reduce() => this;
 
   @override
-  List<ExpressionSort> linear() => [];
+  List<ExpressionSort> expand() => [];
 }

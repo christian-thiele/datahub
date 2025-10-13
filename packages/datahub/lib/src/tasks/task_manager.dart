@@ -40,12 +40,14 @@ typedef TaskDelegate<T> =
 
 class TaskExecutor<T extends DataObject> {
   final String taskId;
+  final String? displayName;
   final DataBean<T> bean;
   final TaskHandle<T> handle;
   final TaskDelegate<T> delegate;
 
   TaskExecutor({
     required this.taskId,
+    required this.displayName,
     required this.bean,
     required this.handle,
     required this.delegate,
@@ -311,17 +313,20 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
   Future<TaskHandle<T>> registerExecutor<T extends DataObject>(
     String taskId,
     DataBean<T> bean,
-    TaskDelegate<T> delegate,
-  ) async {
+    TaskDelegate<T> delegate, {
+    String? displayName,
+  }) async {
     final handle = TaskHandle<T>._(
       scheduleInvocation: (params, {schedule}) =>
           enqueueInvocation(taskId, params, schedule: schedule),
     );
+
     _executors[taskId] = TaskExecutor<T>(
       taskId: taskId,
       bean: bean,
       handle: handle,
       delegate: delegate,
+      displayName: displayName,
     );
 
     return handle;
@@ -382,14 +387,13 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
   @override
   Future<List<TaskInvocation>> getInvocations({
     Filter filter = Filter.empty,
-    Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
   }) async {
     return await taskInvocationRepository.readAll(
       filter: filter,
       offset: offset,
-      sort: sort,
+      sort: $TaskInvocation.$scheduledFor.desc(),
       limit: limit,
     );
   }

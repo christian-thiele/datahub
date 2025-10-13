@@ -3,6 +3,7 @@ import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/icons.dart';
 import 'package:datahub_aperture/src/aperture_service/aperture_action.dart';
+import 'package:datahub_aperture/utils.dart';
 
 typedef ApertureDataActionHandler<TParameters> = Future<String?> Function(
     String? elementId, TParameters parameters);
@@ -21,7 +22,7 @@ class ApertureDataAction {
 
     return ResourceAction(
       id: bean.name,
-      displayName: meta?.name ?? ApertureDataResource.niceName(bean.name),
+      displayName: meta?.name ?? niceName(bean.name),
       icon: meta?.icon ?? Icons.data_object,
       parameterFields: [
         for (final field in bean.fields)

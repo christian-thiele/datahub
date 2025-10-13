@@ -35,7 +35,13 @@ class ApertureThemeData {
       margin: EdgeInsetsGeometry.zero,
       color: colors.surfaceBright,
     ),
-    dialogTheme: DialogThemeData(barrierColor: Colors.white60),
+    dialogTheme: DialogThemeData(
+      barrierColor: Color(0xA0C0C0C0),
+      backgroundColor: colors.surface,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      )
+    ),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: {
         TargetPlatform.android: ZoomPageTransitionsBuilder(),

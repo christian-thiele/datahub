@@ -1,5 +1,6 @@
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'aperture_module.dart';
 import 'aperture_resource.dart';
 
 abstract interface class ApertureConfigDelegate {
@@ -7,6 +8,7 @@ abstract interface class ApertureConfigDelegate {
   ApertureTheme get theme;
   List<ApertureResource> get resources;
   List<ApertureAction> get actions;
+  List<ApertureModule> get modules;
   String get baseUrl;
 }
 
@@ -24,6 +26,9 @@ class ApertureConfigStaticDelegate implements ApertureConfigDelegate {
   final List<ApertureAction> actions;
 
   @override
+  final List<ApertureModule> modules;
+
+  @override
   final String baseUrl;
 
   ApertureConfigStaticDelegate({
@@ -31,6 +36,8 @@ class ApertureConfigStaticDelegate implements ApertureConfigDelegate {
     this.theme = const ApertureTheme(),
     this.resources = const [],
     this.actions = const [],
+    this.modules = const [],
     required this.baseUrl,
   });
+
 }

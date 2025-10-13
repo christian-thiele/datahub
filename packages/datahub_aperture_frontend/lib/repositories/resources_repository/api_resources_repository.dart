@@ -1,35 +1,13 @@
 import 'dart:convert';
 
-import 'package:boost/boost.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub/datahub.dart';
-import 'package:datahub_aperture_frontend/services.dart';
+import 'package:datahub_aperture_frontend/repositories/api_repository.dart';
 import 'resources_repository.dart';
 
-class ApiResourcesRepository implements ResourcesRepository {
-  final String baseUrl;
-  late final Lazy<RestClient> _restClient = Lazy(
-    () => RestClient.connect(
-      Uri.parse(baseUrl),
-      timeout: const Duration(seconds: 10),
-    ),
-  );
-
-  ApiResourcesRepository({required this.baseUrl});
-
-  Future<RestClient> _authClient() async {
-    final client = await _restClient.get();
-    client.auth = await AuthService.instance.getValidAccessToken();
-    return client;
-  }
-
-  Future<void> close() async {
-    if (_restClient.isInitialized) {
-      final client = await _restClient.get();
-      _restClient.invalidate();
-      await client.close();
-    }
-  }
+class ApiResourcesRepository extends ApiRepository
+    implements ResourcesRepository {
+  ApiResourcesRepository({required super.baseUrl});
 
   @override
   Future<ResourceData> createElement(
@@ -37,7 +15,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     Map<String, dynamic> changes,
     DateTime? revisionLive,
   ) async {
-    final client = await _authClient();
+    final client = await getClient();
     return await client
         .post(
           '/api/resources/{resourceId}/elements',
@@ -52,7 +30,7 @@ class ApiResourcesRepository implements ResourcesRepository {
 
   @override
   Future<ResourceDescription> getDescription(String id) async {
-    final client = await _authClient();
+    final client = await getClient();
     final result = await client.get(
       '/api/resources/{id}',
       urlParams: {'id': id},
@@ -62,9 +40,16 @@ class ApiResourcesRepository implements ResourcesRepository {
 
   @override
   Future<List<ResourceDescription>> getDescriptions() async {
-    final client = await _authClient();
+    final client = await getClient();
     final result = await client.get('/api/resources');
     return await result.getList($ResourceDescription.bean);
+  }
+
+  @override
+  Future<List<ModuleDescription>> getModules() async {
+    final client = await getClient();
+    final result = await client.get('/api/modules');
+    return await result.getList($ModuleDescription.bean);
   }
 
   @override
@@ -73,7 +58,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     String elementId, {
     String? revisionId,
   }) async {
-    final client = await _authClient();
+    final client = await getClient();
     return await client
         .get(
           '/api/resources/{resourceId}/elements/{elementId}',
@@ -92,7 +77,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     int offset = 0,
     int limit = 25,
   }) async {
-    final client = await _authClient();
+    final client = await getClient();
     return await client
         .get(
           '/api/resources/{resourceId}/elements',
@@ -113,7 +98,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     Map<String, dynamic> changes,
     DateTime? revisionLive,
   ) async {
-    final client = await _authClient();
+    final client = await getClient();
     return await client
         .patch(
           '/api/resources/{resourceId}/elements/{elementId}',
@@ -132,7 +117,7 @@ class ApiResourcesRepository implements ResourcesRepository {
     String elementId,
     DateTime? revisionLive,
   ) async {
-    final client = await _authClient();
+    final client = await getClient();
     final response = await client.delete(
       '/api/resources/{resourceId}/elements/{elementId}',
       urlParams: {'resourceId': resourceId, 'elementId': elementId},
@@ -150,13 +135,13 @@ class ApiResourcesRepository implements ResourcesRepository {
   }
 
   @override
-  Future<void> startElementAction(
+  Future<Map<String, dynamic>> startElementAction(
     String resourceId,
     String elementId,
     String actionId,
   ) async {
-    final client = await _authClient();
-    client.post(
+    final client = await getClient();
+    return client.post(
       '/api/resources/{resourceId}/elements/{elementId}/actions/{actionId}',
       {},
       urlParams: {
@@ -164,6 +149,6 @@ class ApiResourcesRepository implements ResourcesRepository {
         'elementId': elementId,
         'actionId': actionId,
       },
-    );
+    ).thenGetJsonBody();
   }
 }

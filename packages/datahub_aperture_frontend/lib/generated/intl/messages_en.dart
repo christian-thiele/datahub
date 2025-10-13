@@ -47,6 +47,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginAuthcode": MessageLookupByLibrary.simpleMessage("Login via IDP"),
     "newResource": m1,
     "noElements": MessageLookupByLibrary.simpleMessage("No Elements"),
+    "ok": MessageLookupByLibrary.simpleMessage("OK"),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "resourceDeleted": MessageLookupByLibrary.simpleMessage(
