@@ -372,6 +372,12 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
+  Future<R> atomic<R>(Future<R> Function() delegate) async {
+    return await find(
+      postgresql,
+    ).runTransaction((context) async => await delegate());
+  }
+
   RevisionData<TData> _mapRevision(pg.ResultRow result, TData data) {
     dynamic getValue(PostgresqlAttribute attribute) =>
         result[result.schema.columns.indexWhere(
