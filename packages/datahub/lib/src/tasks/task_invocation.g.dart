@@ -59,6 +59,22 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
     toJson: (value) => $$codec.encodeDateTime(value),
   );
 
+  static final $lastHeartbeat = DataField<TaskInvocation, DateTime?>(
+    name: 'lastHeartbeat',
+    valueOf: (p) => p.lastHeartbeat,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeDateTime, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeDateTime),
+  );
+
+  static final $progress = DataField<TaskInvocation, double>(
+    name: 'progress',
+    valueOf: (p) => p.progress,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeDouble(value, name: name),
+    toJson: (value) => $$codec.encodeDouble(value),
+  );
+
   static final $startedAt = DataField<TaskInvocation, DateTime?>(
     name: 'startedAt',
     valueOf: (p) => p.startedAt,
@@ -84,6 +100,8 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
       $parameters,
       $scheduledAt,
       $scheduledFor,
+      $lastHeartbeat,
+      $progress,
       $startedAt,
       $finishedAt,
     ]),
@@ -102,6 +120,9 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
     Map<String, dynamic>? parameters,
     DateTime? scheduledAt,
     DateTime? scheduledFor,
+    DateTime? lastHeartbeat,
+    bool nullLastHeartbeat = false,
+    double? progress,
     DateTime? startedAt,
     bool nullStartedAt = false,
     DateTime? finishedAt,
@@ -115,6 +136,10 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
       parameters: parameters ?? $data.parameters,
       scheduledAt: scheduledAt ?? $data.scheduledAt,
       scheduledFor: scheduledFor ?? $data.scheduledFor,
+      lastHeartbeat: nullLastHeartbeat
+          ? null
+          : (lastHeartbeat ?? $data.lastHeartbeat),
+      progress: progress ?? $data.progress,
       startedAt: nullStartedAt ? null : (startedAt ?? $data.startedAt),
       finishedAt: nullFinishedAt ? null : (finishedAt ?? $data.finishedAt),
     );
@@ -128,6 +153,8 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
       parameters: data['parameters'],
       scheduledAt: data['scheduledAt'],
       scheduledFor: data['scheduledFor'],
+      lastHeartbeat: data['lastHeartbeat'],
+      progress: data['progress'],
       startedAt: data['startedAt'],
       finishedAt: data['finishedAt'],
     );
@@ -159,6 +186,14 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
         data['scheduledFor'],
         name: DataCodec.childName(name, 'scheduledFor'),
       ),
+      lastHeartbeat: $lastHeartbeat.fromJson(
+        data['lastHeartbeat'],
+        name: DataCodec.childName(name, 'lastHeartbeat'),
+      ),
+      progress: $progress.fromJson(
+        data['progress'],
+        name: DataCodec.childName(name, 'progress'),
+      ),
       startedAt: $startedAt.fromJson(
         data['startedAt'],
         name: DataCodec.childName(name, 'startedAt'),
@@ -180,6 +215,8 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
       'parameters': $parameters.toJson($$data.parameters),
       'scheduledAt': $scheduledAt.toJson($$data.scheduledAt),
       'scheduledFor': $scheduledFor.toJson($$data.scheduledFor),
+      'lastHeartbeat': $lastHeartbeat.toJson($$data.lastHeartbeat),
+      'progress': $progress.toJson($$data.progress),
       'startedAt': $startedAt.toJson($$data.startedAt),
       'finishedAt': $finishedAt.toJson($$data.finishedAt),
     }..removeWhere((k, v) => v == null);

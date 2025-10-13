@@ -2,7 +2,7 @@ import 'package:datahub/data.dart';
 
 part 'task_invocation.g.dart';
 
-enum TaskState { scheduled, running, finished, failed, canceled }
+enum TaskState { scheduled, running, finished, failed, timeout, canceled }
 
 @Data()
 class TaskInvocation extends $TaskInvocation {
@@ -14,6 +14,8 @@ class TaskInvocation extends $TaskInvocation {
   final DateTime scheduledAt;
   final DateTime scheduledFor;
   final DateTime? startedAt;
+  final DateTime? lastHeartbeat;
+  final double progress;
   final DateTime? finishedAt;
 
   const TaskInvocation({
@@ -23,6 +25,8 @@ class TaskInvocation extends $TaskInvocation {
     required this.parameters,
     required this.scheduledAt,
     required this.scheduledFor,
+    required this.lastHeartbeat,
+    required this.progress,
     required this.startedAt,
     required this.finishedAt,
   });
