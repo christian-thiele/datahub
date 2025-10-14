@@ -95,14 +95,16 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
   static final $claimsParameterSupported = DataField<OidcConfiguration, bool>(
     name: 'claimsParameterSupported',
     valueOf: (p) => p.claimsParameterSupported,
-    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
   );
 
   static final $requestParameterSupported = DataField<OidcConfiguration, bool>(
     name: 'requestParameterSupported',
     valueOf: (p) => p.requestParameterSupported,
-    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
   );
 
@@ -111,7 +113,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         name: 'requestUriParameterSupported',
         valueOf: (p) => p.requestUriParameterSupported,
         fromJson: (value, {String? name}) =>
-            $$codec.decodeBool(value, name: name),
+            $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
       );
 
@@ -120,7 +122,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         name: 'requireRequestUriRegistration',
         valueOf: (p) => p.requireRequestUriRegistration,
         fromJson: (value, {String? name}) =>
-            $$codec.decodeBool(value, name: name),
+            $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
       );
 
@@ -129,14 +131,15 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         name: 'tlsClientCertificateBoundAccessTokens',
         valueOf: (p) => p.tlsClientCertificateBoundAccessTokens,
         fromJson: (value, {String? name}) =>
-            $$codec.decodeBool(value, name: name),
+            $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
       );
 
   static final $backchannelLogoutSupported = DataField<OidcConfiguration, bool>(
     name: 'backchannelLogoutSupported',
     valueOf: (p) => p.backchannelLogoutSupported,
-    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
   );
 
@@ -145,7 +148,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         name: 'backchannelLogoutSessionSupported',
         valueOf: (p) => p.backchannelLogoutSessionSupported,
         fromJson: (value, {String? name}) =>
-            $$codec.decodeBool(value, name: name),
+            $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
       );
 
@@ -154,7 +157,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         name: 'authorizationResponseIssParameterSupported',
         valueOf: (p) => p.authorizationResponseIssParameterSupported,
         fromJson: (value, {String? name}) =>
-            $$codec.decodeBool(value, name: name),
+            $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
       );
 
@@ -706,17 +709,19 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
           data['backchannelAuthenticationEndpoint'],
       pushedAuthorizationRequestEndpoint:
           data['pushedAuthorizationRequestEndpoint'],
-      claimsParameterSupported: data['claimsParameterSupported'],
-      requestParameterSupported: data['requestParameterSupported'],
-      requestUriParameterSupported: data['requestUriParameterSupported'],
-      requireRequestUriRegistration: data['requireRequestUriRegistration'],
+      claimsParameterSupported: data['claimsParameterSupported'] ?? false,
+      requestParameterSupported: data['requestParameterSupported'] ?? false,
+      requestUriParameterSupported:
+          data['requestUriParameterSupported'] ?? false,
+      requireRequestUriRegistration:
+          data['requireRequestUriRegistration'] ?? false,
       tlsClientCertificateBoundAccessTokens:
-          data['tlsClientCertificateBoundAccessTokens'],
-      backchannelLogoutSupported: data['backchannelLogoutSupported'],
+          data['tlsClientCertificateBoundAccessTokens'] ?? false,
+      backchannelLogoutSupported: data['backchannelLogoutSupported'] ?? false,
       backchannelLogoutSessionSupported:
-          data['backchannelLogoutSessionSupported'],
+          data['backchannelLogoutSessionSupported'] ?? false,
       authorizationResponseIssParameterSupported:
-          data['authorizationResponseIssParameterSupported'],
+          data['authorizationResponseIssParameterSupported'] ?? false,
       requirePushedAuthorizationRequests:
           data['requirePushedAuthorizationRequests'],
       grantTypesSupported: data['grantTypesSupported'],
