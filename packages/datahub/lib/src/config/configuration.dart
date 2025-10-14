@@ -97,8 +97,8 @@ class Configuration {
   /// `dart service.dart --f path/to/file.yaml`
   ///
   /// Supported file types are yaml and json.
-  void addConfigFile(File configFile) async {
-    final stringContent = await configFile.readAsString();
+  void addConfigFile(File configFile) {
+    final stringContent = configFile.readAsStringSync();
     final ext = extension(configFile.path);
     if (ext == '.yaml' || ext == '.yml') {
       final content = loadYaml(stringContent);
