@@ -21,7 +21,7 @@ dependencies:
   rxdart: ^0.28.0
   uuid: ^4.4.0
   yaml: ^3.1.1
-  # flutter_test depends on test_api: 0.7.0, so 1.25.2 is max version for now
+  # flutter_test depends on test_api: 0.7.6, so 1.25.2 is max version for now
   test: ^1.25.2
   protobuf: ^4.0.0
   fixnum: ^1.1.0
