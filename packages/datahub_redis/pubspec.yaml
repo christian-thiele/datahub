@@ -1,0 +1,17 @@
+name: datahub_redis
+description: DataHub Redis Extension
+version: 0.18.0-dev.1
+resolution: workspace
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  boost: ^2.0.0-dev.1
+  datahub: ^0.18.0-dev.1
+  postgres: ^3.5.6
+  meta: ^1.16.0
+
+dev_dependencies:
+  lints: ^6.0.0
+  test: ^1.25.6
