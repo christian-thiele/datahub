@@ -21,7 +21,7 @@ be released.*
 
 ### Features
 
-This library contains an implementation of DataHub's persistence interface.
+This library contains Services and Components for using PostgreSQL within the DataHub Framework.
 It works as an adapter between DataHub and the [postgres](https://pub.dev/packages/postgres) dart library.
 
 ### Usage
