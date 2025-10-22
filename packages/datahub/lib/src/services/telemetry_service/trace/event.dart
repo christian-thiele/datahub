@@ -20,7 +20,8 @@ class ExceptionEvent extends Event {
         name: 'Exception: $error',
         attributes: {
           'exception.type': error.runtimeType.toString(),
-          if (error is ApiRequestException) 'data': error.data,
+          if (error is ApiRequestException) 'exception.data': error.data,
+          if (error is ApiRequestException) 'exception.message': error.message,
         },
       );
 }

@@ -255,6 +255,7 @@ class RoutePattern implements RouteMatcher {
     if (tryMatch(request.uri.path) case final match?) {
       return {
         ...match.routeParams,
+        '#pattern': pattern,
         if (match.wildcard case final wildcard?) '*': wildcard,
       };
     } else {

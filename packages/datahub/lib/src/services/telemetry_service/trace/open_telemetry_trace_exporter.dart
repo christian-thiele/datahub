@@ -13,31 +13,37 @@ import '../opentelemetry-dart/open_telemetry.dart' as otel;
 import '../telemetry_scope.dart';
 
 class OpenTelemetryTraceExporter extends TraceExporter {
-  static const int _maxBufferSize = 100000;
-  static const int _warningBufferSize = 90000;
-
-  final _buffer = <Span>[];
+  final _buffer = <LocalSpan>[];
   int _lastSendBufferSize = 0;
 
   final String host;
   final int port;
   final io.SecurityContext? securityContext;
   final Duration sendInterval;
+  final Duration sendIntervalJitter;
   final int maxBatchSize;
+  final int maxBufferSize;
+  late final int warningBufferSize = (maxBufferSize * 0.9).toInt();
   final Map<String, dynamic> resourceAttributes;
 
   final _sendSemaphore = Semaphore();
   late final otel.TraceServiceClient _client;
-  late final Timer _timer;
+  Timer? _timer;
 
   OpenTelemetryTraceExporter({
     required this.host,
     required this.port,
     required this.sendInterval,
+    required this.sendIntervalJitter,
     this.securityContext,
     this.maxBatchSize = 500,
+    this.maxBufferSize = 100000,
     this.resourceAttributes = const <String, dynamic>{},
   }) : assert(maxBatchSize > 0, 'maxBatchSize must be > 0'),
+       assert(
+         maxBufferSize > maxBatchSize,
+         'maxBufferSize must be > maxBatchSize',
+       ),
        assert(
          sendInterval > Duration.zero,
          'sendInterval must be > Duration.zero',
@@ -55,20 +61,30 @@ class OpenTelemetryTraceExporter extends TraceExporter {
         },
       ),
     );
-    _timer = Timer.periodic(sendInterval, _sendBatch);
+    _timer = Timer(sendInterval, _sendBatch);
   }
 
   @override
   Future<void> shutdown() async {
-    _timer.cancel();
+    _timer?.cancel();
+    if (_buffer.isNotEmpty) {
+      try {
+        log('Flushing OTEL span buffer.');
+        await _sendSemaphore.runLocked(() async {
+          await _sendSpans(_buffer);
+        });
+      } catch (e, stack) {
+        log.error('Could not send spans.', error: e, stack: stack);
+      }
+    }
   }
 
   @override
-  void add(Span data) {
+  void add(LocalSpan data) {
     _buffer.add(data);
-    if (_buffer.length > _maxBufferSize) {
+    if (_buffer.length > maxBufferSize) {
       _buffer.removeAt(0);
-    } else if (_buffer.length == _warningBufferSize) {
+    } else if (_buffer.length == warningBufferSize) {
       log.warn('Approaching trace buffer cap. Trace data may be dropped soon.');
     }
   }
@@ -78,7 +94,7 @@ class OpenTelemetryTraceExporter extends TraceExporter {
     // ignored
   }
 
-  void _sendBatch(Timer timer) async {
+  void _sendBatch() async {
     if (_buffer.isEmpty) {
       return;
     }
@@ -94,36 +110,27 @@ class OpenTelemetryTraceExporter extends TraceExporter {
       final buffer = _buffer.sublist(0, bufferSize);
       _buffer.removeRange(0, bufferSize);
 
-      final groups = buffer.groupBy((e) => e.tracer.key);
-
       try {
-        final request = otel.ExportTraceServiceRequest(
-          resourceSpans: [
-            otel.ResourceSpans(
-              resource: otel.Resource(
-                attributes: _toOtelKeyValues(resourceAttributes),
-                droppedAttributesCount: 0,
-              ),
-              scopeSpans: [
-                ...groups.values.map(
-                  (spans) => _toOtelScopeSpans(spans.first.tracer, spans),
-                ),
-              ],
-            ),
-          ],
-        );
-
-        await _client.export(request);
+        await _sendSpans(buffer);
       } catch (e, stack) {
         log.warn('Could not send traces.', error: e, stack: stack);
-        // put back
-        _buffer.insertAll(0, buffer);
+        if ((_buffer.length + buffer.length) <= maxBufferSize) {
+          // put back
+          _buffer.insertAll(0, buffer);
+        } else {
+          log.warn('Trace buffer size exceeds maxBufferSize, dropping batch.');
+        }
       }
       _lastSendBufferSize = _buffer.length;
     });
+
+    _timer = Timer(sendInterval.jitter(sendIntervalJitter), _sendBatch);
   }
 
-  otel.ScopeSpans _toOtelScopeSpans(TelemetryScope scope, List<Span> spans) {
+  otel.ScopeSpans _toOtelScopeSpans(
+    TelemetryScope scope,
+    List<LocalSpan> spans,
+  ) {
     return otel.ScopeSpans(
       scope: _toOtelScope(scope),
       spans: spans.map(_toOtelSpan).toList(),
@@ -139,16 +146,22 @@ class OpenTelemetryTraceExporter extends TraceExporter {
     );
   }
 
-  otel.Span _toOtelSpan(Span span) {
+  otel.Span _toOtelSpan(LocalSpan span) {
     return otel.Span(
       name: span.name,
       traceId: span.traceId.bytes,
       parentSpanId: span.parent?.spanId.bytes,
       spanId: span.spanId.bytes,
       kind: _toOtelSpanKind(span.type),
-      status: span.hasError
-          ? otel.Status(code: otel.Status_StatusCode.STATUS_CODE_ERROR)
-          : null,
+      status: switch (span) {
+        LocalSpan(hasError: true) => otel.Status(
+          code: otel.Status_StatusCode.STATUS_CODE_ERROR,
+        ),
+        LocalSpan(endTimestamp: DateTime()) => otel.Status(
+          code: otel.Status_StatusCode.STATUS_CODE_OK,
+        ),
+        _ => otel.Status(code: otel.Status_StatusCode.STATUS_CODE_UNSET),
+      },
       //TODO error message
       startTimeUnixNano: span.startTimestamp?.nanosecondsSinceEpoch,
       endTimeUnixNano: span.endTimestamp?.nanosecondsSinceEpoch,
@@ -210,5 +223,26 @@ class OpenTelemetryTraceExporter extends TraceExporter {
       attributes: _toOtelKeyValues(event.attributes),
       droppedAttributesCount: 0,
     );
+  }
+
+  Future<void> _sendSpans(List<LocalSpan> spans) async {
+    final groups = spans.groupBy((e) => e.tracer.key);
+    final request = otel.ExportTraceServiceRequest(
+      resourceSpans: [
+        otel.ResourceSpans(
+          resource: otel.Resource(
+            attributes: _toOtelKeyValues(resourceAttributes),
+            droppedAttributesCount: 0,
+          ),
+          scopeSpans: [
+            ...groups.values.map(
+              (spans) => _toOtelScopeSpans(spans.first.tracer, spans),
+            ),
+          ],
+        ),
+      ],
+    );
+
+    await _client.export(request);
   }
 }

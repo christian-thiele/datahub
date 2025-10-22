@@ -2,6 +2,7 @@
 library;
 
 export 'src/utils/api_error.dart';
+export 'src/utils/api_request_exception.dart';
 export 'src/utils/api_exception.dart';
 export 'src/utils/mime.dart';
 export 'src/utils/token.dart';

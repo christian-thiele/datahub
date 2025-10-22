@@ -8,7 +8,7 @@ import 'span_id.dart';
 import 'trace_id.dart';
 
 class Tracer implements TelemetryScope {
-  static const _tracerKeyPrefix = 'datahub_instrumentation_tracer';
+  static const _tracerKeyPrefix = 'datahub_telemetry_tracer';
   late final _tracerSpanKey = '$_tracerKeyPrefix/$key';
 
   @override
@@ -37,13 +37,14 @@ class Tracer implements TelemetryScope {
   FutureOr<R> trace<R>(
     String name,
     Map<String, dynamic>? attributes,
-    FutureOr<R> Function() delegate,
+    SpanType? type,
+    FutureOr<R> Function(LocalSpan span) delegate,
   ) {
-    final span = startSpan(name, attributes);
+    final span = startSpan(name, attributes, type: type);
 
     return runZoned(() async {
       try {
-        return await delegate();
+        return await delegate(span);
       } catch (error) {
         span.addExceptionEvent(error);
         rethrow;
@@ -53,13 +54,13 @@ class Tracer implements TelemetryScope {
     }, zoneValues: {_tracerSpanKey: span});
   }
 
-  Span startSpan(
+  LocalSpan startSpan(
     String name,
     Map<String, dynamic>? attributes, {
     SpanType? type,
   }) {
     final parent = findParentSpan();
-    final span = Span(
+    final span = LocalSpan(
       tracer: this,
       traceId: parent?.traceId ?? TraceId.generate(),
       spanId: SpanId.generate(),
@@ -73,12 +74,25 @@ class Tracer implements TelemetryScope {
     return span;
   }
 
-  Span? findParentSpan() {
-    final span = Zone.current[_tracerSpanKey];
-    if (span is Span) {
-      return span;
-    } else {
-      return null;
-    }
+  Span? findParentSpan() => switch (Zone.current[_tracerSpanKey]) {
+    final Span span => span,
+    _ => null,
+  };
+
+  FutureOr<R> remoteSpan<R>(
+    TraceId traceId,
+    SpanId spanId,
+    FutureOr<R> Function() delegate,
+  ) {
+    return runZoned(
+      delegate,
+      zoneValues: {
+        _tracerSpanKey: Span(
+          traceId: traceId,
+          spanId: spanId,
+          parentSpanId: null,
+        ),
+      },
+    );
   }
 }

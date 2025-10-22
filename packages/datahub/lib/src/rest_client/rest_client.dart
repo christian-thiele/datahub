@@ -179,8 +179,9 @@ class RestClient {
     );
 
     final requestHeaders = {
-      ...headers,
+      // TODO add trace headers
       if (auth != null) HttpHeaders.authorization: [auth!.authorization],
+      ...headers,
     };
 
     final bodyData = () {

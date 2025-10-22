@@ -76,8 +76,8 @@ import 'package:datahub/scaffold.dart';
 abstract interface class Telemetry {
   /// Defines a metric of type [CounterMetric].
   ///
-  /// If this was defined before, the same instance to the previously
-  /// defined [CounterMetric] is returned. This allows for
+  /// If the named metric  was defined before, the same instance to the
+  /// previously efined [CounterMetric] is returned. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
   CounterMetric counter(
@@ -88,8 +88,8 @@ abstract interface class Telemetry {
 
   /// Defines a metric of type [GaugeMetric].
   ///
-  /// If this was defined before, the same instance to the previously
-  /// defined [GaugeMetric] is returned. This allows for
+  /// If the named metric was defined before, the same instance to the
+  /// previously defined [GaugeMetric] is returned. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
   GaugeMetric gauge(
@@ -101,8 +101,8 @@ abstract interface class Telemetry {
   /// Defines a metric of type [HistogramMetric] with linear bucket
   /// distribution.
   ///
-  /// If this was defined before, the same instance to the previously
-  /// defined [HistogramMetric] is returned. The parameters [start],
+  /// If the named metric was defined before, the same instance to the
+  /// previously defined [HistogramMetric] is returned. The parameters [start],
   /// [width] and [count] will be ignored in this case. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
@@ -117,8 +117,8 @@ abstract interface class Telemetry {
   /// Defines a metric of type [HistogramMetric] with exponential bucket
   /// distribution.
   ///
-  /// If this was defined before, the same instance to the previously
-  /// defined [HistogramMetric] is returned. The parameters [start],
+  /// If the named metric was defined before, the same instance to the
+  /// previously defined [HistogramMetric] is returned. The parameters [start],
   /// [factor] and [count] will be ignored in this case. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
@@ -149,12 +149,29 @@ abstract interface class Telemetry {
   /// Unregisters a custom collector.
   void unregisterCollector(MetricCollector metricCollector);
 
+  /// Convenience method for using the default tracer to trace a span.
   FutureOr<R> trace<R>(
     String name,
+    FutureOr<R> Function(LocalSpan span) delegate, {
     SpanType type,
     Map<String, dynamic> attributes,
-    FutureOr<R> Function() delegate,
-  );
+  });
+
+  /// Convenience methods for using the default tracer to trace an event.
+  void addEvent(String name, {Map<String, String>? arguments});
+
+  /// Convenience methods for using the default tracer to trace an exception
+  /// event and marking the current span as error.
+  void addExceptionEvent(dynamic error);
+
+  /// Returns a named tracer.
+  ///
+  /// In most cases the convenience methods for using the default tracer
+  /// are sufficient:
+  ///   - [trace]
+  ///   - [addEvent]
+  ///   - [addExceptionEvent]
+  Tracer getTracer(String name, {String? version});
 }
 
 class TelemetryService implements Service {
@@ -167,43 +184,48 @@ class TelemetryService implements Service {
   final Config<String?> otelCollectorHost;
   final Config<int> otelCollectorPort;
   final Config<int> otelExporterSendInterval;
+  final Config<int> otelExporterSendIntervalJitter;
   final Config<bool> enableDartTimeline;
 
   TelemetryService({
     this.serviceName = const Config<String>(
-      'serviceName',
+      'telemetry.serviceName',
       defaultValue: 'DataHub',
     ),
     this.enableEndpoint = const Config<bool>(
-      'metrics.prometheusExporter.enable',
+      'telemetry.prometheusExporter.enable',
       defaultValue: false,
     ),
     this.address = const Config<String?>('metrics.prometheusExporter.address'),
     this.port = const Config<int>(
-      'metrics.prometheusExporter.port',
+      'telemetry.prometheusExporter.port',
       defaultValue: 9090,
     ),
     this.path = const Config<String>(
-      'metrics.prometheusExporter.path',
+      'telemetry.prometheusExporter.path',
       defaultValue: 'metrics',
     ),
     this.enableOtelExporter = const Config<bool>(
-      'traces.openTelemetryExporter.enable',
+      'telemetry.openTelemetryExporter.enable',
       defaultValue: false,
     ),
     this.otelCollectorHost = const Config<String?>(
-      'traces.openTelemetryExporter.host',
+      'telemetry.openTelemetryExporter.host',
     ),
     this.otelCollectorPort = const Config<int>(
-      'traces.openTelemetryExporter.port',
+      'telemetry.openTelemetryExporter.port',
       defaultValue: 4317,
     ),
     this.otelExporterSendInterval = const Config<int>(
-      'traces.openTelemetryExporter.sendInterval',
+      'telemetry.openTelemetryExporter.sendInterval',
       defaultValue: 5,
     ),
+    this.otelExporterSendIntervalJitter = const Config<int>(
+      'telemetry.openTelemetryExporter.sendIntervalJitter',
+      defaultValue: 2,
+    ),
     this.enableDartTimeline = const Config<bool>(
-      'traces.dartTimelineExporter.enable',
+      'telemetry.dartTimelineExporter.enable',
       defaultValue: true,
     ),
   });
@@ -247,6 +269,9 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
         host: read(service.otelCollectorHost)!,
         port: read(service.otelCollectorPort),
         sendInterval: Duration(seconds: read(service.otelExporterSendInterval)),
+        sendIntervalJitter: Duration(
+          seconds: read(service.otelExporterSendIntervalJitter),
+        ),
         resourceAttributes: {
           'service.name': read(service.serviceName),
           'os.type': Platform.operatingSystem,
@@ -414,13 +439,28 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
   @override
   FutureOr<R> trace<R>(
     String name,
-    SpanType type,
-    Map<String, dynamic> attributes,
-    FutureOr<R> Function() delegate,
-  ) async {
-    return await defaultTracer.trace(name, attributes, delegate);
+    FutureOr<R> Function(LocalSpan span) delegate, {
+    SpanType type = SpanType.internal,
+    Map<String, dynamic> attributes = const <String, dynamic>{},
+  }) async {
+    return await defaultTracer.trace(name, attributes, type, delegate);
   }
 
+  @override
+  void addEvent(String name, {Map<String, dynamic>? arguments}) {
+    if (defaultTracer.findParentSpan() case LocalSpan span) {
+      span.addEvent(name, arguments: arguments);
+    }
+  }
+
+  @override
+  void addExceptionEvent(dynamic error) {
+    if (defaultTracer.findParentSpan() case LocalSpan span) {
+      span.addExceptionEvent(error);
+    }
+  }
+
+  @override
   Tracer getTracer(String name, {String? version}) {
     final key = Tracer.buildKey(name, version);
     return _tracers[key] ??= Tracer(

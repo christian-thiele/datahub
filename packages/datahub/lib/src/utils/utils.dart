@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:boost/boost.dart';
 import 'package:fixnum/fixnum.dart';
@@ -236,5 +237,13 @@ extension IterableSeparatedExtension<E> on Iterable<E> {
       yield separator;
       yield iterator.current;
     }
+  }
+}
+
+extension DurationJitterExtension on Duration {
+  Duration jitter(Duration jitter) {
+    final jitterFactor = math.Random().nextDouble();
+    final jitterAmount = jitter * jitterFactor;
+    return this + jitterAmount;
   }
 }

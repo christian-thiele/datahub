@@ -3,13 +3,12 @@ import 'dart:io' as io;
 import 'dart:isolate';
 import 'package:boost/boost.dart';
 import 'package:datahub/config.dart';
-import 'package:datahub/datahub.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/scaffold.dart';
+import 'package:datahub/utils.dart';
 
 import 'api_request.dart';
-import '../utils/api_request_exception.dart';
 import 'api_response.dart';
 import 'api_route.dart';
 
@@ -18,16 +17,18 @@ import 'api_route.dart';
 /// The ApiService uses the datahub [HTTPServer], therefore supports
 /// HTTP 1.1 and HTTP 2 connections.
 class ApiService implements Service {
+  final Find<Telemetry> telemetry;
   final Config<String?> address;
   final Config<int> port;
   final List<ApiNode> routes;
   final io.SecurityContext? securityContext;
 
   ApiService({
-    this.address = const Config<String?>('address'),
-    this.port = const Config<int>('port', defaultValue: 8080),
+    this.address = const Config('address'),
+    this.port = const Config('port', defaultValue: 8080),
     required this.routes,
     this.securityContext,
+    this.telemetry = const Find(),
   });
 
   @override
@@ -38,9 +39,12 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
   late final HttpServer _server;
   late final List<ApiRoute> _routes;
 
+  late final Telemetry telemetry;
+
   @override
   FutureOr<void> initialize() async {
     await super.initialize();
+    telemetry = find(service.telemetry);
     _routes = service.routes.expand((e) => e.buildRoutes()).toList();
 
     final serveAddress = nullOrWhitespace(read(service.address))
@@ -76,8 +80,19 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
 
       final (handler, routeParams) = findEndpoint(_routes, request);
       request.routeParams.addAll(routeParams);
-      final response = await handler(request);
-      return response.toHttpResponse(httpRequest.requestUri);
+
+      return await telemetry.trace(
+        switch (routeParams['#pattern']) {
+          final String pattern => pattern,
+          _ => 'HTTP',
+        },
+        type: SpanType.server,
+        attributes: {'http.request.method': httpRequest.method.name.toUpperCase()},
+        (span) async {
+          final response = await handler(request);
+          return response.toHttpResponse(httpRequest.requestUri);
+        },
+      );
     } on ApiRequestException catch (e) {
       return e.toResponse().toHttpResponse(httpRequest.requestUri);
     } catch (e, stack) {
@@ -174,6 +189,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
     await super.dispose();
   }
 }
+
 /*
 class _ApiServiceIsolate {
   late final HttpServer _server;

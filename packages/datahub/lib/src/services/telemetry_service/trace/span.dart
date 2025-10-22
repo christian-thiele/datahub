@@ -6,10 +6,20 @@ import 'package:datahub/telemetry.dart';
 enum SpanType { internal, server, client, producer, consumer }
 
 class Span {
-  final Tracer tracer;
   final TraceId traceId;
-  final Span? parent;
+  final SpanId? parentSpanId;
   final SpanId spanId;
+
+  Span({
+    required this.traceId,
+    required this.parentSpanId,
+    required this.spanId,
+  });
+}
+
+class LocalSpan extends Span {
+  final Tracer tracer;
+  final Span? parent;
   final String name;
   final SpanType? type;
   bool _hasError = false;
@@ -32,21 +42,27 @@ class Span {
 
   bool get hasError => _hasError;
 
-  Span({
+  LocalSpan({
     required this.tracer,
-    required this.traceId,
-    required this.spanId,
+    required super.traceId,
+    required super.spanId,
     required this.parent,
     required this.name,
     required Map<String, dynamic> attributes,
     required this.type,
-  }) : _attributes = attributes;
+  }) : _attributes = attributes,
+       super(parentSpanId: parent?.spanId);
 
   void start() {
     try {
       if (_startTimestamp == null) {
         if (tracer.enableDartTimeline) {
-          _timelineTask = dev.TimelineTask(parent: parent?._timelineTask);
+          _timelineTask = dev.TimelineTask(
+            parent: switch (parent) {
+              LocalSpan(:final _timelineTask) => _timelineTask,
+              _ => null,
+            },
+          );
           _timelineTask?.start(
             name,
             arguments: {
