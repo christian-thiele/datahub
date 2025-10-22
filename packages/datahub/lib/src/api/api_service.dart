@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io' as io;
-import 'dart:isolate';
 import 'package:boost/boost.dart';
 import 'package:datahub/config.dart';
 import 'package:datahub/telemetry.dart';
