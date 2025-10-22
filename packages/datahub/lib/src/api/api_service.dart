@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io' as io;
+import 'dart:isolate';
 import 'package:boost/boost.dart';
 import 'package:datahub/config.dart';
+import 'package:datahub/datahub.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/scaffold.dart';
@@ -172,3 +174,62 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
     await super.dispose();
   }
 }
+/*
+class _ApiServiceIsolate {
+  late final HttpServer _server;
+
+  static Future<void> run(io.ServerSocket socket) async {
+    final instance = _ApiServiceIsolate();
+    instance._server = HttpServer(
+      socket,
+      instance.handleRequest,
+      instance._onSocketError,
+      instance._onProtocolError,
+      instance._onStreamError,
+    );
+  }
+
+  Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
+    try {
+      final request = ApiRequest(
+        httpRequest.requestUri,
+        httpRequest.method,
+        httpRequest.headers,
+        <String, String>{},
+        httpRequest.bodyData,
+      );
+
+      final (handler, routeParams) = findEndpoint(_routes, request);
+      request.routeParams.addAll(routeParams);
+      final response = await handler(request);
+      return response.toHttpResponse(httpRequest.requestUri);
+    } on ApiRequestException catch (e) {
+      return e.toResponse().toHttpResponse(httpRequest.requestUri);
+    } catch (e, stack) {
+      if (Context.ofZone().environment == Environment.dev) {
+        return DebugResponse(
+          e,
+          stack,
+          500,
+        ).toHttpResponse(httpRequest.requestUri);
+      } else {
+        return ApiRequestException.internalError(
+          'Internal Server Error',
+        ).toResponse().toHttpResponse(httpRequest.requestUri);
+      }
+    }
+  }
+
+  void _onSocketError(dynamic e, StackTrace? trace) {
+    log.error('Error while listening to socket.', error: e, stack: trace);
+  }
+
+  void _onProtocolError(dynamic e, StackTrace? trace) {
+    log.warn('Error during protocol negotiation.', error: e, stack: trace);
+  }
+
+  void _onStreamError(dynamic e, StackTrace? trace) {
+    log('Error while handling HTTP2 stream.\n$e');
+  }
+}
+*/
