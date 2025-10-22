@@ -104,8 +104,8 @@ void main() {
       ),
     ],
     () async {
+      // TODO implement client test logic
       await Future.delayed(const Duration(hours: 1));
     },
-    timeout: Timeout.none,
   );
 }
