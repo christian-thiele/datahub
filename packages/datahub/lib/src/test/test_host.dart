@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/telemetry.dart';
+import 'package:datahub/utils.dart';
 
 import 'package:test/test.dart' as dart_test;
 
