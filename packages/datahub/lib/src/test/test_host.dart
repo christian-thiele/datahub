@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/telemetry.dart';
+import 'package:datahub/utils.dart';
 
 import 'package:test/test.dart' as dart_test;
 
@@ -73,7 +74,9 @@ void declareTest(
     );
 
     dart_test.tearDown(() async {
-      await host?.shutdown();
+      if (host?.state == ServiceHostState.initialized) {
+        await host?.shutdown();
+      }
     });
   });
 }
