@@ -2,7 +2,7 @@ import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/nullability_suffix.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:datahub/data.dart';
-import 'package:datahub_codegen/src/utils/types.dart';
+import 'package:datahub_codegen/utils.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'writer.dart';

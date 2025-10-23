@@ -7,7 +7,6 @@ import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
-import 'package:datahub_codegen/src/utils/types.dart';
 import 'package:datahub_codegen/utils.dart';
 import 'package:source_gen/source_gen.dart';
 
