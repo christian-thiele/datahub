@@ -2,12 +2,72 @@ import 'package:datahub/src/utils/naming_convention.dart';
 import 'package:test/expect.dart';
 import 'package:test/scaffolding.dart';
 
+const lowerLetters = 'abcdefghijklmnopqrstuvwxyz';
+const upperLetters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+const numbers = '0123456789';
+const specialChars = '!"§\$%&/()=?¹²³¼½¬{[]}\\\'';
+
 void main() {
   group('Naming Conventions', () {
+    test('isLowercase', () {
+      for (final char in lowerLetters.codeUnits) {
+        expect(isLowercase(char), isTrue);
+      }
+
+      for (final char in upperLetters.codeUnits) {
+        expect(isLowercase(char), isFalse);
+      }
+
+      for (final char in numbers.codeUnits) {
+        expect(isLowercase(char), isFalse);
+      }
+
+      for (final char in specialChars.codeUnits) {
+        expect(isLowercase(char), isFalse);
+      }
+    });
+
+    test('isUppercase', () {
+      for (final char in lowerLetters.codeUnits) {
+        expect(isUppercase(char), isFalse);
+      }
+
+      for (final char in upperLetters.codeUnits) {
+        expect(isUppercase(char), isTrue);
+      }
+
+      for (final char in numbers.codeUnits) {
+        expect(isUppercase(char), isFalse);
+      }
+
+      for (final char in specialChars.codeUnits) {
+        expect(isUppercase(char), isFalse);
+      }
+    });
+
+
+    test('isNumber', () {
+      for (final char in lowerLetters.codeUnits) {
+        expect(isNumber(char), isFalse);
+      }
+
+      for (final char in upperLetters.codeUnits) {
+        expect(isNumber(char), isFalse);
+      }
+
+      for (final char in numbers.codeUnits) {
+        expect(isNumber(char), isTrue);
+      }
+
+      for (final char in specialChars.codeUnits) {
+        expect(isNumber(char), isFalse);
+      }
+    });
+
     test('splitWords', () {
       expect(
         splitWords('thisIsABCTest'),
-        orderedEquals(['this', 'Is', 'ABCTest']),
+        orderedEquals(['this', 'Is', 'ABC', 'Test']),
       );
       expect(
         splitWords('Words1 are 3not div1d3d by numbers'),
@@ -35,6 +95,9 @@ void main() {
           'Upper',
         ]),
       );
+      expect(splitWords('IPRange'), orderedEquals(['IP', 'Range']));
+      expect(splitWords('IP_Range'), orderedEquals(['IP', 'Range']));
+      expect(splitWords('IP Range'), orderedEquals(['IP', 'Range']));
     });
 
     test('none', () {
