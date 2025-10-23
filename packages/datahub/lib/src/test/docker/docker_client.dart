@@ -3,8 +3,10 @@ import 'dart:io' as io;
 
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
+import 'package:datahub/src/test/docker/api/docker_create_container_request.dart';
+import 'package:datahub/src/test/docker/api/docker_network_create_request.dart';
 
-import 'docker_container.dart';
+import 'api/docker_container.dart';
 
 class DockerClient {
   late final io.HttpClient client;
@@ -32,6 +34,49 @@ class DockerClient {
     return JsonDataCodec().decodeList(response, $DockerContainer.bean.fromJson);
   }
 
+  Future<String> createContainer(
+    String name,
+    DockerCreateContainerRequest create,
+  ) async {
+    final response = await request(
+      'POST',
+      '/containers/create',
+      body: create.toJson(),
+      query: {'name': name},
+    );
+    return response['Id'] as String;
+  }
+
+  Future<void> removeContainer(
+    String containerId, {
+    bool volumes = false,
+    bool force = false,
+    bool link = false,
+  }) async {
+    await request(
+      'DELETE',
+      '/containers/$containerId',
+      query: {
+        'v': volumes.toString(),
+        'force': force.toString(),
+        'link': link.toString(),
+      },
+    );
+  }
+
+  Future<String> createNetwork(DockerNetworkCreateRequest create) async {
+    final response = await request(
+      'POST',
+      '/networks/create',
+      body: create.toJson(),
+    );
+    return response['Id'] as String;
+  }
+
+  Future<void> removeNetwork(String networkId) async {
+    await request('DELETE', '/networks/$networkId');
+  }
+
   Future<dynamic> request(
     String method,
     String path, {
@@ -53,12 +98,15 @@ class DockerClient {
       req.write(jsonEncode(body));
     }
     final res = await req.close();
-    if (res.statusCode != 200) {
+    if (res.statusCode < 200 || res.statusCode >= 300) {
       throw Exception('Docker responded with status code ${res.statusCode}.');
     }
 
     final bytes = await res.collect();
     final text = utf8.decode(bytes);
-    return jsonDecode(text);
+    if (text.isNotEmpty) {
+      return jsonDecode(text);
+    }
+    return null;
   }
 }
