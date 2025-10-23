@@ -3,14 +3,15 @@ import 'dart:io';
 import 'package:args/args.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
-import 'service_host.dart';
 import 'package:rxdart/rxdart.dart';
+
+import 'service_host.dart';
+import 'service_registry.dart';
 
 class ApplicationHost extends ServiceHost {
   final List<String> arguments;
   final List<Component> components;
   final Map<String, dynamic> initialConfig;
-  final LogWriter logWriter;
 
   Completer? _runCompleter;
   StreamSubscription? _signalSubscription;
@@ -19,7 +20,6 @@ class ApplicationHost extends ServiceHost {
     required this.components,
     required this.arguments,
     required this.initialConfig,
-    this.logWriter = const StdoutLogWriter(),
   });
 
   Future<void> run() async {
@@ -37,11 +37,11 @@ class ApplicationHost extends ServiceHost {
     await initialize();
 
     stopwatch.stop();
-    logWriter.write(
+    findComponent(Find<Telemetry?>(), null)?.publishLog(
       LogMessage(
         timestamp: DateTime.timestamp(),
         line: 'Initialized in ${stopwatch.elapsedMilliseconds}ms.',
-        level: LogLevel.info,
+        level: SeverityLevel.info,
       ),
     );
 
@@ -71,13 +71,7 @@ class ApplicationHost extends ServiceHost {
     return Scope(
       name: 'root',
       components: [
-        Scope(
-          name: 'internal',
-          components: [
-            LogService(logWriter: logWriter),
-            TelemetryService(),
-          ],
-        ),
+        Scope(name: 'internal', components: [TelemetryService()]),
         Scope(name: 'application', components: components),
       ],
     );
@@ -112,20 +106,20 @@ class ApplicationHost extends ServiceHost {
   void _onSignal(ProcessSignal signal) {
     if (state == ServiceHostState.initialized &&
         signal == ProcessSignal.sigint) {
-      logWriter.write(
+      findComponent(Find<Telemetry?>(), null)?.publishLog(
         LogMessage(
           timestamp: DateTime.timestamp(),
           line: 'Received ${signal.name}: Shutting down application.',
-          level: LogLevel.warning,
+          level: SeverityLevel.warning,
         ),
       );
       shutdown();
     } else {
-      logWriter.write(
+      findComponent(Find<Telemetry?>(), null)?.publishLog(
         LogMessage(
           timestamp: DateTime.timestamp(),
           line: 'Received ${signal.name}: Force killing application.',
-          level: LogLevel.warning,
+          level: SeverityLevel.warning,
         ),
       );
       exit(0);

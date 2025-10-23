@@ -2,28 +2,27 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:datahub/config.dart';
-import 'package:datahub/src/services/telemetry_service/telemetry_service.dart';
 import 'package:datahub/utils.dart';
 
-export 'metrics/metric.dart';
-export 'metrics/metric_collector.dart';
-export 'metrics/metric_sample.dart';
-export 'metrics/counter_metric.dart';
-export 'metrics/gauge_metric.dart';
-export 'metrics/histogram_metric.dart';
-export 'metrics/prometheus_exporter.dart';
-export 'metrics/sample_group.dart';
-export 'metrics/metrics_exporter.dart';
+import 'logs/log_exporter.dart';
+import 'logs/log_message.dart';
+import 'logs/log_level.dart';
+import 'logs/open_telemetry_log_exporter.dart';
 
-export 'trace/event.dart';
-export 'trace/discard_trace_exporter.dart';
-export 'trace/open_telemetry_trace_exporter.dart';
-export 'trace/span_id.dart';
-export 'trace/span.dart';
-export 'trace/trace_exporter.dart';
-export 'trace/trace_id.dart';
-export 'trace/trace_group.dart';
-export 'trace/tracer.dart';
+import 'metrics/metric.dart';
+import 'metrics/metric_collector.dart';
+import 'metrics/counter_metric.dart';
+import 'metrics/gauge_metric.dart';
+import 'metrics/histogram_metric.dart';
+import 'metrics/prometheus_exporter.dart';
+import 'metrics/sample_group.dart';
+import 'metrics/metrics_exporter.dart';
+
+import 'trace/discard_trace_exporter.dart';
+import 'trace/open_telemetry_trace_exporter.dart';
+import 'trace/span.dart';
+import 'trace/trace_exporter.dart';
+import 'trace/tracer.dart';
 
 import 'package:datahub/scaffold.dart';
 
@@ -74,14 +73,16 @@ import 'package:datahub/scaffold.dart';
 /// * `dartTimelineExporter.enable`: Enable reporting trace spans as TimelineTasks to the dart developer timeline (default true)
 ///
 abstract interface class Telemetry {
+  /// Writes a [LogMessage] to the configured log receiver.
+  void publishLog(LogMessage message);
+
   /// Defines a metric of type [CounterMetric].
   ///
   /// If the named metric  was defined before, the same instance to the
   /// previously efined [CounterMetric] is returned. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
-  CounterMetric counter(
-    String name, {
+  CounterMetric counter(String name, {
     Map<String, List<String>>? labels,
     String? help,
   });
@@ -92,8 +93,7 @@ abstract interface class Telemetry {
   /// previously defined [GaugeMetric] is returned. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
-  GaugeMetric gauge(
-    String name, {
+  GaugeMetric gauge(String name, {
     Map<String, List<String>>? labels,
     String? help,
   });
@@ -106,8 +106,7 @@ abstract interface class Telemetry {
   /// [width] and [count] will be ignored in this case. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
-  HistogramMetric linearHistogram(
-    String name, {
+  HistogramMetric linearHistogram(String name, {
     required num start,
     required num width,
     required int count,
@@ -122,8 +121,7 @@ abstract interface class Telemetry {
   /// [factor] and [count] will be ignored in this case. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
-  HistogramMetric exponentialHistogram(
-    String name, {
+  HistogramMetric exponentialHistogram(String name, {
     required num start,
     required num factor,
     required int count,
@@ -150,12 +148,11 @@ abstract interface class Telemetry {
   void unregisterCollector(MetricCollector metricCollector);
 
   /// Convenience method for using the default tracer to trace a span.
-  FutureOr<R> trace<R>(
-    String name,
-    FutureOr<R> Function(LocalSpan span) delegate, {
-    SpanType type,
-    Map<String, dynamic> attributes,
-  });
+  FutureOr<R> trace<R>(String name,
+      FutureOr<R> Function(LocalSpan span) delegate, {
+        SpanType type,
+        Map<String, dynamic> attributes,
+      });
 
   /// Convenience methods for using the default tracer to trace an event.
   void addEvent(String name, {Map<String, String>? arguments});
@@ -175,17 +172,23 @@ abstract interface class Telemetry {
 }
 
 class TelemetryService implements Service {
+  // TODO refactor / sort config vars
   final Config<String> serviceName;
+
   final Config<bool> enableEndpoint;
   final Config<String?> address;
   final Config<int> port;
   final Config<String> path;
+
   final Config<bool> enableOtelExporter;
   final Config<String?> otelCollectorHost;
   final Config<int> otelCollectorPort;
   final Config<int> otelExporterSendInterval;
   final Config<int> otelExporterSendIntervalJitter;
+
   final Config<bool> enableDartTimeline;
+
+  final Config<SeverityLevel> logLevel;
 
   TelemetryService({
     this.serviceName = const Config<String>(
@@ -228,6 +231,11 @@ class TelemetryService implements Service {
       'telemetry.dartTimelineExporter.enable',
       defaultValue: true,
     ),
+    this.logLevel = const Config<SeverityLevel>(
+      'logLevel',
+      defaultValue: SeverityLevel.debug,
+      values: SeverityLevel.values,
+    ),
   });
 
   @override
@@ -237,6 +245,7 @@ class TelemetryService implements Service {
 
 class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     implements Telemetry {
+  late final LogExporter _logExporter;
   late final MetricsExporter? _metricsExporter;
   late final TraceExporter _traceExporter;
 
@@ -250,6 +259,17 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
   @override
   Future<void> initialize() async {
     await super.initialize();
+    final resourceAttributes = {
+      'service.name': read(service.serviceName),
+      'os.type': Platform.operatingSystem,
+      'os.version': Platform.operatingSystemVersion,
+      'os.hostname': Platform.localHostname,
+      'dart.version': Platform.version,
+    };
+
+    _logExporter =
+        OpenTelemetryLogExporter(resourceAttributes: resourceAttributes,);
+
     if (read(service.enableEndpoint)) {
       _metricsExporter = PrometheusExporter(
         address: read(service.address),
@@ -272,13 +292,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
         sendIntervalJitter: Duration(
           seconds: read(service.otelExporterSendIntervalJitter),
         ),
-        resourceAttributes: {
-          'service.name': read(service.serviceName),
-          'os.type': Platform.operatingSystem,
-          'os.version': Platform.operatingSystemVersion,
-          'os.hostname': Platform.localHostname,
-          'dart.version': Platform.version,
-        },
+        resourceAttributes: resourceAttributes,
       );
 
       await _traceExporter.initialize();
@@ -289,59 +303,43 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     defaultTracer = getTracer(read(service.serviceName));
   }
 
-  /// Defines a metric of type [CounterMetric].
-  ///
-  /// If this was defined before, the same instance to the previously
-  /// defined [CounterMetric] is returned. This allows for
-  /// metric objects to be dependency injected and used across different
-  /// places.
   @override
-  CounterMetric counter(
-    String name, {
+  void publishLog(LogMessage message) {
+    _logExporter.add(message);
+  }
+
+  @override
+  CounterMetric counter(String name, {
     Map<String, List<String>>? labels,
     String? help,
   }) {
     return switch (_metrics[name]) {
       final CounterMetric existing => existing,
       null => _metrics[name] = CounterMetric(name, labels: labels, help: help),
-      final existing => throw ApiError(
+      final existing =>
+      throw ApiError(
         'Metric $name is already defined with different type: $existing',
       ),
     };
   }
 
-  /// Defines a metric of type [GaugeMetric].
-  ///
-  /// If this was defined before, the same instance to the previously
-  /// defined [GaugeMetric] is returned. This allows for
-  /// metric objects to be dependency injected and used across different
-  /// places.
   @override
-  GaugeMetric gauge(
-    String name, {
+  GaugeMetric gauge(String name, {
     Map<String, List<String>>? labels,
     String? help,
   }) {
     return switch (_metrics[name]) {
       final GaugeMetric existing => existing,
       null => _metrics[name] = GaugeMetric(name, labels: labels, help: help),
-      final existing => throw ApiError(
+      final existing =>
+      throw ApiError(
         'Metric $name is already defined with different type: $existing',
       ),
     };
   }
 
-  /// Defines a metric of type [HistogramMetric] with linear bucket
-  /// distribution.
-  ///
-  /// If this was defined before, the same instance to the previously
-  /// defined [HistogramMetric] is returned. The parameters [start],
-  /// [width] and [count] will be ignored in this case. This allows for
-  /// metric objects to be dependency injected and used across different
-  /// places.
   @override
-  HistogramMetric linearHistogram(
-    String name, {
+  HistogramMetric linearHistogram(String name, {
     required num start,
     required num width,
     required int count,
@@ -349,30 +347,23 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
   }) {
     return switch (_metrics[name]) {
       final HistogramMetric existing => existing,
-      null => _metrics[name] = HistogramMetric.linear(
+      null =>
+      _metrics[name] = HistogramMetric.linear(
         name,
         start: start,
         width: width,
         count: count,
         help: help,
       ),
-      final existing => throw ApiError(
+      final existing =>
+      throw ApiError(
         'Metric already defined with different type: $existing',
       ),
     };
   }
 
-  /// Defines a metric of type [HistogramMetric] with exponential bucket
-  /// distribution.
-  ///
-  /// If this was defined before, the same instance to the previously
-  /// defined [HistogramMetric] is returned. The parameters [start],
-  /// [factor] and [count] will be ignored in this case. This allows for
-  /// metric objects to be dependency injected and used across different
-  /// places.
   @override
-  HistogramMetric exponentialHistogram(
-    String name, {
+  HistogramMetric exponentialHistogram(String name, {
     required num start,
     required num factor,
     required int count,
@@ -380,20 +371,21 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
   }) {
     return switch (_metrics[name]) {
       final HistogramMetric existing => existing,
-      null => _metrics[name] = HistogramMetric.exponential(
+      null =>
+      _metrics[name] = HistogramMetric.exponential(
         name,
         start: start,
         factor: factor,
         count: count,
         help: help,
       ),
-      final existing => throw ApiError(
+      final existing =>
+      throw ApiError(
         'Metric already defined with different type: $existing',
       ),
     };
   }
 
-  /// Collects all current values of metrics into [SampleGroup]s.
   @override
   Future<List<SampleGroup>> scrapeMetrics() async {
     final samples = <SampleGroup>[];
@@ -414,35 +406,22 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     return samples;
   }
 
-  /// Registers a custom collector.
-  ///
-  /// Custom collectors can fetch metrics from other services,
-  /// query values from databases or generate values in any other way.
-  ///
-  /// For simple metrics like counters or gauges prefer using one of the
-  /// definition methods:
-  ///  - [counter]
-  ///  - [gauge]
-  ///  - [linearHistogram]
-  ///  - [exponentialHistogram]
   @override
   void registerCollector(MetricCollector metricCollector) {
     _collectors.add(metricCollector);
   }
 
-  /// Unregisters a custom collector.
   @override
   void unregisterCollector(MetricCollector metricCollector) {
     _collectors.remove(metricCollector);
   }
 
   @override
-  FutureOr<R> trace<R>(
-    String name,
-    FutureOr<R> Function(LocalSpan span) delegate, {
-    SpanType type = SpanType.internal,
-    Map<String, dynamic> attributes = const <String, dynamic>{},
-  }) async {
+  FutureOr<R> trace<R>(String name,
+      FutureOr<R> Function(LocalSpan span) delegate, {
+        SpanType type = SpanType.internal,
+        Map<String, dynamic> attributes = const <String, dynamic>{},
+      }) async {
     return await defaultTracer.trace(name, attributes, type, delegate);
   }
 

@@ -1,3 +1,0 @@
-[submodule "lib/src/services/instrumentation_service/opentelemetry-proto"]
-	path = lib/src/services/instrumentation_service/opentelemetry-proto
-	url = https://github.com/open-telemetry/opentelemetry-proto

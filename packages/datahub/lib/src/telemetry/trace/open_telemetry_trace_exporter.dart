@@ -9,8 +9,8 @@ import 'package:fixnum/fixnum.dart';
 import 'package:grpc/grpc.dart';
 
 import '../opentelemetry-dart/open_telemetry.dart' as otel;
-
 import '../telemetry_scope.dart';
+
 
 class OpenTelemetryTraceExporter extends TraceExporter {
   final _buffer = <LocalSpan>[];
@@ -163,8 +163,8 @@ class OpenTelemetryTraceExporter extends TraceExporter {
         _ => otel.Status(code: otel.Status_StatusCode.STATUS_CODE_UNSET),
       },
       //TODO error message
-      startTimeUnixNano: span.startTimestamp?.nanosecondsSinceEpoch,
-      endTimeUnixNano: span.endTimestamp?.nanosecondsSinceEpoch,
+      startTimeUnixNano: span.startTimestamp?.nanosecondsSinceEpochInt64,
+      endTimeUnixNano: span.endTimestamp?.nanosecondsSinceEpochInt64,
       attributes: _toOtelKeyValues(span.attributes),
       droppedAttributesCount: 0,
       events: _toOtelSpanEvents(span.events),
@@ -219,7 +219,7 @@ class OpenTelemetryTraceExporter extends TraceExporter {
   otel.Span_Event _toOtelSpanEvent(Event event) {
     return otel.Span_Event(
       name: event.name,
-      timeUnixNano: event.timestamp.nanosecondsSinceEpoch,
+      timeUnixNano: event.timestamp.nanosecondsSinceEpochInt64,
       attributes: _toOtelKeyValues(event.attributes),
       droppedAttributesCount: 0,
     );

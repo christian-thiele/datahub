@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:datahub/api.dart';
 import 'package:datahub/config.dart';
 import 'package:datahub/utils.dart';
 import 'package:datahub/telemetry.dart';
@@ -63,7 +62,7 @@ abstract class ServiceHost implements ServiceRegistry {
 
           node.instance = instance;
         } catch (e, stack) {
-          log.critical(
+          log.fatal(
             'Could not initialize component ${service.runtimeType}.',
             error: e,
             stack: stack,

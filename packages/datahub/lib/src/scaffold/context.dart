@@ -75,10 +75,10 @@ final class Context {
         print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
           final message = LogMessage(
             timestamp: DateTime.timestamp(),
-            level: LogLevel.debug,
+            level: SeverityLevel.debug,
             line: line,
           );
-          _registry.findComponent(Find<LogReceiver>(), _scope).publish(message);
+          _registry.findComponent(Find<Telemetry>(), _scope).publishLog(message);
         },
       ),
     );
