@@ -37,6 +37,7 @@ String toNamingConvention(String input, NamingConvention convention) {
 Iterable<String> splitWords(String input) sync* {
   final it = input.codeUnits.iterator;
   var buffer = <int>[];
+
   var canBreak = false;
   while (it.moveNext()) {
     if (isUppercase(it.current)) {
@@ -44,22 +45,25 @@ Iterable<String> splitWords(String input) sync* {
         yield String.fromCharCodes(buffer);
         buffer.clear();
         buffer.add(it.current);
-        canBreak = false;
       } else {
         buffer.add(it.current);
-        canBreak = !isUppercase(it.current);
       }
-    } else if (RegExp(
-      '[^a-zA-Z0-9]',
-    ).hasMatch(String.fromCharCode(it.current))) {
+      canBreak = false;
+    } else if (isLowercase(it.current) || isNumber(it.current)) {
+      if (buffer.length > 1 && isUppercase(buffer.last)) {
+        final previous = buffer.removeLast();
+        yield String.fromCharCodes(buffer);
+        buffer.clear();
+        buffer.add(previous);
+      }
+      canBreak = true;
+      buffer.add(it.current);
+    } else {
       if (buffer.isNotEmpty) {
         yield String.fromCharCodes(buffer);
         buffer.clear();
         canBreak = false;
       }
-    } else {
-      canBreak = true;
-      buffer.add(it.current);
     }
   }
   yield String.fromCharCodes(buffer);
@@ -67,6 +71,14 @@ Iterable<String> splitWords(String input) sync* {
 
 bool isUppercase(int ascii) {
   return ascii >= 65 && ascii <= 90;
+}
+
+bool isLowercase(int ascii) {
+  return ascii >= 97 && ascii <= 122;
+}
+
+bool isNumber(int ascii) {
+  return ascii >= 48 && ascii <= 57;
 }
 
 String firstUpper(String input) {
