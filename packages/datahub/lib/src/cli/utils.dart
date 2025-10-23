@@ -5,6 +5,7 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/utils.dart';
+import 'package:path/path.dart' as path;
 import 'package:yaml/yaml.dart';
 
 import 'cli_exception.dart';
@@ -41,6 +42,19 @@ Future<YamlMap> readPubspec() async {
   }
   final pubspecRaw = await pubspecFile.readAsString();
   return loadYaml(pubspecRaw);
+}
+
+Directory? findProjectBase([Directory? workingDir]) {
+  final current = workingDir ?? Directory.current;
+  if (File(path.join(current.path, 'pubspec.yaml')).existsSync()) {
+    return current;
+  }
+
+  if (current.absolute.parent.path != current.path) {
+    return findProjectBase(current.absolute.parent);
+  }
+
+  return null;
 }
 
 Future<void> dart(
@@ -87,6 +101,31 @@ Future<void> command(
     throw CliException(
       'Call "$program $args" failed with exit code $exitCode.',
     );
+  }
+}
+
+class CommandTransformer extends StreamTransformerBase<List<int>, List<int>> {
+  final String program;
+  final String args;
+
+  CommandTransformer(this.program, this.args);
+
+  @override
+  Stream<List<int>> bind(Stream<List<int>> stream) {
+    final controller = StreamController<List<int>>();
+    Process.start(program, args.split(' ')).then((process) async {
+      stream.pipe(process.stdin);
+      process.stdout.pipe(controller.sink);
+      process.exitCode.then((code) async {
+        if (code > 0) {
+          controller.addError(
+            CliException(utf8.decode(await process.stderr.collect())),
+          );
+        }
+        controller.close();
+      });
+    });
+    return controller.stream;
   }
 }
 

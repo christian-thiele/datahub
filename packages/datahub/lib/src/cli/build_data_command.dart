@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:datahub/utils.dart';
@@ -33,7 +34,7 @@ class BuildDataCommand extends CliCommand {
       'out',
       abbr: 'o',
       help: 'Data class output directory',
-      defaultsTo: './data',
+      defaultsTo: '.',
     );
     argParser.addOption(
       'prefix',
@@ -60,11 +61,9 @@ class BuildDataCommand extends CliCommand {
         argResults!.rest.firstOrNull ??
         (throw CliException('Missing input file name.'));
 
+    final baseDir = findProjectBase();
+
     final inputFile = File(inputFileName);
-    final baseDir = Directory(argResults!.option('out')!);
-    if (!baseDir.existsSync()) {
-      baseDir.createSync(recursive: true);
-    }
 
     late final openApi2.SwaggerObject openApi;
     await step('Parsing OpenAPI definitions', () async {
@@ -82,6 +81,11 @@ class BuildDataCommand extends CliCommand {
       _ => openApi.definitions.entries,
     };
 
+    final outDir = Directory(argResults!.option('out')!);
+    if (!outDir.existsSync()) {
+      outDir.createSync(recursive: true);
+    }
+
     for (final definition in definitions) {
       final schemaName = definition.key;
       final dataName = argResults!.option('prefix')! + schemaName;
@@ -92,7 +96,18 @@ class BuildDataCommand extends CliCommand {
         }
         final schemaProperties = schema['properties'] as Map<String, dynamic>;
         final properties = <Property>[];
-        for (final (jsonKey, schemaProperty) in schemaProperties.tuples) {
+        for (final (jsonKey, propertyOrRef) in schemaProperties.tuples) {
+          final schemaProperty = switch (propertyOrRef['\$ref']) {
+            String ref when ref.startsWith('#/definitions/') =>
+              definitions.firstWhere(
+                (e) => e.key == ref.substring(14),
+                orElse: () =>
+                    throw CliException('Could not resolve reference "$ref".'),
+              ).value,
+            String ref => throw CliException('Could not resolve reference "$ref".'),
+            _ => propertyOrRef,
+          };
+
           final dartPropertyName = toNamingConvention(
             jsonKey,
             NamingConvention.lowerCamelCase,
@@ -113,45 +128,46 @@ class BuildDataCommand extends CliCommand {
           dataName,
           NamingConvention.lowerSnakeCase,
         );
-        final outFile = File(path.join(baseDir.path, '$fileBaseName.dart'));
-        final sink = outFile.openWrite();
+        final outFile = File(path.join(outDir.path, '$fileBaseName.dart'));
+        final outController = StreamController<String>();
+        outController.stream
+            .transform(utf8.encoder)
+            .transform(CommandTransformer('dart', 'format -o show'))
+            .pipe(outFile.openWrite());
 
-        sink.writeln('import \'package:datahub/datahub.dart\';');
-        sink.writeln('');
-        sink.writeln('part \'$fileBaseName.g.dart\';');
-        sink.writeln('');
-        sink.writeln('@Data()');
-        sink.writeln('class $dataName extends \$$dataName {');
+        void write(String line) => outController.add(line);
+        void writeln(String line) => write('$line\n');
+
+        writeln('import \'package:datahub/datahub.dart\';');
+        writeln('');
+        writeln('part \'$fileBaseName.g.dart\';');
+        writeln('');
+        writeln('@Data()');
+        writeln('class $dataName extends \$$dataName {');
 
         for (final property in properties) {
           if (property.jsonKey case final jsonKey?) {
-            sink.write('@JsonKey(\'$jsonKey\') ');
+            write('@JsonKey(\'$jsonKey\') ');
           }
-          sink.writeln(
+          writeln(
             'final ${property.type}${property.required ? '' : '?'} ${property.name};',
           );
         }
 
-        sink.writeln('const $dataName({');
+        writeln('const $dataName({');
         for (final property in properties) {
           if (property.required) {
-            sink.write('required ');
+            write('required ');
           }
-          sink.write('this.${property.name},');
+          write('this.${property.name},');
         }
-        sink.writeln('});');
+        writeln('});');
 
-        sink.writeln('}');
+        writeln('}');
 
-        await sink.close();
-
-        dart('format ${outFile.path}');
+        await outController.close();
       });
     }
-
-    await step('Running build_runner.', () async {
-      await dart('run build_runner build', baseDir: baseDir, verbose: verbose);
-    });
   }
 }
 
