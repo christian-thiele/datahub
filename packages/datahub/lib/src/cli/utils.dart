@@ -4,6 +4,7 @@ import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
+import 'package:datahub/utils.dart';
 import 'package:yaml/yaml.dart';
 
 import 'cli_exception.dart';
@@ -157,4 +158,20 @@ class LineTransformer extends StreamTransformerBase<Uint8List, String> {
           onError: _controller.addError,
         );
   }
+}
+
+dynamic normalizeJson(dynamic value) => switch (value) {
+  Map() => normalizeJsonMap(value),
+  List() => normalizeJsonList(value),
+  _ => value,
+};
+
+Map<String, dynamic> normalizeJsonMap(Map map) {
+  return {
+    for (final (key, value) in map.tuples) key.toString(): normalizeJson(value),
+  };
+}
+
+List<dynamic> normalizeJsonList(List list) {
+  return [for (final value in list) normalizeJson(value)];
 }
