@@ -1,19 +1,7 @@
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:26.3
-    entrypoint: [ "/bin/bash", "-c" ]
-    command: >
-      "/opt/keycloak/bin/kc.sh build --health-enabled=true &&
-       /opt/keycloak/bin/kc.sh start --optimized"
+    build:
+      context: ./keycloak
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
-    ports:
-      - "8081:8080"
-    volumes:
-      - ./realm-export.json:/opt/keycloak/data/import/realm-export.json:ro
-    healthcheck:
-      test: ['CMD-SHELL', "{ printf 'HEAD /health/ready HTTP/1.0\r\n\r\n' >&0; grep 'HTTP/1.0 200'; } 0<>/dev/tcp/localhost/9000"]
-      interval: 5s
-      timeout: 3s
-      retries: 15
