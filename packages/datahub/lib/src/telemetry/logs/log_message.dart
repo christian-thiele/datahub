@@ -1,6 +1,5 @@
-import 'log_level.dart';
-
 import '../trace/span.dart';
+import 'severity_level.dart';
 
 class LogMessage {
   final DateTime timestamp;

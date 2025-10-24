@@ -12,23 +12,17 @@ void main() {
       ApiService(
         routes: [
           ResourceEndpoint(
-            matcher: RoutePattern('/slow'),
-            post: (request) async {
-              await Future.delayed(const Duration(seconds: 2));
-              Find<Telemetry>().find().addEvent('something happens here');
-              await Future.delayed(const Duration(seconds: 3));
-              return {'status': 'ok'};
-            },
-          ),
-          ResourceEndpoint(
-            matcher: RoutePattern('/fast'),
+            matcher: RoutePattern('/action'),
             post: (request) async {
               await Future.delayed(const Duration(milliseconds: 100));
               await Find<Telemetry>().find().trace('wait', (span) async {
                 span.addEvent('something happens here');
                 await Future.delayed(const Duration(milliseconds: 400));
-                if (Random().nextBool()) {
-                  throw ApiRequestException(500, 'NOPE');
+                if (request.getParam<bool>('fail') == true) {
+                  throw ApiRequestException(
+                    500,
+                    'Request failed intentionally.',
+                  );
                 }
               });
               return {'status': 'ok'};
@@ -49,12 +43,15 @@ void main() {
         Uri.parse('http://localhost:$port'),
       );
 
-      for (final _ in Iterable.generate(5)) {
-        await client.post('/slow', {}, throwOnError: false);
-      }
-
-      for (final _ in Iterable.generate(5)) {
-        await client.post('/fast', {}, throwOnError: false);
+      for (final i in Iterable.generate(5)) {
+        await client.post(
+          '/action',
+          {},
+          query: {
+            'fail': [i < 3 ? 'true' : 'false'],
+          },
+          throwOnError: false,
+        );
       }
     },
     timeout: Timeout.none,

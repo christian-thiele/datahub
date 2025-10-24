@@ -6,7 +6,7 @@ import 'package:stack_trace/stack_trace.dart';
 
 import 'log_message.dart';
 import 'log_exporter.dart';
-import 'log_level.dart';
+import 'severity_level.dart';
 
 class PrettyPrintLogExporter implements LogExporter {
   static const _colorReset = '\u001b[0m';
