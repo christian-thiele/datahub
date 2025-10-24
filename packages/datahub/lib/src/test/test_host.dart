@@ -109,12 +109,13 @@ void declareTest(
 
           try {
             // Start up dependencies
-            composeCmd('up -d ${dependencies.join(' ')}');
-
-            // Start and attach to runner
-            composeCmd('up runner', attachStdout: true);
+            print('Starting environment');
+            await composeCmd('up -d ${dependencies.join(' ')}');
+            print('Starting runner');
+            await composeCmd('up runner', attachStdout: true);
           } finally {
-            composeCmd('down -v');
+            print('Shutting down environment');
+            await composeCmd('down -v');
           }
         }, timeout: dart_test.Timeout(Duration(minutes: 10)));
       });
