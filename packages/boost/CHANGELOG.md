@@ -11,14 +11,15 @@
     - added tuples to Maps
     - added equalsDeep() to Maps and Iterables
     - added separatedBy() to Iterables
-    - removed type restriction on sequenceEquals()
+    - loosen type restriction on sequenceEquals()
 
 ### Obsolete Features removed:
 
 - Structures
-    - removed Tuple and Triple
+    - removed Tuple and Triple (use Records instead)
 - Collections
-    - removed whereIs
+    - removed whereIs (use `whereType` instead)
+    - removed mapIndexed (use `indexed` and `map()` instead)
 
 ## 1.8.10
 
