@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:datahub/scaffold.dart';
+import 'package:datahub/src/cli/cli_exception.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
 
@@ -60,6 +61,7 @@ void declareTest(
           final workingDir = composeFile.parent;
           final yaml = YamlEditor(composeFile.readAsStringSync());
           final services = yaml.parseAt(['services']);
+          final dependencies = (services as Map).keys.whereType<String>();
           final composeProject = uuid();
           yaml.update(
             ['services', 'runner'],
@@ -69,31 +71,47 @@ void declareTest(
               'command': 'dart test .',
               'volumes': ['./:/app:ro'],
               'depends_on': {
-                for (final service
-                    in (services as Map).keys.whereType<String>())
+                for (final service in dependencies)
                   service: {'condition': 'service_healthy'},
               },
             },
           );
 
-          print(yaml.toString());
+          Future<void> composeCmd(
+            String args, {
+            bool attachStdout = false,
+          }) async {
+            final composeProcess = await Process.start('docker', [
+              'compose',
+              '-p',
+              composeProject,
+              '-f',
+              '-',
+              ...args.split(' '),
+            ], workingDirectory: workingDir.path);
 
-          final composeProcess = await Process.start('docker', [
-            'compose',
-            '-p',
-            composeProject,
-            '-f',
-            '-',
-            'up',
-            '-d',
-          ], workingDirectory: workingDir.path);
+            if (attachStdout) {
+              composeProcess.stdout.listen(stdout.add);
+            }
+            composeProcess.stderr.listen(stderr.add);
+            composeProcess.stdin.add(utf8.encode(yaml.toString()));
+            composeProcess.stdin.close();
+            if (await composeProcess.exitCode > 0) {
+              // TODO tear down docker compose
+              throw CliException('Could not set up test environment.');
+            }
+          }
 
-          composeProcess.stdout.listen(stdout.add);
-          composeProcess.stderr.listen(stderr.add);
-          composeProcess.stdin.add(utf8.encode(yaml.toString()));
-          composeProcess.stdin.close();
-          await composeProcess.exitCode;
-        }, timeout: dart_test.Timeout(Duration(minutes: 5)));
+          try {
+            // Start up dependencies
+            composeCmd('up -d ${dependencies.join(' ')}');
+
+            // Start and attach to runner
+            composeCmd('up runner', attachStdout: true);
+          } finally {
+            composeCmd('down -v');
+          }
+        }, timeout: dart_test.Timeout(Duration(minutes: 10)));
       });
 
       return;
