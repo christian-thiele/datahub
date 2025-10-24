@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'package:boost/boost.dart';
 
 import 'sql_exception.dart';
 

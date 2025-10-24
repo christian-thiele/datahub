@@ -1,4 +1,4 @@
-import 'package:datahub/utils.dart';
+import 'package:boost/boost.dart';
 import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/src/sql/sql_attribute_constraint.dart';
 

@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
 import 'package:datahub_postgres/schema.dart';

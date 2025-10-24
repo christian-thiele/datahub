@@ -1,4 +1,4 @@
-import 'package:datahub/datahub.dart';
+import 'package:boost/boost.dart';
 import 'package:datahub_postgres/types.dart';
 
 import 'sql_attribute.dart';
