@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/utils.dart';
 
 import 'data_field.dart';

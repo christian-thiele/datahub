@@ -114,7 +114,9 @@ class ApiRequest {
     return switch (json) {
       Map<String, dynamic>() when allowSingleFlat => [bean.fromJson(json)],
       List<dynamic>() =>
-        json.mapIndexed((e, idx) => bean.fromJson(e, name: '[$idx]')).toList(),
+        json.indexed
+            .map((e) => bean.fromJson(e.$2, name: '[${e.$1}]'))
+            .toList(),
       _ => throw ApiRequestException.badRequest('Invalid body data.'),
     };
   }

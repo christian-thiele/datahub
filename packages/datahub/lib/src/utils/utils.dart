@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'dart:math' as math;
 
-import 'package:boost/boost.dart';
 import 'package:fixnum/fixnum.dart';
 import 'package:uuid/uuid.dart';
 
@@ -76,43 +75,7 @@ const Map<int, String> _statusCodes = {
 String getHttpStatus(int statusCode) =>
     _statusCodes[statusCode] ?? 'Unknown Status';
 
-String buildQueryString(Map<String, String?> query) {
-  if (query.isEmpty) {
-    return '';
-  }
-
-  String encodeEntry(MapEntry<String, String?> e) {
-    final key = Uri.encodeQueryComponent(e.key);
-    if (!nullOrEmpty(e.value)) {
-      return '$key=${Uri.encodeQueryComponent(e.value!)}';
-    } else {
-      return key;
-    }
-  }
-
-  return '?${query.entries.map(encodeEntry).join('&')}';
-}
-
 String uuid() => Uuid().v1().toString();
-
-extension MapEquality<K, V> on Map<K, V> {
-  bool entriesEqual(Map<K, V> other) {
-    if (other.length != length) {
-      return false;
-    }
-
-    for (final entry in entries) {
-      if (!other.containsKey(entry.key)) {
-        return false;
-      }
-      if (entry.value != other[entry.key]) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-}
 
 String addBase64Padding(String value) {
   final length = value.length;
@@ -138,68 +101,6 @@ String randomHexId(int parts) {
   ).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join(':');
 }
 
-bool deepListEquality<T>(List<T> list1, List<T> list2) {
-  if (list1 == list2) {
-    return true;
-  }
-
-  if (list1.length != list2.length) {
-    return false;
-  }
-
-  for (var i = 0; i < list1.length; i++) {
-    if (list1[i] == list2[i]) {
-      continue;
-    } else if (list1[i] is List && list2[i] is List) {
-      if (deepListEquality(list1[i] as List, list2[i] as List)) {
-        continue;
-      } else {
-        return false;
-      }
-    } else if (list1[i] is Map<String, dynamic> &&
-        list2[i] is Map<String, dynamic>) {
-      if (deepMapEquality(list1[i] as Map, list2[i] as Map)) {
-        continue;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-
-  return true;
-}
-
-bool deepMapEquality<T>(Map<T, dynamic> map1, Map<T, dynamic> map2) {
-  if (map1.length != map2.length) {
-    return false;
-  }
-
-  for (final key in map1.keys) {
-    if (map1[key] == map2[key]) {
-      continue;
-    } else if (map1[key] is List && map2[key] is List) {
-      if (deepListEquality(map1[key], map2[key])) {
-        continue;
-      } else {
-        return false;
-      }
-    } else if (map1[key] is Map<String, dynamic> &&
-        map2[key] is Map<String, dynamic>) {
-      if (deepMapEquality(map1[key], map2[key])) {
-        continue;
-      } else {
-        return false;
-      }
-    } else {
-      return false;
-    }
-  }
-
-  return true;
-}
-
 Iterable<Iterable<T>> everyCombination<T>(Iterable<Iterable<T>> lists) sync* {
   if (lists.length == 1) {
     yield* lists.first.map((e) => [e]);
@@ -209,10 +110,6 @@ Iterable<Iterable<T>> everyCombination<T>(Iterable<Iterable<T>> lists) sync* {
   for (final element in lists.first) {
     yield* everyCombination(lists.skip(1)).map((e) => [element, ...e]);
   }
-}
-
-extension TupleMapExtension<K, V> on Map<K, V> {
-  Iterable<(K, V)> get tuples => entries.map((e) => (e.key, e.value));
 }
 
 extension NanoSecondsDateTimeExtension on DateTime {
@@ -225,21 +122,6 @@ typedef Test<T> = bool Function(T e);
 bool always(dynamic _) => true;
 
 T pass<T>(T e) => e;
-
-extension IterableSeparatedExtension<E> on Iterable<E> {
-  Iterable<E> separatedBy(E separator) sync* {
-    Iterator<E> iterator = this.iterator;
-    if (!iterator.moveNext()) {
-      return;
-    }
-    yield iterator.current;
-
-    while (iterator.moveNext()) {
-      yield separator;
-      yield iterator.current;
-    }
-  }
-}
 
 extension DurationJitterExtension on Duration {
   Duration jitter(Duration jitter) {

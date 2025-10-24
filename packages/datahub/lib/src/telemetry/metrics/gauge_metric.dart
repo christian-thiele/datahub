@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:boost/boost.dart';
 import 'package:datahub/utils.dart';
 
 import 'metric.dart';

@@ -1,5 +1,3 @@
-import 'package:boost/boost.dart';
-
 enum NamingConvention {
   /// no formatting applied
   none,
@@ -28,9 +26,9 @@ String toNamingConvention(String input, NamingConvention convention) {
     case NamingConvention.camelCase:
       return splitWords(input).map((e) => firstUpper(e)).join();
     case NamingConvention.lowerCamelCase:
-      return splitWords(
-        input,
-      ).mapIndexed((e, i) => i == 0 ? e.toLowerCase() : firstUpper(e)).join();
+      return splitWords(input).indexed
+          .map((e) => e.$1 == 0 ? e.$2.toLowerCase() : firstUpper(e.$2))
+          .join();
   }
 }
 

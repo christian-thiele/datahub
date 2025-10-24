@@ -350,10 +350,8 @@ class JsonDataCodec extends DataCodec {
     return switch (value) {
       List<T>() => value,
       List<dynamic>() =>
-        value
-            .mapIndexed(
-              (e, i) => decodeItem(e, name: DataCodec.indexName(name, i)),
-            )
+        value.indexed
+            .map((e) => decodeItem(e.$2, name: DataCodec.indexName(name, e.$1)))
             .toList(),
       null => <T>[],
       _ => throw CodecException.typeMismatch(List<T>, value.runtimeType, name),
