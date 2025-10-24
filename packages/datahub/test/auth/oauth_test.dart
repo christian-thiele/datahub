@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:pointycastle/export.dart';
-import 'package:test/test.dart';
 
 void main() {
   final idp = 'http://localhost:8081/realms/local-oidc';
@@ -20,23 +19,14 @@ void main() {
       '$idp/protocol/openid-connect/auth?redirect_uri=${Uri.encodeQueryComponent(redirectUrl)}&client_id=${Uri.encodeQueryComponent(clientId)}&response_type=code&state=teststate&scope=openid&code_challenge_method=S256&code_challenge=$codeChallenge';
 
   late final loginPageHtml =
-      '''
-<html>
-<head><title>Login</title></head>
-<body><h1>Login</h1><br/><a href="$authUrl">Click here</a></body>
-</html>
-''';
+      '<html lang="en"><head><title>Login</title></head><body><h1>Login</h1><br/><a href="$authUrl">Click here</a></body></html>';
 
   String authorizedHtml(String subject) =>
-      '''
-<html>
-<head><title>Success!</title></head>
-<body><h1>Successfully Authorized</h1><br/><p>Hello $subject! You can close this page now.</p></body>
-</html>
-  ''';
+      '<html lang="en"><head><title>Success!</title></head><body><h1>Successfully Authorized</h1><br/><p>Hello $subject! You can close this page now.</p></body></html>';
 
   declareTest(
     'OIDC Flow',
+    compose: 'test/auth/docker-compose.yml',
     [
       ApiService(
         port: Config.value(returnPort),
