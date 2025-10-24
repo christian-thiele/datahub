@@ -78,11 +78,11 @@ void declareTest(
 
           final composeProcess = await Process.start('docker', [
             'compose',
-            'up',
             '-p',
             composeProject,
             '-f',
             '-',
+            'up',
             '-d',
           ]);
 
