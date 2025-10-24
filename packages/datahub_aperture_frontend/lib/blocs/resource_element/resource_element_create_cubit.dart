@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';

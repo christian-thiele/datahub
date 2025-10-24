@@ -1,5 +1,5 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/data.dart';
-import 'package:datahub/utils.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/models/view_models/filter_model.dart';
