@@ -91,7 +91,7 @@ void declareTest(
           composeProcess.stdin.add(utf8.encode(yaml.toString()));
           composeProcess.stdin.close();
           await composeProcess.exitCode;
-        });
+        }, timeout: dart_test.Timeout(Duration(minutes: 5)));
       });
 
       return;
