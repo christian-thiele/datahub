@@ -13,7 +13,7 @@ class PostgresqlContext extends DatabaseContext {
   Future<pg.Result> executeLiteral(Sql sql, {Duration? timeout}) async {
     final query = sql.toLiteralString();
     if (logStatements) {
-      log.debug('QUERY: $query');
+      log.trace('QUERY: $query');
     }
 
     return await _session.execute(
@@ -26,10 +26,10 @@ class PostgresqlContext extends DatabaseContext {
   Future<pg.Result> execute(Sql sql, {Duration? timeout}) async {
     final query = sql.toString();
     if (logStatements) {
-      log.debug('QUERY: $query');
+      log.trace('QUERY: $query');
       final params = sql.getParameters().toList();
       if (params.isNotEmpty) {
-        log.debug(
+        log.trace(
           'PARAMS: ${params.indexed.map((p) => '${p.$1}: ${p.$2}').join(' ')}',
         );
       }

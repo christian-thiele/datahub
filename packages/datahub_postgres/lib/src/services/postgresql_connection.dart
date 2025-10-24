@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:datahub_postgres/datahub_postgres.dart';
 import 'package:postgres/postgres.dart';
@@ -8,8 +9,13 @@ import 'postgresql_context.dart';
 
 class PostgresqlConnection extends DatabaseConnection {
   final Connection _connection;
+  final bool logStatements;
 
-  PostgresqlConnection(super.adapter, this._connection);
+  PostgresqlConnection(
+    super.adapter,
+    this._connection, {
+    this.logStatements = false,
+  });
 
   @override
   Future<void> close() async {
@@ -36,7 +42,7 @@ class PostgresqlConnection extends DatabaseConnection {
     return await runZoned(
       () {
         return _connection.runTx((session) async {
-          final context = PostgresqlContext(session, true);
+          final context = PostgresqlContext(session, logStatements);
           contextCompleter.complete(context);
           return await delegate(context);
         });

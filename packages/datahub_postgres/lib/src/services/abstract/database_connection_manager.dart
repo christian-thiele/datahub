@@ -10,7 +10,6 @@ import 'database_connection.dart';
 
 /// Abstract class for connecting to a database.
 /// TODO more docs
-/// TODO docs config vars
 mixin DatabaseConnectionManager<
   TService extends Service,
   TConnection extends DatabaseConnection
@@ -21,29 +20,21 @@ mixin DatabaseConnectionManager<
   late final _pool = Pool<TConnection>(
     read(targetPoolSize),
     _create,
-    maxLifetime: Duration(seconds: read(maxConnectionLifetime)),
+    maxLifetime: read(maxConnectionLifetime),
     checkIsLive: (c) => c.isOpen,
     onChange: _updateMetrics,
     onRemoveItem: (c) => c.close(),
   );
 
-  final Config<int> targetPoolSize = Config<int>('poolSize', defaultValue: 3);
-  final Config<int> maxConnectionLifetime = Config<int>(
-    'maxConnectionLifetime',
-    defaultValue: 3600,
-  );
-  final Config<int> connectionPoolTimeout = Config<int>(
-    'connectionPoolTimeout',
-    defaultValue: 60,
-  );
-  final Config<bool> enableMetrics = Config<bool>(
-    'enableMetrics',
-    defaultValue: true,
-  );
-  final Config<String> metricPrefix = Config<String>(
-    'metricPrefix',
-    defaultValue: 'database',
-  );
+  Config<int> get targetPoolSize;
+
+  Config<Duration> get maxConnectionLifetime;
+
+  Config<Duration> get poolTimeout;
+
+  Config<bool> get enableMetrics;
+
+  Config<String> get metricPrefix;
 
   int get poolSize => _pool.total;
 
@@ -90,9 +81,7 @@ mixin DatabaseConnectionManager<
       return await delegate(Zone.current['$_adapterId/connection']);
     }
 
-    final connection = await _pool.take(
-      timeout: timeout ?? Duration(seconds: read(connectionPoolTimeout)),
-    );
+    final connection = await _pool.take(timeout: timeout ?? read(poolTimeout));
 
     return await runZoned(() async {
       try {

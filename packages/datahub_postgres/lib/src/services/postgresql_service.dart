@@ -28,10 +28,16 @@ class PostgresqlService implements Service {
   final Config<String?> username;
   final Config<String?> password;
 
-  final Config<int> timeout;
-  final Config<int> queryTimeout;
+  final Config<Duration> timeout;
+  final Config<Duration> queryTimeout;
   final Config<String> timeZone;
   final Config<bool> useSsl;
+
+  final Config<int> targetPoolSize;
+  final Config<Duration> maxConnectionLifetime;
+  final Config<Duration> poolTimeout;
+  final Config<bool> enableMetrics;
+  final Config<String> metricPrefix;
 
   PostgresqlService({
     this.applicationName = const Config('serviceName', defaultValue: 'DataHub'),
@@ -40,11 +46,31 @@ class PostgresqlService implements Service {
     this.database = const Config('database', defaultValue: 'postgres'),
     this.username = const Config('username'),
     this.password = const Config('password'),
-    this.timeout = const Config<int>('timeout', defaultValue: 30),
-    this.queryTimeout = const Config<int>('queryTimeout', defaultValue: 30),
-    this.timeZone = const Config<String>('timeZone', defaultValue: 'UTC'),
-    this.useSsl = const Config<bool>('useSsl', defaultValue: true),
+    this.timeout = const Config('timeout', defaultValue: Duration(seconds: 10)),
+    this.queryTimeout = const Config<Duration>(
+      'queryTimeout',
+      defaultValue: Duration(seconds: 30),
+    ),
+    this.timeZone = const Config('timeZone', defaultValue: 'UTC'),
+    this.useSsl = const Config('useSsl', defaultValue: true),
     this.logStatements = const Config('logStatements', defaultValue: false),
+    this.targetPoolSize = const Config('targetPoolSize', defaultValue: 3),
+    this.maxConnectionLifetime = const Config(
+      'maxConnectionLifetime',
+      defaultValue: Duration(hours: 1),
+    ),
+    this.poolTimeout = const Config<Duration>(
+      'poolTimeout',
+      defaultValue: Duration(seconds: 5),
+    ),
+    this.enableMetrics = const Config<bool>(
+      'enableMetrics',
+      defaultValue: true,
+    ),
+    this.metricPrefix = const Config<String>(
+      'metricPrefix',
+      defaultValue: 'postgresql',
+    ),
   });
 
   @override
@@ -69,8 +95,8 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
         ),
         settings: pg.ConnectionSettings(
           applicationName: read(service.applicationName),
-          connectTimeout: Duration(seconds: read(service.timeout)),
-          queryTimeout: Duration(seconds: read(service.queryTimeout)),
+          connectTimeout: read(service.timeout),
+          queryTimeout: read(service.queryTimeout),
           timeZone: read(service.timeZone),
           sslMode: switch (read(service.useSsl)) {
             true => pg.SslMode.require,
@@ -87,6 +113,7 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
           ),
         ),
       ),
+      logStatements: read(service.logStatements),
     );
   }
 
@@ -98,4 +125,19 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
       return await connection.runTransaction(delegate);
     });
   }
+
+  @override
+  Config<Duration> get poolTimeout => service.poolTimeout;
+
+  @override
+  Config<bool> get enableMetrics => service.enableMetrics;
+
+  @override
+  Config<Duration> get maxConnectionLifetime => service.maxConnectionLifetime;
+
+  @override
+  Config<String> get metricPrefix => service.metricPrefix;
+
+  @override
+  Config<int> get targetPoolSize => service.targetPoolSize;
 }
