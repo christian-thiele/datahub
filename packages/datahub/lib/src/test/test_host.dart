@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/src/cli/cli_exception.dart';
+import 'package:datahub/src/cli/utils.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
 
@@ -57,24 +58,25 @@ void declareTest(
       dart_test.group(name, () {
         dart_test.test(name, () async {
           print('setting up docker environment');
-          print(Platform.executable);
-          print(Platform.executableArguments);
-          print(Platform.packageConfig);
-          print(Platform.resolvedExecutable);
-          print(Platform.script);
+
           final composeFile = File(compose);
           final workingDir = composeFile.parent;
           final yaml = YamlEditor(composeFile.readAsStringSync());
           final services = yaml.parseAt(['services']);
           final dependencies = (services as Map).keys.whereType<String>();
           final composeProject = uuid();
+
+          final projectDir =
+              findProjectBase() ??
+              (throw CliException('Could not find project base.'));
+
           yaml.update(
             ['services', 'runner'],
             {
               'image': 'dart:3.9',
               'working_dir': '/app',
               'command': 'dart test .',
-              'volumes': ['./:/app:ro'],
+              'volumes': ['${projectDir.absolute.path}/:/app:ro'],
               'depends_on': {
                 for (final service in dependencies)
                   service: {'condition': 'service_healthy'},
@@ -98,6 +100,7 @@ void declareTest(
             if (attachStdout) {
               composeProcess.stdout.listen(stdout.add);
             }
+
             composeProcess.stderr.listen(stderr.add);
             composeProcess.stdin.add(utf8.encode(yaml.toString()));
             composeProcess.stdin.close();
