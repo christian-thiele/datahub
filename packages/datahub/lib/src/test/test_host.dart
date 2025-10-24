@@ -65,7 +65,7 @@ void declareTest(
               'image': 'dart:3.9',
               'working_dir': '/app',
               'command': 'dart test .',
-              'volumes': './:/app:ro',
+              'volumes': ['./:/app:ro'],
               'depends_on': {
                 for (final service
                     in (services as Map).keys.whereType<String>())
