@@ -1,7 +1,8 @@
 import 'package:datahub/scaffold.dart';
-import 'package:datahub/src/telemetry/log_service/log_level.dart';
-import 'package:datahub/src/telemetry/log_service/log_message.dart';
-import 'package:datahub/src/telemetry/log_service/log_service.dart';
+
+import 'log_message.dart';
+import 'severity_level.dart';
+import '../telemetry_service.dart';
 
 const LogHelper log = LogHelper._();
 
@@ -10,14 +11,14 @@ final class LogHelper {
 
   void call(
     String line, {
-    LogLevel level = LogLevel.verbose,
+    SeverityLevel level = SeverityLevel.debug,
     dynamic error,
     StackTrace? stack,
   }) {
     if (Context.maybeOfZone() case final context?) {
       context
-          .find(Find<LogReceiver>())
-          .publish(
+          .find(Find<Telemetry>())
+          .publishLog(
             LogMessage(
               timestamp: DateTime.timestamp(),
               line: line,
@@ -31,18 +32,21 @@ final class LogHelper {
     }
   }
 
+  void trace(String line, {dynamic error, StackTrace? stack}) =>
+      call(line, level: SeverityLevel.trace, error: error, stack: stack);
+
   void debug(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: LogLevel.debug, error: error, stack: stack);
+      call(line, level: SeverityLevel.debug, error: error, stack: stack);
 
   void info(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: LogLevel.info, error: error, stack: stack);
+      call(line, level: SeverityLevel.info, error: error, stack: stack);
 
   void warn(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: LogLevel.warning, error: error, stack: stack);
+      call(line, level: SeverityLevel.warning, error: error, stack: stack);
 
   void error(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: LogLevel.error, error: error, stack: stack);
+      call(line, level: SeverityLevel.error, error: error, stack: stack);
 
-  void critical(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: LogLevel.critical, error: error, stack: stack);
+  void fatal(String line, {dynamic error, StackTrace? stack}) =>
+      call(line, level: SeverityLevel.fatal, error: error, stack: stack);
 }

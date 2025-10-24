@@ -10,14 +10,12 @@ part 'test_runner_service.dart';
 class TestHost extends ServiceHost {
   final List<Component> components;
   final Map<String, dynamic> initialConfig;
-  final LogWriter logWriter;
   final FutureOr<void> Function() testBody;
 
   TestHost({
     required this.components,
     required this.initialConfig,
     required this.testBody,
-    this.logWriter = const StdoutLogWriter(),
   });
 
   @override
@@ -25,13 +23,7 @@ class TestHost extends ServiceHost {
     return Scope(
       name: 'root',
       components: [
-        Scope(
-          name: 'internal',
-          components: [
-            LogService(logWriter: logWriter),
-            TelemetryService(),
-          ],
-        ),
+        Scope(name: 'internal', components: [TelemetryService()]),
         Scope(name: 'application', components: components),
         Scope(name: 'test', components: [TestRunnerService()]),
       ],

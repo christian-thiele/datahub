@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:boost/boost.dart';
-import 'package:datahub/telemetry.dart';
 
-//TODO docs
+// TODO docs
+// TODO replace "prints" with onError callback for implementing library to handle
 class Pool<T> {
   final _items = <_PoolItem<T>>[];
   final _taken = <_PoolItem<T>>{};
@@ -169,7 +169,7 @@ class Pool<T> {
 
   Future<bool> _isLive(_PoolItem<T> item) async {
     if (maxLifetime != null && item.age > maxLifetime!) {
-      log('Pool: Item reached max lifetime.');
+      print('Pool: Item reached max lifetime.');
       return false;
     }
 
@@ -180,7 +180,7 @@ class Pool<T> {
             try {
               return await isLiveFuture.timeout(checkIsLiveTimeout);
             } on TimeoutException catch (_) {
-              log.warn(
+              print(
                 'Pool: Liveness check timed out after $checkIsLiveTimeout.',
               );
               return false;
@@ -188,12 +188,8 @@ class Pool<T> {
           case bool isLive:
             return isLive;
         }
-      } catch (e, stack) {
-        log.error(
-          'Pool: Liveness check threw exception.',
-          error: e,
-          stack: stack,
-        );
+      } catch (e) {
+        print('Pool: Liveness check threw exception: $e');
         return false;
       }
     } else {
@@ -210,18 +206,10 @@ class Pool<T> {
     onChange?.call();
     try {
       onRemoveItem?.call(item).catchError((error, stack) {
-        log.warn(
-          'Pool: onRemoveItem threw exception.',
-          error: error,
-          stack: stack,
-        );
+        print('onRemoveItem threw exception: $error');
       });
     } catch (error, stack) {
-      log.warn(
-        'Pool: onRemoveItem threw exception.',
-        error: error,
-        stack: stack,
-      );
+      print('onRemoveItem threw exception: $error');
     }
   }
 }

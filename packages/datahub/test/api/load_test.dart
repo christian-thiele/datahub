@@ -12,11 +12,17 @@ void main() {
   declareTest(
     'Mainthred Overload',
     [
-      ApiService(routes: [ResourceEndpoint(get: (request) {
-        sleep(const Duration(milliseconds: 5));
-        sleep(const Duration(milliseconds: 5));
-        sleep(const Duration(milliseconds: 5));
-      })]),
+      ApiService(
+        routes: [
+          ResourceEndpoint(
+            get: (request) {
+              sleep(const Duration(milliseconds: 5));
+              sleep(const Duration(milliseconds: 5));
+              sleep(const Duration(milliseconds: 5));
+            },
+          ),
+        ],
+      ),
     ],
     () async {
       await Isolate.run(() async {
@@ -29,6 +35,6 @@ void main() {
         ).run(100, Duration(seconds: 10));
       });
     },
-    timeout: Timeout(Duration(minutes: 10)),
+    timeout: Timeout(Duration(seconds: 15)),
   );
 }

@@ -4,25 +4,23 @@ import 'dart:math';
 import 'package:intl/intl.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-import 'log_level.dart';
 import 'log_message.dart';
+import 'log_exporter.dart';
+import 'severity_level.dart';
 
-abstract interface class LogWriter {
-  void write(LogMessage message);
-}
-
-class StdoutLogWriter implements LogWriter {
+class PrettyPrintLogExporter implements LogExporter {
   static const _colorReset = '\u001b[0m';
   static const _colorRed = '\u001b[31m';
   static const _colorBrightRed = '\u001b[31;1m';
   static const _colorGreen = '\u001b[32m';
   static const _colorYellow = '\u001b[33m';
+  static const _colorBlue = '\u001b[34m';
   static const _colorCyan = '\u001b[36m';
 
-  const StdoutLogWriter();
+  const PrettyPrintLogExporter();
 
   @override
-  void write(LogMessage message) {
+  void add(LogMessage message) {
     final buffer = StringBuffer();
     final color = _severityColor(message.level);
 
@@ -78,20 +76,20 @@ class StdoutLogWriter implements LogWriter {
     stdout.write(buffer.toString());
   }
 
-  static String? _severityColor(LogLevel severity) {
+  static String? _severityColor(SeverityLevel severity) {
     switch (severity) {
-      case LogLevel.debug:
+      case SeverityLevel.trace:
+        return _colorBlue;
+      case SeverityLevel.debug:
         return _colorGreen;
-      case LogLevel.verbose:
+      case SeverityLevel.info:
         return _colorCyan;
-      case LogLevel.warning:
+      case SeverityLevel.warning:
         return _colorYellow;
-      case LogLevel.error:
+      case SeverityLevel.error:
         return _colorRed;
-      case LogLevel.critical:
+      case SeverityLevel.fatal:
         return _colorBrightRed;
-      default:
-        return null;
     }
   }
 
@@ -99,11 +97,14 @@ class StdoutLogWriter implements LogWriter {
     return DateFormat('yyyy-MM-dd HH:mm:ss').format(timestamp);
   }
 
-  static String _severityPrefix(LogLevel severity) {
+  static String _severityPrefix(SeverityLevel severity) {
     return _brackets(severity.name.toUpperCase(), 8);
   }
 
   static String _brackets(String text, int length) {
     return '[${text.substring(0, min(text.length, length)).padRight(length)}]';
   }
+
+  @override
+  void close() {}
 }
