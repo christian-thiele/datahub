@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 import 'package:postgres/postgres.dart';
 
@@ -10,12 +11,15 @@ import 'postgresql_context.dart';
 class PostgresqlConnection extends DatabaseConnection {
   final Connection _connection;
   final bool logStatements;
+  late final String _connectionId;
 
   PostgresqlConnection(
     super.adapter,
     this._connection, {
     this.logStatements = false,
-  });
+  }) {
+    _connectionId = uuid();
+  }
 
   @override
   Future<void> close() async {
@@ -41,10 +45,18 @@ class PostgresqlConnection extends DatabaseConnection {
     final contextCompleter = Completer<PostgresqlContext>();
     return await runZoned(
       () {
+        final telemetry = Find<Telemetry>().find();
         return _connection.runTx((session) async {
-          final context = PostgresqlContext(session, logStatements);
-          contextCompleter.complete(context);
-          return await delegate(context);
+          return await telemetry.trace(
+            'PostgreSQL Transaction',
+            type: SpanType.internal,
+            attributes: {'postgresql.connection.id': _connectionId},
+            (span) async {
+              final context = PostgresqlContext(session, logStatements);
+              contextCompleter.complete(context);
+              return await delegate(context);
+            },
+          );
         });
       },
       zoneValues: {

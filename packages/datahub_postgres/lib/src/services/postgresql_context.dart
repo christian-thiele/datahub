@@ -11,38 +11,52 @@ class PostgresqlContext extends DatabaseContext {
   const PostgresqlContext(this._session, this.logStatements);
 
   Future<pg.Result> executeLiteral(Sql sql, {Duration? timeout}) async {
-    final query = sql.toLiteralString();
-    if (logStatements) {
-      log.trace('QUERY: $query');
-    }
+    return Find<Telemetry>().find().trace(
+      'PostgreSQL Query',
+      attributes: {'postgresql.query.mode': 'literal'},
+      (span) async {
+        final query = sql.toLiteralString();
+        if (logStatements) {
+          span.addAttribute('postgresql.query.sql', query);
+          log.trace(query);
+        }
 
-    return await _session.execute(
-      pg.Sql(query),
-      queryMode: pg.QueryMode.simple,
-      timeout: timeout,
+        return await _session.execute(
+          pg.Sql(query),
+          queryMode: pg.QueryMode.simple,
+          timeout: timeout,
+        );
+      },
     );
   }
 
   Future<pg.Result> execute(Sql sql, {Duration? timeout}) async {
-    final query = sql.toString();
-    if (logStatements) {
-      log.trace('QUERY: $query');
-      final params = sql.getParameters().toList();
-      if (params.isNotEmpty) {
-        log.trace(
-          'PARAMS: ${params.indexed.map((p) => '${p.$1}: ${p.$2}').join(' ')}',
-        );
-      }
-    }
+    return Find<Telemetry>().find().trace(
+      'PostgreSQL Query',
+      attributes: {'postgresql.query.mode': 'extended'},
+      (span) async {
+        final query = sql.toString();
+        if (logStatements) {
+          span.addAttribute('postgresql.query.sql', query);
+          log.trace(query);
+          final params = sql.getParameters().toList();
+          if (params.isNotEmpty) {
+            log.trace(
+              'PARAMS: ${params.indexed.map((p) => '${p.$1}: ${p.$2}').join(' ')}',
+            );
+          }
+        }
 
-    return await _session.execute(
-      pg.Sql(
-        query,
-        types: sql.getParameterTypes().map((e) => e.pgType).toList(),
-      ),
-      parameters: sql.getEncodedParameters().toList(),
-      queryMode: pg.QueryMode.extended,
-      timeout: timeout,
+        return await _session.execute(
+          pg.Sql(
+            query,
+            types: sql.getParameterTypes().map((e) => e.pgType).toList(),
+          ),
+          parameters: sql.getEncodedParameters().toList(),
+          queryMode: pg.QueryMode.extended,
+          timeout: timeout,
+        );
+      },
     );
   }
 
