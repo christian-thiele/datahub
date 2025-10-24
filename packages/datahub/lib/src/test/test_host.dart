@@ -57,6 +57,11 @@ void declareTest(
       dart_test.group(name, () {
         dart_test.test(name, () async {
           print('setting up docker environment');
+          print(Platform.executable);
+          print(Platform.executableArguments);
+          print(Platform.packageConfig);
+          print(Platform.resolvedExecutable);
+          print(Platform.script);
           final composeFile = File(compose);
           final workingDir = composeFile.parent;
           final yaml = YamlEditor(composeFile.readAsStringSync());
