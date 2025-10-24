@@ -7,6 +7,11 @@
     - added toString() method to TypeCheck
 - Math
     - added sum() and avg() methods for num Iterables
+- Collections
+    - added tuples to Maps
+    - added equalsDeep() to Maps and Iterables
+    - added separatedBy() to Iterables
+    - removed type restriction on sequenceEquals()
 
 ### Obsolete Features removed:
 

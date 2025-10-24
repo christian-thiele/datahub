@@ -2,9 +2,9 @@ import 'dart:math' as math;
 
 import 'exceptions.dart';
 
-extension IterableExtension<TValue> on Iterable<TValue> {
+extension IterableExtension<E> on Iterable<E> {
   /// Returns a random element.
-  TValue get random {
+  E get random {
     if (isEmpty) {
       return first; // supposed to trigger internal noElement exception
     }
@@ -16,7 +16,7 @@ extension IterableExtension<TValue> on Iterable<TValue> {
   /// not equal to the key of any previous element.
   ///
   /// If [keySelector] is null, the element itself is considered as key.
-  Iterable<TValue> distinct([Function(TValue)? keySelector]) sync* {
+  Iterable<E> distinct([Function(E)? keySelector]) sync* {
     final keys = [];
     for (final element in this) {
       final key = (keySelector == null) ? element : keySelector(element);
@@ -27,8 +27,8 @@ extension IterableExtension<TValue> on Iterable<TValue> {
   }
 
   /// Groups elements of this [iterable] by comparing the [selector] result.
-  Map<TKey, List<TValue>> groupBy<TKey>(TKey Function(TValue) selector) {
-    final map = <TKey, List<TValue>>{};
+  Map<K, List<E>> groupBy<K>(K Function(E) selector) {
+    final map = <K, List<E>>{};
     forEach((element) {
       final key = selector(element);
       if (map[key] == null) {
@@ -40,10 +40,10 @@ extension IterableExtension<TValue> on Iterable<TValue> {
     return map;
   }
 
-  /// Deep equality check.
+  /// Shallow equality check.
   ///
   /// Checks if elements in [other] are equal to the elements in this [Iterable].
-  bool sequenceEquals(Iterable<TValue> other) {
+  bool sequenceEquals(Iterable other) {
     if (this == other) {
       return true;
     }
@@ -61,12 +61,41 @@ extension IterableExtension<TValue> on Iterable<TValue> {
     return true;
   }
 
+  /// Deep equality check.
+  ///
+  /// Checks if elements in [other] are equal to the elements in this [Iterable].
+  /// Elements of type [Iterable] and [Map] are compared using the
+  /// [Iterable.equalsDeep] and [Map.equalsDeep] extension methods.
+  bool equalsDeep(Iterable other) {
+    if (this == other) {
+      return true;
+    }
+
+    if (length != other.length) {
+      return false;
+    }
+
+    for (final pair in zip(other)) {
+      final equal = switch (pair) {
+        (final Iterable a, final Iterable b) => a.equalsDeep(b),
+        (final Map a, final Map b) => a.equalsDeep(b),
+        (final a, final b) => a == b,
+      };
+
+      if (!equal) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   /// Splits the collection into two subsets.
   ///
   /// Every element for which [selector] returns true is added to the
   /// $1 list, otherwise it is added to the $2 list.
-  (List<TValue>, List<TValue>) split(bool Function(TValue) selector) {
-    final collections = (<TValue>[], <TValue>[]);
+  (List<E>, List<E>) split(bool Function(E) selector) {
+    final collections = (<E>[], <E>[]);
     for (final element in this) {
       if (selector(element)) {
         collections.$1.add(element);
@@ -82,7 +111,7 @@ extension IterableExtension<TValue> on Iterable<TValue> {
   ///
   /// If this and [other] have varying lengths, null will be substituted for
   /// the missing counter part in the result Tuple.
-  Iterable<(TValue?, TOther?)> zip<TOther>(Iterable<TOther> other) {
+  Iterable<(E?, TOther?)> zip<TOther>(Iterable<TOther> other) {
     return Iterable.generate(
       math.max(length, other.length),
       (i) => (
@@ -96,10 +125,10 @@ extension IterableExtension<TValue> on Iterable<TValue> {
   ///
   /// All values returned by the selector must be of type num.
   /// If selector is null, the elements itself become the selected elements.
-  TValue min([Function(TValue)? selector]) {
+  E min([Function(E)? selector]) {
     selector ??= (e) => e;
 
-    TValue? minObject;
+    E? minObject;
     num? minValue;
 
     for (final element in this) {
@@ -128,10 +157,10 @@ extension IterableExtension<TValue> on Iterable<TValue> {
   ///
   /// All values returned by the selector must be of type num.
   /// If selector is null, the elements itself become the selected elements.
-  TValue max([Function(TValue)? selector]) {
+  E max([Function(E)? selector]) {
     selector ??= (e) => e;
 
-    TValue? maxObject;
+    E? maxObject;
     num? maxValue;
     for (final element in this) {
       final value = selector(element);
@@ -155,26 +184,28 @@ extension IterableExtension<TValue> on Iterable<TValue> {
     return maxObject;
   }
 
-  /// Returns an [Iterable] containing the results of all elements processed
-  /// by the [toElement] function.
-  ///
-  /// This method works like `map` but provides the [toElement] function with
-  /// the elements index as second argument.
-  Iterable<TResult> mapIndexed<TResult>(
-      TResult Function(TValue, int) toElement) sync* {
-    var i = 0;
-    for (final e in this) {
-      yield toElement(e, i++);
+  /// Returns an [Iterable] where elements of this are separated by
+  /// the [separator] value.
+  Iterable<E> separatedBy(E separator) sync* {
+    final iterator = this.iterator;
+    if (!iterator.moveNext()) {
+      return;
+    }
+    yield iterator.current;
+
+    while (iterator.moveNext()) {
+      yield separator;
+      yield iterator.current;
     }
   }
 }
 
-extension ListExtension<TValue> on List<TValue> {
+extension ListExtension<E> on List<E> {
   /// Replaces a single element of this [List] with [replacement].
   ///
   /// Removes the first object which is equal to [needle],
   /// then inserts [replacements] at the former index of [needle].
-  void replaceItem(TValue needle, TValue replacement, [int start = 0]) {
+  void replaceItem(E needle, E replacement, [int start = 0]) {
     final idx = indexOf(needle, start);
     if (idx == -1) {
       throw BoostException('Item not found in list.');
@@ -183,7 +214,7 @@ extension ListExtension<TValue> on List<TValue> {
   }
 
   /// Sorts this [List] by comparing the keys returned by the [selector].
-  void sortBy<TKey extends Comparable>(TKey Function(TValue) selector,
+  void sortBy<K extends Comparable>(K Function(E) selector,
       [bool ascending = true]) {
     sort((a, b) => ascending
         ? Comparable.compare(selector(a), selector(b))
@@ -210,4 +241,56 @@ extension TripleIterableExtension<Ta, Tb, Tc> on Iterable<(Ta, Tb, Tc)> {
 
   /// Returns an iterable providing all Triple.$3 values.
   Iterable<Tc> get $3 => map((e) => e.$3);
+}
+
+extension MapExtension<K, V> on Map<K, V> {
+  /// Returns an [Iterable] of all [entries] as (key, value) tuples.
+  Iterable<(K, V)> get tuples => entries.map((e) => (e.key, e.value));
+
+  /// Shallow equality check.
+  ///
+  /// Checks if entries in [other] are equal to the entries in this [Map].
+  bool entriesEqual(Map other) {
+    if (other.length != length) {
+      return false;
+    }
+
+    for (final (key, value) in tuples) {
+      if (!other.containsKey(key)) {
+        return false;
+      }
+      if (value != other[key]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  /// Deep equality check.
+  ///
+  /// Checks if entries in [other] are equal to the entries in this [Map].
+  bool equalsDeep(Map other) {
+    if (length != other.length) {
+      return false;
+    }
+
+    for (final (key, value) in tuples) {
+      if (!other.containsKey(key)) {
+        return false;
+      }
+
+      final equal = switch ((value, other[key])) {
+        (final Iterable a, final Iterable b) => a.equalsDeep(b),
+        (final Map a, final Map b) => a.equalsDeep(b),
+        (final a, final b) => a == b,
+      };
+
+      if (!equal) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 }

@@ -11,8 +11,12 @@ void main() {
   test('replaceItem', _replaceItemTest);
   test('sortBy', _sortByTest);
   test('min / max', _minMaxTest);
-  test('tuple a/b', _tupleIterableTest);
-  test('triple a/b/c', _tripleIterableTest);
+  test('tuple', _tupleIterableTest);
+  test('triple', _tripleIterableTest);
+  test('separatedBy', _separatedByTest);
+  test('tuple', _tupleMapTest);
+  test('entriesEqual', _entriesEqualTest);
+  test('equalsDeep', _equalsDeepTest);
 }
 
 void _randomTest() {
@@ -161,4 +165,149 @@ void _tripleIterableTest() {
   expect(list.$1, orderedEquals(['1', '2', '3']));
   expect(list.$2, orderedEquals([1, 2, 3]));
   expect(list.$3, orderedEquals([true, 'abc', false]));
+}
+
+void _separatedByTest() {
+  expect(['a'].separatedBy('x'), equals(['a']));
+  expect(['a', 'b'].separatedBy('x'), equals(['a', 'x', 'b']));
+  expect(['a', 'b', 'c'].separatedBy('x'), equals(['a', 'x', 'b', 'x', 'c']));
+  expect([].separatedBy('x'), equals([]));
+}
+
+void _tupleMapTest() {
+  final map = {
+    'something': 'value',
+    'else': 123,
+  };
+
+  expect(map.tuples, orderedEquals([('something', 'value'), ('else', 123)]));
+}
+
+void _entriesEqualTest() {
+  expect(
+    {
+      'key1': 1,
+      'key2': '2',
+      'key3': 3,
+    }.entriesEqual({
+      'key1': 1,
+      'key2': '2',
+      'key3': 3,
+    }),
+    isTrue,
+  );
+
+  expect(
+    {
+      'key1': 1,
+      'key2': 2,
+      'key3': 3,
+    }.entriesEqual({
+      'key1': 1,
+      'key2': '2',
+      'key3': 3,
+    }),
+    isFalse,
+  );
+
+  expect(
+    {
+      'key1': 1,
+      'key2': 2,
+      'key3': 3,
+    }.entriesEqual({
+      'key1': 1,
+      'key2': 2,
+      'key3': 3,
+      'key4': 4,
+    }),
+    isFalse,
+  );
+
+  expect(
+    {
+      'key1': 1,
+      'key2': 2,
+      'key3': 3,
+      'key4': 4,
+    }.entriesEqual({
+      'key1': 1,
+      'key2': 2,
+      'key3': 3,
+    }),
+    isFalse,
+  );
+
+  expect(
+    {
+      'key1': 1,
+      'key2': 2,
+      'key3': 3,
+      'key4': 4,
+    }.entriesEqual({
+      'key1': 1,
+      'key2': 2,
+      'key3': 3,
+      'key4': 5,
+    }),
+    isFalse,
+  );
+}
+
+void _equalsDeepTest() {
+  final map1 = {
+    'list': [
+      'a',
+      'b',
+      'c',
+      {'key': 'value'}
+    ],
+    'map': {
+      'key1': 1,
+      'key2': 2,
+    },
+  };
+
+  final map2 = {
+    'list': [
+      'a',
+      'b',
+      'c',
+      {'key': 'value'}
+    ],
+    'map': {
+      'key1': 1,
+      'key2': 2,
+    },
+  };
+
+  expect(map1.equalsDeep(map2), isTrue);
+
+  final map3 = {
+    'list': [
+      'a',
+      'b',
+      'c',
+      {'key': 'value'}
+    ],
+    'map': {
+      'key1': 1,
+      'key2': 2,
+    },
+  };
+
+  final map4 = {
+    'list': [
+      'a',
+      'b',
+      'c',
+      {'key': 'wrong-value'}
+    ],
+    'map': {
+      'key1': 1,
+      'key2': 2,
+    },
+  };
+
+  expect(map3.equalsDeep(map4), isFalse);
 }
