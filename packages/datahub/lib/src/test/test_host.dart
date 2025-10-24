@@ -56,7 +56,9 @@ void declareTest(
       dart_test.group(name, () {
         dart_test.test(name, () async {
           print('setting up docker environment');
-          final yaml = YamlEditor(File(compose).readAsStringSync());
+          final composeFile = File(compose);
+          final workingDir = composeFile.parent;
+          final yaml = YamlEditor(composeFile.readAsStringSync());
           final services = yaml.parseAt(['services']);
           final composeProject = uuid();
           yaml.update(
@@ -84,7 +86,7 @@ void declareTest(
             '-',
             'up',
             '-d',
-          ]);
+          ], workingDirectory: workingDir.path);
 
           composeProcess.stdout.listen(stdout.add);
           composeProcess.stderr.listen(stderr.add);
