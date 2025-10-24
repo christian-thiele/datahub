@@ -95,6 +95,12 @@ class LocalSpan extends Span {
     );
   }
 
+  void addAttribute(String name, String value) {
+    if (!attributes.containsKey(name)) {
+      attributes[name] = value;
+    }
+  }
+
   void addExceptionEvent(dynamic error) {
     _addEvent(ExceptionEvent(error: error, timestamp: DateTime.timestamp()));
     setHasError();

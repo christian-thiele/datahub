@@ -157,7 +157,7 @@ abstract interface class Telemetry {
   FutureOr<R> trace<R>(
     String name,
     FutureOr<R> Function(LocalSpan span) delegate, {
-    SpanType type,
+    SpanType type = SpanType.internal,
     Map<String, dynamic> attributes,
   });
 
