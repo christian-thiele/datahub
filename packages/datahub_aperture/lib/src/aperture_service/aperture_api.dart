@@ -3,9 +3,7 @@ import 'dart:math' as math;
 
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
-import 'package:datahub_aperture/frontend_bundle.dart';
 import 'package:datahub_aperture/services.dart';
-import 'package:datahub_aperture/src/utils/static_bundle_endpoint.dart';
 
 class ApertureApi extends ApiNode {
   final ApertureConfigDelegate configDelegate;
@@ -231,10 +229,6 @@ class ApertureApi extends ApiNode {
             ...module
                 .buildApiRoutes('$base/api/modules/${module.description.id}'),
         ],
-      ),
-      StaticBundleEndpoint(
-        matcher: RoutePattern('$base/*'),
-        bundle: frontendBundle,
       ),
     ];
   }
