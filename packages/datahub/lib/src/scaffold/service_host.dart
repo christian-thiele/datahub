@@ -208,16 +208,32 @@ abstract class ServiceHost implements ServiceRegistry {
       return null;
     }
 
-    if (scope == null) {
-      final resultNode =
-          search(_root!, finder) ??
-          (throw Exception('Could not find component with $finder.'));
+    if (scope == null && _root != null) {
+      final resultNode = search(_root!, finder);
+      if (resultNode == null) {
+        if (null is T) {
+          return null as T;
+        } else {
+          throw ApiException('Could not find component with $finder.');
+        }
+      }
       return (resultNode as ServiceTreeNode).instance as T;
-    } else if (scope case final node) {
-      final resultNode =
-          peerSearch(node, finder) ??
-          (throw Exception('Could not find component with $finder.'));
+    } else if (scope case final node?) {
+      final resultNode = peerSearch(node, finder);
+      if (resultNode == null) {
+        if (null is T) {
+          return null as T;
+        } else {
+          throw ApiException('Could not find component with $finder.');
+        }
+      }
       return (resultNode as ServiceTreeNode).instance as T;
+    } else {
+      if (null is T) {
+        return null as T;
+      } else {
+        throw ApiException('Component tree not initialized.');
+      }
     }
   }
 
