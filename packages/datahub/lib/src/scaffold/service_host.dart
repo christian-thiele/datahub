@@ -104,6 +104,10 @@ abstract class ServiceHost implements ServiceRegistry {
   }
 
   Future<void> _shutdownComponent(TreeNode node) async {
+    for (final child in node.children.toList().reversed) {
+      await _shutdownComponent(child);
+    }
+
     switch (node) {
       case ScopeTreeNode():
         break;
@@ -117,10 +121,6 @@ abstract class ServiceHost implements ServiceRegistry {
             stack: stack,
           );
         }
-    }
-
-    for (final child in node.children) {
-      await _shutdownComponent(child);
     }
   }
 
