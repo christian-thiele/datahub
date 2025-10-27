@@ -122,7 +122,7 @@ class ApplicationHost extends ServiceHost {
           level: SeverityLevel.warning,
         ),
       );
-      exit(0);
+      stdout.flush().then((_) => exit(0)).catchError((_) => exit(0));
     }
   }
 }
