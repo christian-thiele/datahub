@@ -96,8 +96,8 @@ class LocalSpan extends Span {
   }
 
   void addAttribute(String name, String value) {
-    if (!attributes.containsKey(name)) {
-      attributes[name] = value;
+    if (!_attributes.containsKey(name)) {
+      _attributes[name] = value;
     }
   }
 
