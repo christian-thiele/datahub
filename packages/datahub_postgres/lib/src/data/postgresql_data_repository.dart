@@ -12,7 +12,7 @@ mixin PostgresqlDataRepository<
 >
     on ServiceInstance<TService>
     implements DataRepository<DataType> {
-  Find<Postgresql> get postgres => const Find<Postgresql>();
+  Find<Postgresql> get postgresql => const Find<Postgresql>();
 
   Config<String> get schemaName =>
       const Config<String>('schemaName', defaultValue: 'public');
@@ -34,14 +34,14 @@ mixin PostgresqlDataRepository<
           toNamingConvention(bean.name, NamingConvention.lowerSnakeCase),
     );
 
-    await find(postgres).runTransaction((context) async {
+    await find(postgresql).runTransaction((context) async {
       await dataRelation.relation.ensureRelation(context);
     });
   }
 
   @override
   Future<DataType> create(DataType object) async {
-    return await find(postgres).runTransaction((context) async {
+    return await find(postgresql).runTransaction((context) async {
       return await dataRelation.insert(context, object);
     });
   }
@@ -58,7 +58,7 @@ mixin PostgresqlDataRepository<
     int? offset,
     int? limit,
   }) async {
-    return await find(postgres).runTransaction((context) async {
+    return await find(postgresql).runTransaction((context) async {
       return await dataRelation.selectData(
         context,
         filter: filter,
@@ -86,7 +86,7 @@ mixin PostgresqlDataRepository<
     required Filter filter,
     required Map<DataField<DataType, dynamic>, dynamic> values,
   }) async {
-    return await find(postgres).runTransaction((context) async {
+    return await find(postgresql).runTransaction((context) async {
       return await dataRelation.update(context, filter, values);
     });
   }
@@ -99,7 +99,7 @@ mixin PostgresqlDataRepository<
 
   @override
   Future<int> deleteAll({required Filter filter}) async {
-    return await find(postgres).runTransaction((context) async {
+    return await find(postgresql).runTransaction((context) async {
       return await dataRelation.delete(context, filter);
     });
   }
@@ -121,7 +121,7 @@ mixin PostgresqlDataRepository<
   @override
   Future<R> atomic<R>(Future<R> Function() delegate) async {
     return await find(
-      postgres,
+      postgresql,
     ).runTransaction((context) async => await delegate());
   }
 }
