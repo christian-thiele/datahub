@@ -53,6 +53,7 @@ class _PrettyLog {
   const _PrettyLog();
 
   static void write(LogMessage message) {
+    final maxLength = stdout.hasTerminal ? stdout.terminalColumns : 128;
     final buffer = StringBuffer();
     final color = _severityColor(message.level);
 
@@ -73,7 +74,11 @@ class _PrettyLog {
     writePrefix(' ');
 
     final indent = ' ' * prefixLength;
-    buffer.write(message.line.replaceAll('\n', '\n$indent'));
+    final lines = message.line
+        .splitLineLength(maxLength - prefixLength)
+        .join('\n');
+    
+    buffer.write(lines.replaceAll('\n', '\n$indent'));
 
     if (message.error != null) {
       buffer.write('\n');

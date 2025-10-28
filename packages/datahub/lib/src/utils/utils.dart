@@ -114,6 +114,7 @@ Iterable<Iterable<T>> everyCombination<T>(Iterable<Iterable<T>> lists) sync* {
 
 extension NanoSecondsDateTimeExtension on DateTime {
   Int64 get nanosecondsSinceEpochInt64 => Int64(microsecondsSinceEpoch) * 1000;
+
   int get nanosecondsSinceEpoch => microsecondsSinceEpoch * 1000;
 }
 
@@ -128,5 +129,22 @@ extension DurationJitterExtension on Duration {
     final jitterFactor = math.Random().nextDouble();
     final jitterAmount = jitter * jitterFactor;
     return this + jitterAmount;
+  }
+}
+
+extension StringExtension on String {
+  Iterable<String> splitLineLength(int lineLength) sync* {
+    var i = 0;
+    while (i < length) {
+      final part = substring(i, i + math.min(length - i, lineLength));
+      final firstBreak = part.indexOf('\n');
+      if (firstBreak > -1) {
+        yield part.substring(0, firstBreak);
+        i += firstBreak + 1;
+      } else {
+        i += part.length;
+        yield part.trim();
+      }
+    }
   }
 }
