@@ -14,6 +14,7 @@ final class LogHelper {
     SeverityLevel level = SeverityLevel.debug,
     dynamic error,
     StackTrace? stack,
+    Map<String, String> labels = const {},
   }) {
     if (Context.maybeOfZone() case final context?) {
       context
@@ -25,6 +26,7 @@ final class LogHelper {
               level: level,
               stack: stack,
               error: error,
+              labels: labels,
             ),
           );
     } else {
@@ -32,21 +34,81 @@ final class LogHelper {
     }
   }
 
-  void trace(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: SeverityLevel.trace, error: error, stack: stack);
+  void trace(
+    String line, {
+    dynamic error,
+    StackTrace? stack,
+    Map<String, String> labels = const {},
+  }) => call(
+    line,
+    level: SeverityLevel.trace,
+    error: error,
+    stack: stack,
+    labels: labels,
+  );
 
-  void debug(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: SeverityLevel.debug, error: error, stack: stack);
+  void debug(
+    String line, {
+    dynamic error,
+    StackTrace? stack,
+    Map<String, String> labels = const {},
+  }) => call(
+    line,
+    level: SeverityLevel.debug,
+    error: error,
+    stack: stack,
+    labels: labels,
+  );
 
-  void info(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: SeverityLevel.info, error: error, stack: stack);
+  void info(
+    String line, {
+    dynamic error,
+    StackTrace? stack,
+    Map<String, String> labels = const {},
+  }) => call(
+    line,
+    level: SeverityLevel.info,
+    error: error,
+    stack: stack,
+    labels: labels,
+  );
 
-  void warn(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: SeverityLevel.warning, error: error, stack: stack);
+  void warn(
+    String line, {
+    dynamic error,
+    StackTrace? stack,
+    Map<String, String> labels = const {},
+  }) => call(
+    line,
+    level: SeverityLevel.warning,
+    error: error,
+    stack: stack,
+    labels: labels,
+  );
 
-  void error(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: SeverityLevel.error, error: error, stack: stack);
+  void error(
+    String line, {
+    dynamic error,
+    StackTrace? stack,
+    Map<String, String> labels = const {},
+  }) => call(
+    line,
+    level: SeverityLevel.error,
+    error: error,
+    stack: stack,
+    labels: labels,
+  );
 
-  void fatal(String line, {dynamic error, StackTrace? stack}) =>
-      call(line, level: SeverityLevel.fatal, error: error, stack: stack);
+  void fatal(
+    String line, {
+    dynamic error,
+    StackTrace? stack,
+    Map<String, String> labels = const {},
+  }) => call(
+    line,
+    level: SeverityLevel.fatal,
+    error: error,
+    stack: stack,
+    labels: labels,
+  );
 }

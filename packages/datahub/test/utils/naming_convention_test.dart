@@ -45,7 +45,6 @@ void main() {
       }
     });
 
-
     test('isNumber', () {
       for (final char in lowerLetters.codeUnits) {
         expect(isNumber(char), isFalse);

@@ -5,7 +5,7 @@ export 'src/telemetry/logs/log_helper.dart';
 export 'src/telemetry/logs/log_message.dart';
 export 'src/telemetry/logs/open_telemetry_log_exporter.dart';
 export 'src/telemetry/logs/pretty_print_log_exporter.dart';
-export 'src/telemetry/logs/plain_print_log_exporter.dart';
+export 'src/telemetry/logs/stdout_log_exporter.dart';
 export 'src/telemetry/logs/severity_level.dart';
 
 export 'src/telemetry/metrics/metric.dart';

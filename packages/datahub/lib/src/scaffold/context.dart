@@ -78,7 +78,9 @@ final class Context {
             level: SeverityLevel.debug,
             line: line,
           );
-          _registry.findComponent(Find<Telemetry>(), _scope).publishLog(message);
+          _registry
+              .findComponent(Find<Telemetry>(), _scope)
+              .publishLog(message);
         },
       ),
     );

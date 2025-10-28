@@ -81,11 +81,13 @@ abstract interface class TaskManager {
 }
 
 class TaskManagerService implements Service {
+  final Find<Telemetry> telemetry;
   final Find<DataRepository<TaskInvocation>> taskInvocationRepository;
   final Config<Duration> heartbeatTimeout;
   final Config<Duration> heartbeatInterval;
 
   TaskManagerService({
+    this.telemetry = const Find(),
     this.taskInvocationRepository = const Find(),
     this.heartbeatInterval = const Config(
       'taskManager.heartbeatInterval',
@@ -104,6 +106,7 @@ class TaskManagerService implements Service {
 class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
     implements TaskManager {
   final _executors = <String, TaskExecutor>{};
+  late final Telemetry telemetry;
   late final DataRepository<TaskInvocation> taskInvocationRepository;
   Timer? _timer;
   final _semaphore = Semaphore();
@@ -111,6 +114,7 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
   @override
   Future<void> initialize() async {
     await super.initialize();
+    telemetry = find(service.telemetry);
     taskInvocationRepository = find(service.taskInvocationRepository);
     await _updateTimeoutTasks();
     await _updateTimer();
@@ -257,7 +261,14 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
         );
         final executor = _findExecutorForInvocation(invocation);
         final parameters = executor.bean.fromJson(invocation.parameters);
-        await executor.execute(progress, parameters);
+        await telemetry.trace(
+          'Task ${executor.displayName ?? executor.taskId}',
+          (span) async => await executor.execute(progress, parameters),
+          attributes: {
+            'datahub.task.id': executor.taskId,
+            'datahub.task.invocation_id': invocation.id,
+          },
+        );
         final finishedAt = DateTime.timestamp();
         await taskInvocationRepository.updateById(
           invocation.copyWith(

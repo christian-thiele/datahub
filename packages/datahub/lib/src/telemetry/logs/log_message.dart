@@ -6,6 +6,7 @@ class LogMessage {
   final String line;
   final SeverityLevel level;
   final Span? span;
+  final Map<String, String> labels;
   final dynamic error;
   final StackTrace? stack;
 
@@ -13,6 +14,7 @@ class LogMessage {
     required this.timestamp,
     required this.line,
     required this.level,
+    this.labels = const {},
     this.span,
     this.error,
     this.stack,

@@ -58,7 +58,6 @@ class MultiPoint extends Geometry {
     return '(${points.map((e) => e.toText()).join(',')})';
   }
 
-
   @override
   bool operator ==(Object other) {
     return other is MultiPoint &&

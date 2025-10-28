@@ -40,5 +40,12 @@ class ApiRequestException extends ApiException {
 
   ApiRequestException.internalError([String? message]) : this(500, message);
 
-  ApiResponse toResponse() => JsonResponse(data, statusCode);
+  ApiResponse toResponse() => ApiRequestExceptionResponse(this);
+}
+
+class ApiRequestExceptionResponse extends JsonResponse {
+  final ApiRequestException exception;
+
+  ApiRequestExceptionResponse(this.exception)
+    : super(exception.data, exception.statusCode);
 }

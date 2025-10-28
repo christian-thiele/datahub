@@ -36,7 +36,7 @@ abstract class ApiEndpoint extends ApiRoute {
 }
 
 abstract class ApiMiddleware extends ApiRoute {
-  final List<ApiRoute> routes;
+  final List<ApiNode> routes;
   final bool catchRequests;
 
   const ApiMiddleware({

@@ -7,9 +7,7 @@ import 'package:datahub/utils.dart';
 import 'logs/log_exporter.dart';
 import 'logs/log_message.dart';
 import 'logs/severity_level.dart';
-import 'logs/open_telemetry_log_exporter.dart';
-import 'logs/plain_print_log_exporter.dart';
-import 'logs/pretty_print_log_exporter.dart';
+import 'logs/stdout_log_exporter.dart';
 
 import 'metrics/metric.dart';
 import 'metrics/metric_collector.dart';
@@ -195,7 +193,7 @@ class TelemetryService implements Service {
 
   final Config<bool> enableDartTimeline;
 
-  final Config<String> logStdoutFormat;
+  final Config<LogBodyFormat> logStdoutFormat;
   final Config<SeverityLevel> logLevel;
 
   TelemetryService({
@@ -241,8 +239,8 @@ class TelemetryService implements Service {
     ),
     this.logStdoutFormat = const Config(
       'telemetry.logStdoutFormat',
-      defaultValue: 'otel',
-      values: ['plain', 'pretty', 'otel'],
+      defaultValue: LogBodyFormat.logfmt,
+      values: LogBodyFormat.values,
     ),
     this.logLevel = const Config<SeverityLevel>(
       'telemetry.logLevel',
@@ -280,11 +278,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
       'dart.version': Platform.version,
     };
 
-    _logExporter = switch (read(service.logStdoutFormat)) {
-      'plain' => PlainPrintLogExporter(),
-      'pretty' => PrettyPrintLogExporter(),
-      _ => OpenTelemetryLogExporter(resourceAttributes: resourceAttributes),
-    };
+    _logExporter = StdoutLogExporter(read(service.logStdoutFormat));
 
     if (read(service.enableEndpoint)) {
       _metricsExporter = PrometheusExporter(

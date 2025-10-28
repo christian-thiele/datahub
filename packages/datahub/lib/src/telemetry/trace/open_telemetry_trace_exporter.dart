@@ -11,7 +11,6 @@ import 'package:grpc/grpc.dart';
 import '../opentelemetry-dart/open_telemetry.dart' as otel;
 import '../telemetry_scope.dart';
 
-
 class OpenTelemetryTraceExporter extends TraceExporter {
   final _buffer = <LocalSpan>[];
   int _lastSendBufferSize = 0;

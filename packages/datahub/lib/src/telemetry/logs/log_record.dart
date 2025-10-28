@@ -1,8 +1,9 @@
 import 'package:datahub/data.dart';
+import 'package:datahub/datahub.dart';
 
 part 'log_record.g.dart';
 
-@Data()
+@Data(defaultNamingConvention: NamingConvention.lowerSnakeCase)
 class LogRecord extends $LogRecord {
   final int? timestamp;
   final int? observedTimestamp;

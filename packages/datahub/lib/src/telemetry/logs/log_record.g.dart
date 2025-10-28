@@ -229,28 +229,28 @@ abstract interface class $LogRecord with DataObject<LogRecord> {
         name: DataCodec.childName(name, 'timestamp'),
       ),
       observedTimestamp: $observedTimestamp.fromJson(
-        data['observedTimestamp'],
-        name: DataCodec.childName(name, 'observedTimestamp'),
+        data['observed_timestamp'],
+        name: DataCodec.childName(name, 'observed_timestamp'),
       ),
       traceId: $traceId.fromJson(
-        data['traceId'],
-        name: DataCodec.childName(name, 'traceId'),
+        data['trace_id'],
+        name: DataCodec.childName(name, 'trace_id'),
       ),
       spanId: $spanId.fromJson(
-        data['spanId'],
-        name: DataCodec.childName(name, 'spanId'),
+        data['span_id'],
+        name: DataCodec.childName(name, 'span_id'),
       ),
       traceFlags: $traceFlags.fromJson(
-        data['traceFlags'],
-        name: DataCodec.childName(name, 'traceFlags'),
+        data['trace_flags'],
+        name: DataCodec.childName(name, 'trace_flags'),
       ),
       severityText: $severityText.fromJson(
-        data['severityText'],
-        name: DataCodec.childName(name, 'severityText'),
+        data['severity_text'],
+        name: DataCodec.childName(name, 'severity_text'),
       ),
       severityNumber: $severityNumber.fromJson(
-        data['severityNumber'],
-        name: DataCodec.childName(name, 'severityNumber'),
+        data['severity_number'],
+        name: DataCodec.childName(name, 'severity_number'),
       ),
       body: $body.fromJson(
         data['body'],
@@ -261,16 +261,16 @@ abstract interface class $LogRecord with DataObject<LogRecord> {
         name: DataCodec.childName(name, 'resource'),
       ),
       instrumentationScope: $instrumentationScope.fromJson(
-        data['instrumentationScope'],
-        name: DataCodec.childName(name, 'instrumentationScope'),
+        data['instrumentation_scope'],
+        name: DataCodec.childName(name, 'instrumentation_scope'),
       ),
       attributes: $attributes.fromJson(
         data['attributes'],
         name: DataCodec.childName(name, 'attributes'),
       ),
       eventName: $eventName.fromJson(
-        data['eventName'],
-        name: DataCodec.childName(name, 'eventName'),
+        data['event_name'],
+        name: DataCodec.childName(name, 'event_name'),
       ),
     );
   }
@@ -280,19 +280,19 @@ abstract interface class $LogRecord with DataObject<LogRecord> {
     final $$data = this as LogRecord;
     return {
       'timestamp': $timestamp.toJson($$data.timestamp),
-      'observedTimestamp': $observedTimestamp.toJson($$data.observedTimestamp),
-      'traceId': $traceId.toJson($$data.traceId),
-      'spanId': $spanId.toJson($$data.spanId),
-      'traceFlags': $traceFlags.toJson($$data.traceFlags),
-      'severityText': $severityText.toJson($$data.severityText),
-      'severityNumber': $severityNumber.toJson($$data.severityNumber),
+      'observed_timestamp': $observedTimestamp.toJson($$data.observedTimestamp),
+      'trace_id': $traceId.toJson($$data.traceId),
+      'span_id': $spanId.toJson($$data.spanId),
+      'trace_flags': $traceFlags.toJson($$data.traceFlags),
+      'severity_text': $severityText.toJson($$data.severityText),
+      'severity_number': $severityNumber.toJson($$data.severityNumber),
       'body': $body.toJson($$data.body),
       'resource': $resource.toJson($$data.resource),
-      'instrumentationScope': $instrumentationScope.toJson(
+      'instrumentation_scope': $instrumentationScope.toJson(
         $$data.instrumentationScope,
       ),
       'attributes': $attributes.toJson($$data.attributes),
-      'eventName': $eventName.toJson($$data.eventName),
+      'event_name': $eventName.toJson($$data.eventName),
     }..removeWhere((k, v) => v == null);
   }
 }

@@ -86,15 +86,39 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
           _ => 'HTTP',
         },
         type: SpanType.server,
-        attributes: {'http.request.method': httpRequest.method.name.toUpperCase()},
+        attributes: {
+          'http.request.method': httpRequest.method.name.toUpperCase(),
+        },
         (span) async {
           final response = await handler(request);
           return response.toHttpResponse(httpRequest.requestUri);
         },
       );
-    } on ApiRequestException catch (e) {
+    } on ApiRequestException catch (e, stack) {
+      if (e.statusCode >= 500 && e.statusCode < 600) {
+        log.error(
+          'Request failed with internal error.',
+          error: e,
+          stack: stack,
+          labels: {
+            'http.method': httpRequest.method.name.toUpperCase().toString(),
+            'http.path': httpRequest.path,
+            'http.status_code': e.statusCode.toString(),
+          },
+        );
+      }
       return e.toResponse().toHttpResponse(httpRequest.requestUri);
     } catch (e, stack) {
+      log.error(
+        'Request failed with internal error.',
+        error: e,
+        stack: stack,
+        labels: {
+          'http.method': httpRequest.method.name.toUpperCase().toString(),
+          'http.path': httpRequest.path,
+          'http.status_code': '500',
+        },
+      );
       if (Context.ofZone().environment == Environment.dev) {
         return DebugResponse(
           e,
@@ -132,8 +156,12 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
           wrapWithMiddleware(
             onRequest,
             catchRequests
-                ? findEndpoint(routes, request)
-                : tryFindEndpoint(routes, request),
+                ? findEndpoint([
+                    ...routes.expand((e) => e.buildRoutes()),
+                  ], request)
+                : tryFindEndpoint([
+                    ...routes.expand((e) => e.buildRoutes()),
+                  ], request),
             r.matcher.getRouteParams(request),
           ),
       };
