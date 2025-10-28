@@ -267,6 +267,8 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
   late final Tracer defaultTracer;
   final _scrapeMetric = GaugeMetric('datahub_instrumentation_scrape_duration');
 
+  late final SeverityLevel logLevel;
+
   @override
   Future<void> initialize() async {
     await super.initialize();
@@ -278,6 +280,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
       'dart.version': Platform.version,
     };
 
+    logLevel = read(service.logLevel);
     _logExporter = StdoutLogExporter(read(service.logStdoutFormat));
 
     if (read(service.enableEndpoint)) {
@@ -315,7 +318,9 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
 
   @override
   void publishLog(LogMessage message) {
-    _logExporter.add(message);
+    if (message.level.severityNumber >= logLevel.severityNumber) {
+      _logExporter.add(message);
+    }
   }
 
   @override
