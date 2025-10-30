@@ -2,7 +2,7 @@ name: datahub_postgres
 description: DataHub PostgreSQL Extension
 version: 0.18.0-dev.2
 homepage: https://datahubproject.net
-repository: https://github.com/christian-thiele/datahub_postgres
+repository: https://github.com/christian-thiele/datahub
 resolution: workspace
 
 environment:
