@@ -29,5 +29,3 @@ pubspec.lock
 ci_publish.sh
 Dockerfile
 *.Dockerfile
-
-lib/src/services/instrumentation_service/opentelemetry-proto/

@@ -8,9 +8,9 @@ This library is part of the DataHub Project.<br/>
 <a href="https://datahubproject.net">https://datahubproject.net</a>
 </p>
 
-![Pub Version](https://img.shields.io/pub/v/datahub?color=2CB7F6&label=pub.dev&logo=dart&style=flat-square)
+![Pub Version](https://img.shields.io/pub/v/datahub_codegen?color=2CB7F6&label=pub.dev&logo=dart&style=flat-square)
 ![GitHub last commit](https://img.shields.io/github/last-commit/christian-thiele/datahub?style=flat-square)
-![Pub Likes](https://img.shields.io/pub/likes/datahub?color=2CB7F6&label=pub.dev%20likes&style=flat-square)
+![Pub Likes](https://img.shields.io/pub/likes/datahub_codegen?color=2CB7F6&label=pub.dev%20likes&style=flat-square)
 
 > DataHub is a Cloud Development Ecosystem aiming to bring the power of Dart into the Cloud.
 
