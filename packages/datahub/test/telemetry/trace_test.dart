@@ -1,7 +1,5 @@
-import 'dart:math';
-
 import 'package:datahub/datahub.dart';
-import 'package:datahub/src/test/test_host.dart';
+import 'package:datahub/test.dart';
 import 'package:test/test.dart';
 
 void main() {

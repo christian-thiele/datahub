@@ -208,7 +208,7 @@ class Pool<T> {
       onRemoveItem?.call(item).catchError((error, stack) {
         print('onRemoveItem threw exception: $error');
       });
-    } catch (error, stack) {
+    } catch (error) {
       print('onRemoveItem threw exception: $error');
     }
   }

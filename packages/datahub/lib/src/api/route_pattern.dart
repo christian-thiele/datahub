@@ -4,7 +4,6 @@ import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
 
 import 'api_request.dart';
-import '../utils/api_request_exception.dart';
 import 'route_matcher.dart';
 
 const _wildcardGroup = '_route_wildcard';

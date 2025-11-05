@@ -2,7 +2,6 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/icons.dart';
-import 'package:datahub_aperture/src/aperture_service/aperture_action.dart';
 import 'package:datahub_aperture/utils.dart';
 
 typedef ApertureDataActionHandler<TParameters> = Future<String?> Function(

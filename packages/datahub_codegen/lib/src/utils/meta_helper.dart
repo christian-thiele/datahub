@@ -1,9 +1,9 @@
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:datahub/data.dart';
 import 'package:source_gen/source_gen.dart';
 
-ConstantReader? getMeta(FieldElement2 field) {
+ConstantReader? getMeta(FieldElement field) {
   final annotation = TypeChecker.typeNamed(Meta).firstAnnotationOf(field);
   if (annotation != null) {
     return ConstantReader(annotation);
@@ -12,7 +12,7 @@ ConstantReader? getMeta(FieldElement2 field) {
   }
 }
 
-String? getDefaultValueExpression(FieldFormalParameterElement2 param) {
+String? getDefaultValueExpression(FieldFormalParameterElement param) {
   if (param.hasDefaultValue) {
     return _dartLiteral(param.computeConstantValue()!);
   }
@@ -70,7 +70,7 @@ String _dartLiteral(DartObject o) {
     return name;
   }
 
-  if (o.type != null && o.type!.element3 is EnumElement2) {
+  if (o.type != null && o.type!.element is EnumElement) {
     return r.revive().accessor;
   }
 
@@ -83,10 +83,7 @@ String _dartLiteral(DartObject o) {
   final named = nested.namedArguments.entries
       .map((e) => '${e.key}: ${_dartLiteral(e.value)}')
       .join(', ');
-  final all = [
-    if (pos.isNotEmpty) pos,
-    if (named.isNotEmpty) named,
-  ].join(', ');
+  final all = [if (pos.isNotEmpty) pos, if (named.isNotEmpty) named].join(', ');
   return 'const $typeName$acc($all)';
 }
 

@@ -1,5 +1,5 @@
 import 'package:datahub/data.dart';
-import 'package:datahub/datahub.dart';
+import 'package:datahub/utils.dart';
 
 part 'log_record.g.dart';
 

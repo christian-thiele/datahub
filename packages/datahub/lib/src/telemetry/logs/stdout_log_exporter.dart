@@ -77,7 +77,7 @@ class _PrettyLog {
     final lines = message.line
         .splitLineLength(maxLength - prefixLength)
         .join('\n');
-    
+
     buffer.write(lines.replaceAll('\n', '\n$indent'));
 
     if (message.error != null) {

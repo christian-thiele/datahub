@@ -3,7 +3,6 @@ import 'dart:convert';
 import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:pointycastle/export.dart';
-import 'package:test/test.dart';
 
 void main() {
   final idp = 'http://localhost:8081/realms/local-oidc';

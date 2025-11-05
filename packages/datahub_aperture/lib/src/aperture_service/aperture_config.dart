@@ -1,5 +1,5 @@
 import 'package:datahub_aperture/api.dart';
-import 'package:datahub_aperture/datahub_aperture.dart';
+import 'aperture_action.dart';
 import 'aperture_module.dart';
 import 'aperture_resource.dart';
 

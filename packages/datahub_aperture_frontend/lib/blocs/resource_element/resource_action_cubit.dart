@@ -3,9 +3,7 @@ import 'dart:async';
 import 'package:datahub/api.dart';
 import 'package:datahub_aperture/modules.dart';
 import 'package:datahub_aperture_frontend/blocs/error_state.dart';
-import 'package:datahub_aperture_frontend/modules/task_manager/blocs/task_manager_module_cubit.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/models/task_model.dart';
-import 'package:datahub_aperture_frontend/modules/task_manager/repositories/task_manager_repository.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

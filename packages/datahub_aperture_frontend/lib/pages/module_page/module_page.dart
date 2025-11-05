@@ -1,6 +1,5 @@
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/blocs/module/module_cubit.dart';
-import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/repositories/api_task_manager_repository.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/repositories/task_manager_repository.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/task_manager_module_page.dart';

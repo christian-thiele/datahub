@@ -4,7 +4,6 @@ import 'package:datahub_aperture_frontend/modules/task_manager/widgets/invocatio
 import 'package:datahub_aperture_frontend/widgets/aperture_animation.dart';
 
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
-import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 

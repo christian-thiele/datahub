@@ -1,22 +1,23 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
 
-String typeImportPrefix(DartType type, LibraryElement2 library) {
-  if (type.element3?.library2 case LibraryElement2(uri: final typeLibraryUri)) {
-    for (final import in library.fragments
-        .expand((f) => f.prefixes.expand((p) => p.imports))) {
-      final exportedLibraries = <LibraryElement2>[
-        import.importedLibrary2!,
-        ...import.importedLibrary2!.exportedLibraries2,
+String typeImportPrefix(DartType type, LibraryElement library) {
+  if (type.element?.library case LibraryElement(uri: final typeLibraryUri)) {
+    for (final import in library.fragments.expand(
+      (f) => f.prefixes.expand((p) => p.imports),
+    )) {
+      final exportedLibraries = <LibraryElement>[
+        import.importedLibrary!,
+        ...import.importedLibrary!.exportedLibraries,
       ];
 
       for (final exported in exportedLibraries) {
-        if (exported case LibraryElement2(uri: final importLibraryUri)
-            when importLibraryUri == typeLibraryUri) {
-          if (import.prefix2
-              case PrefixFragment(
-                element: PrefixElement2(:final displayName)
-              )) {
+        if (exported case LibraryElement(
+          uri: final importLibraryUri,
+        ) when importLibraryUri == typeLibraryUri) {
+          if (import.prefix case PrefixFragment(
+            element: PrefixElement(:final displayName),
+          )) {
             return '$displayName.';
           }
         }
@@ -26,12 +27,12 @@ String typeImportPrefix(DartType type, LibraryElement2 library) {
   return '';
 }
 
-String typeExpression(DartType type, LibraryElement2 library) {
+String typeExpression(DartType type, LibraryElement library) {
   return switch (type) {
-    ParameterizedType(:final typeArguments, :final element3?)
+    ParameterizedType(:final typeArguments, :final element?)
         when typeArguments.isNotEmpty =>
-      '${element3.displayName}<${typeArguments.map((e) => typeImportPrefix(e, library) + typeExpression(e, library)).join(', ')}>',
-    DartType(:final element3?) => element3.displayName,
+      '${element.displayName}<${typeArguments.map((e) => typeImportPrefix(e, library) + typeExpression(e, library)).join(', ')}>',
+    DartType(:final element?) => element.displayName,
     DartType() => type.getDisplayString(),
   };
 }
