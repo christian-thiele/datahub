@@ -232,7 +232,19 @@ class DataBuilder extends Generator {
     ln('static $className fromValues(Map<String, dynamic> data) {');
     ln('return $className(');
     for (final field in fields) {
-      ln('${field.name}: data[\'${field.name}\']');
+      final valueAccessor = 'data[\'${field.name}\']';
+
+      final String accessor;
+      if (field.type.isDartCoreList) {
+        final valueType = (field.type as ParameterizedType).typeArguments[0];
+        final typeName = typeImportPrefix(valueType, field.library) +
+            typeExpression(valueType, field.library);
+        accessor = '$valueAccessor?.cast<$typeName>().toList(growable: false)';
+      } else {
+        accessor = valueAccessor;
+      }
+
+      ln('${field.name}: $accessor');
       if (field.defaultValueExpression != null) {
         ln(' ?? ${field.defaultValueExpression},');
       } else {
