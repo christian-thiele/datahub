@@ -2,7 +2,7 @@ name: datahub_workspace
 publish_to: none
 
 environment:
-  sdk: ^3.7.0
+  sdk: ^3.9.0
 
 dev_dependencies:
   datahub_codegen: 0.18.0-dev.3
