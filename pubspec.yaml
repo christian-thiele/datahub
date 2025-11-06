@@ -27,9 +27,6 @@ melos:
     build_runner:
       exec: dart run build_runner build
 
-    publish:
-      exec: dart pub publish
-
     test:
       exec: dart test .
       packageFilters:
