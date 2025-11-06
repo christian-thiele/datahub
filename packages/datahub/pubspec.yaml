@@ -31,7 +31,7 @@ dependencies:
   buffer: ^1.2.3
 
 dev_dependencies:
-  datahub_codegen: ^0.18.0-dev.2
+  datahub_codegen: ^0.18.0-dev.3
   lints: ^6.0.0
   build_runner: ^2.7.1
 
