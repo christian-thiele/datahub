@@ -85,7 +85,7 @@ class TaskManagerService implements Service {
   final Config<Duration> heartbeatTimeout;
   final Config<Duration> heartbeatInterval;
 
-  TaskManagerService({
+  const TaskManagerService({
     this.telemetry = const Find(),
     this.taskInvocationRepository = const Find(),
     this.heartbeatInterval = const Config(

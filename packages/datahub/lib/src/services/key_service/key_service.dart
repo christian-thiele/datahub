@@ -42,7 +42,7 @@ abstract interface class KeyCache {
 class KeyService implements Service {
   final Config<bool> enable;
 
-  KeyService({
+  const KeyService({
     this.enable = const Config('enableKeyCache', defaultValue: true),
   });
 

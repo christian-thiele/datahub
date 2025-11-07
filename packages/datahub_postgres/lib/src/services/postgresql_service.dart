@@ -39,7 +39,7 @@ class PostgresqlService implements Service {
   final Config<bool> enableMetrics;
   final Config<String> metricPrefix;
 
-  PostgresqlService({
+  const PostgresqlService({
     this.applicationName = const Config('serviceName', defaultValue: 'DataHub'),
     this.host = const Config('host', defaultValue: 'localhost'),
     this.port = const Config('port', defaultValue: 5432),

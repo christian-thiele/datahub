@@ -10,6 +10,8 @@ class TestSession implements Session {
 }
 
 class AuthService implements Service {
+  const AuthService();
+
   @override
   ServiceInstance<AuthService> createInstance() => _AuthServiceInstance();
 }

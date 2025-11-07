@@ -22,7 +22,7 @@ class ApiService implements Service {
   final List<ApiNode> routes;
   final io.SecurityContext? securityContext;
 
-  ApiService({
+  const ApiService({
     this.address = const Config('address'),
     this.port = const Config('port', defaultValue: 8080),
     required this.routes,

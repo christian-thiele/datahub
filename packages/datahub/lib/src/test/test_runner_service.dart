@@ -1,7 +1,7 @@
 part of 'test_host.dart';
 
 class TestRunnerService implements Service {
-  TestRunnerService();
+  const TestRunnerService();
 
   @override
   ServiceInstance<TestRunnerService> createInstance() =>

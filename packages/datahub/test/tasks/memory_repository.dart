@@ -6,7 +6,7 @@ import 'package:datahub/datahub.dart';
 class MemoryRepositoryService<T extends DataObject<T>> implements Service {
   final DataBean<T> bean;
 
-  MemoryRepositoryService({required this.bean});
+  const MemoryRepositoryService({required this.bean});
 
   @override
   ServiceInstance<Service> createInstance() =>

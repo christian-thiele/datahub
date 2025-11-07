@@ -196,7 +196,7 @@ class TelemetryService implements Service {
   final Config<LogBodyFormat> logStdoutFormat;
   final Config<SeverityLevel> logLevel;
 
-  TelemetryService({
+  const TelemetryService({
     this.serviceName = const Config<String>(
       'telemetry.serviceName',
       defaultValue: 'DataHub',

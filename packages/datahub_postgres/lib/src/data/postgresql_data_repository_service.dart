@@ -13,7 +13,7 @@ class PostgresqlDataRepositoryService<TData extends DataObject<TData>>
   final Config<String?> relationName;
   final DataBean<TData> bean;
 
-  PostgresqlDataRepositoryService({
+  const PostgresqlDataRepositoryService({
     required this.bean,
     this.postgresql = const Find(),
     this.schemaName = const Config('schemaName', defaultValue: 'public'),

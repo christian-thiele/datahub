@@ -16,6 +16,8 @@ abstract interface class Scheduler {
 }
 
 class SchedulerService implements Service {
+  const SchedulerService();
+
   @override
   ServiceInstance<SchedulerService> createInstance() =>
       _SchedulerServiceInstance();
