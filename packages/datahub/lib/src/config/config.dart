@@ -4,9 +4,9 @@ sealed class Config<T> {
   const Config._();
 
   const factory Config(String path, {T? defaultValue, List<T>? values}) =
-      PathConfig._;
+      PathConfig<T>._;
 
-  const factory Config.value(T value) = ValueConfig._;
+  const factory Config.value(T value) = ValueConfig<T>._;
 
   T read() => Context.ofZone().read(this);
 }
