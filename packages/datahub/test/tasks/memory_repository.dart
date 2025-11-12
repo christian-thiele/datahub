@@ -168,4 +168,10 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
   Future<R> atomic<R>(Future<R> Function() delegate) async {
     return await delegate();
   }
+
+  @override
+  Future<int> count({Filter filter = Filter.empty}) async {
+    final all = await readAll(filter: filter);
+    return all.length;
+  }
 }

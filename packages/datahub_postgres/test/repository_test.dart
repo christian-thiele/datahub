@@ -10,7 +10,7 @@ void main() {
     'Postgresql Table Repository',
     [
       PostgresqlService(
-        host: Config.value('192.168.178.85'),
+        host: Config.value('localhost'),
         database: Config.value('datahub_postgres'),
         username: Config.value('postgres'),
         password: Config.value('postgres'),
@@ -39,6 +39,17 @@ void main() {
           expect(data.first.firstName, 'Something');
           expect(data.first.lastName, 'Something Else');
           expect(data.first.isSpecial, isFalse);
+
+          final count = await repo.count();
+          final countWithFilter = await repo.count(
+            filter: $Person.$isSpecial.equals(true),
+          );
+
+          expect(count, equals(data.length));
+          expect(
+            countWithFilter,
+            equals(data.where((d) => d.isSpecial).length),
+          );
         });
       });
     },

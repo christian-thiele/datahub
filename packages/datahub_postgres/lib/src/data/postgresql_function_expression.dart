@@ -1,5 +1,12 @@
 import 'package:datahub/data.dart';
 import 'package:datahub_postgres/types.dart';
+import 'package:datahub_postgres/sql.dart';
+
+class PostgresqlRawExpression extends Expression {
+  final Sql sql;
+
+  const PostgresqlRawExpression(this.sql);
+}
 
 class PostgresqlFunctionExpression extends Expression {
   final String name;

@@ -31,6 +31,9 @@ abstract interface class DataRepository<T extends DataObject> {
     int? limit,
   });
 
+  /// Returns the count of all elements that match [filter].
+  Future<int> count({Filter filter = Filter.empty});
+
   /// Find and update an element by its [DataBean.idField] value.
   ///
   /// Returns true if the element was found and updated, false otherwise.
@@ -63,4 +66,21 @@ abstract interface class DataRepository<T extends DataObject> {
   /// Runs all calls to this repository from inside [delegate] inside an
   /// atomic transaction.
   Future<R> atomic<R>(Future<R> Function() delegate);
+}
+
+extension DataRepositoryExtension<T extends DataObject> on DataRepository<T> {
+  Future<T?> first({
+    Filter filter = Filter.empty,
+    Sort sort = Sort.empty,
+    int offset = 0,
+  }) async {
+    final results = await readAll(
+      filter: filter,
+      sort: sort,
+      offset: offset,
+      limit: 1,
+    );
+
+    return results.firstOrNull;
+  }
 }

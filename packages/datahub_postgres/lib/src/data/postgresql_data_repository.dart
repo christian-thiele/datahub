@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/data.dart';
 import 'package:datahub_postgres/services.dart';
+import 'package:datahub_postgres/sql.dart';
 import 'package:meta/meta.dart';
 
 @optionalTypeArgs
@@ -66,6 +67,17 @@ mixin PostgresqlDataRepository<
         offset: offset ?? 0,
         limit: limit ?? -1,
       );
+    });
+  }
+
+  @override
+  Future<int> count({Filter filter = Filter.empty}) async {
+    return await find(postgresql).runTransaction((context) async {
+      // TODO aggregates should be abstract
+      final result = await dataRelation.select(context, [
+        PostgresqlRawExpression(RawSql('COUNT(*) as "count"')),
+      ], filter: filter);
+      return result.firstOrNull?['count'] ?? 0;
     });
   }
 

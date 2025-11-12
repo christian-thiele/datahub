@@ -724,55 +724,112 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
           data['authorizationResponseIssParameterSupported'] ?? false,
       requirePushedAuthorizationRequests:
           data['requirePushedAuthorizationRequests'],
-      grantTypesSupported: data['grantTypesSupported'],
-      acrValuesSupported: data['acrValuesSupported'],
-      responseTypesSupported: data['responseTypesSupported'],
-      subjectTypesSupported: data['subjectTypesSupported'],
-      idTokenSigningAlgValuesSupported:
-          data['idTokenSigningAlgValuesSupported'],
+      grantTypesSupported: data['grantTypesSupported']?.cast<String>().toList(
+        growable: false,
+      ),
+      acrValuesSupported: data['acrValuesSupported']?.cast<String>().toList(
+        growable: false,
+      ),
+      responseTypesSupported: data['responseTypesSupported']
+          ?.cast<String>()
+          .toList(growable: false),
+      subjectTypesSupported: data['subjectTypesSupported']
+          ?.cast<String>()
+          .toList(growable: false),
+      idTokenSigningAlgValuesSupported: data['idTokenSigningAlgValuesSupported']
+          ?.cast<String>()
+          .toList(growable: false),
       idTokenEncryptionAlgValuesSupported:
-          data['idTokenEncryptionAlgValuesSupported'],
+          data['idTokenEncryptionAlgValuesSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       idTokenEncryptionEncValuesSupported:
-          data['idTokenEncryptionEncValuesSupported'],
+          data['idTokenEncryptionEncValuesSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       userinfoSigningAlgValuesSupported:
-          data['userinfoSigningAlgValuesSupported'],
+          data['userinfoSigningAlgValuesSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       userinfoEncryptionAlgValuesSupported:
-          data['userinfoEncryptionAlgValuesSupported'],
+          data['userinfoEncryptionAlgValuesSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       userinfoEncryptionEncValuesSupported:
-          data['userinfoEncryptionEncValuesSupported'],
+          data['userinfoEncryptionEncValuesSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       requestObjectSigningAlgValuesSupported:
-          data['requestObjectSigningAlgValuesSupported'],
+          data['requestObjectSigningAlgValuesSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       requestObjectEncryptionAlgValuesSupported:
-          data['requestObjectEncryptionAlgValuesSupported'],
+          data['requestObjectEncryptionAlgValuesSupported']
+              ?.cast<String>()
+              .toList(growable: false),
       requestObjectEncryptionEncValuesSupported:
-          data['requestObjectEncryptionEncValuesSupported'],
-      responseModesSupported: data['responseModesSupported'],
+          data['requestObjectEncryptionEncValuesSupported']
+              ?.cast<String>()
+              .toList(growable: false),
+      responseModesSupported: data['responseModesSupported']
+          ?.cast<String>()
+          .toList(growable: false),
       tokenEndpointAuthMethodsSupported:
-          data['tokenEndpointAuthMethodsSupported'],
+          data['tokenEndpointAuthMethodsSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       tokenEndpointAuthSigningAlgValuesSupported:
-          data['tokenEndpointAuthSigningAlgValuesSupported'],
+          data['tokenEndpointAuthSigningAlgValuesSupported']
+              ?.cast<String>()
+              .toList(growable: false),
       introspectionEndpointAuthMethodsSupported:
-          data['introspectionEndpointAuthMethodsSupported'],
+          data['introspectionEndpointAuthMethodsSupported']
+              ?.cast<String>()
+              .toList(growable: false),
       introspectionEndpointAuthSigningAlgValuesSupported:
-          data['introspectionEndpointAuthSigningAlgValuesSupported'],
+          data['introspectionEndpointAuthSigningAlgValuesSupported']
+              ?.cast<String>()
+              .toList(growable: false),
       authorizationSigningAlgValuesSupported:
-          data['authorizationSigningAlgValuesSupported'],
+          data['authorizationSigningAlgValuesSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       authorizationEncryptionAlgValuesSupported:
-          data['authorizationEncryptionAlgValuesSupported'],
+          data['authorizationEncryptionAlgValuesSupported']
+              ?.cast<String>()
+              .toList(growable: false),
       authorizationEncryptionEncValuesSupported:
-          data['authorizationEncryptionEncValuesSupported'],
-      claimsSupported: data['claimsSupported'],
-      claimTypesSupported: data['claimTypesSupported'],
-      scopesSupported: data['scopesSupported'],
-      codeChallengeMethodsSupported: data['codeChallengeMethodsSupported'],
+          data['authorizationEncryptionEncValuesSupported']
+              ?.cast<String>()
+              .toList(growable: false),
+      claimsSupported: data['claimsSupported']?.cast<String>().toList(
+        growable: false,
+      ),
+      claimTypesSupported: data['claimTypesSupported']?.cast<String>().toList(
+        growable: false,
+      ),
+      scopesSupported: data['scopesSupported']?.cast<String>().toList(
+        growable: false,
+      ),
+      codeChallengeMethodsSupported: data['codeChallengeMethodsSupported']
+          ?.cast<String>()
+          .toList(growable: false),
       revocationEndpointAuthMethodsSupported:
-          data['revocationEndpointAuthMethodsSupported'],
+          data['revocationEndpointAuthMethodsSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       revocationEndpointAuthSigningAlgValuesSupported:
-          data['revocationEndpointAuthSigningAlgValuesSupported'],
+          data['revocationEndpointAuthSigningAlgValuesSupported']
+              ?.cast<String>()
+              .toList(growable: false),
       backchannelTokenDeliveryModesSupported:
-          data['backchannelTokenDeliveryModesSupported'],
+          data['backchannelTokenDeliveryModesSupported']?.cast<String>().toList(
+            growable: false,
+          ),
       backchannelAuthenticationRequestSigningAlgValuesSupported:
-          data['backchannelAuthenticationRequestSigningAlgValuesSupported'],
+          data['backchannelAuthenticationRequestSigningAlgValuesSupported']
+              ?.cast<String>()
+              .toList(growable: false),
       mtlsEndpointAliases: data['mtlsEndpointAliases'],
     );
   }

@@ -171,6 +171,7 @@ Sql buildExpressionSql(
       name,
       arguments.map((e) => buildExpressionSql(e, attributes)).toList(),
     ),
+    PostgresqlRawExpression(:final sql) => sql,
     _ => throw UnsupportedExpressionError(
       expression,
       library: 'datahub_postgres',
