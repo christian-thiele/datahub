@@ -4,7 +4,8 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:cryptography/cryptography.dart' as cryptography;
-import 'package:datahub/datahub.dart';
+
+import 'api_exception.dart';
 
 abstract class Argon2Id {
   const Argon2Id._();
