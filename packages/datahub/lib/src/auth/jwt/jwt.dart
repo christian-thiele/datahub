@@ -6,9 +6,9 @@ import 'package:boost/boost.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/utils.dart';
+import 'package:pointycastle/export.dart';
 
-import 'package:pointycastle/pointycastle.dart';
-
+/// Json Web Token
 class Jwt extends TokenAuth {
   static final _jsonBase64 = json.fuse(utf8.fuse(base64Url));
 
@@ -53,14 +53,17 @@ class Jwt extends TokenAuth {
     Map<String, dynamic> payload,
     RSAPrivateKey key,
   ) {
-    final encodedHeader = stripBase64Padding(_jsonBase64.encode(header));
+    final encodedHeader = stripBase64Padding(_jsonBase64.encode({
+      ...header,
+      'alg': 'RS256',
+      'typ': 'JWT',
+    }));
     final encodedPayload = stripBase64Padding(_jsonBase64.encode(payload));
     final bodyPart = '$encodedHeader.$encodedPayload';
     final body = utf8.encode(bodyPart);
-    final signer = Signer('SHA-256/RSA');
+    final signer = RSASigner(SHA256Digest(), '0609608648016503040201');
     signer.init(true, PrivateKeyParameter<RSAPrivateKey>(key));
-    final rsaSignature =
-        signer.generateSignature(Uint8List.fromList(body)) as RSASignature;
+    final rsaSignature = signer.generateSignature(Uint8List.fromList(body));
     final signature = stripBase64Padding(base64UrlEncode(rsaSignature.bytes));
 
     return Jwt('$bodyPart.$signature');
@@ -145,9 +148,7 @@ class Jwt extends TokenAuth {
 
     final key =
         publicKey ??
-        await Context.ofZone()
-            .find(Find<KeyCache>())
-            .getOAuthKey(Uri.parse(iss!), alg!, kid!);
+        await Find<KeyCache>().find().getOAuthKey(Uri.parse(iss!), alg!, kid!);
 
     final body = utf8.encode(token.split('.').take(2).join('.'));
     final signer = Signer('SHA-256/RSA');

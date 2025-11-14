@@ -3,7 +3,7 @@ import 'package:datahub/config.dart';
 import 'package:datahub/scaffold.dart';
 
 import 'authentication_middleware.dart';
-import 'jwt.dart';
+import 'jwt/jwt.dart';
 
 abstract interface class JwtAuthProvider {
   Future<Session> authenticateJwt(Jwt auth);

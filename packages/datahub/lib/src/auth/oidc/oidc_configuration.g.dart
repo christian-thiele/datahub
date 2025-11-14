@@ -41,55 +41,71 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
     toJson: (value) => $$codec.encodeString(value),
   );
 
-  static final $introspectionEndpoint = DataField<OidcConfiguration, String>(
+  static final $userinfoEndpoint = DataField<OidcConfiguration, String?>(
+    name: 'userinfoEndpoint',
+    valueOf: (p) => p.userinfoEndpoint,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
+  );
+
+  static final $introspectionEndpoint = DataField<OidcConfiguration, String?>(
     name: 'introspectionEndpoint',
     valueOf: (p) => p.introspectionEndpoint,
     fromJson: (value, {String? name}) =>
-        $$codec.decodeString(value, name: name),
-    toJson: (value) => $$codec.encodeString(value),
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
-  static final $registrationEndpoint = DataField<OidcConfiguration, String>(
+  static final $registrationEndpoint = DataField<OidcConfiguration, String?>(
     name: 'registrationEndpoint',
     valueOf: (p) => p.registrationEndpoint,
     fromJson: (value, {String? name}) =>
-        $$codec.decodeString(value, name: name),
-    toJson: (value) => $$codec.encodeString(value),
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
-  static final $revocationEndpoint = DataField<OidcConfiguration, String>(
+  static final $endSessionEndpoint = DataField<OidcConfiguration, String?>(
+    name: 'endSessionEndpoint',
+    valueOf: (p) => p.endSessionEndpoint,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
+  );
+
+  static final $revocationEndpoint = DataField<OidcConfiguration, String?>(
     name: 'revocationEndpoint',
     valueOf: (p) => p.revocationEndpoint,
     fromJson: (value, {String? name}) =>
-        $$codec.decodeString(value, name: name),
-    toJson: (value) => $$codec.encodeString(value),
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
   static final $deviceAuthorizationEndpoint =
-      DataField<OidcConfiguration, String>(
+      DataField<OidcConfiguration, String?>(
         name: 'deviceAuthorizationEndpoint',
         valueOf: (p) => p.deviceAuthorizationEndpoint,
         fromJson: (value, {String? name}) =>
-            $$codec.decodeString(value, name: name),
-        toJson: (value) => $$codec.encodeString(value),
+            $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+        toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
       );
 
   static final $backchannelAuthenticationEndpoint =
-      DataField<OidcConfiguration, String>(
+      DataField<OidcConfiguration, String?>(
         name: 'backchannelAuthenticationEndpoint',
         valueOf: (p) => p.backchannelAuthenticationEndpoint,
         fromJson: (value, {String? name}) =>
-            $$codec.decodeString(value, name: name),
-        toJson: (value) => $$codec.encodeString(value),
+            $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+        toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
       );
 
   static final $pushedAuthorizationRequestEndpoint =
-      DataField<OidcConfiguration, String>(
+      DataField<OidcConfiguration, String?>(
         name: 'pushedAuthorizationRequestEndpoint',
         valueOf: (p) => p.pushedAuthorizationRequestEndpoint,
         fromJson: (value, {String? name}) =>
-            $$codec.decodeString(value, name: name),
-        toJson: (value) => $$codec.encodeString(value),
+            $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+        toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
       );
 
   static final $claimsParameterSupported = DataField<OidcConfiguration, bool>(
@@ -135,6 +151,24 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         toJson: (value) => $$codec.encodeBool(value),
       );
 
+  static final $frontchannelLogoutSupported =
+      DataField<OidcConfiguration, bool>(
+        name: 'frontchannelLogoutSupported',
+        valueOf: (p) => p.frontchannelLogoutSupported,
+        fromJson: (value, {String? name}) =>
+            $$codec.decodeBool((value ?? false), name: name),
+        toJson: (value) => $$codec.encodeBool(value),
+      );
+
+  static final $frontchannelLogoutSessionSupported =
+      DataField<OidcConfiguration, bool>(
+        name: 'frontchannelLogoutSessionSupported',
+        valueOf: (p) => p.frontchannelLogoutSessionSupported,
+        fromJson: (value, {String? name}) =>
+            $$codec.decodeBool((value ?? false), name: name),
+        toJson: (value) => $$codec.encodeBool(value),
+      );
+
   static final $backchannelLogoutSupported = DataField<OidcConfiguration, bool>(
     name: 'backchannelLogoutSupported',
     valueOf: (p) => p.backchannelLogoutSupported,
@@ -166,27 +200,41 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         name: 'requirePushedAuthorizationRequests',
         valueOf: (p) => p.requirePushedAuthorizationRequests,
         fromJson: (value, {String? name}) =>
-            $$codec.decodeBool(value, name: name),
+            $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
       );
 
   static final $grantTypesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'grantTypesSupported',
         valueOf: (p) => p.grantTypesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
-  static final $acrValuesSupported = DataField<OidcConfiguration, List<String>>(
-    name: 'acrValuesSupported',
-    valueOf: (p) => p.acrValuesSupported,
-    fromJson: (value, {String? name}) =>
-        $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-    toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
-  );
+  static final $acrValuesSupported =
+      DataField<OidcConfiguration, List<String>?>(
+        name: 'acrValuesSupported',
+        valueOf: (p) => p.acrValuesSupported,
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
+      );
 
   static final $responseTypesSupported =
       DataField<OidcConfiguration, List<String>>(
@@ -219,250 +267,402 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
       );
 
   static final $idTokenEncryptionAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'idTokenEncryptionAlgValuesSupported',
         valueOf: (p) => p.idTokenEncryptionAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $idTokenEncryptionEncValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'idTokenEncryptionEncValuesSupported',
         valueOf: (p) => p.idTokenEncryptionEncValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $userinfoSigningAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'userinfoSigningAlgValuesSupported',
         valueOf: (p) => p.userinfoSigningAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $userinfoEncryptionAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'userinfoEncryptionAlgValuesSupported',
         valueOf: (p) => p.userinfoEncryptionAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $userinfoEncryptionEncValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'userinfoEncryptionEncValuesSupported',
         valueOf: (p) => p.userinfoEncryptionEncValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $requestObjectSigningAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'requestObjectSigningAlgValuesSupported',
         valueOf: (p) => p.requestObjectSigningAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $requestObjectEncryptionAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'requestObjectEncryptionAlgValuesSupported',
         valueOf: (p) => p.requestObjectEncryptionAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $requestObjectEncryptionEncValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'requestObjectEncryptionEncValuesSupported',
         valueOf: (p) => p.requestObjectEncryptionEncValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $responseModesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'responseModesSupported',
         valueOf: (p) => p.responseModesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $tokenEndpointAuthMethodsSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'tokenEndpointAuthMethodsSupported',
         valueOf: (p) => p.tokenEndpointAuthMethodsSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $tokenEndpointAuthSigningAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'tokenEndpointAuthSigningAlgValuesSupported',
         valueOf: (p) => p.tokenEndpointAuthSigningAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $introspectionEndpointAuthMethodsSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'introspectionEndpointAuthMethodsSupported',
         valueOf: (p) => p.introspectionEndpointAuthMethodsSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $introspectionEndpointAuthSigningAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'introspectionEndpointAuthSigningAlgValuesSupported',
         valueOf: (p) => p.introspectionEndpointAuthSigningAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $authorizationSigningAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'authorizationSigningAlgValuesSupported',
         valueOf: (p) => p.authorizationSigningAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $authorizationEncryptionAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'authorizationEncryptionAlgValuesSupported',
         valueOf: (p) => p.authorizationEncryptionAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $authorizationEncryptionEncValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'authorizationEncryptionEncValuesSupported',
         valueOf: (p) => p.authorizationEncryptionEncValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
-  static final $claimsSupported = DataField<OidcConfiguration, List<String>>(
+  static final $claimsSupported = DataField<OidcConfiguration, List<String>?>(
     name: 'claimsSupported',
     valueOf: (p) => p.claimsSupported,
-    fromJson: (value, {String? name}) =>
-        $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-    toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    fromJson: (value, {String? name}) => $$codec.decodeNullable(
+      value,
+      (v, {String? name}) =>
+          $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+      name: name,
+    ),
+    toJson: (value) => $$codec.encodeNullable(
+      value,
+      (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+    ),
   );
 
   static final $claimTypesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'claimTypesSupported',
         valueOf: (p) => p.claimTypesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
-  static final $scopesSupported = DataField<OidcConfiguration, List<String>>(
+  static final $scopesSupported = DataField<OidcConfiguration, List<String>?>(
     name: 'scopesSupported',
     valueOf: (p) => p.scopesSupported,
-    fromJson: (value, {String? name}) =>
-        $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-    toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    fromJson: (value, {String? name}) => $$codec.decodeNullable(
+      value,
+      (v, {String? name}) =>
+          $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+      name: name,
+    ),
+    toJson: (value) => $$codec.encodeNullable(
+      value,
+      (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+    ),
   );
 
   static final $codeChallengeMethodsSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'codeChallengeMethodsSupported',
         valueOf: (p) => p.codeChallengeMethodsSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $revocationEndpointAuthMethodsSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'revocationEndpointAuthMethodsSupported',
         valueOf: (p) => p.revocationEndpointAuthMethodsSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $revocationEndpointAuthSigningAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'revocationEndpointAuthSigningAlgValuesSupported',
         valueOf: (p) => p.revocationEndpointAuthSigningAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $backchannelTokenDeliveryModesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'backchannelTokenDeliveryModesSupported',
         valueOf: (p) => p.backchannelTokenDeliveryModesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $backchannelAuthenticationRequestSigningAlgValuesSupported =
-      DataField<OidcConfiguration, List<String>>(
+      DataField<OidcConfiguration, List<String>?>(
         name: 'backchannelAuthenticationRequestSigningAlgValuesSupported',
         valueOf: (p) =>
             p.backchannelAuthenticationRequestSigningAlgValuesSupported,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeList<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final $mtlsEndpointAliases =
-      DataField<OidcConfiguration, Map<String, String>>(
+      DataField<OidcConfiguration, Map<String, String>?>(
         name: 'mtlsEndpointAliases',
         valueOf: (p) => p.mtlsEndpointAliases,
-        fromJson: (value, {String? name}) =>
-            $$codec.decodeMap<String>(value, $$codec.decodeString, name: name),
-        toJson: (value) =>
-            $$codec.encodeMap<String>(value, $$codec.encodeString),
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) =>
+              $$codec.decodeMap<String>(v, $$codec.decodeString, name: name),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeMap<String>(v, $$codec.encodeString),
+        ),
       );
 
   static final DataBean<OidcConfiguration> bean = DataBean<OidcConfiguration>(
@@ -472,8 +672,10 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
       $jwksUri,
       $authorizationEndpoint,
       $tokenEndpoint,
+      $userinfoEndpoint,
       $introspectionEndpoint,
       $registrationEndpoint,
+      $endSessionEndpoint,
       $revocationEndpoint,
       $deviceAuthorizationEndpoint,
       $backchannelAuthenticationEndpoint,
@@ -483,6 +685,8 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
       $requestUriParameterSupported,
       $requireRequestUriRegistration,
       $tlsClientCertificateBoundAccessTokens,
+      $frontchannelLogoutSupported,
+      $frontchannelLogoutSessionSupported,
       $backchannelLogoutSupported,
       $backchannelLogoutSessionSupported,
       $authorizationResponseIssParameterSupported,
@@ -531,51 +735,90 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
     String? jwksUri,
     String? authorizationEndpoint,
     String? tokenEndpoint,
+    String? userinfoEndpoint,
+    bool nullUserinfoEndpoint = false,
     String? introspectionEndpoint,
+    bool nullIntrospectionEndpoint = false,
     String? registrationEndpoint,
+    bool nullRegistrationEndpoint = false,
+    String? endSessionEndpoint,
+    bool nullEndSessionEndpoint = false,
     String? revocationEndpoint,
+    bool nullRevocationEndpoint = false,
     String? deviceAuthorizationEndpoint,
+    bool nullDeviceAuthorizationEndpoint = false,
     String? backchannelAuthenticationEndpoint,
+    bool nullBackchannelAuthenticationEndpoint = false,
     String? pushedAuthorizationRequestEndpoint,
+    bool nullPushedAuthorizationRequestEndpoint = false,
     bool? claimsParameterSupported,
     bool? requestParameterSupported,
     bool? requestUriParameterSupported,
     bool? requireRequestUriRegistration,
     bool? tlsClientCertificateBoundAccessTokens,
+    bool? frontchannelLogoutSupported,
+    bool? frontchannelLogoutSessionSupported,
     bool? backchannelLogoutSupported,
     bool? backchannelLogoutSessionSupported,
     bool? authorizationResponseIssParameterSupported,
     bool? requirePushedAuthorizationRequests,
     List<String>? grantTypesSupported,
+    bool nullGrantTypesSupported = false,
     List<String>? acrValuesSupported,
+    bool nullAcrValuesSupported = false,
     List<String>? responseTypesSupported,
     List<String>? subjectTypesSupported,
     List<String>? idTokenSigningAlgValuesSupported,
     List<String>? idTokenEncryptionAlgValuesSupported,
+    bool nullIdTokenEncryptionAlgValuesSupported = false,
     List<String>? idTokenEncryptionEncValuesSupported,
+    bool nullIdTokenEncryptionEncValuesSupported = false,
     List<String>? userinfoSigningAlgValuesSupported,
+    bool nullUserinfoSigningAlgValuesSupported = false,
     List<String>? userinfoEncryptionAlgValuesSupported,
+    bool nullUserinfoEncryptionAlgValuesSupported = false,
     List<String>? userinfoEncryptionEncValuesSupported,
+    bool nullUserinfoEncryptionEncValuesSupported = false,
     List<String>? requestObjectSigningAlgValuesSupported,
+    bool nullRequestObjectSigningAlgValuesSupported = false,
     List<String>? requestObjectEncryptionAlgValuesSupported,
+    bool nullRequestObjectEncryptionAlgValuesSupported = false,
     List<String>? requestObjectEncryptionEncValuesSupported,
+    bool nullRequestObjectEncryptionEncValuesSupported = false,
     List<String>? responseModesSupported,
+    bool nullResponseModesSupported = false,
     List<String>? tokenEndpointAuthMethodsSupported,
+    bool nullTokenEndpointAuthMethodsSupported = false,
     List<String>? tokenEndpointAuthSigningAlgValuesSupported,
+    bool nullTokenEndpointAuthSigningAlgValuesSupported = false,
     List<String>? introspectionEndpointAuthMethodsSupported,
+    bool nullIntrospectionEndpointAuthMethodsSupported = false,
     List<String>? introspectionEndpointAuthSigningAlgValuesSupported,
+    bool nullIntrospectionEndpointAuthSigningAlgValuesSupported = false,
     List<String>? authorizationSigningAlgValuesSupported,
+    bool nullAuthorizationSigningAlgValuesSupported = false,
     List<String>? authorizationEncryptionAlgValuesSupported,
+    bool nullAuthorizationEncryptionAlgValuesSupported = false,
     List<String>? authorizationEncryptionEncValuesSupported,
+    bool nullAuthorizationEncryptionEncValuesSupported = false,
     List<String>? claimsSupported,
+    bool nullClaimsSupported = false,
     List<String>? claimTypesSupported,
+    bool nullClaimTypesSupported = false,
     List<String>? scopesSupported,
+    bool nullScopesSupported = false,
     List<String>? codeChallengeMethodsSupported,
+    bool nullCodeChallengeMethodsSupported = false,
     List<String>? revocationEndpointAuthMethodsSupported,
+    bool nullRevocationEndpointAuthMethodsSupported = false,
     List<String>? revocationEndpointAuthSigningAlgValuesSupported,
+    bool nullRevocationEndpointAuthSigningAlgValuesSupported = false,
     List<String>? backchannelTokenDeliveryModesSupported,
+    bool nullBackchannelTokenDeliveryModesSupported = false,
     List<String>? backchannelAuthenticationRequestSigningAlgValuesSupported,
+    bool nullBackchannelAuthenticationRequestSigningAlgValuesSupported = false,
     Map<String, String>? mtlsEndpointAliases,
+    bool nullMtlsEndpointAliases = false,
   }) {
     final $data = this as OidcConfiguration;
     return OidcConfiguration(
@@ -584,18 +827,32 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
       authorizationEndpoint:
           authorizationEndpoint ?? $data.authorizationEndpoint,
       tokenEndpoint: tokenEndpoint ?? $data.tokenEndpoint,
-      introspectionEndpoint:
-          introspectionEndpoint ?? $data.introspectionEndpoint,
-      registrationEndpoint: registrationEndpoint ?? $data.registrationEndpoint,
-      revocationEndpoint: revocationEndpoint ?? $data.revocationEndpoint,
-      deviceAuthorizationEndpoint:
-          deviceAuthorizationEndpoint ?? $data.deviceAuthorizationEndpoint,
-      backchannelAuthenticationEndpoint:
-          backchannelAuthenticationEndpoint ??
-          $data.backchannelAuthenticationEndpoint,
-      pushedAuthorizationRequestEndpoint:
-          pushedAuthorizationRequestEndpoint ??
-          $data.pushedAuthorizationRequestEndpoint,
+      userinfoEndpoint: nullUserinfoEndpoint
+          ? null
+          : (userinfoEndpoint ?? $data.userinfoEndpoint),
+      introspectionEndpoint: nullIntrospectionEndpoint
+          ? null
+          : (introspectionEndpoint ?? $data.introspectionEndpoint),
+      registrationEndpoint: nullRegistrationEndpoint
+          ? null
+          : (registrationEndpoint ?? $data.registrationEndpoint),
+      endSessionEndpoint: nullEndSessionEndpoint
+          ? null
+          : (endSessionEndpoint ?? $data.endSessionEndpoint),
+      revocationEndpoint: nullRevocationEndpoint
+          ? null
+          : (revocationEndpoint ?? $data.revocationEndpoint),
+      deviceAuthorizationEndpoint: nullDeviceAuthorizationEndpoint
+          ? null
+          : (deviceAuthorizationEndpoint ?? $data.deviceAuthorizationEndpoint),
+      backchannelAuthenticationEndpoint: nullBackchannelAuthenticationEndpoint
+          ? null
+          : (backchannelAuthenticationEndpoint ??
+                $data.backchannelAuthenticationEndpoint),
+      pushedAuthorizationRequestEndpoint: nullPushedAuthorizationRequestEndpoint
+          ? null
+          : (pushedAuthorizationRequestEndpoint ??
+                $data.pushedAuthorizationRequestEndpoint),
       claimsParameterSupported:
           claimsParameterSupported ?? $data.claimsParameterSupported,
       requestParameterSupported:
@@ -607,6 +864,11 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
       tlsClientCertificateBoundAccessTokens:
           tlsClientCertificateBoundAccessTokens ??
           $data.tlsClientCertificateBoundAccessTokens,
+      frontchannelLogoutSupported:
+          frontchannelLogoutSupported ?? $data.frontchannelLogoutSupported,
+      frontchannelLogoutSessionSupported:
+          frontchannelLogoutSessionSupported ??
+          $data.frontchannelLogoutSessionSupported,
       backchannelLogoutSupported:
           backchannelLogoutSupported ?? $data.backchannelLogoutSupported,
       backchannelLogoutSessionSupported:
@@ -618,8 +880,12 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
       requirePushedAuthorizationRequests:
           requirePushedAuthorizationRequests ??
           $data.requirePushedAuthorizationRequests,
-      grantTypesSupported: grantTypesSupported ?? $data.grantTypesSupported,
-      acrValuesSupported: acrValuesSupported ?? $data.acrValuesSupported,
+      grantTypesSupported: nullGrantTypesSupported
+          ? null
+          : (grantTypesSupported ?? $data.grantTypesSupported),
+      acrValuesSupported: nullAcrValuesSupported
+          ? null
+          : (acrValuesSupported ?? $data.acrValuesSupported),
       responseTypesSupported:
           responseTypesSupported ?? $data.responseTypesSupported,
       subjectTypesSupported:
@@ -628,70 +894,118 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
           idTokenSigningAlgValuesSupported ??
           $data.idTokenSigningAlgValuesSupported,
       idTokenEncryptionAlgValuesSupported:
-          idTokenEncryptionAlgValuesSupported ??
-          $data.idTokenEncryptionAlgValuesSupported,
+          nullIdTokenEncryptionAlgValuesSupported
+          ? null
+          : (idTokenEncryptionAlgValuesSupported ??
+                $data.idTokenEncryptionAlgValuesSupported),
       idTokenEncryptionEncValuesSupported:
-          idTokenEncryptionEncValuesSupported ??
-          $data.idTokenEncryptionEncValuesSupported,
-      userinfoSigningAlgValuesSupported:
-          userinfoSigningAlgValuesSupported ??
-          $data.userinfoSigningAlgValuesSupported,
+          nullIdTokenEncryptionEncValuesSupported
+          ? null
+          : (idTokenEncryptionEncValuesSupported ??
+                $data.idTokenEncryptionEncValuesSupported),
+      userinfoSigningAlgValuesSupported: nullUserinfoSigningAlgValuesSupported
+          ? null
+          : (userinfoSigningAlgValuesSupported ??
+                $data.userinfoSigningAlgValuesSupported),
       userinfoEncryptionAlgValuesSupported:
-          userinfoEncryptionAlgValuesSupported ??
-          $data.userinfoEncryptionAlgValuesSupported,
+          nullUserinfoEncryptionAlgValuesSupported
+          ? null
+          : (userinfoEncryptionAlgValuesSupported ??
+                $data.userinfoEncryptionAlgValuesSupported),
       userinfoEncryptionEncValuesSupported:
-          userinfoEncryptionEncValuesSupported ??
-          $data.userinfoEncryptionEncValuesSupported,
+          nullUserinfoEncryptionEncValuesSupported
+          ? null
+          : (userinfoEncryptionEncValuesSupported ??
+                $data.userinfoEncryptionEncValuesSupported),
       requestObjectSigningAlgValuesSupported:
-          requestObjectSigningAlgValuesSupported ??
-          $data.requestObjectSigningAlgValuesSupported,
+          nullRequestObjectSigningAlgValuesSupported
+          ? null
+          : (requestObjectSigningAlgValuesSupported ??
+                $data.requestObjectSigningAlgValuesSupported),
       requestObjectEncryptionAlgValuesSupported:
-          requestObjectEncryptionAlgValuesSupported ??
-          $data.requestObjectEncryptionAlgValuesSupported,
+          nullRequestObjectEncryptionAlgValuesSupported
+          ? null
+          : (requestObjectEncryptionAlgValuesSupported ??
+                $data.requestObjectEncryptionAlgValuesSupported),
       requestObjectEncryptionEncValuesSupported:
-          requestObjectEncryptionEncValuesSupported ??
-          $data.requestObjectEncryptionEncValuesSupported,
-      responseModesSupported:
-          responseModesSupported ?? $data.responseModesSupported,
-      tokenEndpointAuthMethodsSupported:
-          tokenEndpointAuthMethodsSupported ??
-          $data.tokenEndpointAuthMethodsSupported,
+          nullRequestObjectEncryptionEncValuesSupported
+          ? null
+          : (requestObjectEncryptionEncValuesSupported ??
+                $data.requestObjectEncryptionEncValuesSupported),
+      responseModesSupported: nullResponseModesSupported
+          ? null
+          : (responseModesSupported ?? $data.responseModesSupported),
+      tokenEndpointAuthMethodsSupported: nullTokenEndpointAuthMethodsSupported
+          ? null
+          : (tokenEndpointAuthMethodsSupported ??
+                $data.tokenEndpointAuthMethodsSupported),
       tokenEndpointAuthSigningAlgValuesSupported:
-          tokenEndpointAuthSigningAlgValuesSupported ??
-          $data.tokenEndpointAuthSigningAlgValuesSupported,
+          nullTokenEndpointAuthSigningAlgValuesSupported
+          ? null
+          : (tokenEndpointAuthSigningAlgValuesSupported ??
+                $data.tokenEndpointAuthSigningAlgValuesSupported),
       introspectionEndpointAuthMethodsSupported:
-          introspectionEndpointAuthMethodsSupported ??
-          $data.introspectionEndpointAuthMethodsSupported,
+          nullIntrospectionEndpointAuthMethodsSupported
+          ? null
+          : (introspectionEndpointAuthMethodsSupported ??
+                $data.introspectionEndpointAuthMethodsSupported),
       introspectionEndpointAuthSigningAlgValuesSupported:
-          introspectionEndpointAuthSigningAlgValuesSupported ??
-          $data.introspectionEndpointAuthSigningAlgValuesSupported,
+          nullIntrospectionEndpointAuthSigningAlgValuesSupported
+          ? null
+          : (introspectionEndpointAuthSigningAlgValuesSupported ??
+                $data.introspectionEndpointAuthSigningAlgValuesSupported),
       authorizationSigningAlgValuesSupported:
-          authorizationSigningAlgValuesSupported ??
-          $data.authorizationSigningAlgValuesSupported,
+          nullAuthorizationSigningAlgValuesSupported
+          ? null
+          : (authorizationSigningAlgValuesSupported ??
+                $data.authorizationSigningAlgValuesSupported),
       authorizationEncryptionAlgValuesSupported:
-          authorizationEncryptionAlgValuesSupported ??
-          $data.authorizationEncryptionAlgValuesSupported,
+          nullAuthorizationEncryptionAlgValuesSupported
+          ? null
+          : (authorizationEncryptionAlgValuesSupported ??
+                $data.authorizationEncryptionAlgValuesSupported),
       authorizationEncryptionEncValuesSupported:
-          authorizationEncryptionEncValuesSupported ??
-          $data.authorizationEncryptionEncValuesSupported,
-      claimsSupported: claimsSupported ?? $data.claimsSupported,
-      claimTypesSupported: claimTypesSupported ?? $data.claimTypesSupported,
-      scopesSupported: scopesSupported ?? $data.scopesSupported,
-      codeChallengeMethodsSupported:
-          codeChallengeMethodsSupported ?? $data.codeChallengeMethodsSupported,
+          nullAuthorizationEncryptionEncValuesSupported
+          ? null
+          : (authorizationEncryptionEncValuesSupported ??
+                $data.authorizationEncryptionEncValuesSupported),
+      claimsSupported: nullClaimsSupported
+          ? null
+          : (claimsSupported ?? $data.claimsSupported),
+      claimTypesSupported: nullClaimTypesSupported
+          ? null
+          : (claimTypesSupported ?? $data.claimTypesSupported),
+      scopesSupported: nullScopesSupported
+          ? null
+          : (scopesSupported ?? $data.scopesSupported),
+      codeChallengeMethodsSupported: nullCodeChallengeMethodsSupported
+          ? null
+          : (codeChallengeMethodsSupported ??
+                $data.codeChallengeMethodsSupported),
       revocationEndpointAuthMethodsSupported:
-          revocationEndpointAuthMethodsSupported ??
-          $data.revocationEndpointAuthMethodsSupported,
+          nullRevocationEndpointAuthMethodsSupported
+          ? null
+          : (revocationEndpointAuthMethodsSupported ??
+                $data.revocationEndpointAuthMethodsSupported),
       revocationEndpointAuthSigningAlgValuesSupported:
-          revocationEndpointAuthSigningAlgValuesSupported ??
-          $data.revocationEndpointAuthSigningAlgValuesSupported,
+          nullRevocationEndpointAuthSigningAlgValuesSupported
+          ? null
+          : (revocationEndpointAuthSigningAlgValuesSupported ??
+                $data.revocationEndpointAuthSigningAlgValuesSupported),
       backchannelTokenDeliveryModesSupported:
-          backchannelTokenDeliveryModesSupported ??
-          $data.backchannelTokenDeliveryModesSupported,
+          nullBackchannelTokenDeliveryModesSupported
+          ? null
+          : (backchannelTokenDeliveryModesSupported ??
+                $data.backchannelTokenDeliveryModesSupported),
       backchannelAuthenticationRequestSigningAlgValuesSupported:
-          backchannelAuthenticationRequestSigningAlgValuesSupported ??
-          $data.backchannelAuthenticationRequestSigningAlgValuesSupported,
-      mtlsEndpointAliases: mtlsEndpointAliases ?? $data.mtlsEndpointAliases,
+          nullBackchannelAuthenticationRequestSigningAlgValuesSupported
+          ? null
+          : (backchannelAuthenticationRequestSigningAlgValuesSupported ??
+                $data
+                    .backchannelAuthenticationRequestSigningAlgValuesSupported),
+      mtlsEndpointAliases: nullMtlsEndpointAliases
+          ? null
+          : (mtlsEndpointAliases ?? $data.mtlsEndpointAliases),
     );
   }
 
@@ -701,8 +1015,10 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
       jwksUri: data['jwksUri'],
       authorizationEndpoint: data['authorizationEndpoint'],
       tokenEndpoint: data['tokenEndpoint'],
+      userinfoEndpoint: data['userinfoEndpoint'],
       introspectionEndpoint: data['introspectionEndpoint'],
       registrationEndpoint: data['registrationEndpoint'],
+      endSessionEndpoint: data['endSessionEndpoint'],
       revocationEndpoint: data['revocationEndpoint'],
       deviceAuthorizationEndpoint: data['deviceAuthorizationEndpoint'],
       backchannelAuthenticationEndpoint:
@@ -717,13 +1033,16 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
           data['requireRequestUriRegistration'] ?? false,
       tlsClientCertificateBoundAccessTokens:
           data['tlsClientCertificateBoundAccessTokens'] ?? false,
+      frontchannelLogoutSupported: data['frontchannelLogoutSupported'] ?? false,
+      frontchannelLogoutSessionSupported:
+          data['frontchannelLogoutSessionSupported'] ?? false,
       backchannelLogoutSupported: data['backchannelLogoutSupported'] ?? false,
       backchannelLogoutSessionSupported:
           data['backchannelLogoutSessionSupported'] ?? false,
       authorizationResponseIssParameterSupported:
           data['authorizationResponseIssParameterSupported'] ?? false,
       requirePushedAuthorizationRequests:
-          data['requirePushedAuthorizationRequests'],
+          data['requirePushedAuthorizationRequests'] ?? false,
       grantTypesSupported: data['grantTypesSupported']?.cast<String>().toList(
         growable: false,
       ),
@@ -859,6 +1178,10 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         data['token_endpoint'],
         name: DataCodec.childName(name, 'token_endpoint'),
       ),
+      userinfoEndpoint: $userinfoEndpoint.fromJson(
+        data['userinfo_endpoint'],
+        name: DataCodec.childName(name, 'userinfo_endpoint'),
+      ),
       introspectionEndpoint: $introspectionEndpoint.fromJson(
         data['introspection_endpoint'],
         name: DataCodec.childName(name, 'introspection_endpoint'),
@@ -866,6 +1189,10 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
       registrationEndpoint: $registrationEndpoint.fromJson(
         data['registration_endpoint'],
         name: DataCodec.childName(name, 'registration_endpoint'),
+      ),
+      endSessionEndpoint: $endSessionEndpoint.fromJson(
+        data['end_session_endpoint'],
+        name: DataCodec.childName(name, 'end_session_endpoint'),
       ),
       revocationEndpoint: $revocationEndpoint.fromJson(
         data['revocation_endpoint'],
@@ -913,6 +1240,18 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
             name: DataCodec.childName(
               name,
               'tls_client_certificate_bound_access_tokens',
+            ),
+          ),
+      frontchannelLogoutSupported: $frontchannelLogoutSupported.fromJson(
+        data['frontchannel_logout_supported'],
+        name: DataCodec.childName(name, 'frontchannel_logout_supported'),
+      ),
+      frontchannelLogoutSessionSupported: $frontchannelLogoutSessionSupported
+          .fromJson(
+            data['frontchannel_logout_session_supported'],
+            name: DataCodec.childName(
+              name,
+              'frontchannel_logout_session_supported',
             ),
           ),
       backchannelLogoutSupported: $backchannelLogoutSupported.fromJson(
@@ -1156,11 +1495,15 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         $$data.authorizationEndpoint,
       ),
       'token_endpoint': $tokenEndpoint.toJson($$data.tokenEndpoint),
+      'userinfo_endpoint': $userinfoEndpoint.toJson($$data.userinfoEndpoint),
       'introspection_endpoint': $introspectionEndpoint.toJson(
         $$data.introspectionEndpoint,
       ),
       'registration_endpoint': $registrationEndpoint.toJson(
         $$data.registrationEndpoint,
+      ),
+      'end_session_endpoint': $endSessionEndpoint.toJson(
+        $$data.endSessionEndpoint,
       ),
       'revocation_endpoint': $revocationEndpoint.toJson(
         $$data.revocationEndpoint,
@@ -1189,6 +1532,13 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
       'tls_client_certificate_bound_access_tokens':
           $tlsClientCertificateBoundAccessTokens.toJson(
             $$data.tlsClientCertificateBoundAccessTokens,
+          ),
+      'frontchannel_logout_supported': $frontchannelLogoutSupported.toJson(
+        $$data.frontchannelLogoutSupported,
+      ),
+      'frontchannel_logout_session_supported':
+          $frontchannelLogoutSessionSupported.toJson(
+            $$data.frontchannelLogoutSessionSupported,
           ),
       'backchannel_logout_supported': $backchannelLogoutSupported.toJson(
         $$data.backchannelLogoutSupported,

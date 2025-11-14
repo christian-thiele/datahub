@@ -10,3 +10,6 @@ Matcher get isSuccess => hasStatusCode(inInclusiveRange(200, 299));
 
 Matcher throwsApiError([Matcher? errorMatcher]) =>
     throwsA(allOf(isA<ApiError>(), errorMatcher));
+
+Matcher throwsApiRequestException([Matcher? errorMatcher]) =>
+    throwsA(allOf(isA<ApiRequestException>(), errorMatcher));

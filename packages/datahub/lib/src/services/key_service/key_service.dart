@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:datahub/config.dart';
 import 'package:pointycastle/pointycastle.dart';
 
@@ -114,8 +112,8 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
       for (final key in jwksRequest['keys']) {
         if (key['alg'] == alg && key['kid'] == kid) {
           if (key['n'] is String && key['e'] is String) {
-            final n = _decodeBigInt(base64Decode(addBase64Padding(key['n'])));
-            final e = _decodeBigInt(base64Decode(addBase64Padding(key['e'])));
+            final n = base64UintDecode(key['n']);
+            final e = base64UintDecode(key['e']);
             final pub = RSAPublicKey(n, e);
             if (read(service.enable)) {
               return _jwkCache[cacheKey] = pub;
@@ -138,13 +136,5 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
   void clearCache() {
     _jwkCache.clear();
     _openIdCache.clear();
-  }
-
-  static BigInt _decodeBigInt(List<int> bytes) {
-    var result = BigInt.zero;
-    for (var i = 0; i < bytes.length; i++) {
-      result += BigInt.from(bytes[bytes.length - i - 1]) << (8 * i);
-    }
-    return result;
   }
 }

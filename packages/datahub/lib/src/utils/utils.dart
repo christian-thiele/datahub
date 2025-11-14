@@ -1,8 +1,11 @@
+import 'dart:convert';
 import 'dart:math';
 import 'dart:math' as math;
 
 import 'package:fixnum/fixnum.dart';
 import 'package:uuid/uuid.dart';
+
+import 'api_error.dart';
 
 const Map<int, String> _statusCodes = {
   // Informative
@@ -112,10 +115,20 @@ Iterable<Iterable<T>> everyCombination<T>(Iterable<Iterable<T>> lists) sync* {
   }
 }
 
-extension NanoSecondsDateTimeExtension on DateTime {
+extension DateTimeExtension on DateTime {
   Int64 get nanosecondsSinceEpochInt64 => Int64(microsecondsSinceEpoch) * 1000;
 
   int get nanosecondsSinceEpoch => microsecondsSinceEpoch * 1000;
+
+  int get secondsSinceEpoch => millisecondsSinceEpoch ~/ 1000;
+}
+
+DateTime earliest(DateTime a, DateTime b) {
+  return a.isBefore(b) ? a : b;
+}
+
+DateTime latest(DateTime a, DateTime b) {
+  return a.isBefore(b) ? b : a;
 }
 
 typedef Test<T> = bool Function(T e);
@@ -147,4 +160,31 @@ extension StringExtension on String {
       }
     }
   }
+}
+
+/// Decode unsigned BigInt value from base64 with or without padding.
+BigInt base64UintDecode(String base64) {
+  final bytes = base64Decode(addBase64Padding(base64));
+  var result = BigInt.zero;
+  for (var i = 0; i < bytes.length; i++) {
+    result += BigInt.from(bytes[bytes.length - i - 1]) << (8 * i);
+  }
+  return result;
+}
+
+/// Encode unsigned BigInt value as base64url without padding.
+String base64UintEncode(BigInt number) {
+  final oneByte = BigInt.from(0xff);
+  if (number.isNegative) {
+    throw ApiError('Negative BigInt cannot be encoded to base64uint.');
+  }
+
+  var temp = number;
+  final bytes = <int>[];
+  while (temp > BigInt.zero) {
+    bytes.insert(0, (temp & oneByte).toInt());
+    temp >>= 8;
+  }
+
+  return stripBase64Padding(base64UrlEncode(bytes));
 }
