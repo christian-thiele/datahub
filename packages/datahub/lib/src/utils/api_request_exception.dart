@@ -47,5 +47,5 @@ class ApiRequestExceptionResponse extends JsonResponse {
   final ApiRequestException exception;
 
   ApiRequestExceptionResponse(this.exception)
-    : super(exception.data, exception.statusCode);
+    : super(exception.data, statusCode: exception.statusCode);
 }
