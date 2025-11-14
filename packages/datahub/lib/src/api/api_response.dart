@@ -44,7 +44,7 @@ abstract class ApiResponse {
     } else if (body is Map<String, dynamic> ||
         body is List<dynamic> ||
         body is DataObject) {
-      return JsonResponse(body, statusCode);
+      return JsonResponse(body, statusCode: statusCode);
     } else if (body is Stream<List<int>>) {
       throw ApiError(
         'A data stream cannot be used as response type without a length argument.'
@@ -75,8 +75,14 @@ abstract class _SynchronousResponse extends ApiResponse {
 
 class JsonResponse extends _SynchronousResponse {
   final Object? _data;
+  final Map<String, dynamic>? _headers;
 
-  JsonResponse(this._data, [int statusCode = 200]) : super(statusCode);
+  JsonResponse(
+    this._data, {
+    int statusCode = 200,
+    Map<String, dynamic>? headers,
+  }) : _headers = headers,
+       super(statusCode);
 
   @override
   List<int> getBytes() {
@@ -91,6 +97,7 @@ class JsonResponse extends _SynchronousResponse {
   Map<String, List<String>> getHeaders() {
     return {
       HttpHeaders.contentType: ['${Mime.json};charset=utf-8'],
+      ...?_headers,
     };
   }
 }
@@ -131,12 +138,15 @@ class TextResponse extends _SynchronousResponse {
 class RawResponse extends _SynchronousResponse {
   final String contentType;
   final Uint8List _data;
+  final Map<String, dynamic>? _headers;
 
   RawResponse(
     this._data, {
     int statusCode = 200,
     this.contentType = Mime.octetStream,
-  }) : super(statusCode);
+    Map<String, dynamic>? headers,
+  }) : _headers = headers,
+       super(statusCode);
 
   @override
   List<int> getBytes() => _data;
@@ -145,17 +155,22 @@ class RawResponse extends _SynchronousResponse {
   Map<String, List<String>> getHeaders() => {
     HttpHeaders.contentLength: [_data.length.toString()],
     HttpHeaders.contentType: [contentType],
+    ...?_headers,
   };
 }
 
 class EmptyResponse extends _SynchronousResponse {
-  EmptyResponse({int statusCode = 200}) : super(statusCode);
+  final Map<String, dynamic>? _headers;
+
+  EmptyResponse({int statusCode = 200, Map<String, dynamic>? headers})
+    : _headers = headers,
+      super(statusCode);
 
   @override
   List<int> getBytes() => [];
 
   @override
-  Map<String, List<String>> getHeaders() => {};
+  Map<String, List<String>> getHeaders() => {...?_headers};
 }
 
 class ByteStreamResponse extends ApiResponse {
@@ -164,6 +179,7 @@ class ByteStreamResponse extends ApiResponse {
   final String? fileName;
   final Stream<List<int>> _dataStream;
   final int? length;
+  final Map<String, dynamic>? _headers;
 
   ByteStreamResponse(
     this._dataStream,
@@ -172,7 +188,9 @@ class ByteStreamResponse extends ApiResponse {
     this.contentType = 'application/octet-stream',
     this.fileName,
     this.disposition = ContentDisposition.inline,
-  }) : super(statusCode);
+    Map<String, dynamic>? headers,
+  }) : _headers = headers,
+       super(statusCode);
 
   @override
   Stream<List<int>> getData() => _dataStream;
@@ -184,6 +202,7 @@ class ByteStreamResponse extends ApiResponse {
     if (nullOrEmpty(fileName)) 'content-disposition': [disposition.name],
     if (!nullOrEmpty(fileName))
       'content-disposition': ['${disposition.name};filename="$fileName"'],
+    ...?_headers,
   };
 }
 
@@ -192,15 +211,17 @@ class FileResponse extends ByteStreamResponse {
 
   FileResponse(
     this.file, {
-    ContentDisposition disposition = ContentDisposition.inline,
+    super.disposition = ContentDisposition.inline,
     String? contentType,
+    super.headers,
   }) : super(
          file.openRead(),
          file.lengthSync(),
          fileName: p.basename(file.path),
-         disposition: disposition,
          contentType:
-             Mime.fromExtension(p.extension(file.path)) ?? Mime.octetStream,
+             contentType ??
+             Mime.fromExtension(p.extension(file.path)) ??
+             Mime.octetStream,
        );
 }
 
