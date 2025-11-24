@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:buffer/buffer.dart';
+import 'package:datahub/datahub.dart';
 import 'package:datahub_amqp/protocol/amqp_exception.dart';
 
 import 'amqp_frame.dart';
@@ -15,7 +16,7 @@ class _FrameHeader {
   _FrameHeader(this.type, this.channelId, this.bodySize);
 }
 
-class AmqpFrameTransformer extends StreamTransformerBase<List<int>, AmqpFrame> {
+class AmqpFrameTransformer extends StreamTransformerBase<Uint8List, AmqpFrame> {
   late final StreamSubscription subscription;
   final controller = StreamController<AmqpFrame>();
   final _reader = ByteDataReader(endian: Endian.big);
@@ -34,6 +35,7 @@ class AmqpFrameTransformer extends StreamTransformerBase<List<int>, AmqpFrame> {
       );
       controller.onCancel = subscription.cancel;
     };
+    return controller.stream;
   }
 
   void onData(List<int> event) {
@@ -65,7 +67,8 @@ class AmqpFrameTransformer extends StreamTransformerBase<List<int>, AmqpFrame> {
                 message: 'Received malformed frame.',
               ),
             });
-          } on StateError catch (e) {
+            _currentFrame = null;
+          } on StateError catch (_) {
             throw AmqpException(
               errorCode: frameError,
               message: 'Received malformed frame.',

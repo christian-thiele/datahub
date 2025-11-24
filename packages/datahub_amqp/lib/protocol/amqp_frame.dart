@@ -4,13 +4,7 @@ import 'package:buffer/buffer.dart';
 import 'amqp_field.dart';
 import 'constants.dart';
 
-enum PropertyType {
-  shortString,
-  longString,
-  table,
-  octet,
-  timestamp,
-}
+enum PropertyType { shortString, longString, table, octet, timestamp }
 
 enum BasicProperty {
   contentType(0, PropertyType.shortString),
@@ -60,12 +54,12 @@ sealed class AmqpFrame {
 class MethodFrame extends AmqpFrame {
   final int classId;
   final int methodId;
-  Uint8List arguments;
+  final Uint8List arguments;
 
   @override
   final int type = frameMethod;
 
-  MethodFrame({
+  const MethodFrame({
     required super.channelId,
     required this.classId,
     required this.methodId,
@@ -95,6 +89,18 @@ class MethodFrame extends AmqpFrame {
     writer.write(arguments);
     return writer.toBytes();
   }
+
+  static Uint8List buildArguments(List<AmqpField> fields) {
+    final writer = ByteDataWriter();
+    for (final field in fields) {
+      field.writeTo(writer);
+    }
+    return writer.toBytes();
+  }
+
+  @override
+  String toString() =>
+      'MethodFrame(channelId: $channelId, classId: $classId, methodId: $methodId, arguments.length: ${arguments.lengthInBytes})';
 }
 
 class HeaderFrame extends AmqpFrame {
@@ -105,12 +111,16 @@ class HeaderFrame extends AmqpFrame {
   @override
   final int type = frameHeader;
 
-  HeaderFrame({
+  const HeaderFrame({
     required super.channelId,
     required this.classId,
     required this.bodySize,
     required this.properties,
   });
+
+  @override
+  String toString() =>
+      'HeaderFrame(channelId: $channelId, classId: $classId, bodySize: $bodySize, properties: $properties)';
 
   static HeaderFrame parseBody(int channelId, Uint8List body) {
     final reader = ByteDataReader(endian: Endian.big);
@@ -129,7 +139,7 @@ class HeaderFrame extends AmqpFrame {
     final properties = <BasicProperty, AmqpField>{};
     for (final property in BasicProperty.values) {
       if ((flags >> (15 - property.position)) & 1 == 1) {
-        properties[property] = switch(property.propertyType) {
+        properties[property] = switch (property.propertyType) {
           PropertyType.shortString => AmqpFieldShortString.readFrom(reader),
           PropertyType.longString => AmqpFieldLongString.readFrom(reader),
           PropertyType.table => AmqpFieldFieldTable.readFrom(reader),
@@ -175,6 +185,25 @@ class HeaderFrame extends AmqpFrame {
   }
 }
 
+class BodyFrame extends AmqpFrame {
+  @override
+  final int type = frameBody;
+  final Uint8List body;
+
+  const BodyFrame({required super.channelId, required this.body});
+
+  @override
+  Uint8List buildPayload() => body;
+
+  static BodyFrame parseBody(int channelId, Uint8List body) {
+    return BodyFrame(channelId: channelId, body: body);
+  }
+
+  @override
+  String toString() =>
+      'BodyFrame(channelId: $channelId, body.length: ${body.lengthInBytes})';
+}
+
 class HeartbeatFrame extends AmqpFrame {
   @override
   final int type = frameHeartbeat;
@@ -183,4 +212,7 @@ class HeartbeatFrame extends AmqpFrame {
 
   @override
   Uint8List buildPayload() => Uint8List(0);
+
+  @override
+  String toString() => 'HeartbeatFrame(channelId: $channelId)';
 }

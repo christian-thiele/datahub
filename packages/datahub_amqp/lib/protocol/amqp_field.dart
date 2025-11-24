@@ -1,7 +1,7 @@
-
 import 'dart:convert';
 import 'dart:typed_data';
 
+import 'package:boost/boost.dart';
 import 'package:buffer/buffer.dart';
 import 'package:datahub/utils.dart';
 
@@ -110,6 +110,8 @@ class AmqpFieldLongString extends AmqpField {
 
   AmqpFieldLongString(this.value);
 
+  AmqpFieldLongString.fromText(String value) : value = utf8.encode(value);
+
   @override
   void writeTo(ByteDataWriter writer) {
     if (value.lengthInBytes > 4294967295) {
@@ -124,6 +126,8 @@ class AmqpFieldLongString extends AmqpField {
     final value = reader.read(length);
     return AmqpFieldLongString(value);
   }
+
+  String toText() => utf8.decode(value);
 }
 
 class AmqpFieldTimestamp extends AmqpField {
@@ -138,13 +142,120 @@ class AmqpFieldTimestamp extends AmqpField {
 
   static AmqpFieldTimestamp readFrom(ByteDataReader reader) {
     final value = reader.readInt64();
-    return AmqpFieldTimestamp(DateTime.fromMillisecondsSinceEpoch(value * 1000));
+    return AmqpFieldTimestamp(
+      DateTime.fromMillisecondsSinceEpoch(value * 1000),
+    );
+  }
+}
+
+class AmqpFieldValue extends AmqpField {
+  final AmqpField value;
+
+  AmqpFieldValue(this.value);
+
+  static AmqpFieldValue readFrom(ByteDataReader reader) {
+    final char = ascii.decode([reader.readUint8()]);
+    final value = switch (char) {
+      't' => AmqpFieldBit.readFrom(reader),
+      'u' => AmqpFieldShortUint.readFrom(reader),
+      'i' => AmqpFieldLongUint.readFrom(reader),
+      'l' => AmqpFieldLongLongUint.readFrom(reader),
+      's' => AmqpFieldShortString.readFrom(reader),
+      'S' => AmqpFieldLongString.readFrom(reader),
+      'T' => AmqpFieldTimestamp.readFrom(reader),
+      'F' => AmqpFieldFieldTable.readFrom(reader),
+      _ => throw Exception('Unknown field-value prefix "$char"'),
+    };
+    return AmqpFieldValue(value);
+  }
+
+  @override
+  void writeTo(ByteDataWriter writer) {
+    switch (value) {
+      case AmqpFieldBit():
+        writer.write(ascii.encode('t'));
+      case AmqpFieldOctet():
+        writer.write(ascii.encode('u'));
+      case AmqpFieldShortUint():
+        writer.write(ascii.encode('u'));
+      case AmqpFieldLongUint():
+        writer.write(ascii.encode('i'));
+      case AmqpFieldLongLongUint():
+        writer.write(ascii.encode('l'));
+      case AmqpFieldShortString():
+        writer.write(ascii.encode('s'));
+      case AmqpFieldLongString():
+        writer.write(ascii.encode('S'));
+      case AmqpFieldTimestamp():
+        writer.write(ascii.encode('T'));
+      case AmqpFieldFieldTable():
+        writer.write(ascii.encode('F'));
+      case AmqpFieldValue():
+        break;
+    }
+
+    value.writeTo(writer);
   }
 }
 
 class AmqpFieldFieldTable extends AmqpField {
+  final Map<String, AmqpField> values;
+
+  AmqpFieldFieldTable(this.values);
+
+  // TODO this is shit
+  AmqpFieldFieldTable.fromValueMap(Map<String, dynamic> map)
+    : values = map.map(
+        (k, v) => MapEntry(
+          k,
+          AmqpFieldValue(switch (v) {
+            bool value => AmqpFieldBit(value),
+            int value => AmqpFieldShortUint(value),
+            String value => AmqpFieldLongString.fromText(value),
+            _ => throw UnimplementedError(),
+          }),
+        ),
+      );
+
   @override
   void writeTo(ByteDataWriter writer) {
-    //TODO fieldtable
+    writer.writeUint32(values.length);
+    for (final (name, value) in values.tuples) {
+      AmqpFieldShortString(name).writeTo(writer);
+      value.writeTo(writer);
+    }
   }
+
+  static AmqpFieldFieldTable readFrom(ByteDataReader reader) {
+    final table = <String, AmqpField>{};
+
+    final length = reader.readUint32();
+    final end = reader.offsetInBytes + length;
+
+    while (reader.offsetInBytes < end) {
+      final name = AmqpFieldShortString.readFrom(reader);
+      final value = AmqpFieldValue.readFrom(reader);
+      table[name.value] = value;
+    }
+    return AmqpFieldFieldTable(table);
+  }
+
+  dynamic _toValue(AmqpField field) {
+    return switch (field) {
+      AmqpFieldBit(:final value) => value,
+      AmqpFieldOctet(:final value) => value,
+      AmqpFieldShortUint(:final value) => value,
+      AmqpFieldLongUint(:final value) => value,
+      AmqpFieldLongLongUint(:final value) => value,
+      AmqpFieldShortString(:final value) => value,
+      final AmqpFieldLongString longString => longString.toText(),
+      AmqpFieldTimestamp(:final value) => value,
+      AmqpFieldValue(:final value) => _toValue(value),
+      final AmqpFieldFieldTable table => table.toMap(),
+    };
+  }
+
+  Map<String, dynamic> toMap() => {
+    for (final (k, v) in values.tuples) k: _toValue(v),
+  };
 }

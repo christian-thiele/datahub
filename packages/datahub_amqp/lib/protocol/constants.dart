@@ -81,3 +81,29 @@ const notImplemented = 540;
 /// server may require intervention by an operator in order to resume normal
 /// operations.
 const internalError = 541;
+
+const classConnection = 10;
+const classChannel = 20;
+const classExchange = 40;
+const classQueue = 50;
+const classBasic = 60;
+const classTx = 90;
+
+
+const methodConnectionStart = 10;
+const methodConnectionStartOk = 11;
+const methodConnectionSecure = 20;
+const methodConnectionSecureOk = 21;
+const methodConnectionTune = 30;
+const methodConnectionTuneOk = 31;
+const methodConnectionOpen = 40;
+const methodConnectionOpenOk = 41;
+const methodConnectionClose = 50;
+const methodConnectionCloseOk = 51;
+
+const methodChannelOpen = 10;
+const methodChannelOpenOk = 11;
+const methodChannelFlow = 20;
+const methodChannelFlowOk = 21;
+const methodChannelClose = 40;
+const methodChannelCloseOk = 41;

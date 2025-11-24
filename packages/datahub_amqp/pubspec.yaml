@@ -11,8 +11,10 @@ environment:
 dependencies:
   boost: ^2.0.0
   buffer: ^1.2.3
-  datahub: ^0.18.0-dev.5
+  collection: ^1.19.1
+  datahub: ^0.18.0-dev.7
   meta: ^1.16.0
+  rxdart: ^0.28.0
 
 dev_dependencies:
   lints: ^6.0.0
