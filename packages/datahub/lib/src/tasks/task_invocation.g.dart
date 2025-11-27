@@ -83,6 +83,14 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeDateTime),
   );
 
+  static final $messages = DataField<TaskInvocation, List<String>>(
+    name: 'messages',
+    valueOf: (p) => p.messages,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+  );
+
   static final $finishedAt = DataField<TaskInvocation, DateTime?>(
     name: 'finishedAt',
     valueOf: (p) => p.finishedAt,
@@ -103,6 +111,7 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
       $lastHeartbeat,
       $progress,
       $startedAt,
+      $messages,
       $finishedAt,
     ]),
     fromValues: fromValues,
@@ -125,6 +134,7 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
     double? progress,
     DateTime? startedAt,
     bool nullStartedAt = false,
+    List<String>? messages,
     DateTime? finishedAt,
     bool nullFinishedAt = false,
   }) {
@@ -141,6 +151,7 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
           : (lastHeartbeat ?? $data.lastHeartbeat),
       progress: progress ?? $data.progress,
       startedAt: nullStartedAt ? null : (startedAt ?? $data.startedAt),
+      messages: messages ?? $data.messages,
       finishedAt: nullFinishedAt ? null : (finishedAt ?? $data.finishedAt),
     );
   }
@@ -156,6 +167,7 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
       lastHeartbeat: data['lastHeartbeat'],
       progress: data['progress'],
       startedAt: data['startedAt'],
+      messages: data['messages']?.cast<String>().toList(growable: false),
       finishedAt: data['finishedAt'],
     );
   }
@@ -198,6 +210,10 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
         data['startedAt'],
         name: DataCodec.childName(name, 'startedAt'),
       ),
+      messages: $messages.fromJson(
+        data['messages'],
+        name: DataCodec.childName(name, 'messages'),
+      ),
       finishedAt: $finishedAt.fromJson(
         data['finishedAt'],
         name: DataCodec.childName(name, 'finishedAt'),
@@ -218,6 +234,7 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
       'lastHeartbeat': $lastHeartbeat.toJson($$data.lastHeartbeat),
       'progress': $progress.toJson($$data.progress),
       'startedAt': $startedAt.toJson($$data.startedAt),
+      'messages': $messages.toJson($$data.messages),
       'finishedAt': $finishedAt.toJson($$data.finishedAt),
     }..removeWhere((k, v) => v == null);
   }

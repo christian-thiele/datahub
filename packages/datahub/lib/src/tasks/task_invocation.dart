@@ -16,10 +16,11 @@ class TaskInvocation extends $TaskInvocation {
   final DateTime? startedAt;
   final DateTime? lastHeartbeat;
   final double progress;
+  final List<String> messages;
   final DateTime? finishedAt;
 
   const TaskInvocation({
-    required this.id,
+    this.id = '',
     required this.taskId,
     required this.state,
     required this.parameters,
@@ -28,6 +29,7 @@ class TaskInvocation extends $TaskInvocation {
     required this.lastHeartbeat,
     required this.progress,
     required this.startedAt,
+    required this.messages,
     required this.finishedAt,
   });
 }
