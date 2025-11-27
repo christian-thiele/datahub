@@ -294,6 +294,16 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
+  Future<int> count({Filter filter = Filter.empty}) async {
+    return await find(postgresql).runTransaction((context) async {
+      // TODO aggregates should be abstract
+      final result = await dataView.select(context, [
+        PostgresqlRawExpression(RawSql('COUNT(*) as "count"')),
+      ], filter: filter);
+      return result.firstOrNull?['count'] ?? 0;
+    });
+  }
+
   Future<List<RevisionData<TData>>> getRevisions(
     dynamic id, {
     int? offset,
