@@ -1,4 +1,4 @@
-import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
+import 'package:datahub_aperture_frontend/blocs/auth_cubit/auth_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/icon_text.dart';

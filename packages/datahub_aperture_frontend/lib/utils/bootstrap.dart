@@ -21,7 +21,12 @@ class Bootstrap extends StatelessWidget {
     final baseUri = switch (const String.fromEnvironment('API')) {
       String value when value.isNotEmpty => Uri.parse(value),
       _ when kIsWeb => Uri.base,
-      _ => Uri(scheme: 'http', host: 'localhost', port: 8080),
+      _ => Uri(
+        scheme: 'http',
+        host: 'localhost',
+        port: 8080,
+        path: '/aperture',
+      ),
     };
 
     return BlocProvider(

@@ -57,7 +57,6 @@ class AuthService {
         SHA256Digest().process(utf8.encode(verifier)),
       ).replaceAll('=', '');
 
-      final redirectUrl = Uri.base.toString();
       prefs.setStringList(_authStateKey, [state, verifier, redirectUrl]);
 
       return client.createAuthUri(redirectUrl, state, challenge);

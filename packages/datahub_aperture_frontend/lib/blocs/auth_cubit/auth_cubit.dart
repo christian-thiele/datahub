@@ -3,11 +3,14 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:bloc/bloc.dart';
 import 'package:datahub_aperture_frontend/services.dart';
-import 'package:url_launcher/url_launcher.dart';
+
+import 'auth_strategy_mixin_web.dart'
+    if (dart.library.io) 'auth_strategy_mixin_io.dart'
+    if (dart.library.js_interop) 'auth_strategy_mixin_web.dart';
 
 part 'auth_state.dart';
 
-class AuthCubit extends Cubit<AuthState> {
+class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
   AuthCubit({required ApertureBootstrap bootstrap})
     : super(AuthStateLoading()) {
     _init(bootstrap);
@@ -27,31 +30,14 @@ class AuthCubit extends Cubit<AuthState> {
       emit(AuthStateAuthorized());
     }
     if (!authenticated &&
-        (state is AuthStateAuthorized || state is AuthStateLoading)) {
+        (state is AuthStateAuthorized ||
+            state is AuthStateLoading ||
+            state is AuthStateUnauthorized)) {
       emit(AuthStateUnauthorized());
     }
   }
 
-  Future<void> loginAuthCode() async {
-    if (state is! AuthStateLoading) {
-      emit(AuthStateLoading());
-      try {
-        final url = await AuthService.instance.createAuthUri(
-          Uri.base.toString(),
-        );
-        if (!await launchUrl(url, webOnlyWindowName: '_self')) {
-          emit(AuthStateError(message: 'Could not launch sign-in page.'));
-        }
-      } catch (e) {
-        if (e case ApiRequestException(:final message)) {
-          emit(AuthStateError(message: message));
-        } else {
-          emit(AuthStateError(message: null));
-        }
-      }
-    }
-  }
-
+  @override
   Future<void> receiveAuthorizationCode(String state, String code) async {
     emit(AuthStateLoading());
     try {

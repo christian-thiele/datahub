@@ -1,4 +1,4 @@
-import 'package:datahub_aperture_frontend/blocs/auth_cubit.dart';
+import 'package:datahub_aperture_frontend/blocs/auth_cubit/auth_cubit.dart';
 import 'package:datahub_aperture_frontend/utils/bootstrap.dart';
 import 'package:datahub_aperture_frontend/widgets/aperture_animation.dart';
 import 'package:flutter/material.dart';

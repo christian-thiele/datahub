@@ -3,7 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
-import 'blocs/auth_cubit.dart';
+import 'blocs/auth_cubit/auth_cubit.dart';
 import 'generated/l10n.dart';
 import 'pages/auth_page/auth_page.dart';
 import 'pages/dashboard_page.dart';
@@ -71,7 +71,7 @@ class _ApertureAppState extends State<ApertureApp>
           ),
           ShellRoute(
             redirect: (context, state) {
-              if (context.read<AuthCubit>().state is AuthStateUnauthorized) {
+              if (context.read<AuthCubit>().state is! AuthStateAuthorized) {
                 return '/auth';
               }
 
