@@ -171,6 +171,10 @@ Sql buildExpressionSql(
       name,
       arguments.map((e) => buildExpressionSql(e, attributes)).toList(),
     ),
+    PostgresqlCastExpression(:final expression, :final type) => Sql.function(
+      'CAST',
+      [buildExpressionSql(expression, attributes) + RawSql(' AS ${type.name}')],
+    ),
     PostgresqlRawExpression(:final sql) => sql,
     _ => throw UnsupportedExpressionError(
       expression,
@@ -186,6 +190,7 @@ PostgresqlDataType? typeOf(
   ValueExpression(:final value) => PostgresqlDataType.findForDynamic(value),
   final DataField field => _findDataAttribute(attributes, field).$1.type,
   PostgresqlFunctionExpression(:final returnType) => returnType,
+  PostgresqlCastExpression(:final type) => type,
   _ => null,
 };
 

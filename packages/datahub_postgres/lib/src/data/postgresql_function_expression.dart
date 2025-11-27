@@ -8,6 +8,13 @@ class PostgresqlRawExpression extends Expression {
   const PostgresqlRawExpression(this.sql);
 }
 
+class PostgresqlCastExpression extends Expression {
+  final Expression expression;
+  final PostgresqlDataType type;
+
+  const PostgresqlCastExpression(this.expression, this.type);
+}
+
 class PostgresqlFunctionExpression extends Expression {
   final String name;
   final PostgresqlDataType? returnType;
