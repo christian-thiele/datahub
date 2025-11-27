@@ -12,12 +12,16 @@ abstract interface class $ResourceRevisionRequest
   static const $$codec = JsonDataCodec();
   static final $fieldData =
       DataField<ResourceRevisionRequest, Map<String, dynamic>>(
-    name: 'fieldData',
-    valueOf: (p) => p.fieldData,
-    fromJson: (value, {String? name}) =>
-        $$codec.decodeMap<dynamic>(value, $$codec.decodeDynamic, name: name),
-    toJson: (value) => $$codec.encodeMap<dynamic>(value, $$codec.encodeDynamic),
-  );
+        name: 'fieldData',
+        valueOf: (p) => p.fieldData,
+        fromJson: (value, {String? name}) => $$codec.decodeMap<dynamic>(
+          value,
+          $$codec.decodeDynamic,
+          name: name,
+        ),
+        toJson: (value) =>
+            $$codec.encodeMap<dynamic>(value, $$codec.encodeDynamic),
+      );
 
   static final $revisionLive = DataField<ResourceRevisionRequest, DateTime?>(
     name: 'revisionLive',
@@ -29,14 +33,14 @@ abstract interface class $ResourceRevisionRequest
 
   static final DataBean<ResourceRevisionRequest> bean =
       DataBean<ResourceRevisionRequest>(
-    name: 'ResourceRevisionRequest',
-    fields: List<DataField<ResourceRevisionRequest, dynamic>>.unmodifiable([
-      $fieldData,
-      $revisionLive,
-    ]),
-    fromValues: fromValues,
-    fromJson: fromJson,
-  );
+        name: 'ResourceRevisionRequest',
+        fields: List<DataField<ResourceRevisionRequest, dynamic>>.unmodifiable([
+          $fieldData,
+          $revisionLive,
+        ]),
+        fromValues: fromValues,
+        fromJson: fromJson,
+      );
 
   @override
   String get $$name => bean.name;
@@ -50,8 +54,9 @@ abstract interface class $ResourceRevisionRequest
     final $data = this as ResourceRevisionRequest;
     return ResourceRevisionRequest(
       fieldData: fieldData ?? $data.fieldData,
-      revisionLive:
-          nullRevisionLive ? null : (revisionLive ?? $data.revisionLive),
+      revisionLive: nullRevisionLive
+          ? null
+          : (revisionLive ?? $data.revisionLive),
     );
   }
 
@@ -65,13 +70,20 @@ abstract interface class $ResourceRevisionRequest
   static ResourceRevisionRequest fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          ResourceRevisionRequest, data.runtimeType, name);
+        ResourceRevisionRequest,
+        data.runtimeType,
+        name,
+      );
     }
     return ResourceRevisionRequest(
-      fieldData: $fieldData.fromJson(data['fieldData'],
-          name: DataCodec.childName(name, 'fieldData')),
-      revisionLive: $revisionLive.fromJson(data['revisionLive'],
-          name: DataCodec.childName(name, 'revisionLive')),
+      fieldData: $fieldData.fromJson(
+        data['fieldData'],
+        name: DataCodec.childName(name, 'fieldData'),
+      ),
+      revisionLive: $revisionLive.fromJson(
+        data['revisionLive'],
+        name: DataCodec.childName(name, 'revisionLive'),
+      ),
     );
   }
 

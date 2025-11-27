@@ -19,17 +19,23 @@ class ApertureApi extends ApiNode {
 
   ApertureApi({
     required this.configDelegate,
-    this.basePath =
-        const Config('aperture.basePath', defaultValue: '/aperture'),
+    this.basePath = const Config(
+      'aperture.basePath',
+      defaultValue: '/aperture',
+    ),
     this.oidcIssuer = const Config('aperture.oidcIssuer'),
     this.oidcAudience = const Config('aperture.oidcAudience'),
     this.oidcScopes = const Config('aperture.oidcScopes', defaultValue: []),
     this.oidcClientId = const Config('aperture.oidcClientId'),
     this.oidcClientSecret = const Config('aperture.oidcClientSecret'),
-    this.oidcIdentityField =
-        const Config('aperture.oidcIdentityField', defaultValue: 'sub'),
-    this.oidcUsernameField =
-        const Config('aperture.oidcUsernameField', defaultValue: 'email'),
+    this.oidcIdentityField = const Config(
+      'aperture.oidcIdentityField',
+      defaultValue: 'sub',
+    ),
+    this.oidcUsernameField = const Config(
+      'aperture.oidcUsernameField',
+      defaultValue: 'email',
+    ),
   });
 
   @override
@@ -37,10 +43,12 @@ class ApertureApi extends ApiNode {
     final base = basePath.read();
     return [
       ResourceEndpoint(
-        matcher: AllOfRouteMatcher(matchers: [
-          RoutePattern('$base/*'),
-          HeaderRouteMatcher(header: 'x-aperture-flare', value: 'bootstrap'),
-        ]),
+        matcher: AllOfRouteMatcher(
+          matchers: [
+            RoutePattern('$base/*'),
+            HeaderRouteMatcher(header: 'x-aperture-flare', value: 'bootstrap'),
+          ],
+        ),
         get: (request) => ApertureBootstrap(
           title: 'Aperture',
           theme: configDelegate.theme,
@@ -68,8 +76,10 @@ class ApertureApi extends ApiNode {
             get: (request) async {
               final id = request.getRouteParam<String>('resourceId');
               return configDelegate.resources
-                  .firstWhere((e) => e.description.id == id,
-                      orElse: () => throw ApiRequestException.notFound())
+                  .firstWhere(
+                    (e) => e.description.id == id,
+                    orElse: () => throw ApiRequestException.notFound(),
+                  )
                   .description;
             },
           ),
@@ -83,8 +93,10 @@ class ApertureApi extends ApiNode {
               );
 
               final offset = request.getParam<int?>('offset') ?? 0;
-              final limit =
-                  math.min(100, request.getParam<int?>('limit') ?? 50);
+              final limit = math.min(
+                100,
+                request.getParam<int?>('limit') ?? 50,
+              );
               final encodedFilter = request.getParam<String?>('filter');
               final filter = encodedFilter != null
                   ? $ResourceFilter.fromJson(jsonDecode(encodedFilter))
@@ -102,7 +114,8 @@ class ApertureApi extends ApiNode {
               if (resource.repository
                   case final ApertureResourceWriteRepository repository) {
                 final data = await request.getData<ResourceRevisionRequest>(
-                    $ResourceRevisionRequest.bean);
+                  $ResourceRevisionRequest.bean,
+                );
                 return await repository.createElement(
                   data.fieldData,
                   data.revisionLive,
@@ -114,7 +127,8 @@ class ApertureApi extends ApiNode {
           ),
           ResourceEndpoint(
             matcher: RoutePattern(
-                '$base/api/resources/{resourceId}/elements/{elementId}'),
+              '$base/api/resources/{resourceId}/elements/{elementId}',
+            ),
             get: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
               final resource = configDelegate.resources.firstWhere(
@@ -124,8 +138,10 @@ class ApertureApi extends ApiNode {
 
               final elementId = request.getRouteParam<String>('elementId');
               final revisionId = request.getParam<String?>('revisionId');
-              return await resource.repository
-                  .getElement(elementId, revisionId);
+              return await resource.repository.getElement(
+                elementId,
+                revisionId,
+              );
             },
             patch: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
@@ -160,10 +176,7 @@ class ApertureApi extends ApiNode {
 
               if (resource.repository
                   case final ApertureResourceWriteRepository repository) {
-                return await repository.deleteElement(
-                  elementId,
-                  revisionLive,
-                );
+                return await repository.deleteElement(elementId, revisionLive);
               } else {
                 throw ApiRequestException.methodNotAllowed();
               }
@@ -191,9 +204,7 @@ class ApertureApi extends ApiNode {
               final parameters = await request.getJsonBody();
 
               final taskId = await action.handler(elementId, parameters);
-              return {
-                if (taskId != null) 'taskId': taskId,
-              };
+              return {if (taskId != null) 'taskId': taskId};
             },
           ),
           ResourceEndpoint(
@@ -214,9 +225,7 @@ class ApertureApi extends ApiNode {
 
               final parameters = await request.getJsonBody();
               final taskId = await action.handler(null, parameters);
-              return {
-                if (taskId != null) 'taskId': taskId,
-              };
+              return {if (taskId != null) 'taskId': taskId};
             },
           ),
           ResourceEndpoint(
@@ -226,8 +235,9 @@ class ApertureApi extends ApiNode {
             },
           ),
           for (final module in configDelegate.modules)
-            ...module
-                .buildApiRoutes('$base/api/modules/${module.description.id}'),
+            ...module.buildApiRoutes(
+              '$base/api/modules/${module.description.id}',
+            ),
         ],
       ),
     ];

@@ -38,19 +38,21 @@ abstract interface class $ModuleDescription with DataObject<ModuleDescription> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeEnum(value, ModuleType.values, name: name),
     toJson: (value) => $$codec.encodeEnum(value),
-    constraints: [
-      EnumConstraint(values: ModuleType.values),
-    ],
+    constraints: [EnumConstraint(values: ModuleType.values)],
   );
 
   static final $configuration =
       DataField<ModuleDescription, Map<String, dynamic>>(
-    name: 'configuration',
-    valueOf: (p) => p.configuration,
-    fromJson: (value, {String? name}) =>
-        $$codec.decodeMap<dynamic>(value, $$codec.decodeDynamic, name: name),
-    toJson: (value) => $$codec.encodeMap<dynamic>(value, $$codec.encodeDynamic),
-  );
+        name: 'configuration',
+        valueOf: (p) => p.configuration,
+        fromJson: (value, {String? name}) => $$codec.decodeMap<dynamic>(
+          value,
+          $$codec.decodeDynamic,
+          name: name,
+        ),
+        toJson: (value) =>
+            $$codec.encodeMap<dynamic>(value, $$codec.encodeDynamic),
+      );
 
   static final DataBean<ModuleDescription> bean = DataBean<ModuleDescription>(
     name: 'ModuleDescription',
@@ -99,18 +101,29 @@ abstract interface class $ModuleDescription with DataObject<ModuleDescription> {
   static ModuleDescription fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          ModuleDescription, data.runtimeType, name);
+        ModuleDescription,
+        data.runtimeType,
+        name,
+      );
     }
     return ModuleDescription(
       id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
-      displayName: $displayName.fromJson(data['displayName'],
-          name: DataCodec.childName(name, 'displayName')),
-      icon:
-          $icon.fromJson(data['icon'], name: DataCodec.childName(name, 'icon')),
-      type:
-          $type.fromJson(data['type'], name: DataCodec.childName(name, 'type')),
-      configuration: $configuration.fromJson(data['configuration'],
-          name: DataCodec.childName(name, 'configuration')),
+      displayName: $displayName.fromJson(
+        data['displayName'],
+        name: DataCodec.childName(name, 'displayName'),
+      ),
+      icon: $icon.fromJson(
+        data['icon'],
+        name: DataCodec.childName(name, 'icon'),
+      ),
+      type: $type.fromJson(
+        data['type'],
+        name: DataCodec.childName(name, 'type'),
+      ),
+      configuration: $configuration.fromJson(
+        data['configuration'],
+        name: DataCodec.childName(name, 'configuration'),
+      ),
     );
   }
 

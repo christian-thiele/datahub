@@ -39,8 +39,10 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
     dataBean: () => $ResourceRevisionInfo.bean,
     fromJson: (value, {String? name}) =>
         $$codec.decodeList<ResourceRevisionInfo>(
-            (value ?? const []), $ResourceRevisionInfo.bean.fromJson,
-            name: name),
+          (value ?? const []),
+          $ResourceRevisionInfo.bean.fromJson,
+          name: name,
+        ),
     toJson: (value) =>
         $$codec.encodeList<ResourceRevisionInfo>(value, (v) => v.toJson()),
   );
@@ -82,7 +84,11 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
       id: data['id'],
       fieldData: data['fieldData'],
       revisionId: data['revisionId'],
-      revisions: data['revisions'] ?? const [],
+      revisions:
+          data['revisions']?.cast<ResourceRevisionInfo>().toList(
+            growable: false,
+          ) ??
+          const [],
     );
   }
 
@@ -92,12 +98,18 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
     }
     return ResourceData(
       id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
-      fieldData: $fieldData.fromJson(data['fieldData'],
-          name: DataCodec.childName(name, 'fieldData')),
-      revisionId: $revisionId.fromJson(data['revisionId'],
-          name: DataCodec.childName(name, 'revisionId')),
-      revisions: $revisions.fromJson(data['revisions'],
-          name: DataCodec.childName(name, 'revisions')),
+      fieldData: $fieldData.fromJson(
+        data['fieldData'],
+        name: DataCodec.childName(name, 'fieldData'),
+      ),
+      revisionId: $revisionId.fromJson(
+        data['revisionId'],
+        name: DataCodec.childName(name, 'revisionId'),
+      ),
+      revisions: $revisions.fromJson(
+        data['revisions'],
+        name: DataCodec.childName(name, 'revisions'),
+      ),
     );
   }
 

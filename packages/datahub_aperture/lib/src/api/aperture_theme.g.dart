@@ -39,11 +39,7 @@ abstract interface class $ApertureTheme with DataObject<ApertureTheme> {
   String get $$name => bean.name;
   @override
   List<DataField<ApertureTheme, dynamic>> get $$fields => bean.fields;
-  ApertureTheme copyWith({
-    int? color,
-    Uint8List? logo,
-    bool nullLogo = false,
-  }) {
+  ApertureTheme copyWith({int? color, Uint8List? logo, bool nullLogo = false}) {
     final $data = this as ApertureTheme;
     return ApertureTheme(
       color: color ?? $data.color,
@@ -63,10 +59,14 @@ abstract interface class $ApertureTheme with DataObject<ApertureTheme> {
       throw CodecException.typeMismatch(ApertureTheme, data.runtimeType, name);
     }
     return ApertureTheme(
-      color: $color.fromJson(data['color'],
-          name: DataCodec.childName(name, 'color')),
-      logo:
-          $logo.fromJson(data['logo'], name: DataCodec.childName(name, 'logo')),
+      color: $color.fromJson(
+        data['color'],
+        name: DataCodec.childName(name, 'color'),
+      ),
+      logo: $logo.fromJson(
+        data['logo'],
+        name: DataCodec.childName(name, 'logo'),
+      ),
     );
   }
 

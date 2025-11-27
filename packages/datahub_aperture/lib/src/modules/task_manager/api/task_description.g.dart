@@ -15,9 +15,7 @@ abstract interface class $TaskDescription with DataObject<TaskDescription> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString(value, name: name),
     toJson: (value) => $$codec.encodeString(value),
-    meta: [
-      const Id(),
-    ],
+    meta: [const Id()],
   );
 
   static final $displayName = DataField<TaskDescription, String>(
@@ -50,11 +48,7 @@ abstract interface class $TaskDescription with DataObject<TaskDescription> {
   String get $$name => bean.name;
   @override
   List<DataField<TaskDescription, dynamic>> get $$fields => bean.fields;
-  TaskDescription copyWith({
-    String? id,
-    String? displayName,
-    int? icon,
-  }) {
+  TaskDescription copyWith({String? id, String? displayName, int? icon}) {
     final $data = this as TaskDescription;
     return TaskDescription(
       id: id ?? $data.id,
@@ -74,14 +68,21 @@ abstract interface class $TaskDescription with DataObject<TaskDescription> {
   static TaskDescription fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          TaskDescription, data.runtimeType, name);
+        TaskDescription,
+        data.runtimeType,
+        name,
+      );
     }
     return TaskDescription(
       id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
-      displayName: $displayName.fromJson(data['displayName'],
-          name: DataCodec.childName(name, 'displayName')),
-      icon:
-          $icon.fromJson(data['icon'], name: DataCodec.childName(name, 'icon')),
+      displayName: $displayName.fromJson(
+        data['displayName'],
+        name: DataCodec.childName(name, 'displayName'),
+      ),
+      icon: $icon.fromJson(
+        data['icon'],
+        name: DataCodec.childName(name, 'icon'),
+      ),
     );
   }
 

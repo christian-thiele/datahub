@@ -14,13 +14,18 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
     valueOf: (p) => p.or,
     dataBean: () => $ResourceFilter.bean,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
-        (value ?? const []),
-        (v, {String? name}) => $$codec.decodeList<ResourceFilter>(
-            v, $ResourceFilter.bean.fromJson,
-            name: name),
-        name: name),
+      (value ?? const []),
+      (v, {String? name}) => $$codec.decodeList<ResourceFilter>(
+        v,
+        $ResourceFilter.bean.fromJson,
+        name: name,
+      ),
+      name: name,
+    ),
     toJson: (value) => $$codec.encodeNullable(
-        value, (v) => $$codec.encodeList<ResourceFilter>(v, (v) => v.toJson())),
+      value,
+      (v) => $$codec.encodeList<ResourceFilter>(v, (v) => v.toJson()),
+    ),
   );
 
   static final $and = DataField<ResourceFilter, List<ResourceFilter>?>(
@@ -28,13 +33,18 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
     valueOf: (p) => p.and,
     dataBean: () => $ResourceFilter.bean,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
-        (value ?? const []),
-        (v, {String? name}) => $$codec.decodeList<ResourceFilter>(
-            v, $ResourceFilter.bean.fromJson,
-            name: name),
-        name: name),
+      (value ?? const []),
+      (v, {String? name}) => $$codec.decodeList<ResourceFilter>(
+        v,
+        $ResourceFilter.bean.fromJson,
+        name: name,
+      ),
+      name: name,
+    ),
     toJson: (value) => $$codec.encodeNullable(
-        value, (v) => $$codec.encodeList<ResourceFilter>(v, (v) => v.toJson())),
+      value,
+      (v) => $$codec.encodeList<ResourceFilter>(v, (v) => v.toJson()),
+    ),
   );
 
   static final $fieldId = DataField<ResourceFilter, String?>(
@@ -49,14 +59,13 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
     name: 'type',
     valueOf: (p) => p.type,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
-        value,
-        (v, {String? name}) =>
-            $$codec.decodeEnum(v, ResourceFilterType.values, name: name),
-        name: name),
+      value,
+      (v, {String? name}) =>
+          $$codec.decodeEnum(v, ResourceFilterType.values, name: name),
+      name: name,
+    ),
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeEnum),
-    constraints: [
-      EnumConstraint(values: ResourceFilterType.values),
-    ],
+    constraints: [EnumConstraint(values: ResourceFilterType.values)],
   );
 
   static final $value = DataField<ResourceFilter, String?>(
@@ -108,8 +117,12 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
 
   static ResourceFilter fromValues(Map<String, dynamic> data) {
     return ResourceFilter(
-      or: data['or'] ?? const [],
-      and: data['and'] ?? const [],
+      or:
+          data['or']?.cast<ResourceFilter>().toList(growable: false) ??
+          const [],
+      and:
+          data['and']?.cast<ResourceFilter>().toList(growable: false) ??
+          const [],
       fieldId: data['fieldId'],
       type: data['type'],
       value: data['value'],
@@ -123,12 +136,18 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
     return ResourceFilter(
       or: $or.fromJson(data['or'], name: DataCodec.childName(name, 'or')),
       and: $and.fromJson(data['and'], name: DataCodec.childName(name, 'and')),
-      fieldId: $fieldId.fromJson(data['fieldId'],
-          name: DataCodec.childName(name, 'fieldId')),
-      type:
-          $type.fromJson(data['type'], name: DataCodec.childName(name, 'type')),
-      value: $value.fromJson(data['value'],
-          name: DataCodec.childName(name, 'value')),
+      fieldId: $fieldId.fromJson(
+        data['fieldId'],
+        name: DataCodec.childName(name, 'fieldId'),
+      ),
+      type: $type.fromJson(
+        data['type'],
+        name: DataCodec.childName(name, 'type'),
+      ),
+      value: $value.fromJson(
+        data['value'],
+        name: DataCodec.childName(name, 'value'),
+      ),
     );
   }
 

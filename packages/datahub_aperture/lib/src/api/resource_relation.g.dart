@@ -73,15 +73,24 @@ abstract interface class $ResourceRelation with DataObject<ResourceRelation> {
   static ResourceRelation fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          ResourceRelation, data.runtimeType, name);
+        ResourceRelation,
+        data.runtimeType,
+        name,
+      );
     }
     return ResourceRelation(
-      name:
-          $name.fromJson(data['name'], name: DataCodec.childName(name, 'name')),
-      resourceId: $resourceId.fromJson(data['resourceId'],
-          name: DataCodec.childName(name, 'resourceId')),
-      filter: $filter.fromJson(data['filter'],
-          name: DataCodec.childName(name, 'filter')),
+      name: $name.fromJson(
+        data['name'],
+        name: DataCodec.childName(name, 'name'),
+      ),
+      resourceId: $resourceId.fromJson(
+        data['resourceId'],
+        name: DataCodec.childName(name, 'resourceId'),
+      ),
+      filter: $filter.fromJson(
+        data['filter'],
+        name: DataCodec.childName(name, 'filter'),
+      ),
     );
   }
 

@@ -103,8 +103,9 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
       baseUrl: baseUrl ?? $data.baseUrl,
       oidcIssuer: oidcIssuer ?? $data.oidcIssuer,
       oidcScopes: oidcScopes ?? $data.oidcScopes,
-      oidcClientId:
-          nullOidcClientId ? null : (oidcClientId ?? $data.oidcClientId),
+      oidcClientId: nullOidcClientId
+          ? null
+          : (oidcClientId ?? $data.oidcClientId),
       oidcClientSecret: nullOidcClientSecret
           ? null
           : (oidcClientSecret ?? $data.oidcClientSecret),
@@ -117,7 +118,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
       theme: data['theme'],
       baseUrl: data['baseUrl'],
       oidcIssuer: data['oidcIssuer'],
-      oidcScopes: data['oidcScopes'],
+      oidcScopes: data['oidcScopes']?.cast<String>().toList(growable: false),
       oidcClientId: data['oidcClientId'],
       oidcClientSecret: data['oidcClientSecret'],
     );
@@ -126,23 +127,40 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
   static ApertureBootstrap fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          ApertureBootstrap, data.runtimeType, name);
+        ApertureBootstrap,
+        data.runtimeType,
+        name,
+      );
     }
     return ApertureBootstrap(
-      title: $title.fromJson(data['title'],
-          name: DataCodec.childName(name, 'title')),
-      theme: $theme.fromJson(data['theme'],
-          name: DataCodec.childName(name, 'theme')),
-      baseUrl: $baseUrl.fromJson(data['baseUrl'],
-          name: DataCodec.childName(name, 'baseUrl')),
-      oidcIssuer: $oidcIssuer.fromJson(data['oidcIssuer'],
-          name: DataCodec.childName(name, 'oidcIssuer')),
-      oidcScopes: $oidcScopes.fromJson(data['oidcScopes'],
-          name: DataCodec.childName(name, 'oidcScopes')),
-      oidcClientId: $oidcClientId.fromJson(data['oidcClientId'],
-          name: DataCodec.childName(name, 'oidcClientId')),
-      oidcClientSecret: $oidcClientSecret.fromJson(data['oidcClientSecret'],
-          name: DataCodec.childName(name, 'oidcClientSecret')),
+      title: $title.fromJson(
+        data['title'],
+        name: DataCodec.childName(name, 'title'),
+      ),
+      theme: $theme.fromJson(
+        data['theme'],
+        name: DataCodec.childName(name, 'theme'),
+      ),
+      baseUrl: $baseUrl.fromJson(
+        data['baseUrl'],
+        name: DataCodec.childName(name, 'baseUrl'),
+      ),
+      oidcIssuer: $oidcIssuer.fromJson(
+        data['oidcIssuer'],
+        name: DataCodec.childName(name, 'oidcIssuer'),
+      ),
+      oidcScopes: $oidcScopes.fromJson(
+        data['oidcScopes'],
+        name: DataCodec.childName(name, 'oidcScopes'),
+      ),
+      oidcClientId: $oidcClientId.fromJson(
+        data['oidcClientId'],
+        name: DataCodec.childName(name, 'oidcClientId'),
+      ),
+      oidcClientSecret: $oidcClientSecret.fromJson(
+        data['oidcClientSecret'],
+        name: DataCodec.childName(name, 'oidcClientSecret'),
+      ),
     );
   }
 

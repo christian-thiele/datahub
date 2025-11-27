@@ -31,9 +31,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeEnum(value, ResourceFieldType.values, name: name),
     toJson: (value) => $$codec.encodeEnum(value),
-    constraints: [
-      EnumConstraint(values: ResourceFieldType.values),
-    ],
+    constraints: [EnumConstraint(values: ResourceFieldType.values)],
   );
 
   static final $nullable = DataField<ResourceField, bool>(
@@ -78,37 +76,48 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
 
   static final $objectDescription =
       DataField<ResourceField, List<ResourceField>?>(
-    name: 'objectDescription',
-    valueOf: (p) => p.objectDescription,
-    dataBean: () => $ResourceField.bean,
-    fromJson: (value, {String? name}) => $$codec.decodeNullable(
-        value,
-        (v, {String? name}) => $$codec.decodeList<ResourceField>(
-            v, $ResourceField.bean.fromJson,
-            name: name),
-        name: name),
-    toJson: (value) => $$codec.encodeNullable(
-        value, (v) => $$codec.encodeList<ResourceField>(v, (v) => v.toJson())),
-  );
+        name: 'objectDescription',
+        valueOf: (p) => p.objectDescription,
+        dataBean: () => $ResourceField.bean,
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          value,
+          (v, {String? name}) => $$codec.decodeList<ResourceField>(
+            v,
+            $ResourceField.bean.fromJson,
+            name: name,
+          ),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) => $$codec.encodeList<ResourceField>(v, (v) => v.toJson()),
+        ),
+      );
 
   static final $enumValues = DataField<ResourceField, List<String>?>(
     name: 'enumValues',
     valueOf: (p) => p.enumValues,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
-        value,
-        (v, {String? name}) =>
-            $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
-        name: name),
+      value,
+      (v, {String? name}) =>
+          $$codec.decodeList<String>(v, $$codec.decodeString, name: name),
+      name: name,
+    ),
     toJson: (value) => $$codec.encodeNullable(
-        value, (v) => $$codec.encodeList<String>(v, $$codec.encodeString)),
+      value,
+      (v) => $$codec.encodeList<String>(v, $$codec.encodeString),
+    ),
   );
 
   static final $lookup = DataField<ResourceField, ResourceFieldLookup?>(
     name: 'lookup',
     valueOf: (p) => p.lookup,
     dataBean: () => $ResourceFieldLookup.bean,
-    fromJson: (value, {String? name}) => $$codec
-        .decodeNullable(value, $ResourceFieldLookup.bean.fromJson, name: name),
+    fromJson: (value, {String? name}) => $$codec.decodeNullable(
+      value,
+      $ResourceFieldLookup.bean.fromJson,
+      name: name,
+    ),
     toJson: (value) => $$codec.encodeNullable(value, (v) => v.toJson()),
   );
 
@@ -182,8 +191,10 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       readOnly: data['readOnly'] ?? false,
       length: data['length'],
       validation: data['validation'],
-      objectDescription: data['objectDescription'],
-      enumValues: data['enumValues'],
+      objectDescription: data['objectDescription']
+          ?.cast<ResourceField>()
+          .toList(growable: false),
+      enumValues: data['enumValues']?.cast<String>().toList(growable: false),
       lookup: data['lookup'],
     );
   }
@@ -194,26 +205,46 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     }
     return ResourceField(
       id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
-      name:
-          $name.fromJson(data['name'], name: DataCodec.childName(name, 'name')),
-      type:
-          $type.fromJson(data['type'], name: DataCodec.childName(name, 'type')),
-      nullable: $nullable.fromJson(data['nullable'],
-          name: DataCodec.childName(name, 'nullable')),
-      description: $description.fromJson(data['description'],
-          name: DataCodec.childName(name, 'description')),
-      readOnly: $readOnly.fromJson(data['readOnly'],
-          name: DataCodec.childName(name, 'readOnly')),
-      length: $length.fromJson(data['length'],
-          name: DataCodec.childName(name, 'length')),
-      validation: $validation.fromJson(data['validation'],
-          name: DataCodec.childName(name, 'validation')),
-      objectDescription: $objectDescription.fromJson(data['objectDescription'],
-          name: DataCodec.childName(name, 'objectDescription')),
-      enumValues: $enumValues.fromJson(data['enumValues'],
-          name: DataCodec.childName(name, 'enumValues')),
-      lookup: $lookup.fromJson(data['lookup'],
-          name: DataCodec.childName(name, 'lookup')),
+      name: $name.fromJson(
+        data['name'],
+        name: DataCodec.childName(name, 'name'),
+      ),
+      type: $type.fromJson(
+        data['type'],
+        name: DataCodec.childName(name, 'type'),
+      ),
+      nullable: $nullable.fromJson(
+        data['nullable'],
+        name: DataCodec.childName(name, 'nullable'),
+      ),
+      description: $description.fromJson(
+        data['description'],
+        name: DataCodec.childName(name, 'description'),
+      ),
+      readOnly: $readOnly.fromJson(
+        data['readOnly'],
+        name: DataCodec.childName(name, 'readOnly'),
+      ),
+      length: $length.fromJson(
+        data['length'],
+        name: DataCodec.childName(name, 'length'),
+      ),
+      validation: $validation.fromJson(
+        data['validation'],
+        name: DataCodec.childName(name, 'validation'),
+      ),
+      objectDescription: $objectDescription.fromJson(
+        data['objectDescription'],
+        name: DataCodec.childName(name, 'objectDescription'),
+      ),
+      enumValues: $enumValues.fromJson(
+        data['enumValues'],
+        name: DataCodec.childName(name, 'enumValues'),
+      ),
+      lookup: $lookup.fromJson(
+        data['lookup'],
+        name: DataCodec.childName(name, 'lookup'),
+      ),
     );
   }
 

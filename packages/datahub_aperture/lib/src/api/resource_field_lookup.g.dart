@@ -37,15 +37,15 @@ abstract interface class $ResourceFieldLookup
 
   static final DataBean<ResourceFieldLookup> bean =
       DataBean<ResourceFieldLookup>(
-    name: 'ResourceFieldLookup',
-    fields: List<DataField<ResourceFieldLookup, dynamic>>.unmodifiable([
-      $resourceId,
-      $resourceFieldId,
-      $filter,
-    ]),
-    fromValues: fromValues,
-    fromJson: fromJson,
-  );
+        name: 'ResourceFieldLookup',
+        fields: List<DataField<ResourceFieldLookup, dynamic>>.unmodifiable([
+          $resourceId,
+          $resourceFieldId,
+          $filter,
+        ]),
+        fromValues: fromValues,
+        fromJson: fromJson,
+      );
 
   @override
   String get $$name => bean.name;
@@ -75,15 +75,24 @@ abstract interface class $ResourceFieldLookup
   static ResourceFieldLookup fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          ResourceFieldLookup, data.runtimeType, name);
+        ResourceFieldLookup,
+        data.runtimeType,
+        name,
+      );
     }
     return ResourceFieldLookup(
-      resourceId: $resourceId.fromJson(data['resourceId'],
-          name: DataCodec.childName(name, 'resourceId')),
-      resourceFieldId: $resourceFieldId.fromJson(data['resourceFieldId'],
-          name: DataCodec.childName(name, 'resourceFieldId')),
-      filter: $filter.fromJson(data['filter'],
-          name: DataCodec.childName(name, 'filter')),
+      resourceId: $resourceId.fromJson(
+        data['resourceId'],
+        name: DataCodec.childName(name, 'resourceId'),
+      ),
+      resourceFieldId: $resourceFieldId.fromJson(
+        data['resourceFieldId'],
+        name: DataCodec.childName(name, 'resourceFieldId'),
+      ),
+      filter: $filter.fromJson(
+        data['filter'],
+        name: DataCodec.childName(name, 'filter'),
+      ),
     );
   }
 

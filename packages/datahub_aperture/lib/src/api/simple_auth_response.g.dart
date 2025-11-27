@@ -40,10 +40,7 @@ abstract interface class $SimpleAuthResponse
   String get $$name => bean.name;
   @override
   List<DataField<SimpleAuthResponse, dynamic>> get $$fields => bean.fields;
-  SimpleAuthResponse copyWith({
-    String? accessToken,
-    String? refreshToken,
-  }) {
+  SimpleAuthResponse copyWith({String? accessToken, String? refreshToken}) {
     final $data = this as SimpleAuthResponse;
     return SimpleAuthResponse(
       accessToken: accessToken ?? $data.accessToken,
@@ -61,13 +58,20 @@ abstract interface class $SimpleAuthResponse
   static SimpleAuthResponse fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          SimpleAuthResponse, data.runtimeType, name);
+        SimpleAuthResponse,
+        data.runtimeType,
+        name,
+      );
     }
     return SimpleAuthResponse(
-      accessToken: $accessToken.fromJson(data['accessToken'],
-          name: DataCodec.childName(name, 'accessToken')),
-      refreshToken: $refreshToken.fromJson(data['refreshToken'],
-          name: DataCodec.childName(name, 'refreshToken')),
+      accessToken: $accessToken.fromJson(
+        data['accessToken'],
+        name: DataCodec.childName(name, 'accessToken'),
+      ),
+      refreshToken: $refreshToken.fromJson(
+        data['refreshToken'],
+        name: DataCodec.childName(name, 'refreshToken'),
+      ),
     );
   }
 

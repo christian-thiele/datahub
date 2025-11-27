@@ -34,15 +34,17 @@ abstract interface class $ResourceAction with DataObject<ResourceAction> {
 
   static final $parameterFields =
       DataField<ResourceAction, List<ResourceField>>(
-    name: 'parameterFields',
-    valueOf: (p) => p.parameterFields,
-    dataBean: () => $ResourceField.bean,
-    fromJson: (value, {String? name}) => $$codec.decodeList<ResourceField>(
-        value, $ResourceField.bean.fromJson,
-        name: name),
-    toJson: (value) =>
-        $$codec.encodeList<ResourceField>(value, (v) => v.toJson()),
-  );
+        name: 'parameterFields',
+        valueOf: (p) => p.parameterFields,
+        dataBean: () => $ResourceField.bean,
+        fromJson: (value, {String? name}) => $$codec.decodeList<ResourceField>(
+          value,
+          $ResourceField.bean.fromJson,
+          name: name,
+        ),
+        toJson: (value) =>
+            $$codec.encodeList<ResourceField>(value, (v) => v.toJson()),
+      );
 
   static final DataBean<ResourceAction> bean = DataBean<ResourceAction>(
     name: 'ResourceAction',
@@ -80,7 +82,9 @@ abstract interface class $ResourceAction with DataObject<ResourceAction> {
       id: data['id'],
       displayName: data['displayName'],
       icon: data['icon'],
-      parameterFields: data['parameterFields'],
+      parameterFields: data['parameterFields']?.cast<ResourceField>().toList(
+        growable: false,
+      ),
     );
   }
 
@@ -90,12 +94,18 @@ abstract interface class $ResourceAction with DataObject<ResourceAction> {
     }
     return ResourceAction(
       id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
-      displayName: $displayName.fromJson(data['displayName'],
-          name: DataCodec.childName(name, 'displayName')),
-      icon:
-          $icon.fromJson(data['icon'], name: DataCodec.childName(name, 'icon')),
-      parameterFields: $parameterFields.fromJson(data['parameterFields'],
-          name: DataCodec.childName(name, 'parameterFields')),
+      displayName: $displayName.fromJson(
+        data['displayName'],
+        name: DataCodec.childName(name, 'displayName'),
+      ),
+      icon: $icon.fromJson(
+        data['icon'],
+        name: DataCodec.childName(name, 'icon'),
+      ),
+      parameterFields: $parameterFields.fromJson(
+        data['parameterFields'],
+        name: DataCodec.childName(name, 'parameterFields'),
+      ),
     );
   }
 

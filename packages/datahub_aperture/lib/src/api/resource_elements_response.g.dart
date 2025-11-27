@@ -30,23 +30,23 @@ abstract interface class $ResourceElementsResponse
     valueOf: (p) => p.data,
     dataBean: () => $ResourceData.bean,
     fromJson: (value, {String? name}) => $$codec.decodeList<ResourceData>(
-        value, $ResourceData.bean.fromJson,
-        name: name),
+      value,
+      $ResourceData.bean.fromJson,
+      name: name,
+    ),
     toJson: (value) =>
         $$codec.encodeList<ResourceData>(value, (v) => v.toJson()),
   );
 
   static final DataBean<ResourceElementsResponse> bean =
       DataBean<ResourceElementsResponse>(
-    name: 'ResourceElementsResponse',
-    fields: List<DataField<ResourceElementsResponse, dynamic>>.unmodifiable([
-      $total,
-      $hasNextPage,
-      $data,
-    ]),
-    fromValues: fromValues,
-    fromJson: fromJson,
-  );
+        name: 'ResourceElementsResponse',
+        fields: List<DataField<ResourceElementsResponse, dynamic>>.unmodifiable(
+          [$total, $hasNextPage, $data],
+        ),
+        fromValues: fromValues,
+        fromJson: fromJson,
+      );
 
   @override
   String get $$name => bean.name;
@@ -71,22 +71,31 @@ abstract interface class $ResourceElementsResponse
     return ResourceElementsResponse(
       total: data['total'],
       hasNextPage: data['hasNextPage'],
-      data: data['data'],
+      data: data['data']?.cast<ResourceData>().toList(growable: false),
     );
   }
 
   static ResourceElementsResponse fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          ResourceElementsResponse, data.runtimeType, name);
+        ResourceElementsResponse,
+        data.runtimeType,
+        name,
+      );
     }
     return ResourceElementsResponse(
-      total: $total.fromJson(data['total'],
-          name: DataCodec.childName(name, 'total')),
-      hasNextPage: $hasNextPage.fromJson(data['hasNextPage'],
-          name: DataCodec.childName(name, 'hasNextPage')),
-      data:
-          $data.fromJson(data['data'], name: DataCodec.childName(name, 'data')),
+      total: $total.fromJson(
+        data['total'],
+        name: DataCodec.childName(name, 'total'),
+      ),
+      hasNextPage: $hasNextPage.fromJson(
+        data['hasNextPage'],
+        name: DataCodec.childName(name, 'hasNextPage'),
+      ),
+      data: $data.fromJson(
+        data['data'],
+        name: DataCodec.childName(name, 'data'),
+      ),
     );
   }
 

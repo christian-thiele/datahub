@@ -12,37 +12,45 @@ abstract interface class $ResourceRelationFilter
   static const $$codec = JsonDataCodec();
   static final $or =
       DataField<ResourceRelationFilter, List<ResourceRelationFilter>?>(
-    name: 'or',
-    valueOf: (p) => p.or,
-    dataBean: () => $ResourceRelationFilter.bean,
-    fromJson: (value, {String? name}) => $$codec.decodeNullable(
-        (value ?? const []),
-        (v, {String? name}) => $$codec.decodeList<ResourceRelationFilter>(
-            v, $ResourceRelationFilter.bean.fromJson,
-            name: name),
-        name: name),
-    toJson: (value) => $$codec.encodeNullable(
-        value,
-        (v) =>
-            $$codec.encodeList<ResourceRelationFilter>(v, (v) => v.toJson())),
-  );
+        name: 'or',
+        valueOf: (p) => p.or,
+        dataBean: () => $ResourceRelationFilter.bean,
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          (value ?? const []),
+          (v, {String? name}) => $$codec.decodeList<ResourceRelationFilter>(
+            v,
+            $ResourceRelationFilter.bean.fromJson,
+            name: name,
+          ),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) =>
+              $$codec.encodeList<ResourceRelationFilter>(v, (v) => v.toJson()),
+        ),
+      );
 
   static final $and =
       DataField<ResourceRelationFilter, List<ResourceRelationFilter>?>(
-    name: 'and',
-    valueOf: (p) => p.and,
-    dataBean: () => $ResourceRelationFilter.bean,
-    fromJson: (value, {String? name}) => $$codec.decodeNullable(
-        (value ?? const []),
-        (v, {String? name}) => $$codec.decodeList<ResourceRelationFilter>(
-            v, $ResourceRelationFilter.bean.fromJson,
-            name: name),
-        name: name),
-    toJson: (value) => $$codec.encodeNullable(
-        value,
-        (v) =>
-            $$codec.encodeList<ResourceRelationFilter>(v, (v) => v.toJson())),
-  );
+        name: 'and',
+        valueOf: (p) => p.and,
+        dataBean: () => $ResourceRelationFilter.bean,
+        fromJson: (value, {String? name}) => $$codec.decodeNullable(
+          (value ?? const []),
+          (v, {String? name}) => $$codec.decodeList<ResourceRelationFilter>(
+            v,
+            $ResourceRelationFilter.bean.fromJson,
+            name: name,
+          ),
+          name: name,
+        ),
+        toJson: (value) => $$codec.encodeNullable(
+          value,
+          (v) =>
+              $$codec.encodeList<ResourceRelationFilter>(v, (v) => v.toJson()),
+        ),
+      );
 
   static final $fieldId = DataField<ResourceRelationFilter, String?>(
     name: 'fieldId',
@@ -56,14 +64,13 @@ abstract interface class $ResourceRelationFilter
     name: 'type',
     valueOf: (p) => p.type,
     fromJson: (value, {String? name}) => $$codec.decodeNullable(
-        value,
-        (v, {String? name}) =>
-            $$codec.decodeEnum(v, ResourceFilterType.values, name: name),
-        name: name),
+      value,
+      (v, {String? name}) =>
+          $$codec.decodeEnum(v, ResourceFilterType.values, name: name),
+      name: name,
+    ),
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeEnum),
-    constraints: [
-      EnumConstraint(values: ResourceFilterType.values),
-    ],
+    constraints: [EnumConstraint(values: ResourceFilterType.values)],
   );
 
   static final $value = DataField<ResourceRelationFilter, String?>(
@@ -84,18 +91,18 @@ abstract interface class $ResourceRelationFilter
 
   static final DataBean<ResourceRelationFilter> bean =
       DataBean<ResourceRelationFilter>(
-    name: 'ResourceRelationFilter',
-    fields: List<DataField<ResourceRelationFilter, dynamic>>.unmodifiable([
-      $or,
-      $and,
-      $fieldId,
-      $type,
-      $value,
-      $valueFieldId,
-    ]),
-    fromValues: fromValues,
-    fromJson: fromJson,
-  );
+        name: 'ResourceRelationFilter',
+        fields: List<DataField<ResourceRelationFilter, dynamic>>.unmodifiable([
+          $or,
+          $and,
+          $fieldId,
+          $type,
+          $value,
+          $valueFieldId,
+        ]),
+        fromValues: fromValues,
+        fromJson: fromJson,
+      );
 
   @override
   String get $$name => bean.name;
@@ -122,15 +129,20 @@ abstract interface class $ResourceRelationFilter
       fieldId: nullFieldId ? null : (fieldId ?? $data.fieldId),
       type: nullType ? null : (type ?? $data.type),
       value: nullValue ? null : (value ?? $data.value),
-      valueFieldId:
-          nullValueFieldId ? null : (valueFieldId ?? $data.valueFieldId),
+      valueFieldId: nullValueFieldId
+          ? null
+          : (valueFieldId ?? $data.valueFieldId),
     );
   }
 
   static ResourceRelationFilter fromValues(Map<String, dynamic> data) {
     return ResourceRelationFilter(
-      or: data['or'] ?? const [],
-      and: data['and'] ?? const [],
+      or:
+          data['or']?.cast<ResourceRelationFilter>().toList(growable: false) ??
+          const [],
+      and:
+          data['and']?.cast<ResourceRelationFilter>().toList(growable: false) ??
+          const [],
       fieldId: data['fieldId'],
       type: data['type'],
       value: data['value'],
@@ -141,19 +153,30 @@ abstract interface class $ResourceRelationFilter
   static ResourceRelationFilter fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          ResourceRelationFilter, data.runtimeType, name);
+        ResourceRelationFilter,
+        data.runtimeType,
+        name,
+      );
     }
     return ResourceRelationFilter(
       or: $or.fromJson(data['or'], name: DataCodec.childName(name, 'or')),
       and: $and.fromJson(data['and'], name: DataCodec.childName(name, 'and')),
-      fieldId: $fieldId.fromJson(data['fieldId'],
-          name: DataCodec.childName(name, 'fieldId')),
-      type:
-          $type.fromJson(data['type'], name: DataCodec.childName(name, 'type')),
-      value: $value.fromJson(data['value'],
-          name: DataCodec.childName(name, 'value')),
-      valueFieldId: $valueFieldId.fromJson(data['valueFieldId'],
-          name: DataCodec.childName(name, 'valueFieldId')),
+      fieldId: $fieldId.fromJson(
+        data['fieldId'],
+        name: DataCodec.childName(name, 'fieldId'),
+      ),
+      type: $type.fromJson(
+        data['type'],
+        name: DataCodec.childName(name, 'type'),
+      ),
+      value: $value.fromJson(
+        data['value'],
+        name: DataCodec.childName(name, 'value'),
+      ),
+      valueFieldId: $valueFieldId.fromJson(
+        data['valueFieldId'],
+        name: DataCodec.childName(name, 'valueFieldId'),
+      ),
     );
   }
 

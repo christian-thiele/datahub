@@ -24,9 +24,7 @@ abstract interface class $ResourceRevisionInfo
     fromJson: (value, {String? name}) =>
         $$codec.decodeEnum(value, ResourceRevisionType.values, name: name),
     toJson: (value) => $$codec.encodeEnum(value),
-    constraints: [
-      EnumConstraint(values: ResourceRevisionType.values),
-    ],
+    constraints: [EnumConstraint(values: ResourceRevisionType.values)],
   );
 
   static final $timestamp = DataField<ResourceRevisionInfo, DateTime>(
@@ -63,18 +61,18 @@ abstract interface class $ResourceRevisionInfo
 
   static final DataBean<ResourceRevisionInfo> bean =
       DataBean<ResourceRevisionInfo>(
-    name: 'ResourceRevisionInfo',
-    fields: List<DataField<ResourceRevisionInfo, dynamic>>.unmodifiable([
-      $id,
-      $type,
-      $timestamp,
-      $live,
-      $userId,
-      $userName,
-    ]),
-    fromValues: fromValues,
-    fromJson: fromJson,
-  );
+        name: 'ResourceRevisionInfo',
+        fields: List<DataField<ResourceRevisionInfo, dynamic>>.unmodifiable([
+          $id,
+          $type,
+          $timestamp,
+          $live,
+          $userId,
+          $userName,
+        ]),
+        fromValues: fromValues,
+        fromJson: fromJson,
+      );
 
   @override
   String get $$name => bean.name;
@@ -114,20 +112,33 @@ abstract interface class $ResourceRevisionInfo
   static ResourceRevisionInfo fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          ResourceRevisionInfo, data.runtimeType, name);
+        ResourceRevisionInfo,
+        data.runtimeType,
+        name,
+      );
     }
     return ResourceRevisionInfo(
       id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
-      type:
-          $type.fromJson(data['type'], name: DataCodec.childName(name, 'type')),
-      timestamp: $timestamp.fromJson(data['timestamp'],
-          name: DataCodec.childName(name, 'timestamp')),
-      live:
-          $live.fromJson(data['live'], name: DataCodec.childName(name, 'live')),
-      userId: $userId.fromJson(data['userId'],
-          name: DataCodec.childName(name, 'userId')),
-      userName: $userName.fromJson(data['userName'],
-          name: DataCodec.childName(name, 'userName')),
+      type: $type.fromJson(
+        data['type'],
+        name: DataCodec.childName(name, 'type'),
+      ),
+      timestamp: $timestamp.fromJson(
+        data['timestamp'],
+        name: DataCodec.childName(name, 'timestamp'),
+      ),
+      live: $live.fromJson(
+        data['live'],
+        name: DataCodec.childName(name, 'live'),
+      ),
+      userId: $userId.fromJson(
+        data['userId'],
+        name: DataCodec.childName(name, 'userId'),
+      ),
+      userName: $userName.fromJson(
+        data['userName'],
+        name: DataCodec.childName(name, 'userName'),
+      ),
     );
   }
 

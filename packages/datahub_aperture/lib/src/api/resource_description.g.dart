@@ -46,23 +46,28 @@ abstract interface class $ResourceDescription
     valueOf: (p) => p.fields,
     dataBean: () => $ResourceField.bean,
     fromJson: (value, {String? name}) => $$codec.decodeList<ResourceField>(
-        value, $ResourceField.bean.fromJson,
-        name: name),
+      value,
+      $ResourceField.bean.fromJson,
+      name: name,
+    ),
     toJson: (value) =>
         $$codec.encodeList<ResourceField>(value, (v) => v.toJson()),
   );
 
   static final $relations =
       DataField<ResourceDescription, List<ResourceRelation>>(
-    name: 'relations',
-    valueOf: (p) => p.relations,
-    dataBean: () => $ResourceRelation.bean,
-    fromJson: (value, {String? name}) => $$codec.decodeList<ResourceRelation>(
-        value, $ResourceRelation.bean.fromJson,
-        name: name),
-    toJson: (value) =>
-        $$codec.encodeList<ResourceRelation>(value, (v) => v.toJson()),
-  );
+        name: 'relations',
+        valueOf: (p) => p.relations,
+        dataBean: () => $ResourceRelation.bean,
+        fromJson: (value, {String? name}) =>
+            $$codec.decodeList<ResourceRelation>(
+              value,
+              $ResourceRelation.bean.fromJson,
+              name: name,
+            ),
+        toJson: (value) =>
+            $$codec.encodeList<ResourceRelation>(value, (v) => v.toJson()),
+      );
 
   static final $idField = DataField<ResourceDescription, String>(
     name: 'idField',
@@ -92,30 +97,32 @@ abstract interface class $ResourceDescription
     valueOf: (p) => p.actions,
     dataBean: () => $ResourceAction.bean,
     fromJson: (value, {String? name}) => $$codec.decodeList<ResourceAction>(
-        value, $ResourceAction.bean.fromJson,
-        name: name),
+      value,
+      $ResourceAction.bean.fromJson,
+      name: name,
+    ),
     toJson: (value) =>
         $$codec.encodeList<ResourceAction>(value, (v) => v.toJson()),
   );
 
   static final DataBean<ResourceDescription> bean =
       DataBean<ResourceDescription>(
-    name: 'ResourceDescription',
-    fields: List<DataField<ResourceDescription, dynamic>>.unmodifiable([
-      $id,
-      $name,
-      $namePlural,
-      $icon,
-      $fields,
-      $relations,
-      $idField,
-      $displayField,
-      $readOnly,
-      $actions,
-    ]),
-    fromValues: fromValues,
-    fromJson: fromJson,
-  );
+        name: 'ResourceDescription',
+        fields: List<DataField<ResourceDescription, dynamic>>.unmodifiable([
+          $id,
+          $name,
+          $namePlural,
+          $icon,
+          $fields,
+          $relations,
+          $idField,
+          $displayField,
+          $readOnly,
+          $actions,
+        ]),
+        fromValues: fromValues,
+        fromJson: fromJson,
+      );
 
   @override
   String get $$name => bean.name;
@@ -144,8 +151,9 @@ abstract interface class $ResourceDescription
       fields: fields ?? $data.fields,
       relations: relations ?? $data.relations,
       idField: idField ?? $data.idField,
-      displayField:
-          nullDisplayField ? null : (displayField ?? $data.displayField),
+      displayField: nullDisplayField
+          ? null
+          : (displayField ?? $data.displayField),
       readOnly: readOnly ?? $data.readOnly,
       actions: actions ?? $data.actions,
     );
@@ -157,40 +165,63 @@ abstract interface class $ResourceDescription
       name: data['name'],
       namePlural: data['namePlural'],
       icon: data['icon'],
-      fields: data['fields'],
-      relations: data['relations'],
+      fields: data['fields']?.cast<ResourceField>().toList(growable: false),
+      relations: data['relations']?.cast<ResourceRelation>().toList(
+        growable: false,
+      ),
       idField: data['idField'],
       displayField: data['displayField'],
       readOnly: data['readOnly'],
-      actions: data['actions'],
+      actions: data['actions']?.cast<ResourceAction>().toList(growable: false),
     );
   }
 
   static ResourceDescription fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          ResourceDescription, data.runtimeType, name);
+        ResourceDescription,
+        data.runtimeType,
+        name,
+      );
     }
     return ResourceDescription(
       id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
-      name:
-          $name.fromJson(data['name'], name: DataCodec.childName(name, 'name')),
-      namePlural: $namePlural.fromJson(data['namePlural'],
-          name: DataCodec.childName(name, 'namePlural')),
-      icon:
-          $icon.fromJson(data['icon'], name: DataCodec.childName(name, 'icon')),
-      fields: $fields.fromJson(data['fields'],
-          name: DataCodec.childName(name, 'fields')),
-      relations: $relations.fromJson(data['relations'],
-          name: DataCodec.childName(name, 'relations')),
-      idField: $idField.fromJson(data['idField'],
-          name: DataCodec.childName(name, 'idField')),
-      displayField: $displayField.fromJson(data['displayField'],
-          name: DataCodec.childName(name, 'displayField')),
-      readOnly: $readOnly.fromJson(data['readOnly'],
-          name: DataCodec.childName(name, 'readOnly')),
-      actions: $actions.fromJson(data['actions'],
-          name: DataCodec.childName(name, 'actions')),
+      name: $name.fromJson(
+        data['name'],
+        name: DataCodec.childName(name, 'name'),
+      ),
+      namePlural: $namePlural.fromJson(
+        data['namePlural'],
+        name: DataCodec.childName(name, 'namePlural'),
+      ),
+      icon: $icon.fromJson(
+        data['icon'],
+        name: DataCodec.childName(name, 'icon'),
+      ),
+      fields: $fields.fromJson(
+        data['fields'],
+        name: DataCodec.childName(name, 'fields'),
+      ),
+      relations: $relations.fromJson(
+        data['relations'],
+        name: DataCodec.childName(name, 'relations'),
+      ),
+      idField: $idField.fromJson(
+        data['idField'],
+        name: DataCodec.childName(name, 'idField'),
+      ),
+      displayField: $displayField.fromJson(
+        data['displayField'],
+        name: DataCodec.childName(name, 'displayField'),
+      ),
+      readOnly: $readOnly.fromJson(
+        data['readOnly'],
+        name: DataCodec.childName(name, 'readOnly'),
+      ),
+      actions: $actions.fromJson(
+        data['actions'],
+        name: DataCodec.childName(name, 'actions'),
+      ),
     );
   }
 

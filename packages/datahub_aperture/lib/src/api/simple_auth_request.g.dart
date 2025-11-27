@@ -39,10 +39,7 @@ abstract interface class $SimpleAuthRequest with DataObject<SimpleAuthRequest> {
   String get $$name => bean.name;
   @override
   List<DataField<SimpleAuthRequest, dynamic>> get $$fields => bean.fields;
-  SimpleAuthRequest copyWith({
-    String? username,
-    String? password,
-  }) {
+  SimpleAuthRequest copyWith({String? username, String? password}) {
     final $data = this as SimpleAuthRequest;
     return SimpleAuthRequest(
       username: username ?? $data.username,
@@ -60,13 +57,20 @@ abstract interface class $SimpleAuthRequest with DataObject<SimpleAuthRequest> {
   static SimpleAuthRequest fromJson(dynamic data, {String? name}) {
     if (data is! Map<String, dynamic>) {
       throw CodecException.typeMismatch(
-          SimpleAuthRequest, data.runtimeType, name);
+        SimpleAuthRequest,
+        data.runtimeType,
+        name,
+      );
     }
     return SimpleAuthRequest(
-      username: $username.fromJson(data['username'],
-          name: DataCodec.childName(name, 'username')),
-      password: $password.fromJson(data['password'],
-          name: DataCodec.childName(name, 'password')),
+      username: $username.fromJson(
+        data['username'],
+        name: DataCodec.childName(name, 'username'),
+      ),
+      password: $password.fromJson(
+        data['password'],
+        name: DataCodec.childName(name, 'password'),
+      ),
     );
   }
 
