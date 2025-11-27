@@ -135,9 +135,16 @@ class _Painter extends CustomPainter {
 }
 
 class ApertureLogo extends StatelessWidget {
+  final bool withText;
   final Color? color;
+  final double size;
 
-  const ApertureLogo({super.key, this.color});
+  const ApertureLogo({
+    super.key,
+    this.color,
+    this.withText = true,
+    this.size = 48,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -150,21 +157,26 @@ class ApertureLogo extends StatelessWidget {
         spacing: 8,
         children: [
           SizedBox(
-            width: 48,
-            height: 48,
+            width: size,
+            height: size,
             child: CustomPaint(
               foregroundPainter: _LogoPainter(color: effectiveColor),
               isComplex: false,
               willChange: false,
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 3.0),
-            child: Text(
-              'Aperture',
-              style: TextStyle(fontSize: 27, fontWeight: FontWeight.bold),
+          if (withText)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 3.0),
+              child: Text(
+                'Aperture',
+                style: TextStyle(
+                  fontSize: size * 0.5625,
+                  fontWeight: FontWeight.bold,
+                  color: effectiveColor,
+                ),
+              ),
             ),
-          ),
         ],
       ),
     );
