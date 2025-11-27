@@ -60,9 +60,10 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
   }
 
   @override
-  Future<int> deleteAll({required Filter filter}) {
-    // TODO: implement deleteAll
-    throw UnimplementedError();
+  Future<int> deleteAll({required Filter filter}) async {
+    final lengthBefore = _map.length;
+    _map.removeWhere((key, data) => evaluateFilter(data, filter));
+    return lengthBefore - _map.length;
   }
 
   @override
@@ -96,9 +97,19 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
   Future<int> updateAll({
     required Filter filter,
     required Map<DataField<T, dynamic>, dynamic> values,
-  }) {
-    // TODO: implement updateAll
-    throw UnimplementedError();
+  }) async {
+    var count = 0;
+    for (final key in _map.keys.toList()) {
+      final data = _map[key]!;
+      if (evaluateFilter(data, filter)) {
+        _map[key] = bean.fromValues({
+          for (final field in bean.fields) field.name: field.valueOf(data),
+          for (final (field, value) in values.tuples) field.name: value,
+        });
+        count++;
+      }
+    }
+    return count;
   }
 
   @override
