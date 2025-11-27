@@ -30,6 +30,30 @@ class PostgisGeography extends PostgresqlDataType<Geometry> {
   }
 }
 
+class PostgisGeometry extends PostgresqlDataType<Geometry> {
+  const PostgisGeometry() : super('geometry', const _PgGeometryType());
+
+  @override
+  dynamic encode(Geometry? value) => switch (value) {
+    final value? => pg.EncodedValue(
+      value.toEWKB(),
+      format: pg.EncodingFormat.binary,
+    ),
+    _ => null,
+  };
+
+  @override
+  Geometry? decode(value) {
+    return switch (value) {
+      pg.UndecodedBytes(:final bytes) => Geometry.parseEWKB(bytes),
+      Uint8List() => Geometry.parseEWKB(value),
+      Geometry() => value,
+      null => null,
+      _ => throw Exception('Cannot decode geometry from ${value.runtimeType}.'),
+    };
+  }
+}
+
 class _PgGeometryType extends pg.Type<Geometry> {
   const _PgGeometryType() : super(null);
 }
