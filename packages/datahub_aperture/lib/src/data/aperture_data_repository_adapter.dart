@@ -5,9 +5,7 @@ import 'package:datahub_aperture/src/aperture_service/aperture_resource_reposito
 class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
   final Find<DataRepository> repository;
 
-  ApertureDataRepositoryAdapter({
-    required this.repository,
-  });
+  ApertureDataRepositoryAdapter({required this.repository});
 
   @override
   Future<ResourceData> createElement(
@@ -68,36 +66,32 @@ class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
     DateTime? revisionLive,
   ) async {
     final repo = repository.find();
-    final existing = await repo.readById(id);
-    if (existing == null) {
-      throw ApiRequestException.notFound();
-    }
+    return await repo.atomic(() async {
+      final existing = await repo.readById(id);
+      if (existing == null) {
+        throw ApiRequestException.notFound();
+      }
 
-    final combined = {
-      ...existing.toJson(),
-      ...data,
-    };
+      final combined = {...existing.toJson(), ...data};
 
-    final dynamic object;
-    try {
-      object = repo.bean.fromJson(combined);
-    } on CodecException catch (e) {
-      _throwCodecApiException(e);
-    }
+      final dynamic object;
+      try {
+        object = repo.bean.fromJson(combined);
+      } on CodecException catch (e) {
+        _throwCodecApiException(e);
+      }
 
-    repo.bean.validateConstraints(object);
+      repo.bean.validateConstraints(object);
 
-    final dynamic updated;
-    updated = await repo.updateById(object);
+      await repo.updateById(object);
+      final updated = await repo.readById(id);
 
-    return _toResourceData(updated);
+      return _toResourceData(updated);
+    });
   }
 
   @override
-  Future<ResourceData?> deleteElement(
-    String id,
-    DateTime? revisionLive,
-  ) async {
+  Future<ResourceData?> deleteElement(String id, DateTime? revisionLive) async {
     final repo = repository.find();
     await repo.deleteById(id);
     return null;
@@ -120,20 +114,19 @@ class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
       }
 
       final Filter elementFilter;
-      if (filter
-          case ResourceFilter(:final type?, :final fieldId?, :final value)) {
+      if (filter case ResourceFilter(
+        :final type?,
+        :final fieldId?,
+        :final value,
+      )) {
         final field = bean.fields.firstWhere((e) => e.name == fieldId);
-        elementFilter = CompareFilter(
-          field,
-          switch (type) {
-            ResourceFilterType.equals => CompareType.equals,
-            ResourceFilterType.notEquals => CompareType.notEquals,
-            ResourceFilterType.greaterThan => CompareType.greaterThan,
-            ResourceFilterType.lessThan => CompareType.lessThan,
-            ResourceFilterType.contains => CompareType.contains,
-          },
-          ValueExpression(_alignFieldValue(field, value)),
-        );
+        elementFilter = CompareFilter(field, switch (type) {
+          ResourceFilterType.equals => CompareType.equals,
+          ResourceFilterType.notEquals => CompareType.notEquals,
+          ResourceFilterType.greaterThan => CompareType.greaterThan,
+          ResourceFilterType.lessThan => CompareType.lessThan,
+          ResourceFilterType.contains => CompareType.contains,
+        }, ValueExpression(_alignFieldValue(field, value)));
       } else {
         elementFilter = Filter.empty;
       }
