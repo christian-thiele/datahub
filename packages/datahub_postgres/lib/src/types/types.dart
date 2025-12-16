@@ -102,6 +102,7 @@ class PostgresqlEnumArray extends PostgresqlDataType<List<Enum>> {
             .map((e) => PostgresqlEnum._decodeElement(values, e))
             .nonNulls
             .toList(),
+      List() when value.isEmpty => const <Enum>[],
       _ => throw TypeDecodeException.typeMismatch(
         List<Enum>,
         value.runtimeType,
