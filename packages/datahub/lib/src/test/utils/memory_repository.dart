@@ -56,7 +56,7 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
       service.bean.requireIdField.name: id,
     });
 
-    return element;
+    return _map[id]!;
   }
 
   @override
@@ -68,7 +68,7 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
 
   @override
   Future<bool> deleteById(id) async {
-    return _map.remove(id) != null;
+    return _map.remove(_alignIdType(id)) != null;
   }
 
   @override
@@ -91,7 +91,9 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
   }
 
   @override
-  Future<T?> readById(id) async => _map[id];
+  Future<T?> readById(id) async {
+    return _map[_alignIdType(id)];
+  }
 
   @override
   Future<int> updateAll({
@@ -184,5 +186,16 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
   Future<int> count({Filter filter = Filter.empty}) async {
     final all = await readAll(filter: filter);
     return all.length;
+  }
+
+  dynamic _alignIdType(dynamic id) {
+    if (bean.requireIdField.type.isExact<int>()) {
+      return switch (id) {
+        int() => id,
+        _ => int.tryParse(id.toString()) ?? (throw ApiException('Invalid id.')),
+      };
+    } else {
+      return id.toString();
+    }
   }
 }
