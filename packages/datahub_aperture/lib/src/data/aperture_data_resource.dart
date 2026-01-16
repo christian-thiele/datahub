@@ -84,6 +84,7 @@ class ApertureDataResource {
     final apertureMeta = field.metaOfType<ApertureField>();
     final validation = field.constraintOfType<RegExpConstraint>();
     final length = field.constraintOfType<MaxLengthConstraint>();
+    final isAuto = field.hasMetaOfType<Id>((id) => id.auto);
 
     final ResourceFieldLookup? lookup;
     if (field.metaOfType<RelationId>() case final relationId?) {
@@ -102,7 +103,7 @@ class ApertureDataResource {
       id: field.name,
       name: meta?.name ?? niceName(field.name),
       description: meta?.description,
-      readOnly: apertureMeta?.readOnly ?? false,
+      readOnly: isAuto || (apertureMeta?.readOnly ?? false),
       validation: validation?.expression,
       length: length?.length,
       type: _fieldType(field),
