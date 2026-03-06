@@ -178,11 +178,11 @@ class DataBuilder extends Generator {
     ln('toJson: (value) => $encodingStatement,');
 
     if (field.meta.isNotEmpty) {
-      ln('meta: [${field.meta.map(metaInvocation).join(', ')},],');
+      ln('meta: [${field.meta.map(annotationInvocation).join(', ')},],');
     }
 
     final constraintInvocations = field.constraints
-        .map(metaInvocation)
+        .map(annotationInvocation)
         .toList();
     if (field.type.element is EnumElement) {
       constraintInvocations.add(
@@ -356,7 +356,7 @@ class DataBuilder extends Generator {
     ln('fromJson: fromJson,');
 
     if (meta.isNotEmpty) {
-      ln('meta: [${meta.map(metaInvocation).join(', ')},],');
+      ln('meta: [${meta.map(annotationInvocation).join(', ')},],');
     }
 
     ln(');');

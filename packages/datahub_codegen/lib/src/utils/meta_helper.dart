@@ -20,7 +20,7 @@ String? getDefaultValueExpression(FieldFormalParameterElement param) {
   return null;
 }
 
-String metaInvocation(DartObject annotation) {
+String annotationInvocation(DartObject annotation) {
   final name = annotation.type!.getDisplayString();
   final revived = ConstantReader(annotation).revive();
 
