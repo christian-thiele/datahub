@@ -1,3 +1,5 @@
+import '../types/geometry/geometry.dart';
+
 abstract class DataFieldConstraint<FieldType> {
   final String name;
 
@@ -98,4 +100,23 @@ class EnumConstraint<FieldType extends Enum?>
 
   @override
   bool check(FieldType value) => values.contains(value);
+}
+
+class GeometryTypeConstraint<FieldType extends Geometry?>
+    extends DataFieldConstraint<FieldType> {
+  final GeometryType type;
+
+  const GeometryTypeConstraint({
+    required this.type,
+    super.name = 'default.geometry-type',
+  });
+
+  @override
+  bool check(FieldType value) {
+    if (value == null) {
+      return true;
+    }
+
+    return value.type == type;
+  }
 }
