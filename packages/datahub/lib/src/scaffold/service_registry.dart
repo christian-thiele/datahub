@@ -9,6 +9,8 @@ abstract interface class ServiceRegistry {
   T readConfig<T>(Config<T> config, TreeNode scope);
 
   void register<T extends Service>(T service);
+
+  void registerPostInitializationCallback(void Function() callback);
 }
 
 class Find<T> {

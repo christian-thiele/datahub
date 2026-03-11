@@ -37,4 +37,42 @@ void main() {
       await Future.delayed(const Duration(seconds: 1));
     },
   );
+
+  declareTest(
+    'Run existing scheduled Task',
+    [
+      MemoryRepositoryService(
+        bean: $TaskInvocation.bean,
+        initialData: [
+          TaskInvocation(
+            id: uuid(),
+            state: TaskState.scheduled,
+            taskId: 'test-job',
+            parameters: {'param1': 'abc123', 'param2': 456},
+            scheduledAt: DateTime.timestamp(),
+            scheduledFor: DateTime.timestamp(),
+            lastHeartbeat: null,
+            progress: 0,
+            startedAt: null,
+            messages: [],
+            finishedAt: null,
+          ),
+        ],
+      ),
+      TaskManagerService(),
+
+      ServiceDelegate(
+        initialize: () async {
+          await Find<TaskManager>().find().registerExecutor<TestJob>(
+            'test-job',
+            $TestJob.bean,
+            _jobDelegate,
+          );
+        },
+      ),
+    ],
+    () async {
+      await Future.delayed(const Duration(seconds: 3));
+    },
+  );
 }

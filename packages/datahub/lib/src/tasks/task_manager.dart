@@ -89,6 +89,7 @@ class TaskManagerService implements Service {
   final Find<DataRepository<TaskInvocation>> taskInvocationRepository;
   final Config<Duration> heartbeatTimeout;
   final Config<Duration> heartbeatInterval;
+  final Config<Duration> idleUpdateInterval;
 
   const TaskManagerService({
     this.telemetry = const Find(),
@@ -100,6 +101,10 @@ class TaskManagerService implements Service {
     this.heartbeatTimeout = const Config(
       'taskManager.heartbeatTimeout',
       defaultValue: Duration(minutes: 1),
+    ),
+    this.idleUpdateInterval = const Config(
+      'taskManager.idleUpdateInterval',
+      defaultValue: Duration(minutes: 5),
     ),
   });
 
@@ -120,13 +125,15 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
     await super.initialize();
     telemetry = find(service.telemetry);
     taskInvocationRepository = find(service.taskInvocationRepository);
-    await _updateTimeoutTasks();
-    await _updateTimer();
+    registry.registerPostInitializationCallback(() async {
+      await _updateTimeoutTasks();
+      await _updateTimer();
+    });
   }
 
   @override
   Future<void> dispose() async {
-    log.debug('Shutting down TaskManager.');
+    log.trace('Shutting down TaskManager.');
     _timer?.cancel();
     if (_semaphore.isLocked) {
       log.debug('TaskManager locked, waiting for running tasks.');
@@ -149,7 +156,7 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
   }
 
   Future<void> _update() async {
-    log.debug('TaskManager update triggered.');
+    log.trace('TaskManager update triggered.');
     if (_semaphore.isLocked) {
       log.debug('TaskManager busy, canceling update.');
       return;
@@ -165,15 +172,14 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
         await _updateTimer();
       }
     });
-    log.debug('TaskManager lock released.');
+    log.trace('TaskManager lock released.');
   }
 
   Future<void> _updateTimer() async {
     final random = math.Random();
     final jitter = Duration(milliseconds: random.nextInt(3000) - 1500);
-    const updateInterval = Duration(minutes: 5);
     final latestNextUpdate = DateTime.timestamp()
-        .add(updateInterval)
+        .add(read(service.idleUpdateInterval))
         .add(jitter);
     final nextInvocation = await _findNextInvocationTimestamp();
     final nextUpdate =

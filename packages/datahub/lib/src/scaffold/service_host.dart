@@ -19,6 +19,7 @@ part 'scope.dart';
 enum ServiceHostState { uninitialized, initializing, initialized, shutdown }
 
 abstract class ServiceHost implements ServiceRegistry {
+  final _postInitializationCallbacks = <(FutureOr<void> Function(), Context)>[];
   final configuration = Configuration();
 
   TreeNode? _root;
@@ -103,6 +104,23 @@ abstract class ServiceHost implements ServiceRegistry {
     }
   }
 
+  Future<void> _runPostInitializationCallbacks() async {
+    while (_postInitializationCallbacks.isNotEmpty) {
+      final callback = _postInitializationCallbacks.removeAt(0);
+      callback.$2.run(() async {
+        try {
+          await callback.$1();
+        } catch (e, stack) {
+          log.error(
+            'Post initialization hook threw exception.',
+            error: e,
+            stack: stack,
+          );
+        }
+      });
+    }
+  }
+
   Future<void> _shutdownComponent(TreeNode node) async {
     for (final child in node.children.toList().reversed) {
       await _shutdownComponent(child);
@@ -113,7 +131,9 @@ abstract class ServiceHost implements ServiceRegistry {
         break;
       case ServiceTreeNode<Service>():
         try {
-          await node.instance?.dispose();
+          await node.instance?.context.run(() async {
+            await node.instance?.dispose();
+          });
         } catch (e, stack) {
           log.error(
             'Could not shutdown component ${node.instance?.runtimeType}',
@@ -130,8 +150,8 @@ abstract class ServiceHost implements ServiceRegistry {
     if (_root == null) {
       _state = ServiceHostState.initializing;
       _root = await _initializeComponent(null, buildRoot(), ConfigPath.root());
-
       _state = ServiceHostState.initialized;
+      _runPostInitializationCallbacks();
     } else {
       throw ApiException('ServiceHost already initialized.');
     }
@@ -155,6 +175,17 @@ abstract class ServiceHost implements ServiceRegistry {
     } else {
       throw Exception('Cannot register services at this time.');
     }
+  }
+
+  @override
+  void registerPostInitializationCallback(FutureOr<void> Function() callback) {
+    if (state != ServiceHostState.initializing) {
+      throw ApiError(
+        'Post initialization callbacks can only be registered inside a services initialize() method.',
+      );
+    }
+
+    _postInitializationCallbacks.add((callback, Context.ofZone()));
   }
 
   /*

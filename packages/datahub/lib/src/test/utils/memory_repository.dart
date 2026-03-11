@@ -5,8 +5,9 @@ import 'package:datahub/datahub.dart';
 
 class MemoryRepositoryService<T extends DataObject<T>> implements Service {
   final DataBean<T> bean;
+  final List<T>? initialData;
 
-  const MemoryRepositoryService({required this.bean});
+  const MemoryRepositoryService({required this.bean, this.initialData});
 
   @override
   ServiceInstance<Service> createInstance() =>
@@ -28,6 +29,12 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
       _map = <int, T>{};
     } else {
       _map = <String, T>{};
+    }
+
+    if (service.initialData != null) {
+      for (final entry in service.initialData!) {
+        await create(entry);
+      }
     }
   }
 
