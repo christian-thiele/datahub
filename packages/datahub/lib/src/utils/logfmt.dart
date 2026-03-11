@@ -27,5 +27,5 @@ String logFmtEncode(Map<String, String> values) {
 }
 
 String _escapeValue(String value) {
-  return '"${value.replaceAll('\\', '\\\\').replaceAll('"', '\\"')}"';
+  return '"${value.replaceAll('\\', '\\\\').replaceAll('"', '\\"').replaceAll('\n', '\\n')}"';
 }

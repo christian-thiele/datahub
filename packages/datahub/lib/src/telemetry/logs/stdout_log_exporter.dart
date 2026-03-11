@@ -23,6 +23,7 @@ class StdoutLogExporter implements LogExporter {
       for (final (key, value) in message.labels.tuples) key: value,
       'severity': message.level.name.toUpperCase(),
       'msg': message.line,
+      if (message.error != null) 'error': message.error.toString(),
     };
 
     switch (format) {
