@@ -31,7 +31,10 @@ void main() {
       expect(messages[0]['severity'], equals('DEBUG'));
       expect(messages[0]['msg'], equals('Short line'));
       expect(messages[1]['severity'], equals('WARNING'));
-      expect(messages[1]['msg'], equals('Some line with \nline breaks and special chars "\'\\'));
+      expect(
+        messages[1]['msg'],
+        equals('Some line with \nline breaks and special chars "\'\\'),
+      );
       expect(messages[2]['severity'], equals('ERROR'));
       expect(messages[2]['msg'], equals('This is an error.'));
       expect(messages[2]['error'], equals('400 This is bad.'));

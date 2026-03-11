@@ -29,8 +29,7 @@ class FakeStdout implements Stdout {
   }
 
   @override
-  void addError(Object error, [StackTrace? stackTrace]) {
-  }
+  void addError(Object error, [StackTrace? stackTrace]) {}
 
   @override
   Future<dynamic> addStream(Stream<List<int>> stream) async {
@@ -40,8 +39,7 @@ class FakeStdout implements Stdout {
   }
 
   @override
-  Future<dynamic> close() async {
-  }
+  Future<dynamic> close() async {}
 
   @override
   Future<dynamic> get done => StreamController().done;

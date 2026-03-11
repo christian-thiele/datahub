@@ -53,11 +53,9 @@ class Jwt extends TokenAuth {
     Map<String, dynamic> payload,
     RSAPrivateKey key,
   ) {
-    final encodedHeader = stripBase64Padding(_jsonBase64.encode({
-      ...header,
-      'alg': 'RS256',
-      'typ': 'JWT',
-    }));
+    final encodedHeader = stripBase64Padding(
+      _jsonBase64.encode({...header, 'alg': 'RS256', 'typ': 'JWT'}),
+    );
     final encodedPayload = stripBase64Padding(_jsonBase64.encode(payload));
     final bodyPart = '$encodedHeader.$encodedPayload';
     final body = utf8.encode(bodyPart);
