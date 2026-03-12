@@ -39,7 +39,9 @@ Future<AuthCallbackResult> listenForAuthCallback(
         return HttpResponse(
           request.requestUri,
           200,
-          {},
+          {
+            'content-type': ['text/html'],
+          },
           Stream.value(
             utf8.encode(
               '<!DOCTYPE><html><head><title>Aperture</title></head><body><p>You can close this page now.</p></body></html>',

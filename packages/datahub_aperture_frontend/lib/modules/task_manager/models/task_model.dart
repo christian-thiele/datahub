@@ -9,6 +9,8 @@ class TaskModel {
   final DateTime? scheduledFor;
   final DateTime? startedAt;
   final DateTime? finishedAt;
+  final List<String> messages;
+  final Map<String, dynamic> parameters;
 
   TaskModel({
     required this.invocationId,
@@ -19,5 +21,7 @@ class TaskModel {
     required this.scheduledFor,
     required this.startedAt,
     required this.finishedAt,
+    required this.messages,
+    required this.parameters,
   });
 }

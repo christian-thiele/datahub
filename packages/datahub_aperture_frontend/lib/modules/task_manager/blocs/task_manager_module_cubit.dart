@@ -13,10 +13,9 @@ part 'task_manager_module_state.dart';
 
 class TaskManagerModuleCubit extends Cubit<TaskManagerModuleState> {
   final TaskManagerRepository _repository;
-  final ModuleDescription module;
   Timer? _updateTimer;
 
-  TaskManagerModuleCubit(this._repository, {required this.module})
+  TaskManagerModuleCubit(this._repository)
     : super(const TaskManagerLoading.initial()) {
     update();
   }
@@ -123,6 +122,8 @@ class TaskManagerModuleCubit extends Cubit<TaskManagerModuleState> {
           : null,
       startedAt: invocation.startedAt,
       finishedAt: invocation.finishedAt,
+      messages: invocation.messages,
+      parameters: invocation.parameters,
     );
   }
 }

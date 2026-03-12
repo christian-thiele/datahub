@@ -39,11 +39,10 @@ class ModulePage extends StatelessWidget {
               ModuleLoaded(:final module) => switch (module.type) {
                 ModuleType.taskManager => RepositoryProvider<TaskManagerRepository>(
                   create: (context) => ApiTaskManagerRepository(
-                    module: module,
                     baseUrl: Bootstrap.of(context).baseUrl,
                   ),
                   dispose: (repository) => (repository as ApiRepository).close(),
-                  child: TaskManagerModulePage(module: module),
+                  child: TaskManagerModulePage(),
                 ),
                 // ignore: unreachable_switch_case
                 _ => ErrorView(
