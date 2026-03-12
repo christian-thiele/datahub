@@ -25,12 +25,12 @@ class TaskManagerModule implements ApertureModule {
 
   @override
   ModuleDescription get description => ModuleDescription(
-        id: id,
-        displayName: displayName,
-        icon: icon,
-        type: type,
-        configuration: {},
-      );
+    id: id,
+    displayName: displayName,
+    icon: icon,
+    type: type,
+    configuration: {},
+  );
 
   @override
   List<ApiRoute> buildApiRoutes(String base) {
@@ -38,7 +38,8 @@ class TaskManagerModule implements ApertureModule {
       ResourceEndpoint(
         matcher: RoutePattern(base),
         get: (request) async {
-          final taskManager = Find<TaskManager?>().find() ??
+          final taskManager =
+              Find<TaskManager?>().find() ??
               (throw ApiRequestException.notFound());
 
           final executors = taskManager.getRegisteredExecutors();
@@ -55,7 +56,8 @@ class TaskManagerModule implements ApertureModule {
       ResourceEndpoint(
         matcher: RoutePattern('$base/invocations'),
         get: (request) async {
-          final taskManager = Find<TaskManager?>().find() ??
+          final taskManager =
+              Find<TaskManager?>().find() ??
               (throw ApiRequestException.notFound());
           final offset = request.getParam<int?>('offset') ?? 0;
           final limit = math.min(100, request.getParam<int?>('limit') ?? 50);
@@ -68,6 +70,22 @@ class TaskManagerModule implements ApertureModule {
             offset: offset,
             limit: limit,
           );
+        },
+      ),
+      ResourceEndpoint(
+        matcher: RoutePattern('$base/invocations/{invocationId}'),
+        get: (request) async {
+          final taskManager =
+              Find<TaskManager?>().find() ??
+              (throw ApiRequestException.notFound());
+          final invocationId = request.getRouteParam('invocationId');
+          final result = await taskManager.getInvocations(
+            filter: $TaskInvocation.$id.equals(invocationId),
+            offset: 0,
+            limit: 1,
+          );
+
+          return result.firstOrNull ?? (throw ApiRequestException.notFound());
         },
       ),
     ];
