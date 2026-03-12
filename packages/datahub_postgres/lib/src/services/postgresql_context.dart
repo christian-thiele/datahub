@@ -1,5 +1,5 @@
 import 'package:datahub/datahub.dart';
-import 'package:datahub_postgres/datahub_postgres.dart';
+import 'package:datahub_postgres/sql.dart';
 import 'package:postgres/postgres.dart' as pg;
 
 import 'abstract/database_context.dart';

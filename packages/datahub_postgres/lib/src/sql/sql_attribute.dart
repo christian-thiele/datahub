@@ -1,4 +1,5 @@
 import 'package:datahub_postgres/schema.dart';
+import 'package:datahub_postgres/types.dart';
 
 import 'sql.dart';
 

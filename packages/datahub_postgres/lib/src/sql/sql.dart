@@ -2,7 +2,7 @@ import 'package:boost/boost.dart';
 
 import 'sql_exception.dart';
 
-import 'package:datahub_postgres/schema.dart';
+import 'package:datahub_postgres/types.dart';
 
 class _Sequence {
   var _value = 0;

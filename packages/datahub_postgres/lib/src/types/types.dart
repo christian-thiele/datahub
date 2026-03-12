@@ -2,9 +2,11 @@ import 'dart:typed_data';
 
 import 'package:datahub/data.dart';
 import 'package:datahub/datahub.dart';
-import 'package:datahub_postgres/datahub_postgres.dart';
-import 'package:datahub_postgres/src/types/type_decode_exception.dart';
 import 'package:postgres/postgres.dart' as pg;
+import 'package:datahub_postgres/sql.dart';
+
+import 'postgresql_data_type.dart';
+import 'type_decode_exception.dart';
 
 class PostgresqlInt extends PostgresqlDataType<int> {
   const PostgresqlInt() : super('bigint', pg.Type.bigInteger);

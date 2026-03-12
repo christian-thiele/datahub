@@ -1,8 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:datahub/data.dart';
-import 'package:datahub_postgres/datahub_postgres.dart';
 import 'package:postgres/postgres.dart' as pg;
+import '../postgresql_data_type.dart';
 
 class PostgisGeography extends PostgresqlDataType<Geometry> {
   const PostgisGeography() : super('geography', const _PgGeometryType());

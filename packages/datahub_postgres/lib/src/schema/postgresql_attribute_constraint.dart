@@ -1,4 +1,5 @@
-import 'package:datahub_postgres/datahub_postgres.dart';
+import 'package:datahub_postgres/sql.dart';
+import 'package:datahub_postgres/types.dart';
 
 sealed class PostgresqlAttributeConstraint {
   const PostgresqlAttributeConstraint();
