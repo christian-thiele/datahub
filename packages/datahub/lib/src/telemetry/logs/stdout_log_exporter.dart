@@ -24,6 +24,8 @@ class StdoutLogExporter implements LogExporter {
       'severity': message.level.name.toUpperCase(),
       'msg': message.line,
       if (message.error != null) 'error': message.error.toString(),
+      if (message.span?.spanId case final spanId?) 'span': spanId.hexId,
+      if (message.span?.traceId case final traceId?) 'trace': traceId.hexId,
     };
 
     switch (format) {

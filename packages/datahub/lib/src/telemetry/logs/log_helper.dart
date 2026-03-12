@@ -17,18 +17,18 @@ final class LogHelper {
     Map<String, String> labels = const {},
   }) {
     if (Context.maybeOfZone() case final context?) {
-      context
-          .find(Find<Telemetry>())
-          .publishLog(
-            LogMessage(
-              timestamp: DateTime.timestamp(),
-              line: line,
-              level: level,
-              stack: stack,
-              error: error,
-              labels: labels,
-            ),
-          );
+      final telemetry = context.find(Find<Telemetry>());
+      telemetry.publishLog(
+        LogMessage(
+          timestamp: DateTime.timestamp(),
+          line: line,
+          level: level,
+          stack: stack,
+          error: error,
+          labels: labels,
+          span: telemetry.getDefaultTracer().findParentSpan(),
+        ),
+      );
     } else {
       print(line);
     }

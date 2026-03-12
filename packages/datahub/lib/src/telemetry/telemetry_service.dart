@@ -5,6 +5,7 @@ import 'package:datahub/config.dart';
 import 'package:datahub/utils.dart';
 
 import 'logs/log_exporter.dart';
+import 'logs/log_listener.dart';
 import 'logs/log_message.dart';
 import 'logs/severity_level.dart';
 import 'logs/stdout_log_exporter.dart';
@@ -174,6 +175,15 @@ abstract interface class Telemetry {
   ///   - [addEvent]
   ///   - [addExceptionEvent]
   Tracer getTracer(String name, {String? version});
+
+  /// Returns the default tracer.
+  ///
+  /// In most cases the convenience methods for using the default tracer
+  /// are sufficient:
+  ///   - [trace]
+  ///   - [addEvent]
+  ///   - [addExceptionEvent]
+  Tracer getDefaultTracer();
 }
 
 class TelemetryService implements Service {
@@ -321,6 +331,21 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     if (message.level.severityNumber >= logLevel.severityNumber) {
       _logExporter.add(message);
     }
+
+    try {
+      LogListener.current?.onPublish(message);
+    } catch (e, stack) {
+      _logExporter.add(
+        LogMessage(
+          timestamp: DateTime.timestamp(),
+          line: 'Error in LogListener.',
+          level: SeverityLevel.error,
+          error: e,
+          stack: stack,
+          span: defaultTracer.findParentSpan(),
+        ),
+      );
+    }
   }
 
   @override
@@ -464,6 +489,9 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
       attributes: {},
     );
   }
+
+  @override
+  Tracer getDefaultTracer() => defaultTracer;
 
   @override
   Future<void> dispose() async {

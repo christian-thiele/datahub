@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:math' as math;
 
 import 'package:boost/boost.dart';
@@ -12,21 +13,15 @@ import 'task_invocation.dart';
 
 interface class TaskProgress {
   final void Function(double progress) reportProgress;
-  final void Function(String message) reportMessage;
   final void Function(dynamic error, [StackTrace? trace]) reportError;
 
-  TaskProgress._({
-    required this.reportProgress,
-    required this.reportMessage,
-    required this.reportError,
-  });
+  TaskProgress._({required this.reportProgress, required this.reportError});
 
   TaskProgress subProgress(double from, double length) {
     return TaskProgress._(
       reportProgress: (p) => reportProgress(
         math.max(from, math.min(from + length, from + length * p)),
       ),
-      reportMessage: reportMessage,
       reportError: reportError,
     );
   }
@@ -236,180 +231,194 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
     });
 
     if (invocation != null) {
-      log.info(
-        'Task started',
-        labels: {
-          'taskManager.taskId': invocation.taskId,
-          'taskManager.invocationId': invocation.id,
-        },
-      );
-      try {
-        final progressSemaphore = Semaphore();
-        final progress = TaskProgress._(
-          reportProgress: (progress) async {
-            log(
-              'Task: ${(math.min(math.max(0, progress), 1) * 100).toInt()}%',
-              labels: {
-                'taskManager.taskId': invocation.taskId,
-                'taskManager.invocationId': invocation.id,
-              },
-            );
-            try {
-              await progressSemaphore.throttle(() async {
-                final heartbeatAt = DateTime.timestamp();
+      final progressSemaphore = Semaphore();
+      await LogListener(
+        onPublish: (message) async {
+          final heartbeatAt = DateTime.timestamp();
+          try {
+            await progressSemaphore.runLocked(() async {
+              await taskInvocationRepository.atomic(() async {
+                final current =
+                    await taskInvocationRepository.readById(invocation.id) ??
+                    (throw ApiException('Task invocation not found.'));
+
                 await taskInvocationRepository.updateAll(
-                  filter: Filter.andGroup([
-                    $TaskInvocation.$id.equals(invocation.id),
-                    Filter.orGroup([
-                      $TaskInvocation.$lastHeartbeat.equals(null),
-                      $TaskInvocation.$lastHeartbeat.lessThan(heartbeatAt),
-                    ]),
-                  ]),
+                  filter: $TaskInvocation.$id.equals(invocation.id),
                   values: {
-                    $TaskInvocation.$progress: progress,
-                    $TaskInvocation.$lastHeartbeat: heartbeatAt,
+                    $TaskInvocation.$messages: [
+                      ...current.messages,
+                      jsonEncode({
+                        for (final (key, value) in message.labels.tuples)
+                          key: value,
+                        'timestamp': message.timestamp.toIso8601String(),
+                        'severity': message.level.name.toUpperCase(),
+                        'msg': message.line,
+                        if (message.error != null)
+                          'error': message.error.toString(),
+                        if (message.span?.spanId case final spanId?)
+                          'span': spanId.hexId,
+                        if (message.span?.traceId case final traceId?)
+                          'trace': traceId.hexId,
+                      }),
+                    ],
+                    if (current.lastHeartbeat?.isBefore(heartbeatAt) ?? true)
+                      $TaskInvocation.$lastHeartbeat: heartbeatAt,
                   },
                 );
               });
-            } catch (e, stack) {
-              log.error(
-                'Could not update task invocation',
-                error: e,
-                stack: stack,
-                labels: {
-                  'taskManager.taskId': invocation.taskId,
-                  'taskManager.invocationId': invocation.id,
-                },
-              );
-            }
-          },
-          reportMessage: (message) async {
-            final heartbeatAt = DateTime.timestamp();
-            log.debug(
-              'Message from Task: $message',
-              labels: {
-                'taskManager.taskId': invocation.taskId,
-                'taskManager.invocationId': invocation.id,
-              },
-            );
-            try {
-              await progressSemaphore.runLocked(() async {
-                await taskInvocationRepository.atomic(() async {
-                  final current =
-                      await taskInvocationRepository.readById(invocation.id) ??
-                      (throw ApiException('Task invocation not found.'));
-
-                  await taskInvocationRepository.updateAll(
-                    filter: $TaskInvocation.$id.equals(invocation.id),
-                    values: {
-                      $TaskInvocation.$messages: [...current.messages, message],
-                      if (current.lastHeartbeat?.isBefore(heartbeatAt) ?? true)
-                        $TaskInvocation.$lastHeartbeat: heartbeatAt,
-                    },
-                  );
-                });
-              });
-            } catch (e, stack) {
-              log.error(
-                'Could not update task invocation',
-                error: e,
-                stack: stack,
-                labels: {
-                  'taskManager.taskId': invocation.taskId,
-                  'taskManager.invocationId': invocation.id,
-                },
-              );
-            }
-          },
-          reportError: (error, [stack]) async {
-            final heartbeatAt = DateTime.timestamp();
+            });
+          } catch (e, stack) {
             log.error(
-              'Error in task',
-              error: error,
+              'Could not update task invocation',
+              error: e,
               stack: stack,
               labels: {
                 'taskManager.taskId': invocation.taskId,
                 'taskManager.invocationId': invocation.id,
               },
             );
-            try {
-              await progressSemaphore.runLocked(() async {
-                await taskInvocationRepository.atomic(() async {
-                  final current =
-                      await taskInvocationRepository.readById(invocation.id) ??
-                      (throw ApiException('Task invocation not found.'));
-
+          }
+        },
+      ).run(() async {
+        log.info(
+          'Task started',
+          labels: {
+            'taskManager.taskId': invocation.taskId,
+            'taskManager.invocationId': invocation.id,
+          },
+        );
+        try {
+          final progress = TaskProgress._(
+            reportProgress: (progress) async {
+              log(
+                'Task: ${(math.min(math.max(0, progress), 1) * 100).toInt()}%',
+                labels: {
+                  'taskManager.taskId': invocation.taskId,
+                  'taskManager.invocationId': invocation.id,
+                },
+              );
+              try {
+                await progressSemaphore.throttle(() async {
+                  final heartbeatAt = DateTime.timestamp();
                   await taskInvocationRepository.updateAll(
-                    filter: $TaskInvocation.$id.equals(invocation.id),
+                    filter: Filter.andGroup([
+                      $TaskInvocation.$id.equals(invocation.id),
+                      Filter.orGroup([
+                        $TaskInvocation.$lastHeartbeat.equals(null),
+                        $TaskInvocation.$lastHeartbeat.lessThan(heartbeatAt),
+                      ]),
+                    ]),
                     values: {
-                      $TaskInvocation.$messages: [
-                        ...current.messages,
-                        error.toString(),
-                      ],
-                      if (current.lastHeartbeat?.isBefore(heartbeatAt) ?? true)
-                        $TaskInvocation.$lastHeartbeat: heartbeatAt,
+                      $TaskInvocation.$progress: progress,
+                      $TaskInvocation.$lastHeartbeat: heartbeatAt,
                     },
                   );
                 });
-              });
-            } catch (e, stack) {
+              } catch (e, stack) {
+                log.error(
+                  'Could not update task invocation',
+                  error: e,
+                  stack: stack,
+                  labels: {
+                    'taskManager.taskId': invocation.taskId,
+                    'taskManager.invocationId': invocation.id,
+                  },
+                );
+              }
+            },
+            reportError: (error, [stack]) async {
+              final heartbeatAt = DateTime.timestamp();
               log.error(
-                'Could not update task invocation',
-                error: e,
+                'Error in task',
+                error: error,
                 stack: stack,
                 labels: {
                   'taskManager.taskId': invocation.taskId,
                   'taskManager.invocationId': invocation.id,
                 },
               );
-            }
-          },
-        );
-        final executor = _findExecutorForInvocation(invocation);
-        final parameters = executor.bean.fromJson(invocation.parameters);
-        await telemetry.trace(
-          'Task ${executor.displayName ?? executor.taskId}',
-          (span) async => await executor.execute(progress, parameters),
-          attributes: {
-            'datahub.task.id': executor.taskId,
-            'datahub.task.invocation_id': invocation.id,
-          },
-        );
-        final finishedAt = DateTime.timestamp();
-        await taskInvocationRepository.updateAll(
-          filter: $TaskInvocation.$id.equals(invocation.id),
-          values: {
-            $TaskInvocation.$state: TaskState.finished,
-            $TaskInvocation.$finishedAt: finishedAt,
-            $TaskInvocation.$lastHeartbeat: finishedAt,
-            $TaskInvocation.$progress: 1.0,
-          },
-        );
-      } catch (error, stack) {
-        log.error(
-          'Error while executing task.',
-          error: error,
-          stack: stack,
-          labels: {
-            'taskManager.taskId': invocation.taskId,
-            'taskManager.invocationId': invocation.id,
-          },
-        );
+              try {
+                await progressSemaphore.runLocked(() async {
+                  await taskInvocationRepository.atomic(() async {
+                    final current =
+                        await taskInvocationRepository.readById(
+                          invocation.id,
+                        ) ??
+                        (throw ApiException('Task invocation not found.'));
 
-        await taskInvocationRepository.atomic(() async {
-          final inv =
-              await taskInvocationRepository.readById(invocation.id) ??
-              (throw ApiException('Task invocation not found.'));
-          await taskInvocationRepository.updateAll(
-            filter: $TaskInvocation.$id.equals(inv.id),
-            values: {
-              $TaskInvocation.$state: TaskState.failed,
-              $TaskInvocation.$finishedAt: DateTime.timestamp(),
-              $TaskInvocation.$messages: [...inv.messages, error.toString()],
+                    await taskInvocationRepository.updateAll(
+                      filter: $TaskInvocation.$id.equals(invocation.id),
+                      values: {
+                        $TaskInvocation.$messages: [
+                          ...current.messages,
+                          error.toString(),
+                        ],
+                        if (current.lastHeartbeat?.isBefore(heartbeatAt) ??
+                            true)
+                          $TaskInvocation.$lastHeartbeat: heartbeatAt,
+                      },
+                    );
+                  });
+                });
+              } catch (e, stack) {
+                log.error(
+                  'Could not update task invocation',
+                  error: e,
+                  stack: stack,
+                  labels: {
+                    'taskManager.taskId': invocation.taskId,
+                    'taskManager.invocationId': invocation.id,
+                  },
+                );
+              }
             },
           );
-        });
-      }
+          final executor = _findExecutorForInvocation(invocation);
+          final parameters = executor.bean.fromJson(invocation.parameters);
+          await telemetry.trace(
+            'Task ${executor.displayName ?? executor.taskId}',
+            (span) async => await executor.execute(progress, parameters),
+            attributes: {
+              'datahub.task.id': executor.taskId,
+              'datahub.task.invocation_id': invocation.id,
+            },
+          );
+          final finishedAt = DateTime.timestamp();
+          await taskInvocationRepository.updateAll(
+            filter: $TaskInvocation.$id.equals(invocation.id),
+            values: {
+              $TaskInvocation.$state: TaskState.finished,
+              $TaskInvocation.$finishedAt: finishedAt,
+              $TaskInvocation.$lastHeartbeat: finishedAt,
+              $TaskInvocation.$progress: 1.0,
+            },
+          );
+        } catch (error, stack) {
+          log.error(
+            'Error while executing task.',
+            error: error,
+            stack: stack,
+            labels: {
+              'taskManager.taskId': invocation.taskId,
+              'taskManager.invocationId': invocation.id,
+            },
+          );
+
+          await taskInvocationRepository.atomic(() async {
+            final inv =
+                await taskInvocationRepository.readById(invocation.id) ??
+                (throw ApiException('Task invocation not found.'));
+            await taskInvocationRepository.updateAll(
+              filter: $TaskInvocation.$id.equals(inv.id),
+              values: {
+                $TaskInvocation.$state: TaskState.failed,
+                $TaskInvocation.$finishedAt: DateTime.timestamp(),
+                $TaskInvocation.$messages: [...inv.messages, error.toString()],
+              },
+            );
+          });
+        }
+      });
     }
   }
 

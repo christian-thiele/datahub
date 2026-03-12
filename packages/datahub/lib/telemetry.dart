@@ -2,6 +2,7 @@ export 'src/telemetry/telemetry_service.dart';
 
 export 'src/telemetry/logs/log_exporter.dart';
 export 'src/telemetry/logs/log_helper.dart';
+export 'src/telemetry/logs/log_listener.dart';
 export 'src/telemetry/logs/log_message.dart';
 export 'src/telemetry/logs/open_telemetry_log_exporter.dart';
 export 'src/telemetry/logs/stdout_log_exporter.dart';
