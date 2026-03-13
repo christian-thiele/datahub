@@ -1,5 +1,5 @@
 import 'package:datahub/datahub.dart';
-import 'package:datahub_aperture/src/modules/task_manager/api/task_description.dart';
+import 'package:datahub_aperture/modules.dart';
 import 'package:datahub_aperture_frontend/repositories/api_repository.dart';
 
 import 'task_manager_repository.dart';
