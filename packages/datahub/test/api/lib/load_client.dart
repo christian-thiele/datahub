@@ -14,7 +14,7 @@ class LoadClient {
     final responses = <dynamic>[];
     stdout.write('Starting...');
 
-    String _n(int number) => number.toString().padLeft(4, ' ');
+    String n(int number) => number.toString().padLeft(4, ' ');
 
     void notify() {
       final successCount = responses
@@ -23,7 +23,7 @@ class LoadClient {
       final failedCount = responses.length - successCount;
       final pendingCount = requests.length - responses.length;
       stdout.write(
-        '\rSUCCESS: ${_n(successCount)} FAIL: ${_n(failedCount)} IN-FLIGHT: ${_n(pendingCount)}',
+        '\rSUCCESS: ${n(successCount)} FAIL: ${n(failedCount)} IN-FLIGHT: ${n(pendingCount)}',
       );
     }
 

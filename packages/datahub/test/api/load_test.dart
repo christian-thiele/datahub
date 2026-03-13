@@ -1,9 +1,8 @@
 import 'dart:io';
 import 'dart:isolate';
 
-import 'package:datahub/api.dart';
 import 'package:datahub/datahub.dart';
-import 'package:datahub/src/test/test_host.dart';
+import 'package:datahub/test.dart';
 import 'package:test/test.dart';
 
 import 'lib/load_client.dart';
