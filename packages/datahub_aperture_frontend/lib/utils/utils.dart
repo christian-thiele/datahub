@@ -62,7 +62,7 @@ String formatDuration(Duration d) {
   }
 
   if (d.inMinutes > 0) {
-    buffer.write((d.inMinutes & 60).toString());
+    buffer.write((d.inMinutes % 60).toString());
     buffer.write('min ');
   }
 
