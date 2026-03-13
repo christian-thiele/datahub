@@ -14,8 +14,13 @@ import 'task_invocation.dart';
 interface class TaskProgress {
   final void Function(double progress) reportProgress;
   final void Function(dynamic error, [StackTrace? trace]) reportError;
+  final void Function() heartbeat;
 
-  TaskProgress._({required this.reportProgress, required this.reportError});
+  TaskProgress._({
+    required this.reportProgress,
+    required this.reportError,
+    required this.heartbeat,
+  });
 
   TaskProgress subProgress(double from, double length) {
     return TaskProgress._(
@@ -23,6 +28,7 @@ interface class TaskProgress {
         math.max(from, math.min(from + length, from + length * p)),
       ),
       reportError: reportError,
+      heartbeat: heartbeat,
     );
   }
 }
@@ -234,49 +240,52 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
       final progressSemaphore = Semaphore();
       await LogListener(
         onPublish: (message) async {
-          final heartbeatAt = DateTime.timestamp();
-          try {
-            await progressSemaphore.runLocked(() async {
-              await taskInvocationRepository.atomic(() async {
-                final current =
-                    await taskInvocationRepository.readById(invocation.id) ??
-                    (throw ApiException('Task invocation not found.'));
+          if (message.level.severityNumber >
+              SeverityLevel.trace.severityNumber) {
+            final heartbeatAt = DateTime.timestamp();
+            try {
+              await progressSemaphore.runLocked(() async {
+                await taskInvocationRepository.atomic(() async {
+                  final current =
+                      await taskInvocationRepository.readById(invocation.id) ??
+                      (throw ApiException('Task invocation not found.'));
 
-                await taskInvocationRepository.updateAll(
-                  filter: $TaskInvocation.$id.equals(invocation.id),
-                  values: {
-                    $TaskInvocation.$messages: [
-                      ...current.messages,
-                      jsonEncode({
-                        for (final (key, value) in message.labels.tuples)
-                          key: value,
-                        'timestamp': message.timestamp.toIso8601String(),
-                        'severity': message.level.name.toUpperCase(),
-                        'msg': message.line,
-                        if (message.error != null)
-                          'error': message.error.toString(),
-                        if (message.span?.spanId case final spanId?)
-                          'span': spanId.hexId,
-                        if (message.span?.traceId case final traceId?)
-                          'trace': traceId.hexId,
-                      }),
-                    ],
-                    if (current.lastHeartbeat?.isBefore(heartbeatAt) ?? true)
-                      $TaskInvocation.$lastHeartbeat: heartbeatAt,
-                  },
-                );
+                  await taskInvocationRepository.updateAll(
+                    filter: $TaskInvocation.$id.equals(invocation.id),
+                    values: {
+                      $TaskInvocation.$messages: [
+                        ...current.messages,
+                        jsonEncode({
+                          for (final (key, value) in message.labels.tuples)
+                            key: value,
+                          'timestamp': message.timestamp.toIso8601String(),
+                          'severity': message.level.name.toUpperCase(),
+                          'msg': message.line,
+                          if (message.error != null)
+                            'error': message.error.toString(),
+                          if (message.span?.spanId case final spanId?)
+                            'span': spanId.hexId,
+                          if (message.span?.traceId case final traceId?)
+                            'trace': traceId.hexId,
+                        }),
+                      ],
+                      if (current.lastHeartbeat?.isBefore(heartbeatAt) ?? true)
+                        $TaskInvocation.$lastHeartbeat: heartbeatAt,
+                    },
+                  );
+                });
               });
-            });
-          } catch (e, stack) {
-            log.error(
-              'Could not update task invocation',
-              error: e,
-              stack: stack,
-              labels: {
-                'taskManager.taskId': invocation.taskId,
-                'taskManager.invocationId': invocation.id,
-              },
-            );
+            } catch (e, stack) {
+              log.error(
+                'Could not update task invocation',
+                error: e,
+                stack: stack,
+                labels: {
+                  'taskManager.taskId': invocation.taskId,
+                  'taskManager.invocationId': invocation.id,
+                },
+              );
+            }
           }
         },
       ).run(() async {
@@ -290,7 +299,7 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
         try {
           final progress = TaskProgress._(
             reportProgress: (progress) async {
-              log(
+              log.trace(
                 'Task: ${(math.min(math.max(0, progress), 1) * 100).toInt()}%',
                 labels: {
                   'taskManager.taskId': invocation.taskId,
@@ -298,7 +307,7 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
                 },
               );
               try {
-                await progressSemaphore.throttle(() async {
+                await progressSemaphore.runLocked(() async {
                   final heartbeatAt = DateTime.timestamp();
                   await taskInvocationRepository.updateAll(
                     filter: Filter.andGroup([
@@ -372,6 +381,40 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
                 );
               }
             },
+            heartbeat: () async {
+              log.trace(
+                'Task heartbeat',
+                labels: {
+                  'taskManager.taskId': invocation.taskId,
+                  'taskManager.invocationId': invocation.id,
+                },
+              );
+              try {
+                await progressSemaphore.throttle(() async {
+                  final heartbeatAt = DateTime.timestamp();
+                  await taskInvocationRepository.updateAll(
+                    filter: Filter.andGroup([
+                      $TaskInvocation.$id.equals(invocation.id),
+                      Filter.orGroup([
+                        $TaskInvocation.$lastHeartbeat.equals(null),
+                        $TaskInvocation.$lastHeartbeat.lessThan(heartbeatAt),
+                      ]),
+                    ]),
+                    values: {$TaskInvocation.$lastHeartbeat: heartbeatAt},
+                  );
+                });
+              } catch (e, stack) {
+                log.error(
+                  'Could not update task invocation',
+                  error: e,
+                  stack: stack,
+                  labels: {
+                    'taskManager.taskId': invocation.taskId,
+                    'taskManager.invocationId': invocation.id,
+                  },
+                );
+              }
+            },
           );
           final executor = _findExecutorForInvocation(invocation);
           final parameters = executor.bean.fromJson(invocation.parameters);
@@ -413,7 +456,6 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
               values: {
                 $TaskInvocation.$state: TaskState.failed,
                 $TaskInvocation.$finishedAt: DateTime.timestamp(),
-                $TaskInvocation.$messages: [...inv.messages, error.toString()],
               },
             );
           });
