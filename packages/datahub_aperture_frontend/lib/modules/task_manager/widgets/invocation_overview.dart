@@ -34,7 +34,7 @@ class InvocationOverview extends StatelessWidget {
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
                     Text(
-                      task.scheduledAt.formatDateTime() ?? '-',
+                      task.scheduledAt.formatDateTime(),
                       style: Theme.of(context).textTheme.bodyLarge,
                     ),
                   ],
@@ -65,35 +65,15 @@ class InvocationOverview extends StatelessWidget {
         Card.outlined(
           child: Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: 'invocationId: ',
-                        style: Theme.of(context).textTheme.labelMedium
-                            ?.copyWith(
-                              fontFamily:
-                                  GoogleFonts.jetBrainsMono().fontFamily,
-                            ),
-                      ),
-                      TextSpan(
-                        text: task.invocationId.toString(),
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontFamily: GoogleFonts.jetBrainsMono().fontFamily,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                for (final property in task.parameters.entries)
-                  RichText(
-                    text: TextSpan(
+            child: SelectionArea(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text.rich(
+                    TextSpan(
                       children: [
                         TextSpan(
-                          text: '${property.key}: ',
+                          text: 'invocationId: ',
                           style: Theme.of(context).textTheme.labelMedium
                               ?.copyWith(
                                 fontFamily:
@@ -101,7 +81,7 @@ class InvocationOverview extends StatelessWidget {
                               ),
                         ),
                         TextSpan(
-                          text: property.value.toString(),
+                          text: task.invocationId.toString(),
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(
                                 fontFamily:
@@ -111,7 +91,31 @@ class InvocationOverview extends StatelessWidget {
                       ],
                     ),
                   ),
-              ],
+                  for (final property in task.parameters.entries)
+                    Text.rich(
+                      TextSpan(
+                        children: [
+                          TextSpan(
+                            text: '${property.key}: ',
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(
+                                  fontFamily:
+                                      GoogleFonts.jetBrainsMono().fontFamily,
+                                ),
+                          ),
+                          TextSpan(
+                            text: property.value.toString(),
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  fontFamily:
+                                      GoogleFonts.jetBrainsMono().fontFamily,
+                                ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
         ),
