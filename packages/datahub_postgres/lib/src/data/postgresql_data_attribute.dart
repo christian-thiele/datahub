@@ -1,6 +1,7 @@
 import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
 import 'package:datahub_postgres/schema.dart';
+import 'package:datahub_postgres/types.dart';
 
 class PostgresqlDataAttribute extends PostgresqlAttribute {
   final DataField field;

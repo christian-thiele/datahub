@@ -1,5 +1,6 @@
-import 'package:datahub_postgres/datahub_postgres.dart';
-import 'package:datahub_postgres/src/types/types.dart';
+import 'package:datahub_postgres/schema.dart';
+import 'package:datahub_postgres/sql.dart';
+import 'package:datahub_postgres/types.dart';
 
 class SqlAttributeConstraint {
   final PostgresqlAttribute attribute;

@@ -1,5 +1,10 @@
 import 'package:boost/boost.dart';
-import 'package:datahub_postgres/datahub_postgres.dart';
+import 'package:datahub_postgres/schema.dart';
+
+import 'sql.dart';
+import 'sql_attribute_declaration.dart';
+import 'sql_qualified_relation.dart';
+import 'sql_table_constraint.dart';
 
 class SqlCreateRelation with SqlBuilder {
   final String schemaName;
@@ -15,9 +20,12 @@ class SqlCreateRelation with SqlBuilder {
           RawSql('CREATE TABLE '),
           SqlQualifiedRelation(schemaName, relation.name).toSql(),
           RawSql(' ('),
-          ...relation.attributes
-              .map((e) => SqlAttributeDeclaration(e).toSql())
-              .separatedBy(RawSql(', ')),
+          ...[
+            ...relation.attributes.map(
+              (e) => SqlAttributeDeclaration(e).toSql(),
+            ),
+            ...relation.constraints.map((e) => SqlTableConstraint(e).toSql()),
+          ].separatedBy(RawSql(', ')),
           RawSql(')'),
         ]);
 

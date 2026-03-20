@@ -4,6 +4,7 @@ import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/types.dart';
 
 import 'postgresql_attribute.dart';
+import 'postgresql_table_constraint.dart';
 
 sealed class PostgresqlRelation {
   final String schemaName;
@@ -20,10 +21,13 @@ sealed class PostgresqlRelation {
 }
 
 class PostgresqlTable extends PostgresqlRelation {
+  final List<PostgresqlTableConstraint> constraints;
+
   const PostgresqlTable({
     required super.schemaName,
     required super.name,
     required super.attributes,
+    this.constraints = const [],
   });
 
   @override

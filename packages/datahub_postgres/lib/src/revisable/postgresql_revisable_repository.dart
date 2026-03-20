@@ -94,6 +94,31 @@ mixin PostgresqlRevisableRepository<
         ).ensureRelation(context);
       }
 
+      final beanFieldAttributes = {
+        for (final field in bean.fields)
+          field: PostgresqlDataAttribute(
+            field: field,
+            name: toNamingConvention(
+              field.name,
+              NamingConvention.lowerSnakeCase,
+            ),
+            type: PostgresqlDataType.findForDataField(field),
+            constraints: [
+              if (sequenceFields.contains(field))
+                DefaultConstraint(
+                  Sql.function('nextval', [
+                    Sql.text(
+                      '$effectiveSchemaName.${relationName}_${field.name}_seq',
+                    ),
+                  ]),
+                ),
+              if (uuidFields.contains(field))
+                DefaultConstraint(RawSql('gen_random_uuid()')),
+              if (field is DataField<dynamic, Object>) NotNullConstraint(),
+            ],
+          ),
+      };
+
       revisionTable = PostgresqlTable(
         schemaName: effectiveSchemaName,
         name: '${relationName}_revision',
@@ -126,6 +151,12 @@ mixin PostgresqlRevisableRepository<
                   DefaultConstraint(RawSql('gen_random_uuid()')),
                 if (field is DataField<dynamic, Object>) NotNullConstraint(),
               ],
+            ),
+        ],
+        constraints: [
+          if (bean.idField case final idField?)
+            UniqueTableConstraint(
+              attributes: [beanFieldAttributes[idField]!, _sysVersion],
             ),
         ],
       );
