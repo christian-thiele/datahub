@@ -2,7 +2,7 @@ name: datahub_workspace
 publish_to: none
 
 environment:
-  sdk: ^3.9.0
+  sdk: ^3.10.0
 
 dev_dependencies:
   datahub_codegen: ^0.18.0-dev.3
@@ -14,10 +14,12 @@ dev_dependencies:
 workspace:
   - packages/boost
   - packages/datahub
+  - packages/datahub_amqp
   - packages/datahub_aperture
   - packages/datahub_aperture_frontend
   - packages/datahub_codegen
   - packages/datahub_postgres
+  - packages/datahub_website
 
 melos:
   scripts:
