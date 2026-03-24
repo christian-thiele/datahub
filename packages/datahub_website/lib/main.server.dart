@@ -17,8 +17,6 @@ import 'package:jaspr_content/components/theme_toggle.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 import 'package:jaspr_content/theme.dart';
 
-import 'components/clicker.dart';
-
 // This file is generated automatically by Jaspr, do not remove or edit.
 import 'main.server.options.dart';
 
@@ -50,11 +48,6 @@ void main() {
         Callout(),
         // Adds syntax highlighting to code blocks.
         CodeBlock(),
-        // Adds a custom Jaspr component to be used as <Clicker/> in markdown.
-        CustomComponent(
-          pattern: 'Clicker',
-          builder: (_, _, _) => Clicker(),
-        ),
         // Adds zooming and caption support to images.
         Image(zoom: true),
       ],
@@ -66,7 +59,7 @@ void main() {
             logo: '/images/logo.svg',
             items: [
               ThemeToggle(),
-              GitHubButton(repo: 'schultek/datahub'),
+              GitHubButton(repo: 'christian-thiele/datahub'),
             ],
           ),
           sidebar: Sidebar(

@@ -5,7 +5,6 @@
 // Generated with jaspr_builder
 
 import 'package:jaspr/server.dart';
-import 'package:datahub_website/components/clicker.dart' as _clicker;
 import 'package:jaspr_content/components/_internal/code_block_copy_button.dart'
     as _code_block_copy_button;
 import 'package:jaspr_content/components/_internal/zoomable_image.dart'
@@ -37,7 +36,6 @@ import 'package:jaspr_content/components/theme_toggle.dart' as _theme_toggle;
 ServerOptions get defaultServerOptions => ServerOptions(
   clientId: 'main.client.dart.js',
   clients: {
-    _clicker.Clicker: ClientTarget<_clicker.Clicker>('clicker'),
     _code_block_copy_button.CodeBlockCopyButton:
         ClientTarget<_code_block_copy_button.CodeBlockCopyButton>(
           'jaspr_content:code_block_copy_button',
@@ -59,7 +57,6 @@ ServerOptions get defaultServerOptions => ServerOptions(
     ),
   },
   styles: () => [
-    ..._clicker.ClickerState.styles,
     ..._zoomable_image.ZoomableImage.styles,
     ..._callout.Callout.styles,
     ..._code_block.CodeBlock.styles,
