@@ -7,7 +7,6 @@ void main() {
     'Postgresql View Repository',
     [
       PostgresqlService(
-        host: Config.value('192.168.178.85'),
         database: Config.value('datahub_postgres'),
         username: Config.value('postgres'),
         password: Config.value('postgres'),

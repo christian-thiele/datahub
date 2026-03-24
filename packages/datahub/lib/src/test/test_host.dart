@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/telemetry.dart';
 
@@ -9,11 +10,13 @@ part 'test_runner_service.dart';
 class TestHost extends ServiceHost {
   final List<Component> components;
   final Map<String, dynamic> initialConfig;
+  final List<File> initialConfigFiles;
   final FutureOr<void> Function() testBody;
 
   TestHost({
     required this.components,
     required this.initialConfig,
+    required this.initialConfigFiles,
     required this.testBody,
   });
 
@@ -31,6 +34,9 @@ class TestHost extends ServiceHost {
 
   @override
   Future<void> initialize() async {
+    for (final file in initialConfigFiles) {
+      configuration.addConfigFile(file);
+    }
     configuration.addConfigMap(initialConfig);
     return await super.initialize();
   }
@@ -43,6 +49,7 @@ void declareTest(
   dart_test.Timeout? timeout,
   Object? skip,
   Map<String, dynamic> config = const {},
+  List<File> configFiles = const [],
 }) {
   dart_test.group(name, () {
     TestHost? host;
@@ -50,6 +57,7 @@ void declareTest(
       host = TestHost(
         components: components,
         initialConfig: config,
+        initialConfigFiles: configFiles,
         testBody: body,
       );
       await host?.initialize();
