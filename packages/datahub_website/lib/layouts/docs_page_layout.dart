@@ -46,9 +46,9 @@ class DocsPageLayout extends BaseLayout {
             child,
             const DocsFooter(),
           ]),
+          const GlobalFooter(),
         ]),
       ]),
-      const GlobalFooter(),
     ]);
   }
 
