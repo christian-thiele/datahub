@@ -1,4 +1,7 @@
-# Tutorials
+---
+title: Tutorials
+layout: docs
+---
 
 Coming soon! This section will feature step-by-step tutorials to help you build applications with DataHub.
 

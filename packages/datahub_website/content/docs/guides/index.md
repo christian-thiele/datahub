@@ -1,4 +1,7 @@
-# Guides
+---
+title: Guides
+layout: docs
+---
 
 Welcome to the Guides section. Here you'll find in-depth articles on various aspects of the DataHub ecosystem.
 

@@ -21,26 +21,17 @@ void main() {
 
     print('Processing package: $packageName');
 
-    final packageDocDir = Directory(p.join(apiDocsDir.path, packageName));
-    if (!packageDocDir.existsSync()) {
-      packageDocDir.createSync();
-    }
-
     // 1. Copy README.md as index.md for the package
     final readme = File(p.join(packageDir.path, 'README.md'));
     if (readme.existsSync()) {
       print('  Found README.md, copying as index.md');
+      final packageDocDir = Directory(p.join(apiDocsDir.path, packageName));
+      if (!packageDocDir.existsSync()) {
+        packageDocDir.createSync();
+      }
       readme.copySync(p.join(packageDocDir.path, 'index.md'));
     } else {
-      print('  README.md not found, creating placeholder index.md');
-      File(p.join(packageDocDir.path, 'index.md')).writeAsStringSync('''---
-title: $packageName
----
-
-# $packageName
-
-Documentation for $packageName is coming soon!
-''');
+      print('  README.md not found');
     }
   }
 

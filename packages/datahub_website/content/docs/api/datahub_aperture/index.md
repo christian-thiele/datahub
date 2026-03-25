@@ -1,3 +1,7 @@
+---
+title: DataHub Aperture
+---
+
 <p align="center">
 <img src="https://datahubproject.net/logo_shadow.svg" />
 </p>

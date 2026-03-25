@@ -1,8 +1,22 @@
 # Site Configuration
-titleBase: DATAHUB
+titleBase: DataHub
 favicon: favicon.ico
 
 # Social media links
 social:
   - name: Github
-    url: https://github.com/schultek/datahub
+    url: https://github.com/christian-thiele/datahub
+
+topNavigation:
+  title: DataHub
+  links:
+    - title: Home
+      url: /
+    - title: Products
+      url: /
+    - title: Features
+      url: /
+    - title: Pricing
+      url: /
+    - title: Docs
+      url: /docs/

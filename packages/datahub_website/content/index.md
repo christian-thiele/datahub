@@ -1,6 +1,7 @@
 ---
 title: DataHub Website
 description: The official website for the DataHub ecosystem.
+layout: landing-page
 ---
 
 # DataHub Ecosystem

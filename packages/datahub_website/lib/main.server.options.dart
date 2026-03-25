@@ -15,7 +15,6 @@ import 'package:jaspr_content/components/github_button.dart' as _github_button;
 import 'package:jaspr_content/components/image.dart' as _image;
 import 'package:jaspr_content/components/sidebar_toggle_button.dart'
     as _sidebar_toggle_button;
-import 'package:jaspr_content/components/theme_toggle.dart' as _theme_toggle;
 
 /// Default [ServerOptions] for use with your Jaspr project.
 ///
@@ -52,9 +51,6 @@ ServerOptions get defaultServerOptions => ServerOptions(
         ClientTarget<_sidebar_toggle_button.SidebarToggleButton>(
           'jaspr_content:sidebar_toggle_button',
         ),
-    _theme_toggle.ThemeToggle: ClientTarget<_theme_toggle.ThemeToggle>(
-      'jaspr_content:theme_toggle',
-    ),
   },
   styles: () => [
     ..._zoomable_image.ZoomableImage.styles,
@@ -62,7 +58,6 @@ ServerOptions get defaultServerOptions => ServerOptions(
     ..._code_block.CodeBlock.styles,
     ..._github_button.GitHubButton.styles,
     ..._image.Image.styles,
-    ..._theme_toggle.ThemeToggleState.styles,
   ],
 );
 
