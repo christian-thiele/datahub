@@ -3,6 +3,7 @@ library;
 import 'dart:io';
 
 import 'package:datahub_website/layouts/docs_page_layout.dart';
+import 'package:jaspr/dom.dart';
 import 'package:jaspr/server.dart';
 
 import 'package:jaspr_content/components/callout.dart';
@@ -11,7 +12,7 @@ import 'package:jaspr_content/components/image.dart';
 import 'package:jaspr_content/components/sidebar.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 import 'package:jaspr_content/theme.dart';
-import 'package:syntax_highlight_lite/syntax_highlight_lite.dart';
+import 'package:syntax_highlight_lite/syntax_highlight_lite.dart' as highlight;
 
 // This file is generated automatically by Jaspr, do not remove or edit.
 import 'layouts/landing_page_layout.dart';
@@ -22,8 +23,8 @@ void main() {
     options: defaultServerOptions,
   );
 
-  Highlighter.addLanguage('shell', File('shell_grammar.json').readAsStringSync());
-  Highlighter.addLanguage('bash', File('shell_grammar.json').readAsStringSync());
+  highlight.Highlighter.addLanguage('shell', File('shell_grammar.json').readAsStringSync());
+  highlight.Highlighter.addLanguage('bash', File('shell_grammar.json').readAsStringSync());
 
   runApp(
     ContentApp(
@@ -46,15 +47,29 @@ void main() {
         LandingPageLayout(),
       ],
       theme: ContentTheme(
-        primary: ThemeColor(ThemeColors.sky.$600, dark: ThemeColors.sky.$400),
-        background: ThemeColor(ThemeColors.slate.$50, dark: ThemeColors.zinc.$950),
+        primary: ThemeColor(Color('#3bbffa'), dark: Color('#3bbffa')),
+        background: ThemeColor(Color('#060e20'), dark: Color('#060e20')),
         colors: [
-          ContentColors.text.apply(ThemeColors.slate.$300),
-          ContentColors.headings.apply(ThemeColors.slate.$100),
-          ContentColors.links.apply(ThemeColors.sky.$400),
-          ContentColors.quoteBorders.apply(ThemeColors.sky.$800),
-          ContentColors.code.apply(ThemeColors.sky.$400),
-          ContentColors.preBg.apply(ThemeColors.zinc.$900),
+          ColorToken(ContentColors.primary.name, Color('#3bbffa'), dark: Color('#3bbffa')),
+          ColorToken(ContentColors.background.name, Color('#060e20'), dark: Color('#060e20')),
+          ColorToken(ContentColors.text.name, Color('#dee5ff'), dark: Color('#dee5ff')),
+          ColorToken(ContentColors.headings.name, Color('#dee5ff'), dark: Color('#dee5ff')),
+          ColorToken(ContentColors.lead.name, Color('#a3aac4'), dark: Color('#a3aac4')),
+          ColorToken(ContentColors.links.name, Color('#3bbffa'), dark: Color('#3bbffa')),
+          ColorToken(ContentColors.bold.name, Color('#dee5ff'), dark: Color('#dee5ff')),
+          ColorToken(ContentColors.counters.name, Color('#3bbffa'), dark: Color('#3bbffa')),
+          ColorToken(ContentColors.bullets.name, Color('#69f6b8'), dark: Color('#69f6b8')),
+          ColorToken(ContentColors.hr.name, Color('#40485d'), dark: Color('#40485d')),
+          ColorToken(ContentColors.quotes.name, Color('#a3aac4'), dark: Color('#a3aac4')),
+          ColorToken(ContentColors.quoteBorders.name, Color('#3bbffa'), dark: Color('#3bbffa')),
+          ColorToken(ContentColors.captions.name, Color('#a3aac4'), dark: Color('#a3aac4')),
+          ColorToken(ContentColors.kbd.name, Color('#dee5ff'), dark: Color('#dee5ff')),
+          ColorToken(ContentColors.kbdShadows.name, Color('#000000'), dark: Color('#000000')),
+          ColorToken(ContentColors.code.name, Color('#3bbffa'), dark: Color('#3bbffa')),
+          ColorToken(ContentColors.preCode.name, Color('#dee5ff'), dark: Color('#dee5ff')),
+          ColorToken(ContentColors.preBg.name, Color('#000000'), dark: Color('#000000')),
+          ColorToken(ContentColors.thBorders.name, Color('#40485d'), dark: Color('#40485d')),
+          ColorToken(ContentColors.tdBorders.name, Color('#40485d'), dark: Color('#40485d')),
         ],
       ),
     ),
