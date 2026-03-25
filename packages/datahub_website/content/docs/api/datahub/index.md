@@ -1,3 +1,9 @@
+---
+title: DataHub
+index: 0
+---
+
+
 <p align="center">
 <img src="https://datahubproject.net/logo_shadow.svg" />
 </p>

@@ -1,3 +1,9 @@
+---
+title: DataHub PostgreSQL
+index: 3
+---
+
+
 <p align="center">
 <img src="https://datahubproject.net/logo_shadow.svg" />
 </p>

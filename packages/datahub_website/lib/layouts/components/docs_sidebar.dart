@@ -39,13 +39,20 @@ class DocsSidebar extends StatelessComponent {
           navigationTree.map((section) {
             return _SidebarSection(
               title: section.title,
-              items: section.children.map((item) {
-                return _SidebarItem(
-                  text: item.title,
-                  href: item.path,
-                  isActive: page.url == item.path,
-                );
-              }).toList(),
+              items: [
+                _SidebarItem(
+                  text: 'Overview',
+                  href: section.path,
+                  isActive: page.url == section.path,
+                ),
+                ...section.children.map((item) {
+                  return _SidebarItem(
+                    text: item.title,
+                    href: item.path,
+                    isActive: page.url == item.path,
+                  );
+                }),
+              ],
             );
           }).toList(),
         ),
@@ -55,77 +62,69 @@ class DocsSidebar extends StatelessComponent {
 
   List<NavigationNode> _buildNavigationTree(List<Page> pages) {
     final docsPages = pages.where((p) => p.url.startsWith('/docs')).toList();
+    final tree = <String, NavigationNode>{};
 
-    // Grouping strategy:
-    // /docs -> Fundamentals (root level)
-    // /docs/tutorials/* -> Tutorials
-    // /docs/guides/* -> Guides
-    // /docs/api/* -> API Reference
+    for (final page in docsPages) {
+      final segments = page.url.split('/').where((e) => e.isNotEmpty).toList();
+      if (segments.isEmpty) continue;
 
-    final sections = <String, List<NavigationNode>>{};
+      final node = _getOrCreateNode(tree, segments);
 
-    for (final p in docsPages) {
-      final title = p.data.page['title'] as String? ?? 'Untitled';
-      final url = p.url;
-
-      String sectionTitle;
-      if (url == '/docs') {
-        sectionTitle = 'Fundamentals';
-      } else if (url.startsWith('/docs/tutorials')) {
-        sectionTitle = 'Tutorials';
-      } else if (url.startsWith('/docs/guides')) {
-        sectionTitle = 'Guides';
-      } else if (url.startsWith('/docs/api')) {
-        sectionTitle = 'API Reference';
-      } else {
-        sectionTitle = 'Other';
-      }
-
-      sections.putIfAbsent(sectionTitle, () => []).add(NavigationNode(
-            title: title,
-            path: url,
-          ));
+      final pageData = page.data.page;
+      node.title = (pageData['title'] as String?) ?? node.title;
+      node.index = (pageData['index'] as int?) ?? node.index;
     }
 
-    // Sort sections and nodes
-    final result = <NavigationNode>[];
-    const sectionOrder = ['Fundamentals', 'Tutorials', 'Guides', 'API Reference'];
+    final root = tree['/docs'];
+    if (root == null) return [];
 
-    for (final title in sectionOrder) {
-      if (sections.containsKey(title)) {
-        final nodes = sections[title]!;
-        // Sort nodes: index.md (root of section) first, then alphabetically
-        nodes.sort((a, b) {
-          if (a.path == '/docs' ||
-              a.path == '/docs/tutorials' ||
-              a.path == '/docs/guides' ||
-              a.path == '/docs/api') {
-            return -1;
-          }
-          if (b.path == '/docs' ||
-              b.path == '/docs/tutorials' ||
-              b.path == '/docs/guides' ||
-              b.path == '/docs/api') {
-            return 1;
-          }
-          return a.title.compareTo(b.title);
-        });
-        result.add(NavigationNode(title: title, path: '', children: nodes));
+    _sortChildren(root);
+    return root.children;
+  }
+
+  NavigationNode _getOrCreateNode(Map<String, NavigationNode> tree, List<String> segments) {
+    final path = '/${segments.join('/')}';
+    if (tree.containsKey(path)) return tree[path]!;
+
+    final node = NavigationNode(
+      title: segments.last,
+      path: path,
+      index: 999,
+      children: [],
+    );
+    tree[path] = node;
+
+    if (segments.length > 1) {
+      final parentSegments = segments.sublist(0, segments.length - 1);
+      final parent = _getOrCreateNode(tree, parentSegments);
+
+      // Check if node is already added to parent's children (due to recursion/map order)
+      if (!parent.children.any((c) => c.path == node.path)) {
+        parent.children.add(node);
       }
     }
 
-    return result;
+    return node;
+  }
+
+  void _sortChildren(NavigationNode node) {
+    node.children.sort((a, b) => a.index.compareTo(b.index));
+    for (final child in node.children) {
+      _sortChildren(child);
+    }
   }
 }
 
 class NavigationNode {
-  final String title;
+  String title;
   final String path;
+  int index;
   final List<NavigationNode> children;
 
   NavigationNode({
     required this.title,
     required this.path,
+    required this.index,
     this.children = const [],
   });
 }

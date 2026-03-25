@@ -1,5 +1,6 @@
 ---
-title: DataHub Aperture
+title: Aperture
+index: 1
 ---
 
 <p align="center">
