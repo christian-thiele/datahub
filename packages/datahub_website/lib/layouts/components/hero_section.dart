@@ -1,6 +1,7 @@
 import 'package:datahub_website/layouts/components/hero_elements.dart';
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
+import 'package:jaspr_content/jaspr_content.dart';
 
 class HeroSection extends StatelessComponent {
   final String headline1;
@@ -12,7 +13,7 @@ class HeroSection extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     return section(
-      classes: 'relative pt-32 pb-20 md:pt-48 md:pb-32 overflow-hidden',
+      classes: 'relative pt-32 pb-20 md:pt-16 min-h-screen overflow-hidden flex items-center',
       [
         div(classes: 'absolute inset-0 hero-gradient -z-10', []),
         div(
@@ -49,6 +50,22 @@ class HeroSection extends StatelessComponent {
           ],
         ),
       ],
+    );
+  }
+}
+
+class HeroCustomComponent extends CustomComponentBase {
+  HeroCustomComponent();
+
+  @override
+  final Pattern pattern = 'Hero';
+
+  @override
+  Component apply(String name, Map<String, String> attributes, Component? child) {
+    return HeroSection(
+      child: child ?? Component.empty(),
+      headline1: attributes['headline1'] ?? '',
+      headline2: attributes['headline2'] ?? '',
     );
   }
 }

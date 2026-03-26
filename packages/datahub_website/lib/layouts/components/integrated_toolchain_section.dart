@@ -23,11 +23,11 @@ class IntegratedToolchainSection extends StatelessComponent {
                       [
                         h4(
                           classes: 'text-primary font-mono text-sm mb-2 font-bold tracking-widest uppercase',
-                          [Component.text('Tooling // CI/CD')],
+                          [Component.text('Batteries included')],
                         ),
-                        h2(classes: 'text-4xl font-headline font-bold tracking-tight mb-4', [Component.text('Integrated Toolchain')]),
+                        h2(classes: 'text-4xl font-headline font-bold tracking-tight mb-4', [Component.text('Batteries included')]),
                         p(classes: 'text-on-surface-variant leading-relaxed', [
-                          Component.text("Don't waste weeks on plumbing. Our \"Batteries Included\" approach provides the entire development lifecycle out of the box.")
+                          Component.text("A backend framework")
                         ]),
                       ],
                     ),

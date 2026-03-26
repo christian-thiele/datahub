@@ -2,7 +2,7 @@ library;
 
 import 'dart:io';
 
-import 'package:datahub_website/layouts/custom_components/hero_custom_component.dart';
+import 'package:datahub_website/layouts/components/feature_section.dart';
 import 'package:datahub_website/layouts/docs_page_layout.dart';
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/server.dart';
@@ -15,6 +15,7 @@ import 'package:jaspr_content/jaspr_content.dart';
 import 'package:jaspr_content/theme.dart';
 import 'package:syntax_highlight_lite/syntax_highlight_lite.dart' as highlight;
 
+import 'layouts/components/hero_section.dart';
 import 'layouts/landing_page_layout.dart';
 
 // This file is generated automatically by Jaspr, do not remove or edit.
@@ -37,7 +38,13 @@ void main() {
         HeadingAnchorsExtension(),
         TableOfContentsExtension(),
       ],
-      components: [Callout(), CodeBlock(), Image(), HeroCustomComponent()],
+      components: [
+        Callout(),
+        CodeBlock(),
+        Image(),
+        HeroCustomComponent(),
+        FeatureSectionCustomComponent(),
+      ],
       layouts: [
         DocsPageLayout(),
         LandingPageLayout(),
