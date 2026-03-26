@@ -12,8 +12,6 @@ import 'package:jaspr_content/components/_internal/zoomable_image.dart'
     deferred as _zoomable_image;
 import 'package:jaspr_content/components/github_button.dart'
     deferred as _github_button;
-import 'package:jaspr_content/components/sidebar_toggle_button.dart'
-    deferred as _sidebar_toggle_button;
 
 /// Default [ClientOptions] for use with your Jaspr project.
 ///
@@ -48,10 +46,6 @@ ClientOptions get defaultClientOptions => ClientOptions(
     'jaspr_content:github_button': ClientLoader(
       (p) => _github_button.GitHubButton(repo: p['repo'] as String),
       loader: _github_button.loadLibrary,
-    ),
-    'jaspr_content:sidebar_toggle_button': ClientLoader(
-      (p) => _sidebar_toggle_button.SidebarToggleButton(),
-      loader: _sidebar_toggle_button.loadLibrary,
     ),
   },
 );

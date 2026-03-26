@@ -32,23 +32,8 @@ class HeroTitle extends StatelessComponent {
   @override
   Component build(BuildContext context) {
     return h1(
-      classes:
-          'text-5xl md:text-7xl font-headline font-bold tracking-tighter leading-[1.1] mb-6 text-on-surface',
+      classes: 'text-5xl md:text-7xl font-headline font-bold tracking-tighter leading-[1.1] mb-6 text-on-surface',
       children,
-    );
-  }
-}
-
-class HeroDescription extends StatelessComponent {
-  final String text;
-
-  const HeroDescription(this.text);
-
-  @override
-  Component build(BuildContext context) {
-    return p(
-      classes: 'text-lg md:text-xl text-on-surface-variant max-w-2xl mb-10 leading-relaxed',
-      [Component.text(text)],
     );
   }
 }
@@ -115,8 +100,7 @@ class HeroTrustedBy extends StatelessComponent {
         div(
           classes: 'flex gap-8 grayscale opacity-50',
           [
-            for (var company in companies)
-              span(classes: 'font-headline font-bold text-xl', [Component.text(company)]),
+            for (var company in companies) span(classes: 'font-headline font-bold text-xl', [Component.text(company)]),
           ],
         ),
       ],
@@ -133,17 +117,14 @@ class HeroTerminal extends StatelessComponent {
       classes: 'lg:col-span-5 relative',
       [
         div(
-          classes:
-              'aspect-square glass-panel rounded-xl border border-outline-variant/30 p-4 shadow-2xl relative',
+          classes: 'glass-panel rounded-xl border border-outline-variant/30 p-4 shadow-2xl relative',
           [
             div(classes: 'absolute -top-4 -left-4 w-24 h-24 bg-primary/20 blur-3xl', []),
             div(
-              classes:
-                  'bg-surface-container-lowest rounded-lg h-full overflow-hidden flex flex-col font-mono text-sm',
+              classes: 'bg-surface-container-lowest rounded-lg h-full overflow-hidden flex flex-col font-mono text-sm',
               [
                 div(
-                  classes:
-                      'flex items-center gap-2 px-4 py-2 bg-surface-container border-b border-outline-variant/20',
+                  classes: 'flex items-center gap-2 px-4 py-2 bg-surface-container border-b border-outline-variant/20',
                   [
                     div(
                       classes: 'flex gap-1.5',
@@ -153,10 +134,10 @@ class HeroTerminal extends StatelessComponent {
                         div(classes: 'w-2.5 h-2.5 rounded-full bg-green-500/50', []),
                       ],
                     ),
-                    span(
+                    /*span(
                       classes: 'text-on-surface-variant/50 text-[10px] ml-2 tracking-widest uppercase',
-                      [Component.text('vanguard-terminal — deploy')],
-                    ),
+                      [Component.text('dart install datahub')],
+                    ),*/
                   ],
                 ),
                 div(
@@ -166,9 +147,19 @@ class HeroTerminal extends StatelessComponent {
                       classes: 'flex gap-2',
                       [
                         span(classes: 'text-secondary', [Component.text('\$')]),
-                        span(classes: 'text-on-surface', [Component.text('vanguard deploy --prod')]),
+                        span(classes: 'text-on-surface', [Component.text('dart install datahub')]),
                       ],
                     ),
+
+                    div(
+                      classes: 'flex gap-2',
+                      [
+                        span(classes: 'text-secondary', [Component.text('\$')]),
+                        span(classes: 'text-on-surface', [Component.text('dart pub add datahub')]),
+                      ],
+                    ),
+
+                    /*
                     div(
                       classes: 'text-on-surface-variant/80',
                       [
@@ -205,7 +196,7 @@ class HeroTerminal extends StatelessComponent {
                     div(
                       classes: 'pt-4 text-on-surface-variant/40 italic',
                       [Component.text('// Deployment traced through secure tunnel...')],
-                    ),
+                    ),*/
                   ],
                 ),
               ],

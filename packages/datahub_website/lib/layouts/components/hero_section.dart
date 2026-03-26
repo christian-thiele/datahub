@@ -3,7 +3,11 @@ import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 
 class HeroSection extends StatelessComponent {
-  const HeroSection();
+  final String headline1;
+  final String headline2;
+  final Component child;
+
+  const HeroSection({super.key, required this.headline1, required this.headline2, required this.child});
 
   @override
   Component build(BuildContext context) {
@@ -17,22 +21,28 @@ class HeroSection extends StatelessComponent {
             div(
               classes: 'lg:col-span-7',
               [
-                HeroBadge(icon: 'bolt', label: 'Next-Gen Infrastructure'),
-                HeroTitle(children: [
-                  Component.text('Secure-by-Default '),
-                  br(),
-                  span(classes: 'text-primary', [Component.text('Development, Simplified.')]),
-                ]),
-                HeroDescription(
-                    'Deploy with confidence. Our batteries-included platform streamlines your developer workflow with world-class security baked into every byte.'),
-                HeroActions(children: [
-                  HeroPrimaryButton(label: 'Start Developing for Free'),
-                  HeroSecondaryButton(label: 'View Documentation'),
-                ]),
-                HeroTrustedBy(
+                //HeroBadge(icon: 'bolt', label: 'Next-Gen Infrastructure'),
+                HeroTitle(
+                  children: [
+                    Component.text(headline1),
+                    br(),
+                    span(classes: 'text-primary', [Component.text(headline2)]),
+                  ],
+                ),
+                p(
+                  classes: 'text-lg md:text-xl text-on-surface-variant max-w-2xl mb-10 leading-relaxed',
+                  [child],
+                ),
+                HeroActions(
+                  children: [
+                    HeroPrimaryButton(label: 'Get Started'),
+                    HeroSecondaryButton(label: 'Why DataHub?'),
+                  ],
+                ),
+                /*HeroTrustedBy(
                   label: 'Trusted by teams at',
                   companies: ['HEXA', 'QUANTUM', 'VOID'],
-                ),
+                ),*/
               ],
             ),
             HeroTerminal(),

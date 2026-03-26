@@ -2,20 +2,22 @@ library;
 
 import 'dart:io';
 
+import 'package:datahub_website/layouts/custom_components/hero_custom_component.dart';
 import 'package:datahub_website/layouts/docs_page_layout.dart';
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/server.dart';
+import 'package:jaspr_content/components/_internal/icon.dart';
 
-import 'package:jaspr_content/components/callout.dart';
 import 'package:jaspr_content/components/code_block.dart';
 import 'package:jaspr_content/components/image.dart';
-import 'package:jaspr_content/components/sidebar.dart';
+import 'package:jaspr_content/components/callout.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 import 'package:jaspr_content/theme.dart';
 import 'package:syntax_highlight_lite/syntax_highlight_lite.dart' as highlight;
 
-// This file is generated automatically by Jaspr, do not remove or edit.
 import 'layouts/landing_page_layout.dart';
+
+// This file is generated automatically by Jaspr, do not remove or edit.
 import 'main.server.options.dart';
 
 void main() {
@@ -30,18 +32,12 @@ void main() {
     ContentApp(
       templateEngine: MustacheTemplateEngine(),
       eagerlyLoadAllPages: true,
-      parsers: [
-        MarkdownParser(),
-      ],
+      parsers: [MarkdownParser()],
       extensions: [
         HeadingAnchorsExtension(),
         TableOfContentsExtension(),
       ],
-      components: [
-        Callout(),
-        CodeBlock(),
-        Image(zoom: true),
-      ],
+      components: [Callout(), CodeBlock(), Image(), HeroCustomComponent()],
       layouts: [
         DocsPageLayout(),
         LandingPageLayout(),

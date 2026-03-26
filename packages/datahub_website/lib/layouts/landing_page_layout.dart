@@ -20,13 +20,7 @@ class LandingPageLayout extends BaseLayout {
   Component buildBody(Page page, Component child) {
     return Component.fragment([
       TopNavigation(page: page),
-      HeroSection(),
-      const FeatureSection(),
-      const EnterpriseSecuritySection(),
-      const IntegratedToolchainSection(),
-      const DeveloperUxSection(),
-      const TestimonialsSection(),
-      const CtaSection(),
+      child,
       const GlobalFooter(),
     ]);
   }
