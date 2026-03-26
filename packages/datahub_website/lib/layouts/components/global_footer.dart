@@ -11,18 +11,42 @@ class GlobalFooter extends StatelessComponent {
       [
         div(
           classes:
-              'max-w-7xl mx-auto grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-8',
+              'max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-x-8 gap-y-16',
           [
-            div(classes: 'col-span-2', [
+            div(classes: 'col-span-1 md:col-span-3 lg:md:col-span-2', [
               span(
                 classes:
                     'text-lg font-black tracking-widest text-slate-200 uppercase font-headline',
-                [Component.text('DataHub')],
+                [Component.text('DataHub'), br()],
               ),
+
+              span(
+                classes:
+                    'text-md font-black tracking-widest text-slate-500 uppercase font-headline',
+                [Component.text('by ReactiveData')],
+              ),
+
               p(classes: 'mt-4 text-xs text-slate-500 font-body leading-loose max-w-xs', [
                 Component.text(
-                    'Engineering Excellence. Powering the next generation of cloud-native applications with precision-built infrastructure.'),
+                    'The Cloud Development Ecosystem bringing the power of Dart to the Cloud'),
               ]),
+
+              p(classes: 'mt-4 text-xs text-slate-500 font-label', [
+                Component.text('© 2026 Christian Thiele'),
+              ]),
+            ]),
+            div(classes: 'flex flex-col gap-4', [
+              h6(
+                classes:
+                'font-body text-xs tracking-wide uppercase font-semibold text-slate-500',
+                [Component.text('About')],
+              ),
+              a(
+                classes:
+                'text-slate-500 hover:text-slate-300 text-sm transition-opacity opacity-80 hover:opacity-100',
+                href: 'https://reactivedata.de/',
+                [Component.text('ReactiveData')],
+              ),
             ]),
             div(classes: 'flex flex-col gap-4', [
               h6(
@@ -38,46 +62,29 @@ class GlobalFooter extends StatelessComponent {
               ),
               a(
                 classes:
-                    'text-slate-500 hover:text-slate-300 text-sm transition-opacity opacity-80 hover:opacity-100',
-                href: '#',
+                'text-slate-500 hover:text-slate-300 text-sm transition-opacity opacity-80 hover:opacity-100',
+                href: 'https://github.com/christian-thiele/datahub/blob/main/CHANGELOG.md',
                 [Component.text('Changelog')],
-              ),
-              a(
-                classes:
-                    'text-slate-500 hover:text-slate-300 text-sm transition-opacity opacity-80 hover:opacity-100',
-                href: '#',
-                [Component.text('Status')],
               ),
             ]),
             div(classes: 'flex flex-col gap-4', [
               h6(
                 classes:
-                    'font-body text-xs tracking-wide uppercase font-semibold text-slate-500',
+                'font-body text-xs tracking-wide uppercase font-semibold text-slate-500',
                 [Component.text('Legal')],
               ),
               a(
                 classes:
-                    'text-slate-500 hover:text-slate-300 text-sm transition-opacity opacity-80 hover:opacity-100',
-                href: '#',
+                'text-slate-500 hover:text-slate-300 text-sm transition-opacity opacity-80 hover:opacity-100',
+                href: 'https://reactivedata.de/impressum',
+                [Component.text('Imprint')],
+              ),
+              a(
+                classes:
+                'text-slate-500 hover:text-slate-300 text-sm transition-opacity opacity-80 hover:opacity-100',
+                href: 'https://reactivedata.de/datenschutz',
                 [Component.text('Privacy')],
               ),
-              a(
-                classes:
-                    'text-slate-500 hover:text-slate-300 text-sm transition-opacity opacity-80 hover:opacity-100',
-                href: '#',
-                [Component.text('Terms')],
-              ),
-              a(
-                classes:
-                    'text-slate-500 hover:text-slate-300 text-sm transition-opacity opacity-80 hover:opacity-100',
-                href: '#',
-                [Component.text('Security')],
-              ),
-            ]),
-            div(classes: 'col-span-2 lg:col-span-2 flex flex-col justify-end', [
-              p(classes: 'text-xs text-slate-500 font-label', [
-                Component.text('© 2026 DataHub. Engineering Excellence.'),
-              ]),
             ]),
           ],
         ),
