@@ -9,6 +9,4 @@ Build secure, scalable backend systems with one Dart-powered ecosystem.
 DataHub brings together the tools you need to design, develop, and deploy cloud-native architectures faster — without compromise.
 </Hero>
 
-<FeatureSection>
-
-</FeatureSection>
+<UspSection />

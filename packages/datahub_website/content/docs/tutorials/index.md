@@ -1,6 +1,7 @@
 ---
 title: Tutorials
 layout: docs
+index: 200
 ---
 
 Coming soon! This section will feature step-by-step tutorials to help you build applications with DataHub.

@@ -12,11 +12,5 @@ topNavigation:
   links:
     - title: Home
       url: /
-    - title: Products
-      url: /
-    - title: Features
-      url: /
-    - title: Pricing
-      url: /
     - title: Docs
       url: /docs/

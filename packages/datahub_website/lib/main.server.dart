@@ -2,11 +2,10 @@ library;
 
 import 'dart:io';
 
-import 'package:datahub_website/layouts/components/feature_section.dart';
+import 'package:datahub_website/layouts/components/usp_section.dart';
 import 'package:datahub_website/layouts/docs_page_layout.dart';
 import 'package:jaspr/dom.dart';
 import 'package:jaspr/server.dart';
-import 'package:jaspr_content/components/_internal/icon.dart';
 
 import 'package:jaspr_content/components/code_block.dart';
 import 'package:jaspr_content/components/image.dart';
@@ -40,10 +39,15 @@ void main() {
       ],
       components: [
         Callout(),
-        CodeBlock(),
+        CodeBlock(
+          grammars: {
+            'shell': File('shell_grammar.json').readAsStringSync(),
+            'bash': File('shell_grammar.json').readAsStringSync(),
+          },
+        ),
         Image(),
-        HeroCustomComponent(),
-        FeatureSectionCustomComponent(),
+        HeroComponent(),
+        UspSectionComponent(),
       ],
       layouts: [
         DocsPageLayout(),

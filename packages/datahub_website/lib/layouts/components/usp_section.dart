@@ -5,12 +5,13 @@ import 'package:jaspr/dom.dart';
 import 'package:jaspr/jaspr.dart';
 import 'package:jaspr_content/jaspr_content.dart';
 
-class FeatureSection extends StatelessComponent {
-  const FeatureSection();
+class UspSection extends StatelessComponent {
+  const UspSection();
 
   @override
   Component build(BuildContext context) {
     return section(
+      id: 'features',
       classes: 'pt-16 pb-24 bg-surface-container-low mb-32',
       [
         div(
@@ -162,16 +163,14 @@ class FeatureSection extends StatelessComponent {
   }
 }
 
-class FeatureSectionCustomComponent extends CustomComponentBase {
-  FeatureSectionCustomComponent();
+class UspSectionComponent extends CustomComponentBase {
+  const UspSectionComponent();
 
   @override
-  final Pattern pattern = 'FeatureSection';
+  final Pattern pattern = 'UspSection';
 
   @override
   Component apply(String name, Map<String, String> attributes, Component? child) {
-    return Component.fragment([
-      FeatureSection(),
-    ]);
+    return UspSection();
   }
 }

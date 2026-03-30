@@ -2,6 +2,7 @@
 title: API Reference
 layout: docs
 version: 1.2.3
+index: 900
 ---
 
 Technical documentation for all DataHub packages.

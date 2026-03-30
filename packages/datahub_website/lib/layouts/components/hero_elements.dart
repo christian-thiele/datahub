@@ -53,30 +53,40 @@ class HeroActions extends StatelessComponent {
 }
 
 class HeroPrimaryButton extends StatelessComponent {
+  final String href;
   final String label;
 
-  const HeroPrimaryButton({required this.label});
+  const HeroPrimaryButton({
+    required this.label,
+    required this.href,
+  });
 
   @override
   Component build(BuildContext context) {
-    return button(
+    return a(
+      href: href,
       classes:
-          'px-8 py-4 rounded-md bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg active:scale-95 duration-200 transition-all shadow-xl shadow-primary/30',
+          'px-8 py-4 rounded-md bg-gradient-to-r from-primary to-primary-container text-on-primary font-bold text-lg active:scale-95 duration-200 transition-all shadow-xl shadow-primary/30 no-underline',
       [Component.text(label)],
     );
   }
 }
 
 class HeroSecondaryButton extends StatelessComponent {
+  final String href;
   final String label;
 
-  const HeroSecondaryButton({required this.label});
+  const HeroSecondaryButton({
+    required this.label,
+    required this.href,
+  });
 
   @override
   Component build(BuildContext context) {
-    return button(
+    return a(
+      href: href,
       classes:
-          'px-8 py-4 rounded-md border border-outline-variant bg-surface-container-low text-on-surface font-semibold text-lg hover:bg-surface-container transition-all',
+          'px-8 py-4 rounded-md border border-outline-variant bg-surface-container-low text-on-surface font-semibold text-lg hover:bg-surface-container transition-all no-underline',
       [Component.text(label)],
     );
   }

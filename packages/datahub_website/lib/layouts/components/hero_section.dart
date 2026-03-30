@@ -36,8 +36,8 @@ class HeroSection extends StatelessComponent {
                 ),
                 HeroActions(
                   children: [
-                    HeroPrimaryButton(label: 'Get Started'),
-                    HeroSecondaryButton(label: 'Why DataHub?'),
+                    HeroPrimaryButton(label: 'Get Started', href: '/docs'),
+                    HeroSecondaryButton(label: 'Why DataHub?', href: '#features'),
                   ],
                 ),
                 /*HeroTrustedBy(
@@ -54,8 +54,8 @@ class HeroSection extends StatelessComponent {
   }
 }
 
-class HeroCustomComponent extends CustomComponentBase {
-  HeroCustomComponent();
+class HeroComponent extends CustomComponentBase {
+  const HeroComponent();
 
   @override
   final Pattern pattern = 'Hero';
