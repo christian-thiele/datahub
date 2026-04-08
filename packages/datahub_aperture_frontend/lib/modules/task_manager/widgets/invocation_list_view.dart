@@ -1,10 +1,7 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/models/task_model.dart';
-import 'package:datahub_aperture_frontend/modules/task_manager/repositories/task_manager_repository.dart';
-import 'package:datahub_aperture_frontend/modules/task_manager/task_manager_log_page.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/widgets/invocation_progress.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 

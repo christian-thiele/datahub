@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:datahub/datahub.dart';
-import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/modules.dart';
 import 'package:datahub_aperture_frontend/blocs/error_state.dart';
 import 'package:datahub_aperture_frontend/models/view_models/paging.dart';

@@ -1,5 +1,4 @@
 import 'package:datahub_aperture_frontend/blocs/error_state.dart';
-import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
