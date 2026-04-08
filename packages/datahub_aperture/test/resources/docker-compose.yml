@@ -17,3 +17,14 @@ services:
       interval: 10s
       timeout: 5s
       retries: 15
+  postgres:
+    image: postgis/postgis:latest
+    platform: linux/x86_64
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: datahub_postgres
+    tmpfs:
+      - /var/lib/postgresql

@@ -15,5 +15,6 @@ dependencies:
 dev_dependencies:
   build_runner: ^2.4.11
   datahub_codegen: ^0.18.0-dev.3
+  datahub_postgres: ^0.18.0-dev.8
   lints: ^6.0.0
   test: ^1.26.2

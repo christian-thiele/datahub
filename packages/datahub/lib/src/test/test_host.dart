@@ -34,6 +34,9 @@ class TestHost extends ServiceHost {
 
   @override
   Future<void> initialize() async {
+    configuration.addConfigMap({
+      'telemetry': {'logStdoutFormat': 'message', 'logLevel': 'info'},
+    });
     for (final file in initialConfigFiles) {
       configuration.addConfigFile(file);
     }

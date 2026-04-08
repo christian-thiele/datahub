@@ -4,7 +4,7 @@ class ApiException implements Exception {
   final dynamic internal;
   final String message;
 
-  ApiException(this.message, [this.internal]);
+  const ApiException(this.message, [this.internal]);
 
   @override
   String toString() {

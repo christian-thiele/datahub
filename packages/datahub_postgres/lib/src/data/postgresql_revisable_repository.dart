@@ -1,25 +1,31 @@
 import 'package:datahub/datahub.dart';
 
 import 'dart:async';
-import 'package:datahub_postgres/data.dart';
 import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/services.dart';
 import 'package:datahub_postgres/types.dart';
+import 'package:meta/meta.dart';
 import 'package:postgres/postgres.dart' as pg;
 
-import 'abstract/revision_data.dart';
+import 'data_utils.dart';
+import 'postgresql_data_attribute.dart';
+import 'postgresql_data_relation.dart';
+import 'postgresql_function_expression.dart';
 
+@optionalTypeArgs
 mixin PostgresqlRevisableRepository<
   TService extends Service,
   TData extends DataObject<TData>
 >
-    on ServiceInstance<TService> {
+    on ServiceInstance<TService>
+    implements RevisableDataRepository<TData> {
   Config<String> get schemaName =>
       const Config<String>('schemaName', defaultValue: 'public');
 
   Find<Postgresql> get postgresql => const Find<Postgresql>();
 
+  @override
   DataBean<TData> get bean;
 
   late final PostgresqlDataAttribute _primaryAttribute;
@@ -171,7 +177,11 @@ mixin PostgresqlRevisableRepository<
         select: SqlSelect(
           SqlQualifiedRelation(effectiveSchemaName, revisionTable.name),
           [SqlWildcard()],
-          where: RawSql('"sys_to" IS NULL AND NOT "sys_is_deleted"'),
+          where: Sql.join([
+            SqlTypedColumnAttribute.of(_sysTo),
+            RawSql(' IS NULL AND NOT '),
+            SqlTypedColumnAttribute.of(_sysIsDeleted),
+          ]),
         ),
         attributes: revisionTable.attributes,
       );
@@ -194,25 +204,20 @@ mixin PostgresqlRevisableRepository<
     DateTime? from,
   }) async {
     return await find(postgresql).runTransaction((context) async {
-      final data = await getRevisable(id);
+      final data = await revisableReadById(id);
       if (data != null) {
-        return await createRevision(
-          data.data,
-          creator: creator,
-          from: from,
-          isDeleted: true,
-        );
+        return await createRevision(data.data, from: from, type: -1);
       } else {
         throw ApiRequestException.notFound();
       }
     });
   }
 
+  @override
   Future<RevisionData<TData>> createRevision(
     TData data, {
-    required String creator,
     DateTime? from,
-    bool isDeleted = false,
+    required int type,
   }) async {
     return await find(postgresql).runTransaction((context) async {
       final now = DateTime.timestamp();
@@ -225,10 +230,10 @@ mixin PostgresqlRevisableRepository<
       final primaryKey = idField.valueOf(data);
 
       final currentRevision = primaryKey != null
-          ? await getRevisable(primaryKey)
+          ? await revisableReadById(primaryKey)
           : null;
 
-      final currentVersion = currentRevision?.sysVersion ?? -1;
+      final currentVersion = currentRevision?.version ?? -1;
 
       final primaryIsAuto = _primaryAttribute.field.hasMetaOfType<Id>(
         (id) => id.auto,
@@ -244,9 +249,10 @@ mixin PostgresqlRevisableRepository<
           SqlQualifiedRelation(read(schemaName), revisionTable.name),
           {
             SqlTypedAttribute.of(_sysVersion): currentVersion + 1,
-            SqlTypedAttribute.of(_sysCreator): creator,
+            // TODO fix creator stuff
+            SqlTypedAttribute.of(_sysCreator): 'creator',
             SqlTypedAttribute.of(_sysFrom): effectiveFrom,
-            SqlTypedAttribute.of(_sysIsDeleted): isDeleted,
+            SqlTypedAttribute.of(_sysIsDeleted): type == -1,
 
             if (currentRevision case RevisionData(
               data: final currentData,
@@ -275,14 +281,17 @@ mixin PostgresqlRevisableRepository<
                 identityFilter(bean, primaryKey),
                 dataView.attributes.map((e) => (e, revisionTable)),
               ),
-              RawSql(' AND sys_version = $currentVersion'),
+              RawSql(' AND '),
+              SqlTypedColumnAttribute.of(_sysVersion),
+              RawSql(' = '),
+              ParameterSql(currentVersion, const PostgresqlInt()),
             ]),
             {SqlTypedAttribute.of(_sysTo): effectiveFrom},
           ),
         );
       }
 
-      return await getRevisable(
+      return await revisableReadById(
             result.first.first,
             version: currentVersion + 1,
           ) ??
@@ -290,7 +299,8 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
-  Future<List<RevisionData<TData>>> getAllRevisable({
+  @override
+  Future<List<RevisionData<TData>>> revisableReadAll({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int? offset,
@@ -325,6 +335,7 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
+  @override
   Future<int> count({Filter filter = Filter.empty}) async {
     return await find(postgresql).runTransaction((context) async {
       // TODO aggregates should be abstract
@@ -335,8 +346,9 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
-  Future<List<RevisionData<TData>>> getRevisions(
-    dynamic id, {
+  @override
+  Future<List<RevisionData<TData>>> readRevisionsById(
+    id, {
     int? offset,
     int? limit,
   }) async {
@@ -350,7 +362,7 @@ mixin PostgresqlRevisableRepository<
             dataView.attributes.map((e) => (e, revisionTable)),
           ),
           order: Sql.join([
-            SqlColumnAttribute('revision_timestamp').toSql(),
+            SqlTypedColumnAttribute.of(_sysVersion),
             RawSql(' DESC'),
           ]),
           offset: offset ?? 0,
@@ -369,7 +381,8 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
-  Future<RevisionData<TData>?> getRevisable(dynamic id, {int? version}) async {
+  @override
+  Future<RevisionData<TData>?> revisableReadById(id, {int? version}) async {
     return await find(postgresql).runTransaction((context) async {
       final pg.Result result;
       if (version != null) {
@@ -382,7 +395,9 @@ mixin PostgresqlRevisableRepository<
                 identityFilter(bean, id),
                 dataView.attributes.map((e) => (e, revisionTable)),
               )!..wrap(),
-              RawSql(' AND sys_version = '),
+              RawSql(' AND '),
+              SqlTypedColumnAttribute.of(_sysVersion),
+              RawSql(' = '),
               ParameterSql(version, const PostgresqlInt()),
             ]),
             limit: 1,
@@ -415,6 +430,7 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
+  @override
   Future<R> atomic<R>(Future<R> Function() delegate) async {
     return await find(
       postgresql,
@@ -429,12 +445,12 @@ mixin PostgresqlRevisableRepository<
 
     return RevisionData(
       data: data,
-      sysVersion: getValue(_sysVersion),
-      sysCreated: getValue(_sysCreated),
-      sysCreator: getValue(_sysCreator),
-      sysFrom: getValue(_sysFrom),
-      sysTo: getValue(_sysTo),
-      sysIsDeleted: getValue(_sysIsDeleted),
+      version: getValue(_sysVersion),
+      created: getValue(_sysCreated),
+      creator: getValue(_sysCreator),
+      from: getValue(_sysFrom),
+      to: getValue(_sysTo),
+      isDeleted: getValue(_sysIsDeleted),
     );
   }
 }

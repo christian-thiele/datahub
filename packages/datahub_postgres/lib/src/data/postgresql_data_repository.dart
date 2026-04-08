@@ -9,10 +9,10 @@ import 'package:meta/meta.dart';
 @optionalTypeArgs
 mixin PostgresqlDataRepository<
   TService extends Service,
-  DataType extends DataObject<DataType>
+  TData extends DataObject<TData>
 >
     on ServiceInstance<TService>
-    implements DataRepository<DataType> {
+    implements DataRepository<TData> {
   Find<Postgresql> get postgresql => const Find<Postgresql>();
 
   Config<String> get schemaName =>
@@ -20,7 +20,7 @@ mixin PostgresqlDataRepository<
 
   Config<String?> get relationName => const Config<String?>('relationName');
 
-  late final PostgresqlDataRelation<DataType> dataRelation;
+  late final PostgresqlDataRelation<TData> dataRelation;
 
   @override
   @mustCallSuper
@@ -41,19 +41,19 @@ mixin PostgresqlDataRepository<
   }
 
   @override
-  Future<DataType> create(DataType object) async {
+  Future<TData> create(TData object) async {
     return await find(postgresql).runTransaction((context) async {
       return await dataRelation.insert(context, object);
     });
   }
 
   @override
-  Future<DataType?> readById(dynamic id) async {
+  Future<TData?> readById(dynamic id) async {
     return await first(filter: identityFilter(bean, id));
   }
 
   @override
-  Future<List<DataType>> readAll({
+  Future<List<TData>> readAll({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int? offset,
@@ -82,7 +82,7 @@ mixin PostgresqlDataRepository<
   }
 
   @override
-  Future<bool> updateById(DataType element) async {
+  Future<bool> updateById(TData element) async {
     final affected = await updateAll(
       filter: identityFilter(bean, bean.requireIdField.valueOf(element)),
       values: {
@@ -96,7 +96,7 @@ mixin PostgresqlDataRepository<
   @override
   Future<int> updateAll({
     required Filter filter,
-    required Map<DataField<DataType, dynamic>, dynamic> values,
+    required Map<DataField<TData, dynamic>, dynamic> values,
   }) async {
     return await find(postgresql).runTransaction((context) async {
       return await dataRelation.update(context, filter, values);
@@ -116,7 +116,7 @@ mixin PostgresqlDataRepository<
     });
   }
 
-  Future<DataType?> first({
+  Future<TData?> first({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
