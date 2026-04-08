@@ -1,6 +1,8 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 
 abstract interface class ApertureResourceRepository {
+  bool get isRevised;
+
   Future<ResourceData> getElement(String id, String? revisionId);
 
   Future<ResourceElementsResponse> getElements(
@@ -23,8 +25,5 @@ abstract interface class ApertureResourceWriteRepository
     DateTime? revisionLive,
   );
 
-  Future<ResourceData?> deleteElement(
-    String id,
-    DateTime? revisionLive,
-  );
+  Future<ResourceData?> deleteElement(String id, DateTime? revisionLive);
 }

@@ -18,7 +18,8 @@ class ApertureDataResource {
   const ApertureDataResource(this.repository, {this.actions = const []});
 
   ResourceDescription buildDescription(Iterable<DataBean> relatedBeans) {
-    final bean = repository.find().bean;
+    final repo = repository.find();
+    final bean = repo.bean;
     final relations = bean.allMetaOfType<ApertureRelation>().map((meta) {
       final relatedBean = relatedBeans.firstWhere(
         (e) => e.type == meta.type,
@@ -53,7 +54,8 @@ class ApertureDataResource {
       name: meta?.name ?? niceName(bean.name),
       namePlural: meta?.namePlural,
       icon: meta?.icon ?? Icons.data_object,
-      readOnly: repository is! ApertureResourceWriteRepository,
+      readOnly: false,
+      revisable: repo is RevisableDataRepository,
       actions: [
         for (final action in actions) action.buildDescription(relatedBeans),
       ],

@@ -167,4 +167,7 @@ class ApertureDataRepositoryAdapter implements ApertureResourceWriteRepository {
       },
     );
   }
+
+  @override
+  bool get isRevised => repository is RevisableDataRepository;
 }

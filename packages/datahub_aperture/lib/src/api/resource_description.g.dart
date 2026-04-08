@@ -92,6 +92,13 @@ abstract interface class $ResourceDescription
     toJson: (value) => $$codec.encodeBool(value),
   );
 
+  static final $revisable = DataField<ResourceDescription, bool>(
+    name: 'revisable',
+    valueOf: (p) => p.revisable,
+    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+    toJson: (value) => $$codec.encodeBool(value),
+  );
+
   static final $actions = DataField<ResourceDescription, List<ResourceAction>>(
     name: 'actions',
     valueOf: (p) => p.actions,
@@ -118,6 +125,7 @@ abstract interface class $ResourceDescription
           $idField,
           $displayField,
           $readOnly,
+          $revisable,
           $actions,
         ]),
         fromValues: fromValues,
@@ -140,6 +148,7 @@ abstract interface class $ResourceDescription
     String? displayField,
     bool nullDisplayField = false,
     bool? readOnly,
+    bool? revisable,
     List<ResourceAction>? actions,
   }) {
     final $data = this as ResourceDescription;
@@ -155,6 +164,7 @@ abstract interface class $ResourceDescription
           ? null
           : (displayField ?? $data.displayField),
       readOnly: readOnly ?? $data.readOnly,
+      revisable: revisable ?? $data.revisable,
       actions: actions ?? $data.actions,
     );
   }
@@ -172,6 +182,7 @@ abstract interface class $ResourceDescription
       idField: data['idField'],
       displayField: data['displayField'],
       readOnly: data['readOnly'],
+      revisable: data['revisable'],
       actions: data['actions']?.cast<ResourceAction>().toList(growable: false),
     );
   }
@@ -218,6 +229,10 @@ abstract interface class $ResourceDescription
         data['readOnly'],
         name: DataCodec.childName(name, 'readOnly'),
       ),
+      revisable: $revisable.fromJson(
+        data['revisable'],
+        name: DataCodec.childName(name, 'revisable'),
+      ),
       actions: $actions.fromJson(
         data['actions'],
         name: DataCodec.childName(name, 'actions'),
@@ -238,6 +253,7 @@ abstract interface class $ResourceDescription
       'idField': $idField.toJson($$data.idField),
       'displayField': $displayField.toJson($$data.displayField),
       'readOnly': $readOnly.toJson($$data.readOnly),
+      'revisable': $revisable.toJson($$data.revisable),
       'actions': $actions.toJson($$data.actions),
     }..removeWhere((k, v) => v == null);
   }
