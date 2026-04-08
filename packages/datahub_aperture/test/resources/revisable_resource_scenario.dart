@@ -23,7 +23,7 @@ void main() => runApp([
         configDelegate: ApertureConfigDataDelegate(
           baseUrl: 'http://localhost:8080/aperture',
           dataResources: [
-            ApertureDataResource($Person.bean, Find<DataRepository<Person>>()),
+            ApertureDataResource(Find<DataRepository<Person>>()),
           ],
         ),
         oidcIssuer: Config.value('http://localhost:8081/realms/local-oidc'),

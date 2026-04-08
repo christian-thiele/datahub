@@ -32,7 +32,7 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
     this.modules = const [],
     required this.baseUrl,
   }) {
-    final allBeans = dataResources.map((e) => e.bean);
+    final allBeans = dataResources.map((e) => e.repository.find().bean);
 
     resources = [
       for (final res in dataResources)

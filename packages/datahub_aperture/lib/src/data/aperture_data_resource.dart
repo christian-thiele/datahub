@@ -12,22 +12,19 @@ import 'meta/aperture_display_field.dart';
 import 'meta/aperture_field.dart';
 
 class ApertureDataResource {
-  final DataBean bean;
   final Find<DataRepository> repository;
   final List<ApertureDataAction> actions;
 
-  const ApertureDataResource(
-    this.bean,
-    this.repository, {
-    this.actions = const [],
-  });
+  const ApertureDataResource(this.repository, {this.actions = const []});
 
   ResourceDescription buildDescription(Iterable<DataBean> relatedBeans) {
+    final bean = repository.find().bean;
     final relations = bean.allMetaOfType<ApertureRelation>().map((meta) {
       final relatedBean = relatedBeans.firstWhere(
         (e) => e.type == meta.type,
         orElse: () => throw ApiError(
-            'Related bean for ${meta.type.name} of ${bean.name} not found for ApertureRelation.'),
+          'Related bean for ${meta.type.name} of ${bean.name} not found for ApertureRelation.',
+        ),
       );
 
       final relationIdField = relatedBean.fields.firstWhere(
@@ -79,7 +76,10 @@ class ApertureDataResource {
   }
 
   static ResourceField fieldDescription(
-      DataBean bean, DataField field, Iterable<DataBean> relatedBeans) {
+    DataBean bean,
+    DataField field,
+    Iterable<DataBean> relatedBeans,
+  ) {
     final meta = field.metaOfType<Meta>();
     final apertureMeta = field.metaOfType<ApertureField>();
     final validation = field.constraintOfType<RegExpConstraint>();
@@ -88,8 +88,9 @@ class ApertureDataResource {
 
     final ResourceFieldLookup? lookup;
     if (field.metaOfType<RelationId>() case final relationId?) {
-      final relationBean =
-          relatedBeans.firstWhere((e) => e.type == relationId.type);
+      final relationBean = relatedBeans.firstWhere(
+        (e) => e.type == relationId.type,
+      );
       lookup = ResourceFieldLookup(
         resourceId: relationBean.name,
         resourceFieldId: relationBean.requireIdField.name,
@@ -164,13 +165,14 @@ class ApertureDataResource {
       DataField<dynamic, DataObject?>() => ResourceFieldType.object,
       DataField<dynamic, List>() => ResourceFieldType.list,
       _ => throw ApiError(
-          'Field ${field.name} of type ${field.type.name} is not supported by Aperture.',
-        )
+        'Field ${field.name} of type ${field.type.name} is not supported by Aperture.',
+      ),
     };
   }
 
   static ResourceFieldType _fieldListElementType(
-      DataField<dynamic, dynamic> field) {
+    DataField<dynamic, dynamic> field,
+  ) {
     return switch (field) {
       DataField<dynamic, List<String>?>() => ResourceFieldType.string,
       DataField<dynamic, List<Enum>?>() => ResourceFieldType.stringEnum,
@@ -182,8 +184,8 @@ class ApertureDataResource {
       DataField<dynamic, List<Geometry>?>() => ResourceFieldType.geometry,
       DataField<dynamic, List<DataObject>?>() => ResourceFieldType.object,
       _ => throw ApiError(
-          'Field ${field.name} of type ${field.type.name} is not supported by Aperture.',
-        )
+        'Field ${field.name} of type ${field.type.name} is not supported by Aperture.',
+      ),
     };
   }
 }

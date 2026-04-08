@@ -14,12 +14,7 @@ void main(List<String> args) => runApp([
       ApertureApi(
         configDelegate: ApertureConfigDataDelegate(
           baseUrl: 'http://localhost:8080/aperture',
-          dataResources: [
-            ApertureDataResource(
-              $Person.bean,
-              const Find<DataRepository<Person>>(),
-            ),
-          ],
+          dataResources: [ApertureDataResource(Find<DataRepository<Person>>())],
         ),
         oidcIssuer: Config.value('http://localhost:8081/realms/local-oidc'),
         oidcClientId: Config.value('aperture'),
