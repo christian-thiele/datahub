@@ -67,6 +67,7 @@ class ResourceElementEditPage extends StatelessWidget {
                     data: data,
                     changes: changes,
                     validations: validations,
+                    revisable: resource.revisable,
                     onFieldValueChanged: (field, value) => context
                         .read<ResourceElementEditCubit>()
                         .setFieldValue(field.id, value),

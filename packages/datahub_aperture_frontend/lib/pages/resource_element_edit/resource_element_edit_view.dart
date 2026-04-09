@@ -28,6 +28,7 @@ class ResourceElementEditView extends StatelessWidget {
 
   final List<ActionModel> actions;
   final void Function(String)? onActionPressed;
+  final bool revisable;
 
   const ResourceElementEditView({
     super.key,
@@ -42,6 +43,7 @@ class ResourceElementEditView extends StatelessWidget {
     this.onDeletePressed,
     required this.actions,
     this.onActionPressed,
+    this.revisable = true,
   });
 
   @override
@@ -96,26 +98,28 @@ class ResourceElementEditView extends StatelessWidget {
                           final call? => () => call(DateTime.timestamp()),
                           _ => null,
                         },
-                        menuEnabled: onDeletePressed != null,
+                        menuEnabled: revisable && onDeletePressed != null,
                         menuChildren: [
-                          MenuItemButton(
-                            child: IconText(
-                              Icons.schedule,
-                              S.of(context).deleteScheduled,
+                          if (revisable) ...[
+                            MenuItemButton(
+                              child: IconText(
+                                Icons.schedule,
+                                S.of(context).deleteScheduled,
+                              ),
+                              onPressed: () {
+                                showDialog(
+                                  context: context,
+                                  builder: (context) => ScheduleDialog(
+                                    title: S.of(context).deleteScheduled,
+                                  ),
+                                ).then((result) {
+                                  if (result case DateTime liveDate) {
+                                    onDeletePressed?.call(liveDate);
+                                  }
+                                });
+                              },
                             ),
-                            onPressed: () {
-                              showDialog(
-                                context: context,
-                                builder: (context) => ScheduleDialog(
-                                  title: S.of(context).deleteScheduled,
-                                ),
-                              ).then((result) {
-                                if (result case DateTime liveDate) {
-                                  onDeletePressed?.call(liveDate);
-                                }
-                              });
-                            },
-                          ),
+                          ],
                         ],
                         child: IconText(
                           Icons.delete_outline,
@@ -139,6 +143,7 @@ class ResourceElementEditView extends StatelessWidget {
                             validations: validations,
                             onFieldValueChanged: onFieldValueChanged,
                             onSavePressed: onSavePressed,
+                            revisable: revisable,
                           ),
                           for (final relation in relations)
                             ResourceRelationView(filteredResource: relation),
@@ -153,7 +158,7 @@ class ResourceElementEditView extends StatelessWidget {
             ),
           ),
         ),
-        if (data.revisionId != null)
+        if (revisable && data.revisionId != null)
           SidePanel(
             child: RevisionView(
               revisions: data.revisions,

@@ -14,6 +14,7 @@ class ResourceFieldForm extends StatelessWidget {
   final Map<ResourceField, String> validations;
   final void Function(ResourceField field, dynamic value) onFieldValueChanged;
   final void Function(DateTime? revisionLive)? onSavePressed;
+  final bool revisable;
 
   const ResourceFieldForm({
     super.key,
@@ -23,6 +24,7 @@ class ResourceFieldForm extends StatelessWidget {
     required this.validations,
     required this.onFieldValueChanged,
     required this.onSavePressed,
+    this.revisable = true,
   });
 
   @override
@@ -62,29 +64,31 @@ class ResourceFieldForm extends StatelessWidget {
               final call? => () => call(DateTime.timestamp()),
               _ => null,
             },
-            menuEnabled: onSavePressed != null,
+            menuEnabled: revisable && onSavePressed != null,
             menuChildren: [
-              MenuItemButton(
-                child: IconText(
-                  Icons.edit_note_outlined,
-                  S.of(context).saveAsDraft,
+              if (revisable) ...[
+                MenuItemButton(
+                  child: IconText(
+                    Icons.edit_note_outlined,
+                    S.of(context).saveAsDraft,
+                  ),
+                  onPressed: () => onSavePressed?.call(null),
                 ),
-                onPressed: () => onSavePressed?.call(null),
-              ),
-              MenuItemButton(
-                child: IconText(Icons.schedule, S.of(context).saveAndSchedule),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) =>
-                        ScheduleDialog(title: S.of(context).scheduleRevision),
-                  ).then((result) {
-                    if (result case DateTime liveDate) {
-                      onSavePressed?.call(liveDate);
-                    }
-                  });
-                },
-              ),
+                MenuItemButton(
+                  child: IconText(Icons.schedule, S.of(context).saveAndSchedule),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) =>
+                          ScheduleDialog(title: S.of(context).scheduleRevision),
+                    ).then((result) {
+                      if (result case DateTime liveDate) {
+                        onSavePressed?.call(liveDate);
+                      }
+                    });
+                  },
+                ),
+              ],
             ],
             child: IconText(Icons.save, S.of(context).save),
           ),
