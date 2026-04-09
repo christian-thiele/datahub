@@ -170,7 +170,7 @@ class ResourceElementEditView extends StatelessWidget {
         if (revisable && data.version != null)
           SidePanel(
             child: RevisionView(
-              revisions: data.revisions.reversed.toList(),
+              revisions: data.revisions,
               currentVersion: data.version!,
             ),
           ),

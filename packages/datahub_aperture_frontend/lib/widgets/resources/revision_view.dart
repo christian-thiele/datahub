@@ -21,8 +21,9 @@ class RevisionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final revision =
-        revisions.where((e) => e.version == currentVersion).firstOrNull;
+    final revision = revisions
+        .where((e) => e.version == currentVersion)
+        .firstOrNull;
 
     final now = DateTime.timestamp();
     final liveRevisionVersion = revisions
@@ -30,10 +31,9 @@ class RevisionView extends StatelessWidget {
         .map((e) => e.version)
         .fold<int?>(null, (max, v) => max == null || v > max ? v : max);
 
-    final latestVersion = revisions.map((e) => e.version).fold<int?>(
-      null,
-      (max, v) => max == null || v > max ? v : max,
-    );
+    final latestVersion = revisions
+        .map((e) => e.version)
+        .fold<int?>(null, (max, v) => max == null || v > max ? v : max);
 
     return Column(
       mainAxisSize: MainAxisSize.max,
@@ -154,10 +154,10 @@ class _RevisionStatusCard extends StatelessWidget {
           const SizedBox(width: 12),
           Text(
             label,
-            style: Theme.of(context)
-                .textTheme
-                .titleSmall
-                ?.copyWith(color: color, fontWeight: FontWeight.bold),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: color,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),
@@ -169,10 +169,7 @@ class _RevisionDetails extends StatelessWidget {
   final ResourceRevisionInfo revision;
   final bool isLatest;
 
-  const _RevisionDetails({
-    required this.revision,
-    required this.isLatest,
-  });
+  const _RevisionDetails({required this.revision, required this.isLatest});
 
   @override
   Widget build(BuildContext context) {
@@ -202,19 +199,19 @@ class _RevisionDetails extends StatelessWidget {
           label: S.of(context).author,
           value: UserEntityView(id: revision.userId, name: revision.userName),
         ),
-        if (!isLatest) ...[
-          const SizedBox(height: 4),
-          SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: () => context
-                  .read<ResourceElementEditCubit>()
-                  .revertToRevision(revision.version),
-              icon: const Icon(Icons.history, size: 18),
-              label: Text(S.of(context).revert),
-            ),
+        const SizedBox(height: 4),
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: !isLatest
+                ? () => context
+                      .read<ResourceElementEditCubit>()
+                      .revertToRevision(revision.version)
+                : null,
+            icon: const Icon(Icons.history, size: 18),
+            label: Text(S.of(context).revert),
           ),
-        ],
+        ),
       ],
     );
   }
