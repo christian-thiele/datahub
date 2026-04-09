@@ -144,6 +144,15 @@ class ResourceElementEditView extends StatelessWidget {
                             onFieldValueChanged: onFieldValueChanged,
                             onSavePressed: onSavePressed,
                             revisable: revisable,
+                            readOnly: data.version != null &&
+                                data.revisions.isNotEmpty &&
+                                data.version !=
+                                    data.revisions
+                                        .map((e) => e.version)
+                                        .fold<int>(
+                                          0,
+                                          (max, v) => v > max ? v : max,
+                                        ),
                           ),
                           for (final relation in relations)
                             ResourceRelationView(filteredResource: relation),
@@ -161,7 +170,7 @@ class ResourceElementEditView extends StatelessWidget {
         if (revisable && data.version != null)
           SidePanel(
             child: RevisionView(
-              revisions: data.revisions,
+              revisions: data.revisions.reversed.toList(),
               currentVersion: data.version!,
             ),
           ),
