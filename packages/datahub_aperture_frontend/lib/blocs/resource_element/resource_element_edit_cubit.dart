@@ -12,13 +12,13 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
   final ResourcesRepository _resourceRepository;
   final String resourceId;
   final String elementId;
-  final String? revisionId;
+  final int? version;
 
   ResourceElementEditCubit(
     this._resourceRepository, {
     required this.resourceId,
     required this.elementId,
-    this.revisionId,
+    this.version,
   }) : super(ResourceElementEditLoading(initial: true)) {
     update();
   }
@@ -35,7 +35,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
       final data = await _resourceRepository.getResourceElement(
         resourceId,
         elementId,
-        revisionId: revisionId,
+        version: version,
       );
       decodeFieldData(resource, data);
 
@@ -122,7 +122,40 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
     }
   }
 
-  Future<void> saveChanges({DateTime? revisionLive}) async {
+  Future<void> revertToRevision(int version) async {
+    if (state case final ResourceElementEditValue state
+        when state is! ResourceElementEditSaving) {
+      try {
+        final revisionData = await _resourceRepository.getResourceElement(
+          resourceId,
+          elementId,
+          version: version,
+        );
+
+        final newChanges = <ResourceField, dynamic>{};
+        for (final field in state.resource.fields) {
+          if (!field.readOnly) {
+            newChanges[field] = revisionData.fieldData[field.id];
+          }
+        }
+
+        emit(
+          ResourceElementEditValue(
+            title: state.title,
+            resource: state.resource,
+            data: state.data,
+            relations: state.relations,
+            changes: newChanges,
+            validations: {},
+          ),
+        );
+      } catch (e) {
+        emit(ResourceElementEditError(message: e.toString()));
+      }
+    }
+  }
+
+  Future<void> saveChanges({DateTime? from}) async {
     if (state case final ResourceElementEditValue state
         when state is! ResourceElementEditSaving && state.changes.isNotEmpty) {
       try {
@@ -155,7 +188,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
           resourceId,
           elementId,
           state.changes.map((k, v) => MapEntry(k.id, v)),
-          revisionLive,
+          from,
         );
         decodeFieldData(state.resource, updated);
         emit(savingState.saved(updated));
@@ -190,7 +223,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
     }
   }
 
-  Future<void> delete({DateTime? revisionLive}) async {
+  Future<void> delete({DateTime? from}) async {
     if (state case final ResourceElementEditValue state) {
       try {
         final savingState = state.saving();
@@ -198,7 +231,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
         final updated = await _resourceRepository.deleteElement(
           resourceId,
           elementId,
-          revisionLive,
+          from,
         );
         if (updated != null) {
           decodeFieldData(state.resource, updated);

@@ -2,7 +2,6 @@ import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/services.dart';
 
 import 'aperture_data_action.dart';
-import 'aperture_data_repository_adapter.dart';
 import 'aperture_data_resource.dart';
 
 class ApertureConfigDataDelegate implements ApertureConfigDelegate {
@@ -38,7 +37,7 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
       for (final res in dataResources)
         ApertureResource(
           description: res.buildDescription(allBeans),
-          repository: ApertureDataRepositoryAdapter(repository: res.repository),
+          repository: res.repository,
           actions: [
             for (final action in res.actions)
               ApertureAction(

@@ -20,7 +20,6 @@ flutter:
 flutter_intl:
   enabled: true
 
-
 dependencies:
   flutter:
     sdk: flutter

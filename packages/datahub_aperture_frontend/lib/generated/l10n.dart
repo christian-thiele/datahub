@@ -209,9 +209,9 @@ class S {
     );
   }
 
-  /// `Revision ID`
-  String get revisionId {
-    return Intl.message('Revision ID', name: 'revisionId', desc: '', args: []);
+  /// `Version`
+  String get revisionVersion {
+    return Intl.message('Version', name: 'revisionVersion', desc: '', args: []);
   }
 
   /// `Author`
@@ -302,6 +302,11 @@ class S {
   /// `OK`
   String get ok {
     return Intl.message('OK', name: 'ok', desc: '', args: []);
+  }
+
+  /// `Revert`
+  String get revert {
+    return Intl.message('Revert', name: 'revert', desc: '', args: []);
   }
 }
 

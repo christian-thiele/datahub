@@ -13,7 +13,7 @@ class ApiResourcesRepository extends ApiRepository
   Future<ResourceData> createElement(
     String resourceId,
     Map<String, dynamic> changes,
-    DateTime? revisionLive,
+    DateTime? from,
   ) async {
     final client = await getClient();
     return await client
@@ -21,7 +21,7 @@ class ApiResourcesRepository extends ApiRepository
           '/api/resources/{resourceId}/elements',
           ResourceRevisionRequest(
             fieldData: changes,
-            revisionLive: revisionLive,
+            from: from,
           ),
           urlParams: {'resourceId': resourceId},
         )
@@ -56,7 +56,7 @@ class ApiResourcesRepository extends ApiRepository
   Future<ResourceData> getResourceElement(
     String resourceId,
     String elementId, {
-    String? revisionId,
+    int? version,
   }) async {
     final client = await getClient();
     return await client
@@ -64,7 +64,7 @@ class ApiResourcesRepository extends ApiRepository
           '/api/resources/{resourceId}/elements/{elementId}',
           urlParams: {'resourceId': resourceId, 'elementId': elementId},
           query: {
-            if (revisionId != null) 'revisionId': [revisionId],
+            if (version != null) 'version': [version.toString()],
           },
         )
         .thenGetData($ResourceData.bean);
@@ -96,7 +96,7 @@ class ApiResourcesRepository extends ApiRepository
     String resourceId,
     String elementId,
     Map<String, dynamic> changes,
-    DateTime? revisionLive,
+    DateTime? from,
   ) async {
     final client = await getClient();
     return await client
@@ -104,7 +104,7 @@ class ApiResourcesRepository extends ApiRepository
           '/api/resources/{resourceId}/elements/{elementId}',
           ResourceRevisionRequest(
             fieldData: changes,
-            revisionLive: revisionLive,
+            from: from,
           ),
           urlParams: {'resourceId': resourceId, 'elementId': elementId},
         )
@@ -115,15 +115,15 @@ class ApiResourcesRepository extends ApiRepository
   Future<ResourceData?> deleteElement(
     String resourceId,
     String elementId,
-    DateTime? revisionLive,
+    DateTime? from,
   ) async {
     final client = await getClient();
     final response = await client.delete(
       '/api/resources/{resourceId}/elements/{elementId}',
       urlParams: {'resourceId': resourceId, 'elementId': elementId},
       query: {
-        if (revisionLive != null)
-          'revisionLive': [revisionLive.toIso8601String()],
+        if (from != null)
+          'from': [from.toIso8601String()],
       },
     );
 

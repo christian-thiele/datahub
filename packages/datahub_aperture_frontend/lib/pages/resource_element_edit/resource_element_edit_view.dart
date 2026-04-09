@@ -23,8 +23,8 @@ class ResourceElementEditView extends StatelessWidget {
 
   final List<FilteredResource> relations;
 
-  final void Function(DateTime? revisionLive)? onSavePressed;
-  final void Function(DateTime? revisionLive)? onDeletePressed;
+  final void Function(DateTime? from)? onSavePressed;
+  final void Function(DateTime? from)? onDeletePressed;
 
   final List<ActionModel> actions;
   final void Function(String)? onActionPressed;
@@ -158,11 +158,11 @@ class ResourceElementEditView extends StatelessWidget {
             ),
           ),
         ),
-        if (revisable && data.revisionId != null)
+        if (revisable && data.version != null)
           SidePanel(
             child: RevisionView(
               revisions: data.revisions,
-              currentId: data.revisionId!,
+              currentVersion: data.version!,
             ),
           ),
       ],

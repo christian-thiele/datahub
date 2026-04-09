@@ -50,9 +50,9 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
   });
 
   @override
-  Future<T> create(T element) async {
+  Future<T> create(T element, {DateTime? from}) async {
     //TODO createRevision must check if exists already
-    final revision = await createRevision(element, type: 1);
+    final revision = await createRevision(element, type: 1, from: from);
     return revision.data;
   }
 
@@ -79,9 +79,9 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
   }
 
   @override
-  Future<bool> updateById(T element) async {
+  Future<bool> updateById(T element, {DateTime? from}) async {
     try {
-      await createRevision(element, type: 0);
+      await createRevision(element, type: 0, from: from);
       return true;
     } on RevisableInconsistencyException catch (_) {
       return false;
@@ -99,14 +99,14 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
   }
 
   @override
-  Future<bool> deleteById(dynamic id) async {
+  Future<bool> deleteById(dynamic id, {DateTime? from}) async {
     try {
       final element = await revisableReadById(id);
       if (element == null) {
         return false;
       }
 
-      await createRevision(element.data, from: DateTime.timestamp(), type: -1);
+      await createRevision(element.data, type: -1, from: from);
       return true;
     } on RevisableInconsistencyException catch (_) {
       return false;

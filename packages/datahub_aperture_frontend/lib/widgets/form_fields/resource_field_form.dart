@@ -13,7 +13,7 @@ class ResourceFieldForm extends StatelessWidget {
   final Map<ResourceField, dynamic> changes;
   final Map<ResourceField, String> validations;
   final void Function(ResourceField field, dynamic value) onFieldValueChanged;
-  final void Function(DateTime? revisionLive)? onSavePressed;
+  final void Function(DateTime? from)? onSavePressed;
   final bool revisable;
 
   const ResourceFieldForm({
@@ -61,19 +61,19 @@ class ResourceFieldForm extends StatelessWidget {
           alignment: Alignment.bottomRight,
           child: OptionsButton(
             onPressed: switch (onSavePressed) {
-              final call? => () => call(DateTime.timestamp()),
+              final call? => () => call(null),
               _ => null,
             },
             menuEnabled: revisable && onSavePressed != null,
             menuChildren: [
               if (revisable) ...[
-                MenuItemButton(
+                /*MenuItemButton(
                   child: IconText(
                     Icons.edit_note_outlined,
                     S.of(context).saveAsDraft,
                   ),
                   onPressed: () => onSavePressed?.call(null),
-                ),
+                ),*/
                 MenuItemButton(
                   child: IconText(Icons.schedule, S.of(context).saveAndSchedule),
                   onPressed: () {

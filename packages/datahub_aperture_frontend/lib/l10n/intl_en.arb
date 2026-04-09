@@ -22,7 +22,7 @@
   "liveFrom": "Live from",
   "timestamp": "Timestamp",
   "revisionInfo": "Revision Info",
-  "revisionId": "Revision ID",
+  "revisionVersion": "Version",
   "author": "Author",
   "revisionHistory": "Revision History",
   "byUsername": "by {userName}",
@@ -34,5 +34,6 @@
   "password": "Password",
   "deleteScheduled": "Delete scheduled",
   "loginAuthcode": "Login via IDP",
-  "ok": "OK"
+  "ok": "OK",
+  "revert": "Revert"
 }

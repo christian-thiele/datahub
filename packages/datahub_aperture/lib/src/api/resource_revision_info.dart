@@ -6,7 +6,7 @@ part 'resource_revision_info.g.dart';
 
 @Data()
 class ResourceRevisionInfo extends $ResourceRevisionInfo {
-  final String id;
+  final int version;
   final ResourceRevisionType type;
   final DateTime timestamp;
   final DateTime? live;
@@ -14,7 +14,7 @@ class ResourceRevisionInfo extends $ResourceRevisionInfo {
   final String userName;
 
   const ResourceRevisionInfo({
-    required this.id,
+    required this.version,
     required this.type,
     required this.timestamp,
     required this.live,

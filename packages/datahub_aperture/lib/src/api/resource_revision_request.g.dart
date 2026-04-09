@@ -23,9 +23,9 @@ abstract interface class $ResourceRevisionRequest
             $$codec.encodeMap<dynamic>(value, $$codec.encodeDynamic),
       );
 
-  static final $revisionLive = DataField<ResourceRevisionRequest, DateTime?>(
-    name: 'revisionLive',
-    valueOf: (p) => p.revisionLive,
+  static final $from = DataField<ResourceRevisionRequest, DateTime?>(
+    name: 'from',
+    valueOf: (p) => p.from,
     fromJson: (value, {String? name}) =>
         $$codec.decodeNullable(value, $$codec.decodeDateTime, name: name),
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeDateTime),
@@ -36,7 +36,7 @@ abstract interface class $ResourceRevisionRequest
         name: 'ResourceRevisionRequest',
         fields: List<DataField<ResourceRevisionRequest, dynamic>>.unmodifiable([
           $fieldData,
-          $revisionLive,
+          $from,
         ]),
         fromValues: fromValues,
         fromJson: fromJson,
@@ -48,22 +48,20 @@ abstract interface class $ResourceRevisionRequest
   List<DataField<ResourceRevisionRequest, dynamic>> get $$fields => bean.fields;
   ResourceRevisionRequest copyWith({
     Map<String, dynamic>? fieldData,
-    DateTime? revisionLive,
-    bool nullRevisionLive = false,
+    DateTime? from,
+    bool nullFrom = false,
   }) {
     final $data = this as ResourceRevisionRequest;
     return ResourceRevisionRequest(
       fieldData: fieldData ?? $data.fieldData,
-      revisionLive: nullRevisionLive
-          ? null
-          : (revisionLive ?? $data.revisionLive),
+      from: nullFrom ? null : (from ?? $data.from),
     );
   }
 
   static ResourceRevisionRequest fromValues(Map<String, dynamic> data) {
     return ResourceRevisionRequest(
       fieldData: data['fieldData'],
-      revisionLive: data['revisionLive'],
+      from: data['from'],
     );
   }
 
@@ -80,9 +78,9 @@ abstract interface class $ResourceRevisionRequest
         data['fieldData'],
         name: DataCodec.childName(name, 'fieldData'),
       ),
-      revisionLive: $revisionLive.fromJson(
-        data['revisionLive'],
-        name: DataCodec.childName(name, 'revisionLive'),
+      from: $from.fromJson(
+        data['from'],
+        name: DataCodec.childName(name, 'from'),
       ),
     );
   }
@@ -92,7 +90,7 @@ abstract interface class $ResourceRevisionRequest
     final $$data = this as ResourceRevisionRequest;
     return {
       'fieldData': $fieldData.toJson($$data.fieldData),
-      'revisionLive': $revisionLive.toJson($$data.revisionLive),
+      'from': $from.toJson($$data.from),
     }..removeWhere((k, v) => v == null);
   }
 }

@@ -29,7 +29,7 @@ class ResourceElementCreatePage extends StatelessWidget {
         child: BlocConsumer<ResourceElementCreateCubit, ResourceElementCreateState>(
           listener: (context, state) {
             switch (state) {
-              case ResourceElementCreateSaved(:final id, :final revisionId):
+              case ResourceElementCreateSaved(:final id, :final version):
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(content: Text(S.of(context).resourceSaved)),
                 );
@@ -38,7 +38,7 @@ class ResourceElementCreatePage extends StatelessWidget {
                     path:
                         '/resources/${Uri.encodeComponent(resourceId)}/view/${Uri.encodeComponent(id)}',
                     queryParameters: {
-                      if (revisionId != null) 'revisionId': revisionId,
+                      if (version != null) 'version': version,
                     },
                   ).toString(),
                 );
@@ -70,7 +70,7 @@ class ResourceElementCreatePage extends StatelessWidget {
                           .setFieldValue(field.id, value),
                       onSavePressed: (live) => context
                           .read<ResourceElementCreateCubit>()
-                          .saveChanges(revisionLive: live),
+                          .saveChanges(from: live),
                     ),
                   ),
                 ),

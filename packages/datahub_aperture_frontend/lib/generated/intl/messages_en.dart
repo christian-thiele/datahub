@@ -54,9 +54,10 @@ class MessageLookup extends MessageLookupByLibrary {
       "Resource Deleted.",
     ),
     "resourceSaved": MessageLookupByLibrary.simpleMessage("Saved!"),
+    "revert": MessageLookupByLibrary.simpleMessage("Revert"),
     "revisionHistory": MessageLookupByLibrary.simpleMessage("Revision History"),
-    "revisionId": MessageLookupByLibrary.simpleMessage("Revision ID"),
     "revisionInfo": MessageLookupByLibrary.simpleMessage("Revision Info"),
+    "revisionVersion": MessageLookupByLibrary.simpleMessage("Version"),
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "saveAndSchedule": MessageLookupByLibrary.simpleMessage(
       "Save and Schedule",

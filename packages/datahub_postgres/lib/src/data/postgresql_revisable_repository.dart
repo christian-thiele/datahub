@@ -178,8 +178,23 @@ mixin PostgresqlRevisableRepository<
           SqlQualifiedRelation(effectiveSchemaName, revisionTable.name),
           [SqlWildcard()],
           where: Sql.join([
-            SqlTypedColumnAttribute.of(_sysTo),
-            RawSql(' IS NULL AND NOT '),
+            Sql.joinWrap([
+              Sql.joinWrap([
+                RawSql('now() BETWEEN '),
+                SqlTypedColumnAttribute.of(_sysFrom),
+                RawSql(' AND '),
+                SqlTypedColumnAttribute.of(_sysTo),
+              ]),
+              RawSql(' OR '),
+              Sql.joinWrap([
+                RawSql('now() > '),
+                SqlTypedColumnAttribute.of(_sysFrom),
+                RawSql(' AND '),
+                SqlTypedColumnAttribute.of(_sysTo),
+                RawSql(' IS NULL'),
+              ]),
+            ]),
+            RawSql(' AND NOT '),
             SqlTypedColumnAttribute.of(_sysIsDeleted),
           ]),
         ),

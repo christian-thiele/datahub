@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub_aperture_frontend/blocs/resource_element/resource_element_edit_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/models/view_models/action_model.dart';
@@ -21,15 +22,15 @@ class ResourceElementEditPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final resourceId = routerState.pathParameters['resourceId']!;
     final elementId = routerState.pathParameters['elementId']!;
-    final revisionId = routerState.uri.queryParameters['revision'];
+    final version = routerState.uri.queryParameters['version']?.apply(int.tryParse);
     return BasePage(
       child: BlocProvider(
-        key: ValueKey('${resourceId}_${elementId}_$revisionId'),
+        key: ValueKey('${resourceId}_${elementId}_$version'),
         create: (context) => ResourceElementEditCubit(
           context.read<ResourcesRepository>(),
           resourceId: resourceId,
           elementId: elementId,
-          revisionId: revisionId,
+          version: version,
         ),
         child: BlocConsumer<ResourceElementEditCubit, ResourceElementEditState>(
           listener: (context, state) {
@@ -72,9 +73,9 @@ class ResourceElementEditPage extends StatelessWidget {
                         .read<ResourceElementEditCubit>()
                         .setFieldValue(field.id, value),
                     onSavePressed: changes.isNotEmpty
-                        ? (revisionLive) => context
+                        ? (from) => context
                               .read<ResourceElementEditCubit>()
-                              .saveChanges(revisionLive: revisionLive)
+                              .saveChanges(from: from)
                         : null,
                     actions: [
                       for (final action in resource.actions)
@@ -97,9 +98,9 @@ class ResourceElementEditPage extends StatelessWidget {
                         ),
                       );
                     },
-                    onDeletePressed: (revisionLive) => context
+                    onDeletePressed: (from) => context
                         .read<ResourceElementEditCubit>()
-                        .delete(revisionLive: revisionLive),
+                        .delete(from: from),
                   ),
                 ),
               _ => LoadingView(),

@@ -11,18 +11,20 @@ import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
 class RevisionView extends StatelessWidget {
-  final String currentId;
+  final int currentVersion;
   final List<ResourceRevisionInfo> revisions;
 
   const RevisionView({
     super.key,
     required this.revisions,
-    required this.currentId,
+    required this.currentVersion,
   });
 
   @override
   Widget build(BuildContext context) {
-    final revision = revisions.where((e) => e.id == currentId).firstOrNull;
+    final revision = revisions
+        .where((e) => e.version == currentVersion)
+        .firstOrNull;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,7 +39,10 @@ class RevisionView extends StatelessWidget {
           if (revision.live?.isAfter(DateTime.now()) ?? false)
             Chip(label: Text('Scheduled')),
 
-          ValueView(label: S.of(context).revisionId, value: Text(revision.id)),
+          ValueView(
+            label: S.of(context).revisionVersion,
+            value: Text(revision.version.toString()),
+          ),
           ValueView(
             label: S.of(context).timestamp,
             value: Text(DateFormat.yMMMd().add_Hm().format(revision.timestamp)),
@@ -55,10 +60,9 @@ class RevisionView extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           OutlinedButton(
-            onPressed: () =>
-                context.read<ResourceElementEditCubit>().revertToRevision(
-                      revision.id,
-                    ),
+            onPressed: () => context
+                .read<ResourceElementEditCubit>()
+                .revertToRevision(revision.version),
             child: IconText(Icons.history, S.of(context).revert),
           ),
         ],
@@ -75,7 +79,7 @@ class RevisionView extends StatelessWidget {
             entryBuilder: (context, index) {
               final revision = revisions[index];
               return EntityListEntry(
-                onPressed: () => context.go('./?revision=${revision.id}'),
+                onPressed: () => context.go('./?version=${revision.version}'),
                 icon: Icon(Icons.edit_outlined),
                 label: DateFormat.yMMMd().add_Hm().format(revision.timestamp),
                 subLabel: S.of(context).byUsername(revision.userName),

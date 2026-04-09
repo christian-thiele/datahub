@@ -92,6 +92,7 @@ class ApertureApi extends ApiNode {
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
+              final repo = resource.repository.find();
               final offset = request.getParam<int?>('offset') ?? 0;
               final limit = math.min(
                 100,
@@ -102,7 +103,21 @@ class ApertureApi extends ApiNode {
                   ? $ResourceFilter.fromJson(jsonDecode(encodedFilter))
                   : null;
 
-              return resource.repository.getElements(filter, offset, limit);
+              // TODO sort
+              final elements = await repo.readAll(
+                filter: _buildFilter(repo, filter),
+                offset: offset,
+                limit: limit + 1,
+              );
+
+              return ResourceElementsResponse(
+                total: null,
+                hasNextPage: elements.length > limit,
+                data: elements
+                    .take(limit)
+                    .map((e) => _toResourceData(repo, e))
+                    .toList(),
+              );
             },
             post: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
@@ -111,18 +126,39 @@ class ApertureApi extends ApiNode {
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
-              if (resource.repository
-                  case final ApertureResourceWriteRepository repository) {
-                final data = await request.getData<ResourceRevisionRequest>(
-                  $ResourceRevisionRequest.bean,
-                );
-                return await repository.createElement(
-                  data.fieldData,
-                  data.revisionLive,
-                );
-              } else {
+              final repo = resource.repository.find();
+              const isWritableRepository = true; //TODO
+              if (!isWritableRepository) {
                 throw ApiRequestException.methodNotAllowed();
               }
+
+              final data = await request.getData<ResourceRevisionRequest>(
+                $ResourceRevisionRequest.bean,
+              );
+
+              final dynamic object;
+              try {
+                object = repo.bean.fromJson(data.fieldData);
+              } on CodecException catch (e) {
+                _throwCodecApiException(e);
+              }
+
+              repo.bean.validateConstraints(object);
+
+              final DataObject created;
+              if (data.from case final from?) {
+                if (repo case RevisableDataRepository repo) {
+                  created = await repo.create(object, from: from);
+                } else {
+                  throw ApiRequestException.badRequest(
+                    'Repository does not support revisions.',
+                  );
+                }
+              } else {
+                created = await repo.create(object);
+              }
+
+              return _toResourceData(repo, created);
             },
           ),
           ResourceEndpoint(
@@ -135,13 +171,28 @@ class ApertureApi extends ApiNode {
                 (resource) => resource.description.id == resourceId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
+              final repo = resource.repository.find();
 
               final elementId = request.getRouteParam<String>('elementId');
-              final revisionId = request.getParam<String?>('revisionId');
-              return await resource.repository.getElement(
-                elementId,
-                revisionId,
-              );
+
+              if (repo case RevisableDataRepository repo) {
+                final version = request.getParam<int?>('version');
+                final object = await repo.revisableReadById(
+                  elementId,
+                  version: version,
+                );
+                if (object == null) {
+                  throw ApiRequestException.notFound();
+                }
+                final revisions = await repo.readRevisionsById(elementId);
+                return _toResourceData(repo, object, revisions);
+              } else {
+                final object = await repo.readById(elementId);
+                if (object == null) {
+                  throw ApiRequestException.notFound();
+                }
+                return _toResourceData(repo, object);
+              }
             },
             patch: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
@@ -152,17 +203,46 @@ class ApertureApi extends ApiNode {
 
               final elementId = request.getRouteParam<String>('elementId');
               final data = await request.getData($ResourceRevisionRequest.bean);
+              final repo = resource.repository.find();
 
-              if (resource.repository
-                  case final ApertureResourceWriteRepository repository) {
-                return await repository.updateElement(
-                  elementId,
-                  data.fieldData,
-                  data.revisionLive,
-                );
-              } else {
+              const isWritableRepository = true; //TODO
+              if (!isWritableRepository) {
                 throw ApiRequestException.methodNotAllowed();
               }
+
+              final updated = await repo.atomic(() async {
+                final existing = await repo.readById(elementId);
+                if (existing == null) {
+                  throw ApiRequestException.notFound();
+                }
+
+                final combined = {...existing.toJson(), ...data.fieldData};
+
+                final dynamic object;
+                try {
+                  object = repo.bean.fromJson(combined);
+                } on CodecException catch (e) {
+                  _throwCodecApiException(e);
+                }
+
+                repo.bean.validateConstraints(object);
+
+                if (data.from case final from?) {
+                  if (repo case RevisableDataRepository repo) {
+                    await repo.updateById(object, from: from);
+                  } else {
+                    throw ApiRequestException.badRequest(
+                      'Repository does not support revisions.',
+                    );
+                  }
+                } else {
+                  await repo.updateById(object);
+                }
+
+                return await repo.readById(elementId);
+              });
+
+              return _toResourceData(repo, updated);
             },
             delete: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
@@ -172,13 +252,23 @@ class ApertureApi extends ApiNode {
               );
 
               final elementId = request.getRouteParam<String>('elementId');
-              final revisionLive = request.getParam<DateTime?>('revisionLive');
+              final repo = resource.repository.find();
 
-              if (resource.repository
-                  case final ApertureResourceWriteRepository repository) {
-                return await repository.deleteElement(elementId, revisionLive);
-              } else {
+              const isWritableRepository = true; // TODO
+              if (!isWritableRepository) {
                 throw ApiRequestException.methodNotAllowed();
+              }
+
+              if (request.getParam<DateTime?>('from') case final from?) {
+                if (repo case RevisableDataRepository repo) {
+                  await repo.deleteById(elementId, from: from);
+                } else {
+                  throw ApiRequestException.badRequest(
+                    'Repository does not support revisions.',
+                  );
+                }
+              } else {
+                await repo.deleteById(elementId);
               }
             },
           ),
@@ -241,5 +331,108 @@ class ApertureApi extends ApiNode {
         ],
       ),
     ];
+  }
+
+  static ResourceData _toResourceData(
+    DataRepository repo,
+    dynamic object, [
+    List<RevisionData>? revisions,
+  ]) {
+    if (object case RevisionData(:final data, :final version)) {
+      return ResourceData(
+        id: repo.bean.requireIdField.valueOf(data).toString(),
+        fieldData: data.toJson(),
+        version: version,
+        revisions: [
+          for (final revision in revisions ?? <RevisionData>[])
+            ResourceRevisionInfo(
+              version: revision.version,
+              type: switch (revision) {
+                RevisionData(isDeleted: true) => ResourceRevisionType.delete,
+                RevisionData(version: 0) => ResourceRevisionType.create,
+                _ => ResourceRevisionType.update,
+              },
+              timestamp: revision.created,
+              live: revision.from,
+              userId: revision.creator,
+              userName: revision.creator,
+            ),
+        ],
+      );
+    }
+
+    return ResourceData(
+      id: repo.bean.requireIdField.valueOf(object).toString(),
+      fieldData: object.toJson(),
+    );
+  }
+
+  static Filter _buildFilter(DataRepository repo, ResourceFilter? filter) {
+    try {
+      final bean = repo.bean;
+      if (filter == null) {
+        return Filter.empty;
+      }
+
+      final Filter elementFilter;
+      if (filter case ResourceFilter(
+        :final type?,
+        :final fieldId?,
+        :final value,
+      )) {
+        final field = bean.fields.firstWhere((e) => e.name == fieldId);
+        elementFilter = CompareFilter(field, switch (type) {
+          ResourceFilterType.equals => CompareType.equals,
+          ResourceFilterType.notEquals => CompareType.notEquals,
+          ResourceFilterType.greaterThan => CompareType.greaterThan,
+          ResourceFilterType.lessThan => CompareType.lessThan,
+          ResourceFilterType.contains => CompareType.contains,
+        }, ValueExpression(_alignFieldValue(field, value)));
+      } else {
+        elementFilter = Filter.empty;
+      }
+
+      return Filter.andGroup([
+        Filter.andGroup(
+          (filter.and ?? <ResourceFilter>[]).map((e) => _buildFilter(repo, e)),
+        ),
+        Filter.orGroup(
+          (filter.or ?? <ResourceFilter>[]).map((e) => _buildFilter(repo, e)),
+        ),
+        elementFilter,
+      ]);
+    } catch (e) {
+      log.warn('Filter error: ${e.toString()}');
+      return Filter.empty;
+    }
+  }
+
+  // TODO find a way not to need this?
+  static dynamic _alignFieldValue(
+    DataField<dynamic, dynamic> field,
+    String? value,
+  ) {
+    if (field.type.accepts(value)) {
+      return value;
+    }
+
+    if (field.type.isSubtypeOf<List?>()) {
+      return value;
+    }
+
+    return const JsonDataCodec().decodeType(field.type, value);
+  }
+
+  static Never _throwCodecApiException(CodecException e) {
+    throw ApiRequestException(
+      400,
+      e.message,
+      data: {
+        if (e.name != null)
+          'fields': {
+            e.name: [e.message],
+          },
+      },
+    );
   }
 }

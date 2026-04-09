@@ -8,13 +8,13 @@ part 'resource_data.g.dart';
 class ResourceData extends $ResourceData {
   final String id;
   final Map<String, dynamic> fieldData;
-  final String? revisionId;
+  final int? version;
   final List<ResourceRevisionInfo> revisions;
 
   const ResourceData({
     required this.id,
     required this.fieldData,
-    this.revisionId,
+    this.version,
     this.revisions = const [],
   });
 }
