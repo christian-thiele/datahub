@@ -107,7 +107,7 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
   @override
   Widget build(BuildContext context) {
     return InputDecorator(
-      decoration: widget.decoration,
+      decoration: widget.decoration.copyWith(enabled: widget.onChanged != null),
       child: Row(
         mainAxisSize: MainAxisSize.max,
         spacing: 16,
@@ -136,7 +136,9 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
             decoration: BoxDecoration(
               border: Border(
                 left: BorderSide(
-                  color: Theme.of(context).colorScheme.onSurface,
+                  color: widget.onChanged != null
+                      ? Theme.of(context).colorScheme.onSurface
+                      : Theme.of(context).disabledColor,
                 ),
               ),
             ),
@@ -148,7 +150,12 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
               controller: _timeErrorController,
               child: Row(
                 children: [
-                  const Icon(Icons.access_time),
+                  Icon(
+                    Icons.access_time,
+                    color: widget.onChanged != null
+                        ? null
+                        : Theme.of(context).disabledColor,
+                  ),
                   Expanded(
                     child: TextField(
                       textAlign: TextAlign.center,
