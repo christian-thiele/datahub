@@ -210,7 +210,7 @@ class ApertureApi extends ApiNode {
                 throw ApiRequestException.methodNotAllowed();
               }
 
-              final updated = await repo.atomic(() async {
+              return await repo.atomic(() async {
                 final existing = await repo.readById(elementId);
                 if (existing == null) {
                   throw ApiRequestException.notFound();
@@ -238,11 +238,14 @@ class ApertureApi extends ApiNode {
                 } else {
                   await repo.updateById(object);
                 }
-
-                return await repo.readById(elementId);
+                if (repo case RevisableDataRepository repo) {
+                  final revisions = await repo.readRevisionsById(elementId);
+                  return _toResourceData(repo, revisions.first, revisions);
+                } else {
+                  final updated = await repo.readById(elementId);
+                  return _toResourceData(repo, updated);
+                }
               });
-
-              return _toResourceData(repo, updated);
             },
             delete: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
