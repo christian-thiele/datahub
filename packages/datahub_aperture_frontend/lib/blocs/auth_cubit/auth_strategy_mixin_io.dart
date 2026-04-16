@@ -8,7 +8,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'auth_cubit.dart';
 
 mixin AuthStrategyMixin on Cubit<AuthState> {
-  AuthService get _authService;
+  AuthService get authService;
   Future<void> receiveAuthorizationCode(String state, String code);
 
   Future<void> loginAuthCode() async {
@@ -22,7 +22,7 @@ mixin AuthStrategyMixin on Cubit<AuthState> {
           path: '/auth/return',
         );
 
-        final url = await _authService.createAuthUri(
+        final url = await authService.createAuthUri(
           redirectUri.toString(),
         );
 
