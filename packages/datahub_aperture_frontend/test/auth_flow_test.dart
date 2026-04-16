@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'package:datahub/api.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/aperture_app.dart';
 import 'package:datahub_aperture_frontend/repositories/bootstrap_repository/bootstrap_repository.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
-import 'package:datahub_aperture_frontend/repositories/bootstrap_repository/bootstrap_repository.dart';
 import 'package:datahub_aperture_frontend/services/auth_service.dart';
-import 'package:datahub_aperture_frontend/utils/bootstrap.dart';
 import 'package:datahub_aperture_frontend/widgets/side_bar_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -114,6 +111,7 @@ void main() {
 
   final bootstrapData = ApertureBootstrap(
     baseUrl: 'http://localhost:8080',
+    environment: Environment.dev,
     title: 'Test App',
     oidcIssuer: 'https://issuer.com',
     oidcClientId: 'client-id',
