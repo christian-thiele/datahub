@@ -52,6 +52,7 @@ class ApertureApi extends ApiNode {
         get: (request) => ApertureBootstrap(
           title: 'Aperture',
           theme: configDelegate.theme,
+          environment: Context.ofZone().environment,
           baseUrl: configDelegate.baseUrl,
           oidcIssuer: oidcIssuer.read(),
           oidcScopes: oidcScopes.read(),

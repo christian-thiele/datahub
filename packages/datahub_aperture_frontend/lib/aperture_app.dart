@@ -1,3 +1,4 @@
+import 'package:datahub/config.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/repositories/task_manager_repository.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/task_manager_log_page.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/task_manager_module_page.dart';
@@ -163,7 +164,11 @@ class _ApertureAppState extends State<ApertureApp>
         ),
         child: Builder(
           builder: (context) => MaterialApp.router(
-            title: Bootstrap.of(context).title,
+            title: switch (Bootstrap.of(context).environment) {
+              Environment.prod => Bootstrap.of(context).title,
+              final env =>
+                '${Bootstrap.of(context).title} [${env.name.toUpperCase()}]',
+            },
             theme: ApertureThemeData.buildWithSeedColor(
               Color(Bootstrap.of(context).theme.color),
             ),
