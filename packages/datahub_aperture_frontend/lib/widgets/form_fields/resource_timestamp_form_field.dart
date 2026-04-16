@@ -22,7 +22,11 @@ class ResourceTimestampFormField extends StatelessWidget {
   Widget build(BuildContext context) {
     return DateTimeFormField(
       decoration: decoration,
-      value: JsonDataCodec().decodeDateTime(value),
+      value: switch (value) {
+        null => null,
+        final String str when str.trim().isEmpty => null,
+        _ => JsonDataCodec().decodeDateTime(value),
+      },
       onChanged: onChanged,
     );
   }
