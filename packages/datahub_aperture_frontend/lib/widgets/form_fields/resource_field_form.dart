@@ -78,8 +78,10 @@ class ResourceFieldForm extends StatelessWidget {
                   onPressed: () => onSavePressed?.call(null),
                 ),*/
                   MenuItemButton(
-                    child:
-                        IconText(Icons.schedule, S.of(context).saveAndSchedule),
+                    child: IconText(
+                      Icons.schedule,
+                      S.of(context).saveAndSchedule,
+                    ),
                     onPressed: () {
                       showDialog(
                         context: context,

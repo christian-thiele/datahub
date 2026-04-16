@@ -1,11 +1,9 @@
-import 'package:datahub_aperture_frontend/blocs/resource_element/resource_element_edit_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/widgets/data/entity_list_view.dart';
 import 'package:datahub_aperture_frontend/widgets/data/user_entity_view.dart';
 import 'package:datahub_aperture_frontend/widgets/data/value_view.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 
@@ -204,9 +202,7 @@ class _RevisionDetails extends StatelessWidget {
           width: double.infinity,
           child: OutlinedButton.icon(
             onPressed: !isLatest
-                ? () => context
-                      .read<ResourceElementEditCubit>()
-                      .revertToRevision(revision.version)
+                ? () => context.go('./?revertFrom=${revision.version}')
                 : null,
             icon: const Icon(Icons.history, size: 18),
             label: Text(S.of(context).revert),

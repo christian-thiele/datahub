@@ -37,13 +37,15 @@ class ModulePage extends StatelessWidget {
                 onRetryPressed: () => context.read<ModuleCubit>().update(),
               ),
               ModuleLoaded(:final module) => switch (module.type) {
-                ModuleType.taskManager => RepositoryProvider<TaskManagerRepository>(
-                  create: (context) => ApiTaskManagerRepository(
-                    baseUrl: Bootstrap.of(context).baseUrl,
+                ModuleType.taskManager =>
+                  RepositoryProvider<TaskManagerRepository>(
+                    create: (context) => ApiTaskManagerRepository(
+                      baseUrl: Bootstrap.of(context).baseUrl,
+                    ),
+                    dispose: (repository) =>
+                        (repository as ApiRepository).close(),
+                    child: TaskManagerModulePage(),
                   ),
-                  dispose: (repository) => (repository as ApiRepository).close(),
-                  child: TaskManagerModulePage(),
-                ),
                 // ignore: unreachable_switch_case
                 _ => ErrorView(
                   message:

@@ -22,15 +22,22 @@ class ResourceElementEditPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final resourceId = routerState.pathParameters['resourceId']!;
     final elementId = routerState.pathParameters['elementId']!;
-    final version = routerState.uri.queryParameters['version']?.apply(int.tryParse);
+    final version = routerState.uri.queryParameters['version']?.apply(
+      int.tryParse,
+    );
+    final revertFromVersion = routerState.uri.queryParameters['revertFrom']
+        ?.apply(int.tryParse);
     return BasePage(
       child: BlocProvider(
-        key: ValueKey('${resourceId}_${elementId}_$version'),
+        key: ValueKey(
+          '${resourceId}_${elementId}_${version}_$revertFromVersion',
+        ),
         create: (context) => ResourceElementEditCubit(
           context.read<ResourcesRepository>(),
           resourceId: resourceId,
           elementId: elementId,
           version: version,
+          revertFromVersion: revertFromVersion,
         ),
         child: BlocConsumer<ResourceElementEditCubit, ResourceElementEditState>(
           listener: (context, state) {

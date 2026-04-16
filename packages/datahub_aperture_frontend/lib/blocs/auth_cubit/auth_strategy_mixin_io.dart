@@ -22,9 +22,7 @@ mixin AuthStrategyMixin on Cubit<AuthState> {
           path: '/auth/return',
         );
 
-        final url = await authService.createAuthUri(
-          redirectUri.toString(),
-        );
+        final url = await authService.createAuthUri(redirectUri.toString());
 
         final cancelListener = CancellationToken();
         final listener = listenForAuthCallback(redirectUri, cancelListener);

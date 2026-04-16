@@ -13,12 +13,14 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
   final String resourceId;
   final String elementId;
   final int? version;
+  final int? revertFromVersion;
 
   ResourceElementEditCubit(
     this._resourceRepository, {
     required this.resourceId,
     required this.elementId,
     this.version,
+    this.revertFromVersion,
   }) : super(ResourceElementEditLoading(initial: true)) {
     update();
   }
@@ -38,6 +40,22 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
         version: version,
       );
       decodeFieldData(resource, data);
+
+      final initialChanges = <ResourceField, dynamic>{};
+      if (version == null && revertFromVersion != null) {
+        final revisionData = await _resourceRepository.getResourceElement(
+          resourceId,
+          elementId,
+          version: revertFromVersion,
+        );
+
+        for (final field in resource.fields) {
+          if (!field.readOnly &&
+              data.fieldData[field.id] != revisionData.fieldData[field.id]) {
+            initialChanges[field] = revisionData.fieldData[field.id];
+          }
+        }
+      }
 
       final relations = [
         for (final relation in resource.relations)
@@ -60,6 +78,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
             resource: resource,
             data: data,
             relations: relations,
+            changes: initialChanges,
             validations: {},
           ),
         );
@@ -118,39 +137,6 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
             validations: validation,
           ),
         );
-      }
-    }
-  }
-
-  Future<void> revertToRevision(int version) async {
-    if (state case final ResourceElementEditValue state
-        when state is! ResourceElementEditSaving) {
-      try {
-        final revisionData = await _resourceRepository.getResourceElement(
-          resourceId,
-          elementId,
-          version: version,
-        );
-
-        final newChanges = <ResourceField, dynamic>{};
-        for (final field in state.resource.fields) {
-          if (!field.readOnly) {
-            newChanges[field] = revisionData.fieldData[field.id];
-          }
-        }
-
-        emit(
-          ResourceElementEditValue(
-            title: state.title,
-            resource: state.resource,
-            data: state.data,
-            relations: state.relations,
-            changes: newChanges,
-            validations: {},
-          ),
-        );
-      } catch (e) {
-        emit(ResourceElementEditError(message: e.toString()));
       }
     }
   }

@@ -114,5 +114,4 @@ class _ProgressClipper extends CustomClipper<Rect> {
   bool shouldReclip(covariant _ProgressClipper oldClipper) {
     return oldClipper.progress != progress;
   }
-
 }

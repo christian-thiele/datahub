@@ -38,9 +38,7 @@ class ApertureThemeData {
     dialogTheme: DialogThemeData(
       barrierColor: Color(0xA0C0C0C0),
       backgroundColor: colors.surface,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      )
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
     ),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: {

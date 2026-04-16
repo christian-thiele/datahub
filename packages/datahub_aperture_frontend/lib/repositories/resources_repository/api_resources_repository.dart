@@ -19,10 +19,7 @@ class ApiResourcesRepository extends ApiRepository
     return await client
         .post(
           '/api/resources/{resourceId}/elements',
-          ResourceRevisionRequest(
-            fieldData: changes,
-            from: from,
-          ),
+          ResourceRevisionRequest(fieldData: changes, from: from),
           urlParams: {'resourceId': resourceId},
         )
         .thenGetData($ResourceData.bean);
@@ -102,10 +99,7 @@ class ApiResourcesRepository extends ApiRepository
     return await client
         .patch(
           '/api/resources/{resourceId}/elements/{elementId}',
-          ResourceRevisionRequest(
-            fieldData: changes,
-            from: from,
-          ),
+          ResourceRevisionRequest(fieldData: changes, from: from),
           urlParams: {'resourceId': resourceId, 'elementId': elementId},
         )
         .thenGetData($ResourceData.bean);
@@ -122,8 +116,7 @@ class ApiResourcesRepository extends ApiRepository
       '/api/resources/{resourceId}/elements/{elementId}',
       urlParams: {'resourceId': resourceId, 'elementId': elementId},
       query: {
-        if (from != null)
-          'from': [from.toIso8601String()],
+        if (from != null) 'from': [from.toIso8601String()],
       },
     );
 
@@ -141,14 +134,16 @@ class ApiResourcesRepository extends ApiRepository
     String actionId,
   ) async {
     final client = await getClient();
-    return client.post(
-      '/api/resources/{resourceId}/elements/{elementId}/actions/{actionId}',
-      {},
-      urlParams: {
-        'resourceId': resourceId,
-        'elementId': elementId,
-        'actionId': actionId,
-      },
-    ).thenGetJsonBody();
+    return client
+        .post(
+          '/api/resources/{resourceId}/elements/{elementId}/actions/{actionId}',
+          {},
+          urlParams: {
+            'resourceId': resourceId,
+            'elementId': elementId,
+            'actionId': actionId,
+          },
+        )
+        .thenGetJsonBody();
   }
 }

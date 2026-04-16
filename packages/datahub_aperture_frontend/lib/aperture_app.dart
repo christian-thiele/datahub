@@ -156,8 +156,10 @@ class _ApertureAppState extends State<ApertureApp>
       child: BlocProvider(
         create: (context) => AuthCubit(
           bootstrap: Bootstrap.of(context),
-          authService:
-              RepositoryProvider.of<AuthService>(context, listen: false),
+          authService: RepositoryProvider.of<AuthService>(
+            context,
+            listen: false,
+          ),
         ),
         child: Builder(
           builder: (context) => MaterialApp.router(

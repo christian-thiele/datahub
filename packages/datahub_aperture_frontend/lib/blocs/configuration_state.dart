@@ -15,7 +15,8 @@ final class ConfigurationValue extends ConfigurationState {
   ConfigurationValue({required this.resources, required this.modules});
 }
 
-final class ConfigurationError extends ConfigurationState implements ErrorState {
+final class ConfigurationError extends ConfigurationState
+    implements ErrorState {
   @override
   final String? message;
 

@@ -37,8 +37,10 @@ class Bootstrap extends StatelessWidget {
             try {
               // Note: This won't work if this RepositoryProvider itself provides it.
               // We need to check the parent context.
-              return RepositoryProvider.of<BootstrapRepository>(context,
-                  listen: false);
+              return RepositoryProvider.of<BootstrapRepository>(
+                context,
+                listen: false,
+              );
             } catch (_) {
               return ApiBootstrapRepository(baseUri);
             }

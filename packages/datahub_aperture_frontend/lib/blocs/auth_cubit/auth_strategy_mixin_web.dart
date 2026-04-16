@@ -13,9 +13,7 @@ mixin AuthStrategyMixin on Cubit<AuthState> {
     if (state is! AuthStateLoading) {
       emit(AuthStateLoading());
       try {
-        final url = await authService.createAuthUri(
-          Uri.base.toString(),
-        );
+        final url = await authService.createAuthUri(Uri.base.toString());
 
         if (!await launchUrl(url, webOnlyWindowName: '_self')) {
           emit(AuthStateError(message: 'Could not launch sign-in page.'));

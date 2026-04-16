@@ -28,19 +28,46 @@ class MockResourcesRepository implements ResourcesRepository {
   @override
   Future<List<ModuleDescription>> getModules() async => [];
   @override
-  Future<ResourceDescription> getDescription(String id) async => throw UnimplementedError();
+  Future<ResourceDescription> getDescription(String id) async =>
+      throw UnimplementedError();
   @override
-  Future<ResourceElementsResponse> getResourceElements(String resourceId, {ResourceFilter? filter, int offset = 0, int limit = 25}) async => throw UnimplementedError();
+  Future<ResourceElementsResponse> getResourceElements(
+    String resourceId, {
+    ResourceFilter? filter,
+    int offset = 0,
+    int limit = 25,
+  }) async => throw UnimplementedError();
   @override
-  Future<ResourceData> getResourceElement(String resourceId, String elementId, {int? version}) async => throw UnimplementedError();
+  Future<ResourceData> getResourceElement(
+    String resourceId,
+    String elementId, {
+    int? version,
+  }) async => throw UnimplementedError();
   @override
-  Future<ResourceData> updateElement(String resourceId, String elementId, Map<String, dynamic> changes, DateTime? from) async => throw UnimplementedError();
+  Future<ResourceData> updateElement(
+    String resourceId,
+    String elementId,
+    Map<String, dynamic> changes,
+    DateTime? from,
+  ) async => throw UnimplementedError();
   @override
-  Future<ResourceData> createElement(String resourceId, Map<String, dynamic> changes, DateTime? from) async => throw UnimplementedError();
+  Future<ResourceData> createElement(
+    String resourceId,
+    Map<String, dynamic> changes,
+    DateTime? from,
+  ) async => throw UnimplementedError();
   @override
-  Future<ResourceData?> deleteElement(String resourceId, String elementId, DateTime? from) async => throw UnimplementedError();
+  Future<ResourceData?> deleteElement(
+    String resourceId,
+    String elementId,
+    DateTime? from,
+  ) async => throw UnimplementedError();
   @override
-  Future<Map<String, dynamic>> startElementAction(String resourceId, String elementId, String actionId) async => throw UnimplementedError();
+  Future<Map<String, dynamic>> startElementAction(
+    String resourceId,
+    String elementId,
+    String actionId,
+  ) async => throw UnimplementedError();
 }
 
 class MockAuthService implements AuthService {
@@ -51,12 +78,18 @@ class MockAuthService implements AuthService {
   Stream<bool> get stream => _controller.stream;
 
   @override
-  Future<void> initialize(Uri issuerUrl, {String? clientId, String? clientSecret, String? audience}) async {
+  Future<void> initialize(
+    Uri issuerUrl, {
+    String? clientId,
+    String? clientSecret,
+    String? audience,
+  }) async {
     _controller.add(_authenticated);
   }
 
   @override
-  Future<Uri> createAuthUri(String redirectUrl) async => Uri.parse('https://example.com/auth');
+  Future<Uri> createAuthUri(String redirectUrl) async =>
+      Uri.parse('https://example.com/auth');
 
   @override
   Future<void> signInAuthorizationCode(String state, String code) async {
@@ -86,10 +119,7 @@ void main() {
     oidcClientId: 'client-id',
     oidcClientSecret: 'client-secret',
     oidcScopes: ['openid', 'profile'],
-    theme: ApertureTheme(
-      color: Colors.blue.value,
-      logo: null,
-    ),
+    theme: ApertureTheme(color: Colors.blue.value, logo: null),
   );
 
   setUp(() {
@@ -101,8 +131,12 @@ void main() {
   Widget createTestWidget() {
     return MultiRepositoryProvider(
       providers: [
-        RepositoryProvider<BootstrapRepository>(create: (_) => bootstrapRepository),
-        RepositoryProvider<ResourcesRepository>(create: (_) => resourcesRepository),
+        RepositoryProvider<BootstrapRepository>(
+          create: (_) => bootstrapRepository,
+        ),
+        RepositoryProvider<ResourcesRepository>(
+          create: (_) => resourcesRepository,
+        ),
         RepositoryProvider<AuthService>(create: (_) => authService),
       ],
       child: const ApertureApp(),
@@ -119,26 +153,26 @@ void main() {
     expect(loginButton, findsOneWidget);
 
     // 2. Click Login (Simulate OIDC flow)
-    // Since we mocked AuthService, we can't easily test the browser redirection in a widget test, 
+    // Since we mocked AuthService, we can't easily test the browser redirection in a widget test,
     // but we can test the receiveAuthorizationCode flow which is what happens when returning from OIDC.
-    
+
     // 3. Receive Auth Code -> Redirect to Dashboard
     // We can't easily trigger the GoRouter redirect from outside in this setup without accessing the Cubit.
     // However, we can simulate the AuthService emitting 'true' (authenticated).
-    
+
     await authService.signInAuthorizationCode('state', 'code');
     await tester.pumpAndSettle();
 
     // Now we should be on the Dashboard
     expect(find.byType(NavBarPage), findsOneWidget);
-    
+
     // 4. Logout
     final logoutButton = find.byIcon(Icons.logout);
     expect(logoutButton, findsOneWidget);
-    
+
     await tester.tap(logoutButton);
     await tester.pumpAndSettle();
-    
+
     // Should be back on AuthPage
     expect(find.byType(FilledButton), findsOneWidget);
   });

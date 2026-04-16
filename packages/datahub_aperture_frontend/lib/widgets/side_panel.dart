@@ -11,10 +11,7 @@ class SidePanel extends StatelessWidget {
       elevation: 3,
       child: ConstrainedBox(
         constraints: const BoxConstraints(minWidth: 280, maxWidth: 280),
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: child,
-        ),
+        child: Padding(padding: const EdgeInsets.all(16.0), child: child),
       ),
     );
   }

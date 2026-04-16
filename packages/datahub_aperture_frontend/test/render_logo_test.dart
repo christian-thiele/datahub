@@ -33,11 +33,7 @@ class WidgetSaver extends StatefulWidget {
       MaterialApp(
         home: Material(
           child: Center(
-            child: WidgetSaver(
-              tester: tester,
-              file: file,
-              child: widget,
-            ),
+            child: WidgetSaver(tester: tester, file: file, child: widget),
           ),
         ),
         theme: ApertureThemeData.defaultTheme,
@@ -108,7 +104,7 @@ void main() {
   testWidgets('Render logo with text x4', (tester) async {
     await WidgetSaver.saveWidget(
       tester,
-      ApertureLogo(withText: true, size: 48*4),
+      ApertureLogo(withText: true, size: 48 * 4),
       File('logo_text_x4.png'),
     );
   });
@@ -116,7 +112,7 @@ void main() {
   testWidgets('Render Logo x4', (tester) async {
     await WidgetSaver.saveWidget(
       tester,
-      ApertureLogo(withText: false, size: 48*4),
+      ApertureLogo(withText: false, size: 48 * 4),
       File('logo_x4.png'),
     );
   });
@@ -124,7 +120,7 @@ void main() {
   testWidgets('Render logo with text white x4', (tester) async {
     await WidgetSaver.saveWidget(
       tester,
-      ApertureLogo(withText: true, color: Colors.white, size: 48*4),
+      ApertureLogo(withText: true, color: Colors.white, size: 48 * 4),
       File('logo_text_white_x4.png'),
     );
   });
@@ -132,7 +128,7 @@ void main() {
   testWidgets('Render Logo white x4', (tester) async {
     await WidgetSaver.saveWidget(
       tester,
-      ApertureLogo(withText: false, color: Colors.white, size: 48*4),
+      ApertureLogo(withText: false, color: Colors.white, size: 48 * 4),
       File('logo_white_x4.png'),
     );
   });
@@ -140,7 +136,7 @@ void main() {
   testWidgets('Render logo with text color x4', (tester) async {
     await WidgetSaver.saveWidget(
       tester,
-      ApertureLogo(withText: true, color: Color(0xff295bf0), size: 48*4),
+      ApertureLogo(withText: true, color: Color(0xff295bf0), size: 48 * 4),
       File('logo_text_color_x4.png'),
     );
   });
@@ -148,7 +144,7 @@ void main() {
   testWidgets('Render Logo color x4', (tester) async {
     await WidgetSaver.saveWidget(
       tester,
-      ApertureLogo(withText: false, color: Color(0xff295bf0), size: 48*4),
+      ApertureLogo(withText: false, color: Color(0xff295bf0), size: 48 * 4),
       File('logo_color_x4.png'),
     );
   });
@@ -156,7 +152,7 @@ void main() {
   testWidgets('Render Logo color x12', (tester) async {
     await WidgetSaver.saveWidget(
       tester,
-      ApertureLogo(withText: false, color: Color(0xff295bf0), size: 48*12),
+      ApertureLogo(withText: false, color: Color(0xff295bf0), size: 48 * 12),
       File('logo_color_x12.png'),
     );
   });
