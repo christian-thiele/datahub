@@ -75,7 +75,8 @@ class ResourceElementEditView extends StatelessWidget {
                           menuChildren: [
                             for (final action in actions)
                               MenuItemButton(
-                                onPressed: () => onActionPressed?.call(action.id),
+                                onPressed: () =>
+                                    onActionPressed?.call(action.id),
                                 leadingIcon: Icon(
                                   IconData(
                                     action.icon,
@@ -95,7 +96,7 @@ class ResourceElementEditView extends StatelessWidget {
                     if (onDeletePressed != null)
                       OptionsButton(
                         onPressed: switch (onDeletePressed) {
-                          final call? => () => call(DateTime.timestamp()),
+                          final call? => () => call(null),
                           _ => null,
                         },
                         menuEnabled: revisable && onDeletePressed != null,
@@ -144,7 +145,8 @@ class ResourceElementEditView extends StatelessWidget {
                             onFieldValueChanged: onFieldValueChanged,
                             onSavePressed: onSavePressed,
                             revisable: revisable,
-                            readOnly: data.version != null &&
+                            readOnly:
+                                data.version != null &&
                                 data.revisions.isNotEmpty &&
                                 data.version !=
                                     data.revisions
