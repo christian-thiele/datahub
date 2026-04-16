@@ -256,6 +256,12 @@ mixin PostgresqlRevisableRepository<
         (id) => id.auto,
       );
 
+      final sessionIdentity =
+          Context.zoneSession()?.identity ??
+          (throw ApiRequestException.unauthorized(
+            'Identity session required.',
+          ));
+
       // TODO check if other defaults should be respected here
       final nonAutoAttributes = revisionTable.attributes
           .whereType<PostgresqlDataAttribute>()
@@ -266,8 +272,7 @@ mixin PostgresqlRevisableRepository<
           SqlQualifiedRelation(read(schemaName), revisionTable.name),
           {
             SqlTypedAttribute.of(_sysVersion): currentVersion + 1,
-            // TODO fix creator stuff
-            SqlTypedAttribute.of(_sysCreator): 'creator',
+            SqlTypedAttribute.of(_sysCreator): sessionIdentity,
             SqlTypedAttribute.of(_sysFrom): from ?? RawSql('now()'),
             SqlTypedAttribute.of(_sysIsDeleted): type < 0,
 
