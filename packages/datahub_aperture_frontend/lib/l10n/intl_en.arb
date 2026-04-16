@@ -22,7 +22,7 @@
   "liveFrom": "Live from",
   "timestamp": "Timestamp",
   "revisionInfo": "Revision Info",
-  "revisionVersion": "Version",
+  "revisionVersion": "Version #",
   "author": "Author",
   "revisionHistory": "Revision History",
   "byUsername": "by {userName}",

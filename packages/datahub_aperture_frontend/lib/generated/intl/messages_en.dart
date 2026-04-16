@@ -57,7 +57,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "revert": MessageLookupByLibrary.simpleMessage("Revert"),
     "revisionHistory": MessageLookupByLibrary.simpleMessage("Revision History"),
     "revisionInfo": MessageLookupByLibrary.simpleMessage("Revision Info"),
-    "revisionVersion": MessageLookupByLibrary.simpleMessage("Version"),
+    "revisionVersion": MessageLookupByLibrary.simpleMessage("Version #"),
     "save": MessageLookupByLibrary.simpleMessage("Save"),
     "saveAndSchedule": MessageLookupByLibrary.simpleMessage(
       "Save and Schedule",

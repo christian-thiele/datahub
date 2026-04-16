@@ -209,9 +209,14 @@ class S {
     );
   }
 
-  /// `Version`
+  /// `Version #`
   String get revisionVersion {
-    return Intl.message('Version', name: 'revisionVersion', desc: '', args: []);
+    return Intl.message(
+      'Version #',
+      name: 'revisionVersion',
+      desc: '',
+      args: [],
+    );
   }
 
   /// `Author`
@@ -314,7 +319,10 @@ class AppLocalizationDelegate extends LocalizationsDelegate<S> {
   const AppLocalizationDelegate();
 
   List<Locale> get supportedLocales {
-    return const <Locale>[Locale.fromSubtags(languageCode: 'en')];
+    return const <Locale>[
+      Locale.fromSubtags(languageCode: 'en'),
+      Locale.fromSubtags(languageCode: 'de'),
+    ];
   }
 
   @override
