@@ -6,13 +6,14 @@ import 'package:url_launcher/url_launcher.dart';
 import 'auth_cubit.dart';
 
 mixin AuthStrategyMixin on Cubit<AuthState> {
+  AuthService get _authService;
   Future<void> receiveAuthorizationCode(String state, String code);
 
   Future<void> loginAuthCode() async {
     if (state is! AuthStateLoading) {
       emit(AuthStateLoading());
       try {
-        final url = await AuthService.instance.createAuthUri(
+        final url = await _authService.createAuthUri(
           Uri.base.toString(),
         );
 

@@ -15,6 +15,8 @@ import 'pages/dashboard_page.dart';
 import 'pages/resource_element_create/resource_element_create_page.dart';
 import 'pages/resource_element_edit/resource_element_edit_page.dart';
 import 'pages/resource_page/resource_page.dart';
+import 'repositories/resources_repository/resources_repository.dart';
+import 'services/auth_service.dart';
 import 'repositories.dart';
 import 'utils/bloc_listenable.dart';
 import 'utils/bootstrap.dart';
@@ -152,7 +154,11 @@ class _ApertureAppState extends State<ApertureApp>
   Widget build(BuildContext context) {
     return Repositories(
       child: BlocProvider(
-        create: (context) => AuthCubit(bootstrap: Bootstrap.of(context)),
+        create: (context) => AuthCubit(
+          bootstrap: Bootstrap.of(context),
+          authService:
+              RepositoryProvider.of<AuthService>(context, listen: false),
+        ),
         child: Builder(
           builder: (context) => MaterialApp.router(
             title: Bootstrap.of(context).title,

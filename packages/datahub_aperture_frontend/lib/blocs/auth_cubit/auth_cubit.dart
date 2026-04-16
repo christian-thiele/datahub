@@ -11,14 +11,17 @@ import 'auth_strategy_mixin_web.dart'
 part 'auth_state.dart';
 
 class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
-  AuthCubit({required ApertureBootstrap bootstrap})
-    : super(AuthStateLoading()) {
+  @override
+  final AuthService _authService;
+  AuthCubit({required ApertureBootstrap bootstrap, AuthService? authService})
+    : _authService = authService ?? AuthService.instance,
+      super(AuthStateLoading()) {
     _init(bootstrap);
   }
 
   Future<void> _init(ApertureBootstrap bootstrap) async {
-    AuthService.instance.stream.listen(_onAuthServiceUpdated);
-    await AuthService.instance.initialize(
+    _authService.stream.listen(_onAuthServiceUpdated);
+    await _authService.initialize(
       Uri.parse(bootstrap.oidcIssuer),
       clientId: bootstrap.oidcClientId,
       clientSecret: bootstrap.oidcClientSecret,
@@ -41,7 +44,7 @@ class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
   Future<void> receiveAuthorizationCode(String state, String code) async {
     emit(AuthStateLoading());
     try {
-      await AuthService.instance.signInAuthorizationCode(state, code);
+      await _authService.signInAuthorizationCode(state, code);
     } catch (e) {
       if (e case ApiRequestException(:final message)) {
         emit(AuthStateError(message: message));
@@ -53,7 +56,7 @@ class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
 
   Future<void> logout() async {
     try {
-      await AuthService.instance.signOut();
+      await _authService.signOut();
     } catch (e) {
       emit(AuthStateError(message: null));
     }
