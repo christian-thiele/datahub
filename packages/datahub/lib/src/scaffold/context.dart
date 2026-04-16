@@ -2,6 +2,9 @@ part of 'service_host.dart';
 
 abstract interface class Session {
   String get debugName;
+
+  /// Returns a unique identifier of the user / account.
+  String get identity;
 }
 
 final class Context {
@@ -60,7 +63,7 @@ final class Context {
       registry: _registry,
       scope: _scope,
       environment: environment,
-      sessions: [...sessions, session],
+      sessions: [session, ...sessions],
       debugName: '$debugName/${session.debugName}',
     );
 

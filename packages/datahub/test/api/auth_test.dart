@@ -20,7 +20,7 @@ void main() {
               ResourceEndpoint(
                 matcher: RoutePattern('/private'),
                 get: (request) => ApiResponse.dynamic({
-                  'user': Context.zoneSession<TestSession>().user,
+                  'user': Context.zoneSession<TestSession>().identity,
                 }),
               ),
             ],
@@ -66,13 +66,13 @@ void main() {
               ResourceEndpoint(
                 matcher: RoutePattern('/public'),
                 get: (request) => ApiResponse.dynamic({
-                  'user': Context.zoneSession<TestSession?>()?.user ?? false,
+                  'user': Context.zoneSession<TestSession?>()?.identity ?? false,
                 }),
               ),
               ResourceEndpoint(
                 matcher: RoutePattern('/private'),
                 get: (request) => ApiResponse.dynamic({
-                  'user': Context.zoneSession<TestSession>().user,
+                  'user': Context.zoneSession<TestSession>().identity,
                 }),
               ),
             ],
