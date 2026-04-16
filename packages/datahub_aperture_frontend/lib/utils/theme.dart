@@ -44,11 +44,11 @@ class ApertureThemeData {
     ),
     pageTransitionsTheme: PageTransitionsTheme(
       builders: {
-        TargetPlatform.android: ZoomPageTransitionsBuilder(),
-        TargetPlatform.iOS: ZoomPageTransitionsBuilder(),
-        TargetPlatform.macOS: ZoomPageTransitionsBuilder(),
-        TargetPlatform.windows: ZoomPageTransitionsBuilder(),
-        TargetPlatform.linux: ZoomPageTransitionsBuilder(),
+        TargetPlatform.android: FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.iOS: FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.macOS: FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.windows: FadeForwardsPageTransitionsBuilder(),
+        TargetPlatform.linux: FadeForwardsPageTransitionsBuilder(),
       },
     ),
     iconTheme: IconThemeData(size: 18),
