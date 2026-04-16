@@ -17,7 +17,10 @@ class SqlUpdate with SqlBuilder {
       if (idx > 0) RawSql(', '),
       key.toSql(),
       RawSql(' = '),
-      ParameterSql(value, key.type),
+      switch (value) {
+        Sql() => value,
+        _ => ParameterSql(value, key.type),
+      },
     ],
     if (where != null) ...[RawSql(' WHERE '), where!],
   ]);

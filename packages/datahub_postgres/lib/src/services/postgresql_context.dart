@@ -7,13 +7,17 @@ import 'abstract/database_context.dart';
 class PostgresqlContext extends DatabaseContext {
   final pg.Session _session;
   final bool logStatements;
+  final String id;
 
-  const PostgresqlContext(this._session, this.logStatements);
+  const PostgresqlContext(this.id, this._session, this.logStatements);
 
   Future<pg.Result> executeLiteral(Sql sql, {Duration? timeout}) async {
     return Find<Telemetry>().find().trace(
       'PostgreSQL Query',
-      attributes: {'postgresql.query.mode': 'literal'},
+      attributes: {
+        'postgresql.context.id': id,
+        'postgresql.query.mode': 'literal',
+      },
       (span) async {
         final query = sql.toLiteralString();
         if (logStatements) {
@@ -33,7 +37,10 @@ class PostgresqlContext extends DatabaseContext {
   Future<pg.Result> execute(Sql sql, {Duration? timeout}) async {
     return Find<Telemetry>().find().trace(
       'PostgreSQL Query',
-      attributes: {'postgresql.query.mode': 'extended'},
+      attributes: {
+        'postgresql.context.id': id,
+        'postgresql.query.mode': 'extended',
+      },
       (span) async {
         final query = sql.toString();
         if (logStatements) {

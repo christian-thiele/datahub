@@ -22,6 +22,7 @@ void main() {
       final repo = Find<DataRepository<Person>>().find();
       await postgres.useConnection((connection) async {
         await connection.runTransaction((context) async {
+          expect(await repo.count(), equals(0));
           await repo.create(
             Person(
               firstName: 'Something',
@@ -32,7 +33,7 @@ void main() {
           );
 
           final data = await repo.readAll();
-          expect(data, isNotEmpty);
+          expect(data, hasLength(1));
 
           expect(data.first.birthday, isNull);
           expect(data.first.firstName, 'Something');

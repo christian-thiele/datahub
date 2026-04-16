@@ -175,28 +175,38 @@ mixin PostgresqlRevisableRepository<
         schemaName: effectiveSchemaName,
         name: relationName,
         select: SqlSelect(
-          SqlQualifiedRelation(effectiveSchemaName, revisionTable.name),
+          SqlSelect(
+                SqlQualifiedRelation(effectiveSchemaName, revisionTable.name),
+                distinctOn: SqlTypedColumnAttribute.of(_primaryAttribute),
+                [SqlWildcard()],
+                where: Sql.join([
+                  Sql.joinWrap([
+                    Sql.joinWrap([
+                      RawSql('now() BETWEEN '),
+                      SqlTypedColumnAttribute.of(_sysFrom),
+                      RawSql(' AND '),
+                      SqlTypedColumnAttribute.of(_sysTo),
+                    ]),
+                    RawSql(' OR '),
+                    Sql.joinWrap([
+                      RawSql('now() >= '),
+                      SqlTypedColumnAttribute.of(_sysFrom),
+                      RawSql(' AND '),
+                      SqlTypedColumnAttribute.of(_sysTo),
+                      RawSql(' IS NULL'),
+                    ]),
+                  ]),
+                ]),
+                order: Sql.join([
+                  SqlTypedColumnAttribute.of(_primaryAttribute),
+                  RawSql(', '),
+                  SqlTypedColumnAttribute.of(_sysVersion),
+                  RawSql(' DESC'),
+                ]),
+              ).wrap() +
+              RawSql(' AS "sub"'),
           [SqlWildcard()],
-          where: Sql.join([
-            Sql.joinWrap([
-              Sql.joinWrap([
-                RawSql('now() BETWEEN '),
-                SqlTypedColumnAttribute.of(_sysFrom),
-                RawSql(' AND '),
-                SqlTypedColumnAttribute.of(_sysTo),
-              ]),
-              RawSql(' OR '),
-              Sql.joinWrap([
-                RawSql('now() > '),
-                SqlTypedColumnAttribute.of(_sysFrom),
-                RawSql(' AND '),
-                SqlTypedColumnAttribute.of(_sysTo),
-                RawSql(' IS NULL'),
-              ]),
-            ]),
-            RawSql(' AND NOT '),
-            SqlTypedColumnAttribute.of(_sysIsDeleted),
-          ]),
+          where: RawSql(' NOT ') + SqlTypedColumnAttribute.of(_sysIsDeleted),
         ),
         attributes: revisionTable.attributes,
       );
@@ -213,21 +223,6 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
-  Future<RevisionData<TData>> createRevisionDeletedId(
-    dynamic id, {
-    required String creator,
-    DateTime? from,
-  }) async {
-    return await find(postgresql).runTransaction((context) async {
-      final data = await revisableReadById(id);
-      if (data != null) {
-        return await createRevision(data.data, from: from, type: -1);
-      } else {
-        throw ApiRequestException.notFound();
-      }
-    });
-  }
-
   @override
   Future<RevisionData<TData>> createRevision(
     TData data, {
@@ -239,16 +234,23 @@ mixin PostgresqlRevisableRepository<
       if (from?.isBefore(now) ?? false) {
         throw ApiRequestException(400, 'Cannot create revision in the past.');
       }
-      final effectiveFrom = from ?? now;
 
       final idField = bean.idField ?? (throw MissingIdFieldError(bean));
       final primaryKey = idField.valueOf(data);
 
       final currentRevision = primaryKey != null
-          ? await revisableReadById(primaryKey)
+          ? (await readRevisionsById(primaryKey, limit: 1)).firstOrNull
           : null;
 
       final currentVersion = currentRevision?.version ?? -1;
+
+      if (type < 1 && (currentRevision?.isDeleted ?? true)) {
+        throw RevisableInconsistencyException('Element does not exist.');
+      }
+
+      if (type > 0 && !(currentRevision?.isDeleted ?? true)) {
+        throw RevisableInconsistencyException('Element already exists.');
+      }
 
       final primaryIsAuto = _primaryAttribute.field.hasMetaOfType<Id>(
         (id) => id.auto,
@@ -266,8 +268,8 @@ mixin PostgresqlRevisableRepository<
             SqlTypedAttribute.of(_sysVersion): currentVersion + 1,
             // TODO fix creator stuff
             SqlTypedAttribute.of(_sysCreator): 'creator',
-            SqlTypedAttribute.of(_sysFrom): effectiveFrom,
-            SqlTypedAttribute.of(_sysIsDeleted): type == -1,
+            SqlTypedAttribute.of(_sysFrom): from ?? RawSql('now()'),
+            SqlTypedAttribute.of(_sysIsDeleted): type < 0,
 
             if (currentRevision case RevisionData(
               data: final currentData,
@@ -283,9 +285,13 @@ mixin PostgresqlRevisableRepository<
               _primaryAttribute,
               relation: revisionTable.name,
             ),
+            SqlTypedAttribute.of(_sysFrom, relation: revisionTable.name),
           ],
         ),
       );
+
+      final resultId = result.first[0] as Object;
+      final resultSysFrom = result.first[1] as DateTime;
 
       if (currentRevision != null) {
         await context.execute(
@@ -301,15 +307,12 @@ mixin PostgresqlRevisableRepository<
               RawSql(' = '),
               ParameterSql(currentVersion, const PostgresqlInt()),
             ]),
-            {SqlTypedAttribute.of(_sysTo): effectiveFrom},
+            {SqlTypedAttribute.of(_sysTo): resultSysFrom},
           ),
         );
       }
 
-      return await revisableReadById(
-            result.first.first,
-            version: currentVersion + 1,
-          ) ??
+      return await revisableReadById(resultId, version: currentVersion + 1) ??
           (throw ApiException('Could not retrieve object from database.'));
     });
   }

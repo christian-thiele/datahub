@@ -39,7 +39,7 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
 
   /// Create a new element revision.
   ///
-  /// Must throw RevisableInconsistencyException in the following cases:
+  /// Must throw [RevisableInconsistencyException] in the following cases:
   ///   - type == -1 and element does not exist
   ///   - type == 0 and element does not exist
   ///   - type == 1 and element does exist
@@ -100,17 +100,19 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
 
   @override
   Future<bool> deleteById(dynamic id, {DateTime? from}) async {
-    try {
-      final element = await revisableReadById(id);
-      if (element == null) {
+    return await atomic(() async {
+      try {
+        final element = await revisableReadById(id);
+        if (element == null) {
+          return false;
+        }
+
+        await createRevision(element.data, type: -1, from: from);
+        return true;
+      } on RevisableInconsistencyException catch (_) {
         return false;
       }
-
-      await createRevision(element.data, type: -1, from: from);
-      return true;
-    } on RevisableInconsistencyException catch (_) {
-      return false;
-    }
+    });
   }
 
   @override

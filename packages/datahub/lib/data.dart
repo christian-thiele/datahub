@@ -9,6 +9,7 @@ export 'src/data/meta/data_field_constraint.dart';
 export 'src/data/data_object.dart';
 export 'src/data/repositories/data_repository.dart';
 export 'src/data/repositories/revisable_data_repository.dart';
+export 'src/data/repositories/revisable_inconsistency_exception.dart';
 export 'src/data/repositories/revision_data.dart';
 export 'src/data/filter.dart';
 export 'src/data/sort.dart';

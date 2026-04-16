@@ -51,7 +51,7 @@ class PostgresqlConnection extends DatabaseConnection {
             type: SpanType.internal,
             attributes: {'postgresql.connection.id': _connectionId},
             (span) async {
-              final context = PostgresqlContext(session, logStatements);
+              final context = PostgresqlContext(uuid(), session, logStatements);
               contextCompleter.complete(context);
               return await delegate(context);
             },
