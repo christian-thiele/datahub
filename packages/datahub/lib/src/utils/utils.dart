@@ -104,14 +104,14 @@ String randomHexId(int parts) {
   ).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join(':');
 }
 
-Iterable<Iterable<T>> everyCombination<T>(Iterable<Iterable<T>> lists) sync* {
+Iterable<Iterable<T>> cartesianProduct<T>(Iterable<Iterable<T>> lists) sync* {
   if (lists.length == 1) {
     yield* lists.first.map((e) => [e]);
     return;
   }
 
   for (final element in lists.first) {
-    yield* everyCombination(lists.skip(1)).map((e) => [element, ...e]);
+    yield* cartesianProduct(lists.skip(1)).map((e) => [element, ...e]);
   }
 }
 

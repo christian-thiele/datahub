@@ -34,7 +34,7 @@ class CounterMetric extends Metric {
   CounterMetric(super.name, {super.help, Map<String, List<String>>? labels})
     : super(type: MetricType.counter) {
     if (labels != null) {
-      final combinations = everyCombination(
+      final combinations = cartesianProduct(
         labels.entries.map(
           (e) => e.value.map((value) => MapEntry(e.key, value)),
         ),

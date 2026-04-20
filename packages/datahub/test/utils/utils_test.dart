@@ -26,7 +26,7 @@ void _combinationTest() {
     ['x'],
   ];
 
-  final combinations = everyCombination(variants);
+  final combinations = cartesianProduct(variants);
   for (final combination in combinations) {
     print(combination.join(','));
   }
