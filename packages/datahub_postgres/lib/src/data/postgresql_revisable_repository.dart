@@ -175,38 +175,68 @@ mixin PostgresqlRevisableRepository<
         schemaName: effectiveSchemaName,
         name: relationName,
         select: SqlSelect(
-          SqlSelect(
-                SqlQualifiedRelation(effectiveSchemaName, revisionTable.name),
-                distinctOn: SqlTypedColumnAttribute.of(_primaryAttribute),
-                [SqlWildcard()],
-                where: Sql.join([
-                  Sql.joinWrap([
-                    Sql.joinWrap([
-                      RawSql('now() BETWEEN '),
-                      SqlTypedColumnAttribute.of(_sysFrom),
-                      RawSql(' AND '),
-                      SqlTypedColumnAttribute.of(_sysTo),
+          Sql.join([
+            SqlQualifiedRelation(effectiveSchemaName, revisionTable.name),
+            RawSql(' INNER JOIN ('),
+            SqlSelect(
+              SqlQualifiedRelation(effectiveSchemaName, revisionTable.name),
+              [
+                SqlTypedColumnAttribute.of(
+                  _primaryAttribute,
+                  relation: revisionTable.name,
+                ),
+                SqlAliasedAttribute(
+                  'sys_version_max',
+                  RawSqlAttribute(
+                    Sql.function('MAX', [
+                      SqlTypedColumnAttribute.of(
+                        _sysVersion,
+                        relation: revisionTable.name,
+                      ),
                     ]),
-                    RawSql(' OR '),
-                    Sql.joinWrap([
-                      RawSql('now() >= '),
-                      SqlTypedColumnAttribute.of(_sysFrom),
-                      RawSql(' AND '),
-                      SqlTypedColumnAttribute.of(_sysTo),
-                      RawSql(' IS NULL'),
-                    ]),
-                  ]),
+                  ),
+                ),
+              ],
+              where: Sql.join([
+                RawSql('now() >= '),
+                SqlTypedColumnAttribute.of(
+                  _sysFrom,
+                  relation: revisionTable.name,
+                ),
+                RawSql(' AND '),
+                Sql.joinWrap([
+                  SqlTypedColumnAttribute.of(
+                    _sysTo,
+                    relation: revisionTable.name,
+                  ),
+                  RawSql(' IS NULL OR now() <= '),
+                  SqlTypedColumnAttribute.of(
+                    _sysTo,
+                    relation: revisionTable.name,
+                  ),
                 ]),
-                order: Sql.join([
-                  SqlTypedColumnAttribute.of(_primaryAttribute),
-                  RawSql(', '),
-                  SqlTypedColumnAttribute.of(_sysVersion),
-                  RawSql(' DESC'),
-                ]),
-              ).wrap() +
-              RawSql(' AS "sub"'),
-          [SqlWildcard()],
-          where: RawSql(' NOT ') + SqlTypedColumnAttribute.of(_sysIsDeleted),
+              ]),
+              group: SqlTypedColumnAttribute.of(
+                _primaryAttribute,
+                relation: revisionTable.name,
+              ),
+            ),
+            RawSql(') "sys_latest" ON '),
+            SqlTypedColumnAttribute.of(
+              _primaryAttribute,
+              relation: revisionTable.name,
+            ),
+            RawSql('= '),
+            SqlTypedColumnAttribute.of(
+              _primaryAttribute,
+              relation: 'sys_latest',
+            ),
+            RawSql(' AND '),
+            SqlTypedColumnAttribute.of(_sysVersion),
+            RawSql('= "sys_latest"."sys_version_max"'),
+          ]),
+          [SqlWildcard(relation: revisionTable.name)],
+          where: RawSql('NOT ') + SqlTypedColumnAttribute.of(_sysIsDeleted),
         ),
         attributes: revisionTable.attributes,
       );

@@ -66,10 +66,18 @@ class RawSqlAttribute extends SqlAttribute {
 }
 
 class SqlWildcard extends SqlAttribute {
-  const SqlWildcard();
+  final String? relation;
+
+  const SqlWildcard({this.relation});
 
   @override
-  Sql toSql() => const RawSql('*');
+  Sql toSql() {
+    if (relation case final relation?) {
+      return Sql.name(relation) + RawSql('.*');
+    } else {
+      return const RawSql('*');
+    }
+  }
 
   @override
   Sql toSqlUnqualified() => const RawSql('*');
