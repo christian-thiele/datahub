@@ -35,6 +35,7 @@ dev_dependencies:
   datahub_codegen: ^0.18.0-dev.12
   lints: ^6.0.0
   build_runner: ^2.7.1
+  web_socket: ^1.0.1
 
 false_secrets:
   - test/resource_hub/localhost.crt

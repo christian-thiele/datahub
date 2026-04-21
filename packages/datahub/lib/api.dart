@@ -6,3 +6,5 @@ export 'src/api/api_response.dart';
 export 'src/api/resource_endpoint.dart';
 export 'src/api/route_matcher.dart';
 export 'src/api/route_pattern.dart';
+export 'src/api/websocket_endpoint.dart';
+export 'src/api/websocket_frame.dart';

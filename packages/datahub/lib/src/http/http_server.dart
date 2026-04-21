@@ -102,9 +102,16 @@ class HttpServer {
       }
 
       request.response.statusCode = result.statusCode;
-      await request.response.addStream(result.bodyData);
 
       //TODO cookies
+
+      if (result is UpgradeHttpResponse) {
+        final socket = await request.response.detachSocket(writeHeaders: true);
+        result.socketHandler(socket);
+        return;
+      }
+
+      await request.response.addStream(result.bodyData);
     } catch (e, stack) {
       try {
         request.response.statusCode = 500;
