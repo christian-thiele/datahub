@@ -1,7 +1,10 @@
 import 'dart:async';
 import 'dart:io';
+import 'package:datahub/config.dart';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/telemetry.dart';
+import 'package:meta/meta.dart';
+import 'package:stack_trace/stack_trace.dart';
 
 import 'package:test/test.dart' as dart_test;
 
@@ -27,7 +30,24 @@ class TestHost extends ServiceHost {
     return Scope(
       name: 'root',
       components: [
-        Scope(name: 'internal', components: [TelemetryService(), KeyService()]),
+        Scope(
+          name: 'internal',
+          components: [
+            TelemetryService(
+              logStdoutFormat: Config(
+                'telemetry.logStdoutFormat',
+                defaultValue: LogBodyFormat.message,
+                values: LogBodyFormat.values,
+              ),
+              logLevel: const Config<SeverityLevel>(
+                'telemetry.logLevel',
+                defaultValue: SeverityLevel.info,
+                values: SeverityLevel.values,
+              ),
+            ),
+            KeyService(),
+          ],
+        ),
         Scope(name: 'application', components: components),
         Scope(name: 'test', components: [TestRunnerService()]),
       ],
@@ -36,9 +56,6 @@ class TestHost extends ServiceHost {
 
   @override
   Future<void> initialize() async {
-    configuration.addConfigMap({
-      'telemetry': {'logStdoutFormat': 'message', 'logLevel': 'info'},
-    });
     for (final file in initialConfigFiles) {
       configuration.addConfigFile(file);
     }
@@ -47,16 +64,25 @@ class TestHost extends ServiceHost {
   }
 }
 
+@isTest
 void declareTest(
   String name,
   List<Component> components,
   FutureOr<void> Function() body, {
   dart_test.Timeout? timeout,
   Object? skip,
+  Object? tags,
   Map<String, dynamic> config = const {},
   List<File> configFiles = const [],
   ComposeEnvironment? environment,
 }) {
+  final traceFrame = Trace.current(1).frames.first;
+  final testLocation = dart_test.TestLocation(
+    traceFrame.uri,
+    traceFrame.line ?? 0,
+    traceFrame.column ?? 0,
+  );
+
   dart_test.group(name, () {
     TestHost? host;
 
@@ -103,6 +129,8 @@ void declareTest(
           .runTest(body),
       timeout: timeout,
       skip: skip,
+      tags: tags,
+      location: testLocation,
     );
 
     dart_test.tearDown(() async {
@@ -110,5 +138,5 @@ void declareTest(
         await host?.shutdown();
       }
     });
-  });
+  }, location: testLocation);
 }

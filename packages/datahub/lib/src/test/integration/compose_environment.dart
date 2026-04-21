@@ -33,16 +33,14 @@ class ComposeEnvironment {
 
     for (final (serviceName, service) in services.tuples) {
       final ports = service['ports'] as List?;
-      if (ports != null) {
-        for (final port in ports) {
-          final parts = port.toString().split(':');
-          final containerPort = switch (parts.length) {
-            1 => int.parse(parts[0]),
-            _ => int.parse(parts[1]),
-          };
+      for (final port in ports ?? const []) {
+        final parts = port.toString().split(':');
+        final containerPort = switch (parts.length) {
+          1 => int.parse(parts[0]),
+          _ => int.parse(parts[1]),
+        };
 
-          servicePorts.add((serviceName, containerPort));
-        }
+        servicePorts.add((serviceName, containerPort));
       }
     }
 
