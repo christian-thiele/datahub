@@ -35,24 +35,19 @@ class Tracer implements TelemetryScope {
   static String buildKey(String name, String? version) =>
       '$name${version?.apply((v) => '@$v')}';
 
-  FutureOr<R> trace<R>(
+  Future<R> trace<R>(
     String name,
     Map<String, dynamic>? attributes,
     SpanType? type,
     FutureOr<R> Function(LocalSpan span) delegate,
-  ) {
+  ) async {
     final span = startSpan(name, attributes, type: type);
 
-    return runZoned(() async {
-      try {
-        return await delegate(span);
-      } catch (error) {
-        span.addExceptionEvent(error);
-        rethrow;
-      } finally {
-        span.stop();
-      }
-    }, zoneValues: {_tracerSpanKey: span});
+    try {
+      return await runInSpanZone(span, delegate);
+    } finally {
+      span.stop();
+    }
   }
 
   LocalSpan startSpan(
@@ -73,6 +68,20 @@ class Tracer implements TelemetryScope {
     span.start();
     _sink.add(span);
     return span;
+  }
+
+  Future<R> runInSpanZone<R>(
+    LocalSpan span,
+    FutureOr<R> Function(LocalSpan span) delegate,
+  ) async {
+    return runZoned(() async {
+      try {
+        return await delegate(span);
+      } catch (error) {
+        span.addExceptionEvent(error);
+        rethrow;
+      }
+    }, zoneValues: {_tracerSpanKey: span});
   }
 
   Span? findParentSpan() => switch (Zone.current[_tracerSpanKey]) {

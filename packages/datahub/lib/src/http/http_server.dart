@@ -81,7 +81,16 @@ class HttpServer {
     );
 
     _http1 = io.HttpServer.listenOn(_http1Adapter);
-    _http1.listen(_handleHttp1Request);
+    _http1.listen(_handleHttp1RequestTraced);
+  }
+
+  Future<void> _handleHttp1RequestTraced(io.HttpRequest request) async {
+    final tracer = Context.maybeOfZone()?.find(Find<Telemetry?>());
+    if (tracer != null) {
+      await tracer.trace('HTTP/1.1', (_) => _handleHttp1Request(request));
+    } else {
+      await _handleHttp1Request(request);
+    }
   }
 
   Future<void> _handleHttp1Request(io.HttpRequest request) async {
