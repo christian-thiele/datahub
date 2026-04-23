@@ -69,9 +69,8 @@ class _LogLineState extends State<LogLine> {
                       text: severityLevel.name.padRight(8, ' ').toUpperCase(),
                       style: TextStyle(
                         color: switch (severityLevel) {
-                          SeverityLevel.error || SeverityLevel.fatal => Theme.of(
-                            context,
-                          ).colorScheme.error,
+                          SeverityLevel.error || SeverityLevel.fatal =>
+                            Theme.of(context).colorScheme.error,
                           SeverityLevel.warning => Colors.orange,
                           SeverityLevel.info => Colors.blue,
                           SeverityLevel.trace => Colors.green,
@@ -94,20 +93,25 @@ class _LogLineState extends State<LogLine> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: data.entries
-                      .where((e) =>
-                          !['msg', 'severity', 'timestamp'].contains(e.key))
-                      .map((e) => Text.rich(
-                            TextSpan(
-                              children: [
-                                TextSpan(
-                                  text: '${e.key}: ',
-                                  style: const TextStyle(
-                                      fontWeight: FontWeight.bold),
+                      .where(
+                        (e) =>
+                            !['msg', 'severity', 'timestamp'].contains(e.key),
+                      )
+                      .map(
+                        (e) => Text.rich(
+                          TextSpan(
+                            children: [
+                              TextSpan(
+                                text: '${e.key}: ',
+                                style: const TextStyle(
+                                  fontWeight: FontWeight.bold,
                                 ),
-                                TextSpan(text: e.value),
-                              ],
-                            ),
-                          ))
+                              ),
+                              TextSpan(text: e.value),
+                            ],
+                          ),
+                        ),
+                      )
                       .toList(),
                 ),
               ),

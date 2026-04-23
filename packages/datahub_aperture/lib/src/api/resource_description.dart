@@ -17,6 +17,7 @@ class ResourceDescription extends $ResourceDescription {
   final String idField;
   final String? displayField;
   final bool readOnly;
+  final bool revisable;
   final List<ResourceAction> actions;
 
   const ResourceDescription({
@@ -29,6 +30,7 @@ class ResourceDescription extends $ResourceDescription {
     required this.idField,
     this.displayField,
     required this.readOnly,
+    required this.revisable,
     required this.actions,
   });
 }

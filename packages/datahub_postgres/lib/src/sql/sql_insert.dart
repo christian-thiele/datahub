@@ -16,7 +16,12 @@ class SqlInsert with SqlBuilder {
     ...values.keys.map((e) => e.toSqlUnqualified()).separatedBy(RawSql(', ')),
     RawSql(') VALUES ('),
     ...values.entries
-        .map<Sql>((e) => ParameterSql(e.value, e.key.type))
+        .map<Sql>((e) {
+          return switch (e.value) {
+            final Sql sql => sql,
+            _ => ParameterSql(e.value, e.key.type),
+          };
+        })
         .separatedBy(RawSql(', ')),
     RawSql(')'),
     if (returning.isNotEmpty) RawSql(' RETURNING '),

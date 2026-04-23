@@ -1,6 +1,6 @@
 {
-    "name": "aperture_frontend",
-    "short_name": "aperture_frontend",
+    "name": "Aperture",
+    "short_name": "Aperture",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

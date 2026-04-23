@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:datahub_aperture_frontend/modules/task_manager/blocs/task_manager_log_cubit.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:flutter/material.dart';
 

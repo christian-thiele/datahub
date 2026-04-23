@@ -45,7 +45,8 @@ abstract interface class $Person with DataObject<Person> {
   static final $isSpecial = DataField<Person, bool>(
     name: 'isSpecial',
     valueOf: (p) => p.isSpecial,
-    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
   );
 
@@ -90,7 +91,7 @@ abstract interface class $Person with DataObject<Person> {
       firstName: data['firstName'],
       lastName: data['lastName'],
       birthday: data['birthday'],
-      isSpecial: data['isSpecial'],
+      isSpecial: data['isSpecial'] ?? false,
     );
   }
 

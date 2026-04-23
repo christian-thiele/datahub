@@ -9,6 +9,7 @@ class ApertureBootstrap extends $ApertureBootstrap {
   final String title;
 
   final ApertureTheme theme;
+  final Environment environment;
 
   final String baseUrl;
 
@@ -20,6 +21,7 @@ class ApertureBootstrap extends $ApertureBootstrap {
   const ApertureBootstrap({
     required this.title,
     required this.theme,
+    required this.environment,
     required this.baseUrl,
     required this.oidcIssuer,
     required this.oidcScopes,

@@ -25,12 +25,12 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
     toJson: (value) => $$codec.encodeMap<dynamic>(value, $$codec.encodeDynamic),
   );
 
-  static final $revisionId = DataField<ResourceData, String?>(
-    name: 'revisionId',
-    valueOf: (p) => p.revisionId,
+  static final $version = DataField<ResourceData, int?>(
+    name: 'version',
+    valueOf: (p) => p.version,
     fromJson: (value, {String? name}) =>
-        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
-    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
+        $$codec.decodeNullable(value, $$codec.decodeInt, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeInt),
   );
 
   static final $revisions = DataField<ResourceData, List<ResourceRevisionInfo>>(
@@ -52,7 +52,7 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
     fields: List<DataField<ResourceData, dynamic>>.unmodifiable([
       $id,
       $fieldData,
-      $revisionId,
+      $version,
       $revisions,
     ]),
     fromValues: fromValues,
@@ -66,15 +66,15 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
   ResourceData copyWith({
     String? id,
     Map<String, dynamic>? fieldData,
-    String? revisionId,
-    bool nullRevisionId = false,
+    int? version,
+    bool nullVersion = false,
     List<ResourceRevisionInfo>? revisions,
   }) {
     final $data = this as ResourceData;
     return ResourceData(
       id: id ?? $data.id,
       fieldData: fieldData ?? $data.fieldData,
-      revisionId: nullRevisionId ? null : (revisionId ?? $data.revisionId),
+      version: nullVersion ? null : (version ?? $data.version),
       revisions: revisions ?? $data.revisions,
     );
   }
@@ -83,7 +83,7 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
     return ResourceData(
       id: data['id'],
       fieldData: data['fieldData'],
-      revisionId: data['revisionId'],
+      version: data['version'],
       revisions:
           data['revisions']?.cast<ResourceRevisionInfo>().toList(
             growable: false,
@@ -102,9 +102,9 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
         data['fieldData'],
         name: DataCodec.childName(name, 'fieldData'),
       ),
-      revisionId: $revisionId.fromJson(
-        data['revisionId'],
-        name: DataCodec.childName(name, 'revisionId'),
+      version: $version.fromJson(
+        data['version'],
+        name: DataCodec.childName(name, 'version'),
       ),
       revisions: $revisions.fromJson(
         data['revisions'],
@@ -119,7 +119,7 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
     return {
       'id': $id.toJson($$data.id),
       'fieldData': $fieldData.toJson($$data.fieldData),
-      'revisionId': $revisionId.toJson($$data.revisionId),
+      'version': $version.toJson($$data.version),
       'revisions': $revisions.toJson($$data.revisions),
     }..removeWhere((k, v) => v == null);
   }

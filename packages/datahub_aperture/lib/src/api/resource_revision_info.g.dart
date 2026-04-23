@@ -10,12 +10,11 @@ abstract interface class $ResourceRevisionInfo
     with DataObject<ResourceRevisionInfo> {
   const $ResourceRevisionInfo();
   static const $$codec = JsonDataCodec();
-  static final $id = DataField<ResourceRevisionInfo, String>(
-    name: 'id',
-    valueOf: (p) => p.id,
-    fromJson: (value, {String? name}) =>
-        $$codec.decodeString(value, name: name),
-    toJson: (value) => $$codec.encodeString(value),
+  static final $version = DataField<ResourceRevisionInfo, int>(
+    name: 'version',
+    valueOf: (p) => p.version,
+    fromJson: (value, {String? name}) => $$codec.decodeInt(value, name: name),
+    toJson: (value) => $$codec.encodeInt(value),
   );
 
   static final $type = DataField<ResourceRevisionInfo, ResourceRevisionType>(
@@ -63,7 +62,7 @@ abstract interface class $ResourceRevisionInfo
       DataBean<ResourceRevisionInfo>(
         name: 'ResourceRevisionInfo',
         fields: List<DataField<ResourceRevisionInfo, dynamic>>.unmodifiable([
-          $id,
+          $version,
           $type,
           $timestamp,
           $live,
@@ -79,7 +78,7 @@ abstract interface class $ResourceRevisionInfo
   @override
   List<DataField<ResourceRevisionInfo, dynamic>> get $$fields => bean.fields;
   ResourceRevisionInfo copyWith({
-    String? id,
+    int? version,
     ResourceRevisionType? type,
     DateTime? timestamp,
     DateTime? live,
@@ -89,7 +88,7 @@ abstract interface class $ResourceRevisionInfo
   }) {
     final $data = this as ResourceRevisionInfo;
     return ResourceRevisionInfo(
-      id: id ?? $data.id,
+      version: version ?? $data.version,
       type: type ?? $data.type,
       timestamp: timestamp ?? $data.timestamp,
       live: nullLive ? null : (live ?? $data.live),
@@ -100,7 +99,7 @@ abstract interface class $ResourceRevisionInfo
 
   static ResourceRevisionInfo fromValues(Map<String, dynamic> data) {
     return ResourceRevisionInfo(
-      id: data['id'],
+      version: data['version'],
       type: data['type'],
       timestamp: data['timestamp'],
       live: data['live'],
@@ -118,7 +117,10 @@ abstract interface class $ResourceRevisionInfo
       );
     }
     return ResourceRevisionInfo(
-      id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
+      version: $version.fromJson(
+        data['version'],
+        name: DataCodec.childName(name, 'version'),
+      ),
       type: $type.fromJson(
         data['type'],
         name: DataCodec.childName(name, 'type'),
@@ -146,7 +148,7 @@ abstract interface class $ResourceRevisionInfo
   Map<String, dynamic> toJson() {
     final $$data = this as ResourceRevisionInfo;
     return {
-      'id': $id.toJson($$data.id),
+      'version': $version.toJson($$data.version),
       'type': $type.toJson($$data.type),
       'timestamp': $timestamp.toJson($$data.timestamp),
       'live': $live.toJson($$data.live),

@@ -7,3 +7,5 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: datahub_postgres
+    tmpfs:
+      - /var/lib/postgresql

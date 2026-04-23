@@ -1,4 +1,3 @@
-import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/blocs/error_state.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/blocs/task_manager_module_cubit.dart';
@@ -17,9 +16,8 @@ class TaskManagerModulePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return BasePage(
       child: BlocProvider(
-        create: (context) => TaskManagerModuleCubit(
-          context.read<TaskManagerRepository>(),
-        ),
+        create: (context) =>
+            TaskManagerModuleCubit(context.read<TaskManagerRepository>()),
         child: Column(
           mainAxisSize: MainAxisSize.max,
           spacing: 16,
@@ -48,21 +46,21 @@ class TaskManagerModulePage extends StatelessWidget {
               ],
             ),
             Expanded(
-              child: BlocBuilder<TaskManagerModuleCubit, TaskManagerModuleState>(
-                builder: (context, state) {
-                  return switch (state) {
-                    TaskManagerLoading() => LoadingView(),
-                    ErrorState(:final message) => ErrorView(
-                      message: message,
-                      onRetryPressed: () =>
-                          context.read<TaskManagerModuleCubit>().update(),
-                    ),
-                    TaskManagerLoaded(:final invocations) => InvocationTimeline(
-                      tasks: invocations,
-                    ),
-                  };
-                },
-              ),
+              child:
+                  BlocBuilder<TaskManagerModuleCubit, TaskManagerModuleState>(
+                    builder: (context, state) {
+                      return switch (state) {
+                        TaskManagerLoading() => LoadingView(),
+                        ErrorState(:final message) => ErrorView(
+                          message: message,
+                          onRetryPressed: () =>
+                              context.read<TaskManagerModuleCubit>().update(),
+                        ),
+                        TaskManagerLoaded(:final invocations) =>
+                          InvocationTimeline(tasks: invocations),
+                      };
+                    },
+                  ),
             ),
           ],
         ),

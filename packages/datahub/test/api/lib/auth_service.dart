@@ -2,11 +2,12 @@ import 'package:datahub/datahub.dart';
 
 class TestSession implements Session {
   @override
-  final String debugName = 'Test Session';
+  String get debugName => 'Test Session: $identity';
 
-  final String user;
+  @override
+  final String identity;
 
-  TestSession(this.user);
+  TestSession(this.identity);
 }
 
 class AuthService implements Service {

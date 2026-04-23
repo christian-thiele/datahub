@@ -13,7 +13,9 @@ class ResourceFieldForm extends StatelessWidget {
   final Map<ResourceField, dynamic> changes;
   final Map<ResourceField, String> validations;
   final void Function(ResourceField field, dynamic value) onFieldValueChanged;
-  final void Function(DateTime? revisionLive)? onSavePressed;
+  final void Function(DateTime? from)? onSavePressed;
+  final bool revisable;
+  final bool readOnly;
 
   const ResourceFieldForm({
     super.key,
@@ -23,6 +25,8 @@ class ResourceFieldForm extends StatelessWidget {
     required this.validations,
     required this.onFieldValueChanged,
     required this.onSavePressed,
+    this.revisable = true,
+    this.readOnly = false,
   });
 
   @override
@@ -48,47 +52,54 @@ class ResourceFieldForm extends StatelessWidget {
                       : data.fieldData[field.id],
                   error: validations[field],
                   isChanged: changes.containsKey(field),
-                  onChanged: field.readOnly
+                  onChanged: (field.readOnly || readOnly)
                       ? null
                       : (value) => onFieldValueChanged(field, value),
                 ),
               ),
           ],
         ),
-        Align(
-          alignment: Alignment.bottomRight,
-          child: OptionsButton(
-            onPressed: switch (onSavePressed) {
-              final call? => () => call(DateTime.timestamp()),
-              _ => null,
-            },
-            menuEnabled: onSavePressed != null,
-            menuChildren: [
-              MenuItemButton(
-                child: IconText(
-                  Icons.edit_note_outlined,
-                  S.of(context).saveAsDraft,
-                ),
-                onPressed: () => onSavePressed?.call(null),
-              ),
-              MenuItemButton(
-                child: IconText(Icons.schedule, S.of(context).saveAndSchedule),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) =>
-                        ScheduleDialog(title: S.of(context).scheduleRevision),
-                  ).then((result) {
-                    if (result case DateTime liveDate) {
-                      onSavePressed?.call(liveDate);
-                    }
-                  });
-                },
-              ),
-            ],
-            child: IconText(Icons.save, S.of(context).save),
+        if (!readOnly)
+          Align(
+            alignment: Alignment.bottomRight,
+            child: OptionsButton(
+              onPressed: switch (onSavePressed) {
+                final call? => () => call(null),
+                _ => null,
+              },
+              menuEnabled: revisable && onSavePressed != null,
+              menuChildren: [
+                if (revisable) ...[
+                  /*MenuItemButton(
+                  child: IconText(
+                    Icons.edit_note_outlined,
+                    S.of(context).saveAsDraft,
+                  ),
+                  onPressed: () => onSavePressed?.call(null),
+                ),*/
+                  MenuItemButton(
+                    child: IconText(
+                      Icons.schedule,
+                      S.of(context).saveAndSchedule,
+                    ),
+                    onPressed: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => ScheduleDialog(
+                          title: S.of(context).scheduleRevision,
+                        ),
+                      ).then((result) {
+                        if (result case DateTime liveDate) {
+                          onSavePressed?.call(liveDate);
+                        }
+                      });
+                    },
+                  ),
+                ],
+              ],
+              child: IconText(Icons.save, S.of(context).save),
+            ),
           ),
-        ),
       ],
     );
   }

@@ -1,6 +1,7 @@
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/blocs/bootstrap/bootstrap_cubit.dart';
 import 'package:datahub_aperture_frontend/repositories/bootstrap_repository/api_bootstrap_repository.dart';
+import 'package:datahub_aperture_frontend/repositories/bootstrap_repository/bootstrap_repository.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
@@ -29,25 +30,45 @@ class Bootstrap extends StatelessWidget {
       ),
     };
 
-    return BlocProvider(
-      create: (context) => BootstrapCubit(ApiBootstrapRepository(baseUri)),
-      child: BlocBuilder<BootstrapCubit, BootstrapState>(
-        builder: (context, state) {
-          return switch (state) {
-            BootstrapSuccess() => child,
-            BootstrapLoading() => _SingleWidgetApp(
-              child: LoadingView(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<BootstrapRepository>(
+          create: (context) {
+            try {
+              // Note: This won't work if this RepositoryProvider itself provides it.
+              // We need to check the parent context.
+              return RepositoryProvider.of<BootstrapRepository>(
+                context,
+                listen: false,
+              );
+            } catch (_) {
+              return ApiBootstrapRepository(baseUri);
+            }
+          },
+        ),
+      ],
+      child: BlocProvider(
+        create: (context) => BootstrapCubit(
+          RepositoryProvider.of<BootstrapRepository>(context, listen: false),
+        ),
+        child: BlocBuilder<BootstrapCubit, BootstrapState>(
+          builder: (context, state) {
+            return switch (state) {
+              BootstrapSuccess() => child,
+              BootstrapLoading() => _SingleWidgetApp(
+                child: LoadingView(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
-            BootstrapError(:final message) => _SingleWidgetApp(
-              child: ErrorView(
-                message: message,
-                onRetryPressed: () => context.read<BootstrapCubit>().update(),
+              BootstrapError(:final message) => _SingleWidgetApp(
+                child: ErrorView(
+                  message: message,
+                  onRetryPressed: () => context.read<BootstrapCubit>().update(),
+                ),
               ),
-            ),
-          };
-        },
+            };
+          },
+        ),
       ),
     );
   }

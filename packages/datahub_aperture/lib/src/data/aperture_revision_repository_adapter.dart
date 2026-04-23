@@ -15,7 +15,7 @@ class ApertureRevisionRepositoryAdapter<T extends DataObject,
   @override
   Future<ResourceData> createElement(
     Map<String, dynamic> data,
-    DateTime? revisionLive,
+    DateTime? from,
   ) async {
     final repo = repository.find();
     final T object;
@@ -31,7 +31,7 @@ class ApertureRevisionRepositoryAdapter<T extends DataObject,
     result = await repo.createRevision(
       object,
       type: 1,
-      live: revisionLive,
+      live: from,
     );
 
     return _toResourceData(result);
@@ -75,7 +75,7 @@ class ApertureRevisionRepositoryAdapter<T extends DataObject,
   Future<ResourceData> updateElement(
     String id,
     Map<String, dynamic> data,
-    DateTime? revisionLive,
+    DateTime? from,
   ) async {
     final repo = repository.find();
     final existing = await repo.getData(id);
@@ -100,7 +100,7 @@ class ApertureRevisionRepositoryAdapter<T extends DataObject,
     final updated = await repo.createRevision(
       object,
       type: 0,
-      live: revisionLive,
+      live: from,
     );
 
     final revisions = await repo.getRevisions(id);
@@ -110,7 +110,7 @@ class ApertureRevisionRepositoryAdapter<T extends DataObject,
   @override
   Future<ResourceData?> deleteElement(
     String id,
-    DateTime? revisionLive,
+    DateTime? from,
   ) async {
     final repo = repository.find();
     final data = await repo.getData(id);
@@ -121,7 +121,7 @@ class ApertureRevisionRepositoryAdapter<T extends DataObject,
     final result = await repo.createRevision(
       data.data,
       type: -1,
-      live: revisionLive,
+      live: from,
     );
     final revisions = await repo.getRevisions(id);
     return _toResourceData(result, revisions);

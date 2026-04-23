@@ -26,6 +26,15 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
     toJson: (value) => value.toJson(),
   );
 
+  static final $environment = DataField<ApertureBootstrap, Environment>(
+    name: 'environment',
+    valueOf: (p) => p.environment,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeEnum(value, Environment.values, name: name),
+    toJson: (value) => $$codec.encodeEnum(value),
+    constraints: [EnumConstraint(values: Environment.values)],
+  );
+
   static final $baseUrl = DataField<ApertureBootstrap, String>(
     name: 'baseUrl',
     valueOf: (p) => p.baseUrl,
@@ -71,6 +80,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
     fields: List<DataField<ApertureBootstrap, dynamic>>.unmodifiable([
       $title,
       $theme,
+      $environment,
       $baseUrl,
       $oidcIssuer,
       $oidcScopes,
@@ -88,6 +98,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
   ApertureBootstrap copyWith({
     String? title,
     ApertureTheme? theme,
+    Environment? environment,
     String? baseUrl,
     String? oidcIssuer,
     List<String>? oidcScopes,
@@ -100,6 +111,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
     return ApertureBootstrap(
       title: title ?? $data.title,
       theme: theme ?? $data.theme,
+      environment: environment ?? $data.environment,
       baseUrl: baseUrl ?? $data.baseUrl,
       oidcIssuer: oidcIssuer ?? $data.oidcIssuer,
       oidcScopes: oidcScopes ?? $data.oidcScopes,
@@ -116,6 +128,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
     return ApertureBootstrap(
       title: data['title'],
       theme: data['theme'],
+      environment: data['environment'],
       baseUrl: data['baseUrl'],
       oidcIssuer: data['oidcIssuer'],
       oidcScopes: data['oidcScopes']?.cast<String>().toList(growable: false),
@@ -140,6 +153,10 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
       theme: $theme.fromJson(
         data['theme'],
         name: DataCodec.childName(name, 'theme'),
+      ),
+      environment: $environment.fromJson(
+        data['environment'],
+        name: DataCodec.childName(name, 'environment'),
       ),
       baseUrl: $baseUrl.fromJson(
         data['baseUrl'],
@@ -170,6 +187,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
     return {
       'title': $title.toJson($$data.title),
       'theme': $theme.toJson($$data.theme),
+      'environment': $environment.toJson($$data.environment),
       'baseUrl': $baseUrl.toJson($$data.baseUrl),
       'oidcIssuer': $oidcIssuer.toJson($$data.oidcIssuer),
       'oidcScopes': $oidcScopes.toJson($$data.oidcScopes),

@@ -12,8 +12,8 @@ class _TestAuthProviderInstance extends ServiceInstance<TestAuthProvider>
   Future<Session> authenticateJwt(Jwt auth) async {
     return ApertureSession(
       token: auth,
-      identity: auth.sub!,
-      username: auth.payload['email'],
+      identity: auth.payload['email'],
+      username: auth.payload['name'] ?? auth.payload['email'],
     );
   }
 }

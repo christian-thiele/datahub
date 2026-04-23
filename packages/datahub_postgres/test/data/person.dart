@@ -16,6 +16,6 @@ class Person extends $Person {
     required this.firstName,
     required this.lastName,
     required this.birthday,
-    required this.isSpecial,
+    this.isSpecial = false,
   });
 }

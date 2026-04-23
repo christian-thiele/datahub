@@ -49,7 +49,9 @@ class ElementActionDialog extends StatelessWidget {
                   children: [
                     Text(title, style: Theme.of(context).textTheme.titleMedium),
                     switch (state) {
-                      ResourceActionLoading() => Center(child: ApertureSpinner()),
+                      ResourceActionLoading() => Center(
+                        child: ApertureSpinner(),
+                      ),
                       ResourceActionError(:final message) => ErrorView(
                         message: message,
                       ),

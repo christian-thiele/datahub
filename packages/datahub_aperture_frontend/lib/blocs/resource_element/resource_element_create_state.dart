@@ -42,23 +42,23 @@ final class ResourceElementCreateSaving extends ResourceElementCreateValue {
     required super.changes,
   });
 
-  ResourceElementCreateState saved(String id, String? revisionId) =>
+  ResourceElementCreateState saved(String id, int? version) =>
       ResourceElementCreateSaved(
         fields: fields,
         changes: changes,
         id: id,
-        revisionId: revisionId,
+        version: version,
         description: description,
       );
 }
 
 final class ResourceElementCreateSaved extends ResourceElementCreateValue {
   final String id;
-  final String? revisionId;
+  final int? version;
 
   ResourceElementCreateSaved({
     required this.id,
-    required this.revisionId,
+    required this.version,
     required super.fields,
     required super.changes,
     required super.description,

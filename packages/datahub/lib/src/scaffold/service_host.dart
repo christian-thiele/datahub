@@ -16,6 +16,8 @@ part 'service.dart';
 
 part 'scope.dart';
 
+part 'find.dart';
+
 enum ServiceHostState { uninitialized, initializing, initialized, shutdown }
 
 abstract class ServiceHost implements ServiceRegistry {

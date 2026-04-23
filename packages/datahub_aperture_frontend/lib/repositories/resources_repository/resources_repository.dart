@@ -17,26 +17,26 @@ abstract interface class ResourcesRepository {
   Future<ResourceData> getResourceElement(
     String resourceId,
     String elementId, {
-    String? revisionId,
+    int? version,
   });
 
   Future<ResourceData> updateElement(
     String resourceId,
     String elementId,
     Map<String, dynamic> changes,
-    DateTime? revisionLive,
+    DateTime? from,
   );
 
   Future<ResourceData> createElement(
     String resourceId,
     Map<String, dynamic> changes,
-    DateTime? revisionLive,
+    DateTime? from,
   );
 
   Future<ResourceData?> deleteElement(
     String resourceId,
     String elementId,
-    DateTime? revisionLive,
+    DateTime? from,
   );
 
   Future<Map<String, dynamic>> startElementAction(

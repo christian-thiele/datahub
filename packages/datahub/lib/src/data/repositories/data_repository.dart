@@ -1,12 +1,12 @@
-import 'data_object.dart';
-import 'data_field.dart';
-import 'data_bean.dart';
-import 'filter.dart';
-import 'sort.dart';
+import '../data_object.dart';
+import '../data_field.dart';
+import '../data_bean.dart';
+import '../filter.dart';
+import '../sort.dart';
 
 /// An interface for [Component]s providing CRUD functionality for a
 /// [DataObject].
-abstract interface class DataRepository<T extends DataObject> {
+abstract class DataRepository<T extends DataObject> {
   DataBean<T> get bean;
 
   /// Creates a new element.

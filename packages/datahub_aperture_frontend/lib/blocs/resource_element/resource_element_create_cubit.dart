@@ -76,7 +76,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
     }
   }
 
-  Future<void> saveChanges({DateTime? revisionLive}) async {
+  Future<void> saveChanges({DateTime? from}) async {
     if (state case final ResourceElementCreateValue state
         when state is! ResourceElementCreateSaving) {
       try {
@@ -103,11 +103,11 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
         final updated = await _resourceRepository.createElement(
           resourceId,
           state.changes.map((key, value) => MapEntry(key.id, value)),
-          revisionLive,
+          from,
         );
         decodeFieldData(state.description, updated);
 
-        emit(savingState.saved(updated.id, updated.revisionId));
+        emit(savingState.saved(updated.id, updated.version));
       } catch (e) {
         if (e case ApiRequestException(
           data: {'fields': final Map<String, dynamic> fieldErrors},

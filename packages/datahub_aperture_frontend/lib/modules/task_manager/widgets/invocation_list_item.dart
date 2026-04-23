@@ -91,8 +91,7 @@ class InvocationListItem extends StatelessWidget {
               IconButton(onPressed: () {}, icon: Icon(Icons.cancel_outlined)),
           ],
         ),
-        for (final message in task.messages)
-          Text(message),
+        for (final message in task.messages) Text(message),
       ],
     );
   }

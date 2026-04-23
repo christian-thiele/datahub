@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'repositories/api_repository.dart';
 import 'repositories/resources_repository/api_resources_repository.dart';
 import 'repositories/resources_repository/resources_repository.dart';
+import 'services/auth_service.dart';
 import 'utils/bootstrap.dart';
 
 class Repositories extends StatelessWidget {
@@ -15,6 +16,7 @@ class Repositories extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
       providers: [
+        RepositoryProvider<AuthService>(create: (context) => AuthService()),
         RepositoryProvider<ResourcesRepository>(
           create: (context) =>
               ApiResourcesRepository(baseUrl: Bootstrap.of(context).baseUrl),

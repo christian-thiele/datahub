@@ -11,6 +11,13 @@ class OidcSession implements Session {
   final String clientId;
   final Jwt authenticationToken;
 
+  @override
+  String get identity =>
+      authenticationToken.sub ??
+      (throw ApiRequestException.unauthorized(
+        'Invalid authentication token (missing subject).',
+      ));
+
   OidcSession({
     required this.identityProvider,
     required this.clientId,

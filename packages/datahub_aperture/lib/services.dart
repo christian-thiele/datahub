@@ -4,6 +4,5 @@ export 'src/aperture_service/aperture_action.dart';
 export 'src/aperture_service/aperture_api.dart';
 export 'src/aperture_service/aperture_config.dart';
 export 'src/aperture_service/aperture_resource.dart';
-export 'src/aperture_service/aperture_resource_repository.dart';
 export 'src/aperture_service/aperture_session.dart';
 export 'src/aperture_service/aperture_module.dart';

@@ -6,7 +6,6 @@ import 'package:datahub/utils.dart';
 import 'package:rxdart/rxdart.dart';
 
 import 'service_host.dart';
-import 'service_registry.dart';
 
 class ApplicationHost extends ServiceHost {
   final List<String> arguments;
