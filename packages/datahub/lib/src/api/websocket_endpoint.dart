@@ -1,25 +1,67 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io' as io;
-import 'dart:typed_data';
+import 'package:cryptography/dart.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/utils.dart';
 
-import 'package:cryptography/cryptography.dart' as cryptography;
 import 'api_route.dart';
 import 'api_request.dart';
 import 'websocket_response.dart';
-import 'websocket_frame.dart';
+import 'websocket_session.dart';
 
 class WebsocketEndpoint extends ApiEndpoint {
   final String Function(List<String> protocols) chooseProtocol;
   final void Function(WebsocketSession) onSession;
+  final Duration? heartbeatInterval;
+  final Duration heartbeatTimeout;
 
   const WebsocketEndpoint({
     super.matcher,
     required this.onSession,
     required this.chooseProtocol,
+    this.heartbeatInterval,
+    this.heartbeatTimeout = const Duration(seconds: 30),
   });
+
+  static bool isWebsocketUpgradeRequest(ApiRequest request) {
+    if (request.method != HttpRequestMethod.get) {
+      return false;
+    }
+
+    if (request.headers['connection']?.singleOrNull != 'Upgrade') {
+      return false;
+    }
+
+    if (request.headers['upgrade']?.singleOrNull != 'websocket') {
+      return false;
+    }
+
+    if (request.headers['sec-websocket-version']?.singleOrNull != '13') {
+      return false;
+    }
+
+    if (request.headers['sec-websocket-key']?.singleOrNull == null) {
+      return false;
+    }
+
+    return true;
+  }
+
+  static String buildAcceptKey(ApiRequest request) {
+    final webSocketKey =
+        switch (request.headers['sec-websocket-key']?.singleOrNull) {
+          final String key => key,
+          _ => throw ApiRequestException.badRequest(),
+        };
+
+    final acceptKeyInput =
+        '$webSocketKey'
+        '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
+    final acceptKeyHash = const DartSha1().hashSync(
+      utf8.encode(acceptKeyInput),
+    );
+    return base64Encode(acceptKeyHash.bytes);
+  }
 
   @override
   Future<dynamic> onRequest(ApiRequest request) async {
@@ -27,23 +69,9 @@ class WebsocketEndpoint extends ApiEndpoint {
       throw ApiRequestException.methodNotAllowed();
     }
 
-    if (request.headers['connection']?.singleOrNull != 'Upgrade') {
+    if (!isWebsocketUpgradeRequest(request)) {
       throw ApiRequestException.badRequest();
     }
-
-    if (request.headers['upgrade']?.singleOrNull != 'websocket') {
-      throw ApiRequestException.badRequest();
-    }
-
-    if (request.headers['sec-websocket-version']?.singleOrNull != '13') {
-      throw ApiRequestException.badRequest();
-    }
-
-    final webSocketKey =
-        switch (request.headers['sec-websocket-key']?.singleOrNull) {
-          final String key => key,
-          _ => throw ApiRequestException.badRequest(),
-        };
 
     final protocol = chooseProtocol(
       switch (request.headers['sec-websocket-protocol']) {
@@ -53,13 +81,7 @@ class WebsocketEndpoint extends ApiEndpoint {
       },
     );
 
-    final acceptKeyInput =
-        '$webSocketKey'
-        '258EAFA5-E914-47DA-95CA-C5AB0DC85B11';
-    final acceptKeyHash = await cryptography.Sha1().hash(
-      utf8.encode(acceptKeyInput),
-    );
-    final acceptKey = base64Encode(acceptKeyHash.bytes);
+    final acceptKey = buildAcceptKey(request);
 
     return WebsocketResponse(
       acceptKey: acceptKey,
@@ -71,34 +93,11 @@ class WebsocketEndpoint extends ApiEndpoint {
             socket: socket,
             acceptKey: acceptKey,
             protocol: protocol,
+            heartbeatInterval: heartbeatInterval,
+            heartbeatTimeout: heartbeatTimeout,
           ),
         );
       },
     );
   }
-}
-
-class WebsocketSession {
-  final ApiRequest initialRequest;
-  final String acceptKey;
-  final String protocol;
-  final io.Socket socket;
-
-  final _sinkController = StreamController<WebsocketFrame>();
-
-  WebsocketSession({
-    required this.initialRequest,
-    required this.acceptKey,
-    required this.protocol,
-    required this.socket,
-  }) {
-    _sinkController.stream
-        .transform(const WebsocketFrameEncoder())
-        .listen(socket.add, onDone: socket.close, onError: (_) => socket.close());
-  }
-
-  Stream<WebsocketFrame> get frames =>
-      socket.map((data) => Uint8List.fromList(data)).transform(const WebsocketFrameDecoder());
-
-  StreamSink<WebsocketFrame> get sink => _sinkController.sink;
 }

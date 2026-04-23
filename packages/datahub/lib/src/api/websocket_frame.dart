@@ -26,6 +26,8 @@ class WebsocketFrame {
   final WebsocketOpcode opcode;
   final Uint8List payload;
 
+  String get text => utf8.decode(payload);
+
   WebsocketFrame(this.opcode, this.payload, {this.fin = true});
 
   WebsocketFrame.text(String text, {bool fin = true})

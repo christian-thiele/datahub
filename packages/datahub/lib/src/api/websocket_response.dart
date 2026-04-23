@@ -6,14 +6,14 @@ import 'package:datahub/src/http/http_response.dart';
 
 class WebsocketResponse extends ApiResponse {
   final String acceptKey;
-  final String protocol;
+  final String? protocol;
 
   void Function(Socket) onSocket;
 
   WebsocketResponse({
     required this.onSocket,
     required this.acceptKey,
-    required this.protocol,
+    this.protocol,
   }) : super(101);
 
   @override
@@ -24,7 +24,7 @@ class WebsocketResponse extends ApiResponse {
     'Upgrade': ['websocket'],
     'Connection': ['Upgrade'],
     'Sec-WebSocket-Accept': [acceptKey],
-    'Sec-WebSocket-Protocol': [protocol],
+    if (protocol case final protocol?) 'Sec-WebSocket-Protocol': [protocol],
   };
 
   @override
