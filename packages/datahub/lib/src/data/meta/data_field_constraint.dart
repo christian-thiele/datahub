@@ -1,9 +1,11 @@
 import '../types/geometry/geometry.dart';
 
 abstract class DataFieldConstraint<FieldType> {
-  final String name;
+  final String _name;
 
-  const DataFieldConstraint({required this.name});
+  String get name => _name;
+
+  const DataFieldConstraint({required String name}) : _name = name;
 
   bool check(FieldType value);
 }
@@ -118,5 +120,27 @@ class GeometryTypeConstraint<FieldType extends Geometry?>
     }
 
     return value.type == type;
+  }
+}
+
+class ElementConstraint<E, FieldType extends List<E>>
+    extends DataFieldConstraint<List<E>> {
+  final DataFieldConstraint<E> constraint;
+
+  const ElementConstraint({required this.constraint})
+    : super(name: 'default.element');
+
+  @override
+  String get name => 'default.element.${constraint.name}';
+
+  @override
+  bool check(List<E> value) {
+    for (final element in value) {
+      if (!constraint.check(element)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

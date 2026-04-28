@@ -15,6 +15,8 @@ class Person extends $Person {
   @ApertureDisplayField()
   @MinLengthConstraint(length: 3)
   final String lastName;
+  @ElementConstraint(constraint: RegExpConstraint(expression: '^[^\\s]*\$'))
+  final List<String> nicknames;
   @RegExpConstraint(expression: '[\\w-.]+ \\d+\\w*')
   final String address;
   final Geometry homeLocation;
@@ -23,6 +25,7 @@ class Person extends $Person {
     this.id = 0,
     required this.firstName,
     required this.lastName,
+    required this.nicknames,
     required this.address,
     required this.homeLocation,
   });

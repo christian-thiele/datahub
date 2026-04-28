@@ -40,6 +40,19 @@ abstract interface class $Person with DataObject<Person> {
     constraints: [const MinLengthConstraint<String?>(length: 3)],
   );
 
+  static final $nicknames = DataField<Person, List<String>>(
+    name: 'nicknames',
+    valueOf: (p) => p.nicknames,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    constraints: [
+      const ElementConstraint<String?, List<String?>>(
+        constraint: const RegExpConstraint<String?>(expression: '^[^\\s]*\$'),
+      ),
+    ],
+  );
+
   static final $address = DataField<Person, String>(
     name: 'address',
     valueOf: (p) => p.address,
@@ -65,6 +78,7 @@ abstract interface class $Person with DataObject<Person> {
       $id,
       $firstName,
       $lastName,
+      $nicknames,
       $address,
       $homeLocation,
     ]),
@@ -81,6 +95,7 @@ abstract interface class $Person with DataObject<Person> {
     int? id,
     String? firstName,
     String? lastName,
+    List<String>? nicknames,
     String? address,
     Geometry? homeLocation,
   }) {
@@ -89,6 +104,7 @@ abstract interface class $Person with DataObject<Person> {
       id: id ?? $data.id,
       firstName: firstName ?? $data.firstName,
       lastName: lastName ?? $data.lastName,
+      nicknames: nicknames ?? $data.nicknames,
       address: address ?? $data.address,
       homeLocation: homeLocation ?? $data.homeLocation,
     );
@@ -99,6 +115,7 @@ abstract interface class $Person with DataObject<Person> {
       id: data['id'] ?? 0,
       firstName: data['firstName'],
       lastName: data['lastName'],
+      nicknames: data['nicknames']?.cast<String>().toList(growable: false),
       address: data['address'],
       homeLocation: data['homeLocation'],
     );
@@ -118,6 +135,10 @@ abstract interface class $Person with DataObject<Person> {
         data['lastName'],
         name: DataCodec.childName(name, 'lastName'),
       ),
+      nicknames: $nicknames.fromJson(
+        data['nicknames'],
+        name: DataCodec.childName(name, 'nicknames'),
+      ),
       address: $address.fromJson(
         data['address'],
         name: DataCodec.childName(name, 'address'),
@@ -136,6 +157,7 @@ abstract interface class $Person with DataObject<Person> {
       'id': $id.toJson($$data.id),
       'firstName': $firstName.toJson($$data.firstName),
       'lastName': $lastName.toJson($$data.lastName),
+      'nicknames': $nicknames.toJson($$data.nicknames),
       'address': $address.toJson($$data.address),
       'homeLocation': $homeLocation.toJson($$data.homeLocation),
     }..removeWhere((k, v) => v == null);
