@@ -1,5 +1,6 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
+import 'package:datahub_aperture_frontend/utils/base_href.dart';
 import 'package:flutter/foundation.dart';
 
 import 'bootstrap_repository.dart';
@@ -15,17 +16,18 @@ class ApiBootstrapRepository implements BootstrapRepository {
         when value.isNotEmpty) {
       baseUri = Uri.parse(value);
     } else if (kIsWeb) {
+      final baseHref = getBaseHref();
       final baseClient = await RestClient.connect(
-        Uri.base,
+        baseHref,
         timeout: const Duration(seconds: 10),
       );
 
       try {
         final environment = await baseClient.get('/.env').thenGetJsonBody();
         if (environment['API_URL'] case final String value) {
-          baseUri = Uri.base.resolve(value);
+          baseUri = baseHref.resolve(value);
         } else {
-          baseUri = Uri.base;
+          baseUri = baseHref;
         }
       } finally {
         await baseClient.close();
