@@ -23,7 +23,7 @@ class ApiBootstrapRepository implements BootstrapRepository {
       try {
         final environment = await baseClient.get('/.env').thenGetJsonBody();
         if (environment['API_URL'] case final String value) {
-          baseUri = Uri.parse(value).resolveUri(Uri.base);
+          baseUri = Uri.base.resolve(value);
         } else {
           baseUri = Uri.base;
         }
