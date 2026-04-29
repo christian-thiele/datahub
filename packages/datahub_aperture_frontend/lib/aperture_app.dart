@@ -16,7 +16,6 @@ import 'pages/dashboard_page.dart';
 import 'pages/resource_element_create/resource_element_create_page.dart';
 import 'pages/resource_element_edit/resource_element_edit_page.dart';
 import 'pages/resource_page/resource_page.dart';
-import 'repositories/resources_repository/resources_repository.dart';
 import 'services/auth_service.dart';
 import 'repositories.dart';
 import 'utils/bloc_listenable.dart';
@@ -116,7 +115,7 @@ class _ApertureAppState extends State<ApertureApp>
                   key: ValueKey(state.matchedLocation),
                   child: RepositoryProvider<TaskManagerRepository>(
                     create: (context) => ApiTaskManagerRepository(
-                      baseUrl: Bootstrap.of(context).baseUrl,
+                      baseUrl: Bootstrap.apiUrlOf(context),
                     ),
                     dispose: (repository) =>
                         (repository as ApiRepository).close(),
@@ -129,7 +128,7 @@ class _ApertureAppState extends State<ApertureApp>
                     pageBuilder: (context, state) => MaterialPage(
                       child: RepositoryProvider<TaskManagerRepository>(
                         create: (context) => ApiTaskManagerRepository(
-                          baseUrl: Bootstrap.of(context).baseUrl,
+                          baseUrl: Bootstrap.apiUrlOf(context),
                         ),
                         dispose: (repository) =>
                             (repository as ApiRepository).close(),

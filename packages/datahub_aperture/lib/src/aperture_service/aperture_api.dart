@@ -44,16 +44,12 @@ class ApertureApi extends ApiNode {
     return [
       ResourceEndpoint(
         matcher: AllOfRouteMatcher(
-          matchers: [
-            RoutePattern('$base/*'),
-            HeaderRouteMatcher(header: 'x-aperture-flare', value: 'bootstrap'),
-          ],
+          matchers: [RoutePattern('$base/api/bootstrap')],
         ),
         get: (request) => ApertureBootstrap(
           title: configDelegate.title,
           theme: configDelegate.theme,
           environment: Context.ofZone().environment,
-          baseUrl: configDelegate.baseUrl,
           oidcIssuer: oidcIssuer.read(),
           oidcScopes: oidcScopes.read(),
           oidcClientId: oidcClientId.read(),

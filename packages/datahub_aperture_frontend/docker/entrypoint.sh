@@ -18,4 +18,6 @@ esac
 
 sed -i "s|/__BASE_HREF__/|$BASE_HREF|g" /usr/share/caddy/index.html
 
+echo "{\"API_URL\":\"${API_URL:-$BASE_HREF}\"}" > /usr/share/caddy/.env
+
 exec "$@"

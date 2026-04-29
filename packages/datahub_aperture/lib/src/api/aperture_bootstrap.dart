@@ -11,8 +11,6 @@ class ApertureBootstrap extends $ApertureBootstrap {
   final ApertureTheme theme;
   final Environment environment;
 
-  final String baseUrl;
-
   final String oidcIssuer;
   final List<String> oidcScopes;
   final String? oidcClientId;
@@ -22,7 +20,6 @@ class ApertureBootstrap extends $ApertureBootstrap {
     required this.title,
     required this.theme,
     required this.environment,
-    required this.baseUrl,
     required this.oidcIssuer,
     required this.oidcScopes,
     required this.oidcClientId,

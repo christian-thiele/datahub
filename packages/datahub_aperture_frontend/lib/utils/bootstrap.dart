@@ -17,19 +17,11 @@ class Bootstrap extends StatelessWidget {
   static ApertureBootstrap of(BuildContext context) =>
       (context.read<BootstrapCubit>().state as BootstrapSuccess).bootstrap;
 
+  static Uri apiUrlOf(BuildContext context) =>
+      (context.read<BootstrapCubit>().state as BootstrapSuccess).apiUrl;
+
   @override
   Widget build(BuildContext context) {
-    final baseUri = switch (const String.fromEnvironment('API')) {
-      String value when value.isNotEmpty => Uri.parse(value),
-      _ when kIsWeb => Uri.base,
-      _ => Uri(
-        scheme: 'http',
-        host: 'localhost',
-        port: 8080,
-        path: '/aperture',
-      ),
-    };
-
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<BootstrapRepository>(
@@ -42,7 +34,7 @@ class Bootstrap extends StatelessWidget {
                 listen: false,
               );
             } catch (_) {
-              return ApiBootstrapRepository(baseUri);
+              return ApiBootstrapRepository();
             }
           },
         ),

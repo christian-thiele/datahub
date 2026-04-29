@@ -19,7 +19,7 @@ class Repositories extends StatelessWidget {
         RepositoryProvider<AuthService>(create: (context) => AuthService()),
         RepositoryProvider<ResourcesRepository>(
           create: (context) =>
-              ApiResourcesRepository(baseUrl: Bootstrap.of(context).baseUrl),
+              ApiResourcesRepository(baseUrl: Bootstrap.apiUrlOf(context)),
           dispose: (repo) => (repo as ApiRepository).close(),
           lazy: false,
         ),
