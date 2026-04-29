@@ -9,6 +9,7 @@ RUN flutter pub get
 RUN flutter build web --release --no-tree-shake-icons --base-href /__BASE_HREF__/
 
 FROM caddy:2-alpine
+LABEL org.opencontainers.image.source=https://github.com/christian-thiele/datahub
 
 COPY --from=build /app/packages/datahub_aperture_frontend/build/web /usr/share/caddy
 
