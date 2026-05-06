@@ -11,7 +11,7 @@ void main() {
     'logStdoutFormat pretty',
     [],
     config: {
-      'telemetry': {'logStdoutFormat': 'pretty'},
+      'telemetry': {'logStdoutFormat': 'pretty', 'logLevel': 'debug'},
     },
     () async {
       final buffer = StringBuffer();

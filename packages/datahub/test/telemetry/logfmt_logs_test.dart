@@ -11,7 +11,7 @@ void main() {
     'logStdoutFormat logfmt',
     [],
     config: {
-      'telemetry': {'logStdoutFormat': 'logfmt'},
+      'telemetry': {'logStdoutFormat': 'logfmt', 'logLevel': 'debug'},
     },
     () async {
       final buffer = StringBuffer();

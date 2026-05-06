@@ -12,7 +12,7 @@ void main() {
     'logStdoutFormat json',
     [],
     config: {
-      'telemetry': {'logStdoutFormat': 'json'},
+      'telemetry': {'logStdoutFormat': 'json', 'logLevel': 'debug'},
     },
     () async {
       final buffer = StringBuffer();
