@@ -46,15 +46,6 @@ class SideBar extends StatelessWidget {
             extended: true,
           ),
         ),
-        Divider(),
-        Padding(
-          padding: const EdgeInsets.symmetric(vertical: 16.0),
-          child: TextButton.icon(
-            onPressed: refreshPressed,
-            label: Text(S.of(context).refresh),
-            icon: Icon(Icons.refresh),
-          ),
-        ),
       ],
     );
   }
