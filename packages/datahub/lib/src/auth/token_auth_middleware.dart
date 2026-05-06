@@ -9,7 +9,7 @@ abstract interface class TokenAuthProvider {
   Future<Session> authenticate(TokenAuth auth);
 }
 
-abstract class TokenAuthMiddleware extends AuthenticationMiddleware {
+class TokenAuthMiddleware extends AuthenticationMiddleware {
   final Find<TokenAuthProvider> provider;
   final Config<String> prefix;
 
