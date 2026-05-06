@@ -33,7 +33,7 @@ void main() {
     config: {
       'telemetry': {
         'serviceName': 'unit-test',
-        'openTelemetryExporter': {'enable': true, 'host': '192.168.178.85'},
+        'openTelemetryExporter': {'enabled': true, 'host': '192.168.178.85'},
       },
     },
     () async {

@@ -27,7 +27,7 @@ void main() {
     },
     config: {
       'telemetry': {
-        'prometheusExporter': {'enable': true, 'path': '/metrics', 'port': 9090},
+        'prometheusExporter': {'enabled': true},
       },
     },
   );

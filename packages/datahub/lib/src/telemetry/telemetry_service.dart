@@ -224,7 +224,7 @@ class TelemetryService implements Service {
     ),
     this.path = const Config<String>(
       'telemetry.prometheusExporter.path',
-      defaultValue: 'metrics',
+      defaultValue: '/metrics',
     ),
     this.enableOtelExporter = const Config<bool>(
       'telemetry.openTelemetryExporter.enable',
