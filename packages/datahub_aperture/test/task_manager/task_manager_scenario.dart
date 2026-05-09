@@ -14,7 +14,6 @@ void main(List<String> args) => runApp([
     routes: [
       ApertureApi(
         configDelegate: ApertureConfigStaticDelegate(
-          baseUrl: 'http://localhost:8080/aperture',
           modules: [TaskManagerModule()],
         ),
         oidcIssuer: Config.value('http://localhost:8081/realms/local-oidc'),

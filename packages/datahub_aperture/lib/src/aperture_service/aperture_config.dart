@@ -9,7 +9,6 @@ abstract interface class ApertureConfigDelegate {
   List<ApertureResource> get resources;
   List<ApertureAction> get actions;
   List<ApertureModule> get modules;
-  String get baseUrl;
 }
 
 class ApertureConfigStaticDelegate implements ApertureConfigDelegate {
@@ -28,8 +27,6 @@ class ApertureConfigStaticDelegate implements ApertureConfigDelegate {
   @override
   final List<ApertureModule> modules;
 
-  @override
-  final String baseUrl;
 
   ApertureConfigStaticDelegate({
     this.title = 'Aperture',
@@ -37,7 +34,6 @@ class ApertureConfigStaticDelegate implements ApertureConfigDelegate {
     this.resources = const [],
     this.actions = const [],
     this.modules = const [],
-    required this.baseUrl,
   });
 
 }
