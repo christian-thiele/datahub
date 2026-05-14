@@ -62,7 +62,11 @@ class Configuration {
       value = read<String>(path);
     }
 
-    return tryFindEnum(value, values.nonNulls.cast<Enum>()) as T;
+    return JsonDataCodec().decodeEnum<Enum>(
+          value,
+          values.whereType<Enum>().toList(),
+        )
+        as T;
   }
 
   /// Add a single config value by using the command line syntax.

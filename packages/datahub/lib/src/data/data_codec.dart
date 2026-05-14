@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:boost/boost.dart';
 
 import 'codec_exception.dart';
+import 'data_enum.dart';
 import 'data_object.dart';
 import 'types/geometry/geometry.dart';
 
@@ -108,13 +109,14 @@ abstract class DataCodec {
       return decodeString(value, name: name);
     }
 
+    if (type.isSupertypeOf<double>()) {
+      return decodeDouble(value, name: name);
+    }
+
     if (type.isSupertypeOf<int>()) {
       return decodeInt(value, name: name);
     }
 
-    if (type.isSupertypeOf<double>()) {
-      return decodeDouble(value, name: name);
-    }
     if (type.isSupertypeOf<bool>()) {
       return decodeBool(value, name: name);
     }
@@ -211,7 +213,12 @@ class JsonDataCodec extends DataCodec {
   String encodeUint8List(Uint8List e) => base64Encode(e);
 
   @override
-  String encodeEnum(Enum value) => value.name;
+  String encodeEnum(Enum value) {
+    return switch (value) {
+      DataEnum(:final jsonValue) => jsonValue,
+      _ => value.name,
+    };
+  }
 
   @override
   dynamic encodeGeometry(Geometry value) => base64Encode(value.toEWKB());
@@ -323,12 +330,16 @@ class JsonDataCodec extends DataCodec {
   @override
   T decodeEnum<T extends Enum>(value, List<T> values, {String? name}) {
     return switch (value) {
-      T() => value,
-      String() when values.any((e) => e.name == value) => values.firstWhere(
-        (e) => e.name == value,
-      ),
-      _ => throw CodecException.typeMismatch(T, value.runtimeType, name),
-    };
+          T() => value,
+          String() => values.nonNulls.where((e) {
+            return switch (e) {
+              DataEnum(:final jsonValue) => jsonValue == value,
+              Enum(:final name) => name == value,
+            };
+          }).firstOrNull,
+          _ => null,
+        } ??
+        (throw CodecException.typeMismatch(T, value.runtimeType, name));
   }
 
   @override

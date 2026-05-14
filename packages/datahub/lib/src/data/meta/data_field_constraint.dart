@@ -1,5 +1,8 @@
+import 'package:meta/meta_meta.dart';
+
 import '../types/geometry/geometry.dart';
 
+@Target({TargetKind.field})
 abstract class DataFieldConstraint<FieldType> {
   final String _name;
 

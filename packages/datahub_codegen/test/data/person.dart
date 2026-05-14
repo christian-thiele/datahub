@@ -2,6 +2,8 @@ import 'dart:typed_data';
 
 import 'package:datahub/data.dart';
 
+import 'contact_type.dart';
+
 part 'person.g.dart';
 
 @Data()
@@ -14,6 +16,7 @@ class Person extends $Person {
   final DateTime? birthday;
   final bool isBlocked;
   final Uint8List picture;
+  final ContactType type;
 
   const Person({
     this.id = 0,
@@ -24,5 +27,6 @@ class Person extends $Person {
     required this.birthday,
     required this.isBlocked,
     required this.picture,
+    required this.type,
   });
 }

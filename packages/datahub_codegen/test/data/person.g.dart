@@ -72,6 +72,15 @@ abstract interface class $Person with DataObject<Person> {
     toJson: (value) => $$codec.encodeUint8List(value),
   );
 
+  static final $type = DataField<Person, ContactType>(
+    name: 'type',
+    valueOf: (p) => p.type,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeEnum(value, ContactType.values, name: name),
+    toJson: (value) => $$codec.encodeEnum(value),
+    constraints: [EnumConstraint(values: ContactType.values)],
+  );
+
   static final DataBean<Person> bean = DataBean<Person>(
     name: 'Person',
     fields: List<DataField<Person, dynamic>>.unmodifiable([
@@ -83,6 +92,7 @@ abstract interface class $Person with DataObject<Person> {
       $birthday,
       $isBlocked,
       $picture,
+      $type,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
@@ -102,6 +112,7 @@ abstract interface class $Person with DataObject<Person> {
     bool nullBirthday = false,
     bool? isBlocked,
     Uint8List? picture,
+    ContactType? type,
   }) {
     final $data = this as Person;
     return Person(
@@ -113,6 +124,7 @@ abstract interface class $Person with DataObject<Person> {
       birthday: nullBirthday ? null : (birthday ?? $data.birthday),
       isBlocked: isBlocked ?? $data.isBlocked,
       picture: picture ?? $data.picture,
+      type: type ?? $data.type,
     );
   }
 
@@ -126,6 +138,7 @@ abstract interface class $Person with DataObject<Person> {
       birthday: data['birthday'],
       isBlocked: data['isBlocked'],
       picture: data['picture'],
+      type: data['type'],
     );
   }
 
@@ -135,20 +148,38 @@ abstract interface class $Person with DataObject<Person> {
     }
     return Person(
       id: $id.fromJson(data['id'], name: DataCodec.childName(name, 'id')),
-      firstName: $firstName.fromJson(data['firstName'],
-          name: DataCodec.childName(name, 'firstName')),
-      lastName: $lastName.fromJson(data['lastName'],
-          name: DataCodec.childName(name, 'lastName')),
-      phone: $phone.fromJson(data['phone'],
-          name: DataCodec.childName(name, 'phone')),
-      email: $email.fromJson(data['email'],
-          name: DataCodec.childName(name, 'email')),
-      birthday: $birthday.fromJson(data['birthday'],
-          name: DataCodec.childName(name, 'birthday')),
-      isBlocked: $isBlocked.fromJson(data['isBlocked'],
-          name: DataCodec.childName(name, 'isBlocked')),
-      picture: $picture.fromJson(data['picture'],
-          name: DataCodec.childName(name, 'picture')),
+      firstName: $firstName.fromJson(
+        data['firstName'],
+        name: DataCodec.childName(name, 'firstName'),
+      ),
+      lastName: $lastName.fromJson(
+        data['lastName'],
+        name: DataCodec.childName(name, 'lastName'),
+      ),
+      phone: $phone.fromJson(
+        data['phone'],
+        name: DataCodec.childName(name, 'phone'),
+      ),
+      email: $email.fromJson(
+        data['email'],
+        name: DataCodec.childName(name, 'email'),
+      ),
+      birthday: $birthday.fromJson(
+        data['birthday'],
+        name: DataCodec.childName(name, 'birthday'),
+      ),
+      isBlocked: $isBlocked.fromJson(
+        data['isBlocked'],
+        name: DataCodec.childName(name, 'isBlocked'),
+      ),
+      picture: $picture.fromJson(
+        data['picture'],
+        name: DataCodec.childName(name, 'picture'),
+      ),
+      type: $type.fromJson(
+        data['type'],
+        name: DataCodec.childName(name, 'type'),
+      ),
     );
   }
 
@@ -164,6 +195,7 @@ abstract interface class $Person with DataObject<Person> {
       'birthday': $birthday.toJson($$data.birthday),
       'isBlocked': $isBlocked.toJson($$data.isBlocked),
       'picture': $picture.toJson($$data.picture),
+      'type': $type.toJson($$data.type),
     }..removeWhere((k, v) => v == null);
   }
 }
