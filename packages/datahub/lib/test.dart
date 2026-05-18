@@ -1,5 +1,6 @@
 // Utility for Unit- and Integration-testing
 export 'src/test/api/test_client.dart';
+export 'src/test/integration/compose_environment.dart';
 export 'src/test/matchers.dart';
 export 'src/test/test_host.dart';
 export 'src/test/utils/memory_repository.dart';

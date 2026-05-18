@@ -5,6 +5,8 @@ import 'package:datahub/telemetry.dart';
 
 import 'package:test/test.dart' as dart_test;
 
+import 'integration/compose_environment.dart';
+
 part 'test_runner_service.dart';
 
 class TestHost extends ServiceHost {
@@ -53,13 +55,41 @@ void declareTest(
   Object? skip,
   Map<String, dynamic> config = const {},
   List<File> configFiles = const [],
+  ComposeEnvironment? environment,
 }) {
   dart_test.group(name, () {
     TestHost? host;
+
+    final environmentConfig = <String, dynamic>{};
+    if (environment case final environment?) {
+      late final ComposeEnvironmentInstance environmentInstance;
+      dart_test.setUpAll(() async {
+        environmentInstance = await environment.up();
+        final servicesConfig = <String, Map<String, dynamic>>{};
+
+        for (final service in environmentInstance.servicePorts) {
+          final serviceConfig = servicesConfig[service.name] ??=
+              <String, dynamic>{};
+          serviceConfig['host'] ??= '127.0.0.1';
+          serviceConfig['port'] ??= service.hostPort;
+          serviceConfig[service.containerPort.toString()] ??= service.hostPort;
+        }
+
+        environmentConfig['test'] = {
+          'services': servicesConfig,
+          'composeProject': environmentInstance.projectId,
+        };
+      });
+
+      dart_test.tearDownAll(() async {
+        await environmentInstance.down();
+      });
+    }
+
     dart_test.setUp(() async {
       host = TestHost(
         components: components,
-        initialConfig: config,
+        initialConfig: {...environmentConfig, ...config},
         initialConfigFiles: configFiles,
         testBody: body,
       );
