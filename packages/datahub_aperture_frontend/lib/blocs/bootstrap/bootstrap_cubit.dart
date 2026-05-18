@@ -21,8 +21,8 @@ class BootstrapCubit extends Cubit<BootstrapState> {
   Future<void> _update() async {
     emit(BootstrapLoading());
     try {
-      final bootstrap = await _bootstrapRepository.fetch();
-      emit(BootstrapSuccess(bootstrap: bootstrap));
+      final (apiUrl, bootstrap) = await _bootstrapRepository.fetch();
+      emit(BootstrapSuccess(bootstrap: bootstrap, apiUrl: apiUrl));
     } catch (e) {
       switch (e) {
         case ApiRequestException(statusCode: 500):

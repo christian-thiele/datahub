@@ -9,13 +9,7 @@ environment:
   sdk: ^3.9.0
 
 dependencies:
-  analyzer: ^12.1.0
   boost: ^2.0.0
   build: ^4.0.5
   datahub: '>=0.18.0-dev.1 <1.0.0'
   source_gen: ^4.0.0
-
-dev_dependencies:
-  lints: ^6.0.0
-  test: ^1.31.0
-  build_runner: ^2.14.0

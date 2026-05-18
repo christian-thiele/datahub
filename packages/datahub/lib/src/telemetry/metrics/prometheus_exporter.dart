@@ -65,7 +65,7 @@ class PrometheusExporter extends MetricsExporter {
     }
 
     return HttpResponse(request.requestUri, 200, {
-      HttpHeaders.contentType: [Mime.plainText, 'version=0.0.4'],
+      HttpHeaders.contentType: ['${Mime.plainText}; version=0.0.4'],
     }, Stream.value(utf8.encode(buffer.toString())));
   }
 

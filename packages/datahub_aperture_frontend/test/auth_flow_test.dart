@@ -12,21 +12,26 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class MockBootstrapRepository implements BootstrapRepository {
+  final Uri apiUrl;
   final ApertureBootstrap bootstrap;
-  MockBootstrapRepository(this.bootstrap);
+
+  MockBootstrapRepository(this.apiUrl, this.bootstrap);
 
   @override
-  Future<ApertureBootstrap> fetch() async => bootstrap;
+  Future<(Uri, ApertureBootstrap)> fetch() async => (apiUrl, bootstrap);
 }
 
 class MockResourcesRepository implements ResourcesRepository {
   @override
   Future<List<ResourceDescription>> getDescriptions() async => [];
+
   @override
   Future<List<ModuleDescription>> getModules() async => [];
+
   @override
   Future<ResourceDescription> getDescription(String id) async =>
       throw UnimplementedError();
+
   @override
   Future<ResourceElementsResponse> getResourceElements(
     String resourceId, {
@@ -34,12 +39,14 @@ class MockResourcesRepository implements ResourcesRepository {
     int offset = 0,
     int limit = 25,
   }) async => throw UnimplementedError();
+
   @override
   Future<ResourceData> getResourceElement(
     String resourceId,
     String elementId, {
     int? version,
   }) async => throw UnimplementedError();
+
   @override
   Future<ResourceData> updateElement(
     String resourceId,
@@ -47,18 +54,21 @@ class MockResourcesRepository implements ResourcesRepository {
     Map<String, dynamic> changes,
     DateTime? from,
   ) async => throw UnimplementedError();
+
   @override
   Future<ResourceData> createElement(
     String resourceId,
     Map<String, dynamic> changes,
     DateTime? from,
   ) async => throw UnimplementedError();
+
   @override
   Future<ResourceData?> deleteElement(
     String resourceId,
     String elementId,
     DateTime? from,
   ) async => throw UnimplementedError();
+
   @override
   Future<Map<String, dynamic>> startElementAction(
     String resourceId,
@@ -109,20 +119,20 @@ void main() {
   late MockBootstrapRepository bootstrapRepository;
   late MockResourcesRepository resourcesRepository;
 
-  final bootstrapData = ApertureBootstrap(
-    baseUrl: 'http://localhost:8080',
-    environment: Environment.dev,
-    title: 'Test App',
-    oidcIssuer: 'https://issuer.com',
-    oidcClientId: 'client-id',
-    oidcClientSecret: 'client-secret',
-    oidcScopes: ['openid', 'profile'],
-    theme: ApertureTheme(color: Colors.blue.value, logo: null),
-  );
-
   setUp(() {
     authService = MockAuthService();
-    bootstrapRepository = MockBootstrapRepository(bootstrapData);
+    bootstrapRepository = MockBootstrapRepository(
+      Uri.parse('http://localhost:8080'),
+      ApertureBootstrap(
+        environment: Environment.dev,
+        title: 'Test App',
+        oidcIssuer: 'https://issuer.com',
+        oidcClientId: 'client-id',
+        oidcClientSecret: 'client-secret',
+        oidcScopes: ['openid', 'profile'],
+        theme: ApertureTheme(color: Colors.blue.toARGB32(), logo: null),
+      ),
+    );
     resourcesRepository = MockResourcesRepository();
   });
 

@@ -11,4 +11,3 @@ abstract interface class ServiceRegistry {
 
   void registerPostInitializationCallback(void Function() callback);
 }
-

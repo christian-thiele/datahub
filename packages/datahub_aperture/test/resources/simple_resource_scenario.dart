@@ -35,6 +35,7 @@ void main(List<String> args) => runApp([
           id: 0,
           firstName: 'Alice',
           lastName: 'Mock',
+          nicknames: ['Test'],
           address: 'Mockstreet 123, 012345 Mockingham',
           homeLocation: Point(wgs84, 13.406856, 52.519623),
         ),

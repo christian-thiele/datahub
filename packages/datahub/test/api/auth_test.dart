@@ -66,7 +66,8 @@ void main() {
               ResourceEndpoint(
                 matcher: RoutePattern('/public'),
                 get: (request) => ApiResponse.dynamic({
-                  'user': Context.zoneSession<TestSession?>()?.identity ?? false,
+                  'user':
+                      Context.zoneSession<TestSession?>()?.identity ?? false,
                 }),
               ),
               ResourceEndpoint(

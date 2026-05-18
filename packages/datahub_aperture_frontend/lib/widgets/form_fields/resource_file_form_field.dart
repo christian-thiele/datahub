@@ -68,9 +68,7 @@ class ResourceFileFormField extends StatelessWidget {
                 if (onChanged != null)
                   IconButton(
                     onPressed: () async {
-                      final result = await FilePicker.platform.pickFiles(
-                        withData: true,
-                      );
+                      final result = await FilePicker.pickFiles(withData: true);
 
                       if (result case final result?) {
                         if (result.files.first case PlatformFile(

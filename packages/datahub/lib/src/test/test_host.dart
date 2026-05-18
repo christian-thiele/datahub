@@ -25,7 +25,7 @@ class TestHost extends ServiceHost {
     return Scope(
       name: 'root',
       components: [
-        Scope(name: 'internal', components: [TelemetryService()]),
+        Scope(name: 'internal', components: [TelemetryService(), KeyService()]),
         Scope(name: 'application', components: components),
         Scope(name: 'test', components: [TestRunnerService()]),
       ],

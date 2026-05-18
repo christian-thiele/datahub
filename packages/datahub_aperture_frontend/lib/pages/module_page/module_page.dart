@@ -40,7 +40,7 @@ class ModulePage extends StatelessWidget {
                 ModuleType.taskManager =>
                   RepositoryProvider<TaskManagerRepository>(
                     create: (context) => ApiTaskManagerRepository(
-                      baseUrl: Bootstrap.of(context).baseUrl,
+                      baseUrl: Bootstrap.apiUrlOf(context),
                     ),
                     dispose: (repository) =>
                         (repository as ApiRepository).close(),

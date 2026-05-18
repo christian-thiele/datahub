@@ -212,17 +212,19 @@ class TelemetryService implements Service {
       defaultValue: 'DataHub',
     ),
     this.enableEndpoint = const Config<bool>(
-      'telemetry.prometheusExporter.enable',
+      'telemetry.prometheusExporter.enabled',
       defaultValue: false,
     ),
-    this.address = const Config<String?>('metrics.prometheusExporter.address'),
+    this.address = const Config<String?>(
+      'telemetry.prometheusExporter.address',
+    ),
     this.port = const Config<int>(
       'telemetry.prometheusExporter.port',
       defaultValue: 9090,
     ),
     this.path = const Config<String>(
       'telemetry.prometheusExporter.path',
-      defaultValue: 'metrics',
+      defaultValue: '/metrics',
     ),
     this.enableOtelExporter = const Config<bool>(
       'telemetry.openTelemetryExporter.enable',

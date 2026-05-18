@@ -49,15 +49,17 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
     final serveAddress = nullOrWhitespace(read(service.address))
         ? io.InternetAddress.anyIPv4
         : read(service.address);
+    final servePort = read(service.port);
 
     final socket = service.securityContext != null
         ? await io.SecureServerSocket.bind(
             serveAddress,
-            read(service.port),
+            servePort,
             service.securityContext,
           )
-        : await io.ServerSocket.bind(serveAddress, read(service.port));
+        : await io.ServerSocket.bind(serveAddress, servePort);
 
+    log.info('Listening on $serveAddress:$servePort');
     _server = HttpServer(
       socket,
       handleRequest,
