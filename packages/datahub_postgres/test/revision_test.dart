@@ -19,8 +19,13 @@ class TestSession implements Session {
 void main() {
   declareTest(
     'Revisable: Simple CRUD',
+    environment: ComposeEnvironment.fromFile(
+      'test/single-postgres.docker-compose.yml',
+    ),
     [
       PostgresqlService(
+        host: Config('test.services.postgres.host'),
+        port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
         username: Config.value('postgres'),
         password: Config.value('postgres'),
@@ -122,8 +127,13 @@ void main() {
 
   declareTest(
     'Revisable: Simple CRUD in transaction',
+    environment: ComposeEnvironment.fromFile(
+      'test/single-postgres.docker-compose.yml',
+    ),
     [
       PostgresqlService(
+        host: Config('test.services.postgres.host'),
+        port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
         username: Config.value('postgres'),
         password: Config.value('postgres'),
@@ -238,8 +248,13 @@ void main() {
 
   declareTest(
     'Revisable: Revive deleted element',
+    environment: ComposeEnvironment.fromFile(
+      'test/single-postgres.docker-compose.yml',
+    ),
     [
       PostgresqlService(
+        host: Config('test.services.postgres.host'),
+        port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
         username: Config.value('postgres'),
         password: Config.value('postgres'),
@@ -281,8 +296,13 @@ void main() {
 
   declareTest(
     'Revisable: Revive deleted element in transaction',
+    environment: ComposeEnvironment.fromFile(
+      'test/single-postgres.docker-compose.yml',
+    ),
     [
       PostgresqlService(
+        host: Config('test.services.postgres.host'),
+        port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
         username: Config.value('postgres'),
         password: Config.value('postgres'),

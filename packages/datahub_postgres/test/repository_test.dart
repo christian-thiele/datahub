@@ -8,8 +8,13 @@ import 'data/person.dart';
 void main() {
   declareTest(
     'Postgresql Table Repository',
+    environment: ComposeEnvironment.fromFile(
+      'test/single-postgres.docker-compose.yml',
+    ),
     [
       PostgresqlService(
+        host: Config('test.services.postgres.host'),
+        port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
         username: Config.value('postgres'),
         password: Config.value('postgres'),

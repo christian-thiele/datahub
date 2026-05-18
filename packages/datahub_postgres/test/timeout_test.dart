@@ -6,8 +6,13 @@ import 'package:test/expect.dart';
 void main() {
   declareTest(
     'PostgreSQL Pool Timeout Test',
+    environment: ComposeEnvironment.fromFile(
+      'test/single-postgres.docker-compose.yml',
+    ),
     [
       PostgresqlService(
+        host: Config('test.services.postgres.host'),
+        port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
         username: Config.value('postgres'),
         password: Config.value('postgres'),
@@ -35,10 +40,7 @@ void main() {
       ),
     ],
     () async {
-      final client = await RestClient.connect(
-        Uri.parse('http://localhost:8080/'),
-      );
-      log.error('help me!');
+      final client = Find<Api>().find().connectHttp11();
 
       final futures = [
         for (final _ in Iterable.generate(10))
