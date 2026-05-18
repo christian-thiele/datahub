@@ -25,8 +25,10 @@ class UspSection extends StatelessComponent {
                 ]),
                 p(classes: 'text-on-surface-variant max-w-2xl mx-auto', [
                   Component.text(
-                    "DataHub removes the friction between your code and the cloud. Everything you need is already here.",
+                    'DataHub removes the friction between your code and the cloud.',
                   ),
+                  br(),
+                  Component.text('Everything you need is already here.'),
                 ]),
               ],
             ),
@@ -95,7 +97,7 @@ class UspSection extends StatelessComponent {
                         h3(classes: 'text-2xl font-headline font-bold mb-3', [Component.text('Secure by Default')]),
                         p(classes: 'text-on-surface-variant', [
                           Component.text(
-                            'Enterprise-grade security baked in. No need to worry about authentication, access control or encryption. DataHub provides all the tools to develop secure systems from the start.',
+                            'Enterprise-grade security baked in. DataHub provides all the tools to develop secure systems from the start.',
                           ),
                         ]),
                       ],

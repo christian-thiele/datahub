@@ -47,11 +47,11 @@ ServerOptions get defaultServerOptions => ServerOptions(
     ),
   },
   styles: () => [
-    ..._zoomable_image.ZoomableImage.styles,
     ..._callout.Callout.styles,
     ..._code_block.CodeBlock.styles,
     ..._github_button.GitHubButton.styles,
     ..._image.Image.styles,
+    ..._zoomable_image.ZoomableImage.styles,
   ],
 );
 
