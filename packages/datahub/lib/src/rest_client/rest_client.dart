@@ -13,6 +13,7 @@ class RestClient {
   HttpAuth? auth;
 
   bool get isHttp2 => _httpClient.isHttp2;
+  int get port => _httpClient.address.port;
 
   RestClient(this._httpClient, {this.auth});
 

@@ -14,19 +14,22 @@ void main() {
       ApiService(
         routes: [
           ResourceEndpoint(
-            get: (request) {
-              sleep(const Duration(milliseconds: 5));
-              sleep(const Duration(milliseconds: 5));
-              sleep(const Duration(milliseconds: 5));
+            get: (request) async {
+              sleep(const Duration(milliseconds: 50));
+              await Future.delayed(const Duration(milliseconds: 10));
+              sleep(const Duration(milliseconds: 50));
+              await Future.delayed(const Duration(milliseconds: 10));
+              sleep(const Duration(milliseconds: 50));
             },
           ),
         ],
       ),
     ],
     () async {
+      final apiPort = Context.zoneFind(Find<Api>()).port;
       await Isolate.run(() async {
         final client = await RestClient.connect(
-          Uri.parse('http://localhost:8080'),
+          Uri(scheme: 'http', host: '127.0.0.1', port: apiPort),
         );
         await LoadClient(
           client,

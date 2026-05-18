@@ -378,8 +378,14 @@ void _decodeDouble() {
     codec.decodeNullable<double>('123.456', codec.decodeDouble),
     equals(123.456),
   );
-  expect(codec.decodeNullable<double>(123, codec.decodeDouble), allOf(equals(123), isA<double>()));
-  expect(codec.decodeNullable<double>('123', codec.decodeDouble), allOf(equals(123), isA<double>()));
+  expect(
+    codec.decodeNullable<double>(123, codec.decodeDouble),
+    allOf(equals(123), isA<double>()),
+  );
+  expect(
+    codec.decodeNullable<double>('123', codec.decodeDouble),
+    allOf(equals(123), isA<double>()),
+  );
   expect(codec.decodeNullable<double>(null, codec.decodeDouble), equals(null));
 
   expect(() => codec.decodeTyped<double>(null), throwsA(isA<CodecException>()));

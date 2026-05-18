@@ -11,6 +11,11 @@ import 'api_request.dart';
 import 'api_response.dart';
 import 'api_route.dart';
 
+abstract interface class Api {
+  late final io.InternetAddress address;
+  late final int port;
+}
+
 /// A Service that serves HTTP-Requests.
 ///
 /// The ApiService uses the datahub [HTTPServer], therefore supports
@@ -34,11 +39,17 @@ class ApiService implements Service {
   ServiceInstance<ApiService> createInstance() => _ApiServiceInstance();
 }
 
-class _ApiServiceInstance extends ServiceInstance<ApiService> {
+class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   late final HttpServer _server;
   late final List<ApiRoute> _routes;
 
   late final Telemetry telemetry;
+
+  @override
+  late final io.InternetAddress address;
+
+  @override
+  late final int port;
 
   @override
   FutureOr<void> initialize() async {
@@ -59,7 +70,19 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> {
           )
         : await io.ServerSocket.bind(serveAddress, servePort);
 
-    log.info('Listening on $serveAddress:$servePort');
+    address = switch (socket) {
+      io.ServerSocket(:final address) => address,
+      io.SecureServerSocket(:final address) => address,
+      _ => throw UnsupportedError('Invalid server socket type.'),
+    };
+
+    port = switch (socket) {
+      io.ServerSocket(:final port) => port,
+      io.SecureServerSocket(:final port) => port,
+      _ => throw UnsupportedError('Invalid server socket type.'),
+    };
+
+    log.info('Listening on ${address.address}:$port');
     _server = HttpServer(
       socket,
       handleRequest,

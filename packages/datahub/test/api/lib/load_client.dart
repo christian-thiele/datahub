@@ -12,7 +12,6 @@ class LoadClient {
     final requestCount = duration.inSeconds * rate;
     final requests = <Future>[];
     final responses = <dynamic>[];
-    stdout.write('Starting...');
 
     String n(int number) => number.toString().padLeft(4, ' ');
 
@@ -22,7 +21,7 @@ class LoadClient {
           .length;
       final failedCount = responses.length - successCount;
       final pendingCount = requests.length - responses.length;
-      stdout.write(
+      log.info(
         '\rSUCCESS: ${n(successCount)} FAIL: ${n(failedCount)} IN-FLIGHT: ${n(pendingCount)}',
       );
     }

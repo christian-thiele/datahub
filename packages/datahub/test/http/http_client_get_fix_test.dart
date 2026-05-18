@@ -20,12 +20,10 @@ void main() {
   declareTest(
     'Test GET Payload fix',
     [
-      ApiService(port: Config.value(8080), routes: [EchoLengthEndpoint()]),
+      ApiService(port: Config.value(0), routes: [EchoLengthEndpoint()]),
     ],
     () async {
-      final uri = Uri.parse('http://localhost:8080/');
-
-      final restClient = RestClient.connectHttp11(uri);
+      final restClient = Find<Api>().find().connectHttp11();
       final response = await restClient
           .get(
             '/',
@@ -38,7 +36,10 @@ void main() {
 
       expect(response['length'], equals(0));
 
-      final request = http.Request('GET', uri);
+      final request = http.Request(
+        'GET',
+        Uri(scheme: 'http', host: '127.0.0.1', port: restClient.port),
+      );
       request.headers.addAll({'accept': Mime.json});
 
       final response2 = await request.send().timeout(Duration(seconds: 20));

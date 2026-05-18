@@ -1,4 +1,5 @@
 import 'package:datahub/datahub.dart';
+import 'package:datahub/src/test/api/test_client.dart';
 import 'package:datahub/test.dart';
 import 'package:test/expect.dart';
 
@@ -10,6 +11,7 @@ void main() {
     [
       AuthService(),
       ApiService(
+        port: Config.value(0),
         routes: [
           ResourceEndpoint(
             matcher: RoutePattern('/public'),
@@ -29,9 +31,7 @@ void main() {
       ),
     ],
     () async {
-      final client = await RestClient.connect(
-        Uri.parse('http://localhost:8080/'),
-      );
+      final client = Find<Api>().find().connectHttp11();
       client.auth = null;
       expect(await client.get('/public'), isSuccess);
       expect(
@@ -59,6 +59,7 @@ void main() {
     [
       AuthService(),
       ApiService(
+        port: Config.value(0),
         routes: [
           BasicAuthMiddleware(
             requireSession: false,
@@ -82,9 +83,7 @@ void main() {
       ),
     ],
     () async {
-      final client = await RestClient.connect(
-        Uri.parse('http://localhost:8080/'),
-      );
+      final client = Find<Api>().find().connectHttp11();
       client.auth = null;
       expect(
         await client.get('/public').thenGetJsonBody(),

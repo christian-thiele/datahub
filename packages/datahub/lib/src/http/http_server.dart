@@ -46,7 +46,7 @@ class HttpServer {
       (socket) {
         socket.setOption(io.SocketOption.tcpNoDelay, true);
         if (socket is io.SecureSocket) {
-          log(
+          log.trace(
             'Incoming secure connection with selected protocol ${socket.selectedProtocol}.',
           );
           // ALPN first
