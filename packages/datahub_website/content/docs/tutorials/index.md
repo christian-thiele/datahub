@@ -4,10 +4,13 @@ layout: docs
 index: 200
 ---
 
-Coming soon! This section will feature step-by-step tutorials to help you build applications with DataHub.
+Step-by-step walkthroughs for building real things with DataHub.
 
-## Proposed Tutorials:
+## Planned
+
 - [ ] Building a REST API with DataHub
-- [ ] Working with PostgreSQL
-- [ ] Using AMQP for messaging
-- [ ] Building a custom Aperture dashboard
+- [ ] Connecting to PostgreSQL and using repositories
+- [ ] Adding authentication with JWT / OIDC
+- [ ] Exposing an admin UI with Aperture
+- [ ] Setting up Prometheus metrics and OpenTelemetry tracing
+- [ ] Writing integration tests with TestHost

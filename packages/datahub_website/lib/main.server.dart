@@ -43,6 +43,9 @@ void main() {
           grammars: {
             'shell': File('shell_grammar.json').readAsStringSync(),
             'bash': File('shell_grammar.json').readAsStringSync(),
+            'yaml': File('yaml_grammar.json').readAsStringSync(),
+            'yml': File('yaml_grammar.json').readAsStringSync(),
+            'json': File('json_grammar.json').readAsStringSync(),
           },
         ),
         Image(),

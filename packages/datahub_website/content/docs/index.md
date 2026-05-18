@@ -1,63 +1,31 @@
 ---
-title: Getting Started
+title: DataHub Documentation
 layout: docs
 ---
 
-# Welcome to Jaspr Content
+Welcome to the DataHub documentation. DataHub is a Dart framework for building modular, cloud-native backend services.
+It provides a declarative component system, dependency injection, configuration management, REST API scaffolding, data
+modelling, PostgreSQL persistence, and observability tools — all in a cohesive ecosystem.
 
-This is a sample content file. You can add more files here as needed.
+## [Getting Started](/docs/guides/getting-started)
 
----
+Install DataHub and build your first service in minutes.
 
-All standard **markdown syntax** is supported, including:
+## [Guides](/docs/guides)
 
-**Lists**:
+In-depth articles covering core concepts:
 
-- Item 1
-- Item 2
-    1. Nested item
-    2. Nested item 2
+- [Scaffolding](/docs/guides/scaffold)
+- [Configuration System](/docs/guides/config)
+- [Data Modelling](/docs/guides/data-modelling)
+- [Persistence & Repositories](/docs/guides/persistence)
+- [Telemetry](/docs/guides/telemetry)
+- [Authentication & Access Control](/docs/guides/auth)
 
-**Blockquotes**:
+## [Tutorials](/docs/tutorials)
 
-> This is a blockquote.  
-> It can span multiple lines.
+Step-by-step walkthroughs for common tasks.
 
-**Code blocks**:
+## [API Reference](/docs/api)
 
-```dart
-void main() {
-  print('Hello, world!');
-}
-```
-
-**Inline code**: Use `print('Hello, world!')` to display a message.
-
-**Links**: [Visit Jaspr](https://jaspr.dev)
-
-**Images**: ![Sample Image](https://placehold.co/600x400)
-
-**Tables**:
-
-| Syntax    | Description |
-|-----------|-------------|
-| Header 1  | Content 1   |
-| Header 2  | Content 2   |
-
-Welcome to the DataHub documentation. Here you can find everything you need to know about building robust applications with the DataHub ecosystem.
-
-## 🏁 [Tutorials](/docs/tutorials)
-Step-by-step guides to help you get started with common tasks and scenarios.
-
-## 📚 [Guides](/docs/guides)
-In-depth articles covering various aspects of DataHub, best practices, and advanced topics.
-
-## 🔌 [API Reference](/docs/api)
-Detailed technical documentation for all DataHub packages and modules.
-
----
-
-### Popular Topics:
-- [Understanding DataHub Modules](/docs/guides)
-- [Optimizing Data Serialization](/docs/guides)
-- [Working with DataHub Postgres](/docs/api/datahub_postgres)
+Complete API documentation for all packages.
