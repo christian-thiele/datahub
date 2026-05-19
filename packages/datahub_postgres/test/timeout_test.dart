@@ -21,6 +21,7 @@ void main() {
       ),
 
       ApiService(
+        port: Config.value(0),
         routes: [
           ResourceEndpoint(
             matcher: RoutePattern('/select'),
