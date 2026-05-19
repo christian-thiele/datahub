@@ -1,0 +1,33 @@
+name: Publish package datahub_postgres to pub.dev
+
+on:
+  push:
+    tags:
+      - 'release/datahub_postgres/*'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dart-lang/setup-dart@v1
+        with:
+          sdk: stable
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Analyze
+        run: dart run melos analyze
+
+      - name: Test
+        run: dart run melos test
+
+  publish:
+    needs: test
+    permissions:
+      id-token: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    with:
+      working-directory: packages/datahub_postgres
