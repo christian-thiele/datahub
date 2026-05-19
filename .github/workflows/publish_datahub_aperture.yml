@@ -3,7 +3,7 @@ name: Publish package datahub_aperture to pub.dev
 on:
   push:
     tags:
-      - 'release/datahub_aperture/*'
+      - 'datahub_aperture-v*'
 
 jobs:
   test:

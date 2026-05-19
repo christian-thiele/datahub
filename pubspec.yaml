@@ -25,13 +25,10 @@ workspace:
 
 melos:
   scripts:
-    analyze:
-      exec: dart analyze .
-
     build_runner:
       exec: dart run build_runner build
 
     test:
-      exec: dart test .
+      exec: dart test
       packageFilters:
         flutter: false

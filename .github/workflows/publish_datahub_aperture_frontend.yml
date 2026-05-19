@@ -3,7 +3,7 @@ name: Publish datahub_aperture_frontend image to ghcr.io
 on:
   push:
     tags:
-      - 'release/datahub_aperture_frontend/*'
+      - 'datahub_aperture_frontend-v*'
 
 jobs:
   test:

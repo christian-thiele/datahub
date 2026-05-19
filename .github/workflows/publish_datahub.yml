@@ -3,7 +3,7 @@ name: Publish package datahub to pub.dev
 on:
   push:
     tags:
-      - 'release/datahub/*'
+      - 'datahub-v*'
 
 jobs:
   test:

@@ -3,7 +3,7 @@ name: Publish package datahub_codegen to pub.dev
 on:
   push:
     tags:
-      - 'release/datahub_codegen/*'
+      - 'datahub_codegen-v*'
 
 jobs:
   test:

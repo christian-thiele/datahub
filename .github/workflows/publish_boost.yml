@@ -3,7 +3,7 @@ name: Publish package boost to pub.dev
 on:
   push:
     tags:
-      - 'release/boost/*'
+      - 'boost-v*'
 
 jobs:
   test:
