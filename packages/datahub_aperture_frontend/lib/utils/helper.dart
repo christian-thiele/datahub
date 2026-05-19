@@ -156,6 +156,7 @@ dynamic _decodeField(
 }
 
 extension ResourceDescriptionExtension on ResourceDescription {
+  // ignore: unused_element
   ResourceField? _fieldOf(ResourceField? parent, String path) {
     final parts = path.split('.');
     final ResourceField? field;

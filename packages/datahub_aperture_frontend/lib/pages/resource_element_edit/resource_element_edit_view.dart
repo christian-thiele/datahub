@@ -79,6 +79,7 @@ class ResourceElementEditView extends StatelessWidget {
                                     onActionPressed?.call(action.id),
                                 leadingIcon: Icon(
                                   IconData(
+                                    // ignore: non_const_argument_for_const_parameter
                                     action.icon,
                                     fontFamily: 'MaterialIcons',
                                   ),
