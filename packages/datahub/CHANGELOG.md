@@ -1,3 +1,7 @@
+## 0.18.0-dev.19
+
+ - **FIX**(ci): fixed timeout argon2id test on ci.
+
 ## 0.18.0-dev.18
 
  - **FIX**(ci): skip httpbin related tests due to CI issues.
