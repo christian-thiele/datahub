@@ -9,7 +9,6 @@ environment:
 dependencies:
   boost: ^2.0.0
   datahub: ^0.18.0-dev.1
-  datahub_postgres: ^0.18.0-dev.1
   pointycastle: 4.0.0
 
 dev_dependencies:

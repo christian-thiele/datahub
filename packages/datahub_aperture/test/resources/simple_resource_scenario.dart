@@ -13,7 +13,6 @@ void main(List<String> args) => runApp([
     routes: [
       ApertureApi(
         configDelegate: ApertureConfigDataDelegate(
-          baseUrl: 'http://localhost:8080/aperture',
           dataResources: [
             ApertureDataResource(
               $Person.bean,

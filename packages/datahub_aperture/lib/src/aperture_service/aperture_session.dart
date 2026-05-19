@@ -6,6 +6,7 @@ class ApertureSession implements Session {
   String get debugName => 'aperture-auth-${token.sub}';
 
   final Jwt token;
+  @override
   final String identity;
   final String username;
 

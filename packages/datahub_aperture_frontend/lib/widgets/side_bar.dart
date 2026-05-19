@@ -1,4 +1,3 @@
-import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 

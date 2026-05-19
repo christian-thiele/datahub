@@ -3,9 +3,10 @@ import 'dart:io' as io;
 import 'dart:typed_data';
 import 'package:boost/boost.dart';
 import 'package:datahub/src/http/socket_adapter.dart';
+// ignore: implementation_imports
 import 'package:http2/src/connection_preface.dart';
 
-enum HttpVersion { HTTP11, HTTP2 }
+enum HttpVersion { http11, http2 }
 
 class HttpConnection {
   static void detectProtocol(
@@ -17,10 +18,10 @@ class HttpConnection {
     readConnectionPreface(socket)
         .then((value) {
           switch (value.$2) {
-            case HttpVersion.HTTP11:
+            case HttpVersion.http11:
               http1(DetachedSocket(socket, value.$1));
               break;
-            case HttpVersion.HTTP2:
+            case HttpVersion.http2:
               http2(DetachedSocket(socket, value.$1));
               break;
           }
@@ -45,18 +46,18 @@ class HttpConnection {
       if (!completer.isCompleted) {
         if (data.length >= CONNECTION_PREFACE.length) {
           if (startsWithHttp2Preface(data)) {
-            completer.complete(HttpVersion.HTTP2);
+            completer.complete(HttpVersion.http2);
           } else {
-            completer.complete(HttpVersion.HTTP11);
+            completer.complete(HttpVersion.http11);
           }
         } else {
           final rest = CONNECTION_PREFACE.length - buffer.length;
           buffer.addAll(data.take(rest));
           if (buffer.length >= CONNECTION_PREFACE.length) {
             if (startsWithHttp2Preface(buffer)) {
-              completer.complete(HttpVersion.HTTP2);
+              completer.complete(HttpVersion.http2);
             } else {
-              completer.complete(HttpVersion.HTTP11);
+              completer.complete(HttpVersion.http11);
             }
           }
         }

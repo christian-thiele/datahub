@@ -20,16 +20,12 @@ class ApertureConfigDataDelegate implements ApertureConfigDelegate {
   @override
   final List<ApertureModule> modules;
 
-  @override
-  final String baseUrl;
-
   ApertureConfigDataDelegate({
     this.title = 'Aperture',
     this.theme = const ApertureTheme(),
     List<ApertureDataResource> dataResources = const [],
     List<ApertureDataAction> dataActions = const [],
     this.modules = const [],
-    required this.baseUrl,
   }) {
     final allBeans = dataResources.map((e) => e.bean);
 

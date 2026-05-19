@@ -1,5 +1,4 @@
 import 'package:datahub/datahub.dart';
-import 'package:datahub/src/test/api/test_client.dart';
 import 'package:datahub/test.dart';
 import 'package:test/expect.dart';
 

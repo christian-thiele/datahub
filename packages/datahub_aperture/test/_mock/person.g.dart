@@ -48,7 +48,7 @@ abstract interface class $Person with DataObject<Person> {
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
     constraints: [
       const ElementConstraint<String?, List<String?>>(
-        constraint: const RegExpConstraint<String?>(expression: '^[^\\s]*\$'),
+        constraint: RegExpConstraint<String?>(expression: '^[^\\s]*\$'),
       ),
     ],
   );
