@@ -21,7 +21,7 @@ jobs:
           sdk: stable
 
       - name: Install dependencies
-        run: dart pub get
+        run: flutter pub get
 
       - name: Analyze
         run: dart run melos analyze
