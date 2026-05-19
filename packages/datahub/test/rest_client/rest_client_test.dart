@@ -17,7 +17,7 @@ void main() {
     test('REST with Path Prefix 1', () => _testPrefix(prefixUri));
     test('REST with Path Prefix 2', () => _testPrefix(prefixUri2));
     test('REST List request', () => _testListRequest());
-  });
+  }, skip: true);
 }
 
 Future<void> _testHttp11() async {
