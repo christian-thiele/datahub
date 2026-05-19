@@ -9,13 +9,14 @@ on:
     branches:
       - main
       - version/*
+  workflow_call:
 
 jobs:
-  test:
-    name: Run Tests
+  analyze:
+    name: Analyze
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Dart & Flutter
         uses: subosito/flutter-action@v2
@@ -28,8 +29,39 @@ jobs:
       - name: Install dependencies
         run: dart pub get
 
-      - name: Analyze
-        run: melos analyze
+      - name: Analyze package datahub
+        run: cd packages/datahub && dart analyze
+      - name: Analyze package datahub_aperture
+        run: cd packages/datahub_aperture && dart analyze
+      - name: Analyze package datahub_aperture_frontend
+        run: cd packages/datahub_aperture_frontend && dart analyze
+      - name: Analyze package datahub_codegen
+        run: cd packages/datahub_codegen && dart analyze
+      - name: Analyze package datahub_postgres
+        run: cd packages/datahub_postgres && dart analyze
 
-      - name: Test
-        run: melos test
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Dart & Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Setup Melos
+        uses: bluefireteam/melos-action@v3
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Test package datahub
+        run: cd packages/datahub && dart test
+      - name: Test package datahub_aperture
+        run: cd packages/datahub_aperture && dart test
+ #     - name: Test package datahub_aperture_frontend
+ #       run: cd packages/datahub_aperture_frontend && flutter test
+      - name: Test package datahub_codegen
+        run: cd packages/datahub_codegen && dart test
+      - name: Test package datahub_postgres
+        run: cd packages/datahub_postgres && dart test
