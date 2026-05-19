@@ -6,7 +6,7 @@ environment:
 
 dependencies:
   analyzer: ^10.0.0
-  meta: 1.17.0
+  meta: ^1.18.0
 
 dev_dependencies:
   datahub_codegen: ^0.18.0-dev.4
