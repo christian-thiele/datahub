@@ -12,6 +12,7 @@ void main() {
     'Mainthred Overload',
     [
       ApiService(
+        port: Config.value(0),
         routes: [
           ResourceEndpoint(
             get: (request) async {
