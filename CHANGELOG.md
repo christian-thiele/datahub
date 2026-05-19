@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.8`](#datahub_aperture_frontend---v010-dev8)
+
+---
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.8`
+
+ - **DOCS**: fixed README.md.
+
+
+## 2026-05-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`datahub` - `v0.18.0-dev.19`](#datahub---v0180-dev19)
  - [`datahub_aperture_frontend` - `v0.1.0-dev.7`](#datahub_aperture_frontend---v010-dev7)
  - [`datahub_aperture` - `v0.1.0-dev.10`](#datahub_aperture---v010-dev10)
