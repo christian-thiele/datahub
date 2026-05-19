@@ -43,8 +43,8 @@ dependencies:
   latlong2: ^0.9.1
   geojson_vi: ^2.2.5
 
-  datahub: ^0.18.0-dev.16
-  datahub_aperture: ^0.1.0-dev.7
+  datahub: ^0.18.0-dev.17
+  datahub_aperture: ^0.1.0-dev.8
   url_launcher: ^6.3.2
   pointycastle: ^4.0.0
   web: ^1.1.1

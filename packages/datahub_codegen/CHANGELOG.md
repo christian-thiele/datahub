@@ -1,3 +1,7 @@
+## 0.18.0-dev.6
+
+ - **FIX**(ci): use melos conventions.
+
 ## 0.18.0-dev.5
 
  - Update a dependency to the latest release.
