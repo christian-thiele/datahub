@@ -1,6 +1,6 @@
 name: datahub_aperture
 description: An easy to use administration frontend for DataHub services.
-version: 0.1.0-dev.8
+version: 0.1.0-dev.9
 resolution: workspace
 
 environment:

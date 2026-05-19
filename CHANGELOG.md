@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`datahub_aperture` - `v0.1.0-dev.9`](#datahub_aperture---v010-dev9)
+
+---
+
+#### `datahub_aperture` - `v0.1.0-dev.9`
+
+ - Bump "datahub_aperture" to `0.1.0-dev.9`.
+
+
+## 2026-05-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`datahub` - `v0.18.0-dev.17`](#datahub---v0180-dev17)
  - [`datahub_aperture` - `v0.1.0-dev.8`](#datahub_aperture---v010-dev8)
  - [`datahub_codegen` - `v0.18.0-dev.6`](#datahub_codegen---v0180-dev6)
