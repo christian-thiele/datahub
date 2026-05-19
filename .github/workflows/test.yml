@@ -12,9 +12,54 @@ on:
   workflow_call:
 
 jobs:
-  analyze:
-    name: Analyze
+  setup:
+    name: Discover packages
     runs-on: ubuntu-latest
+    outputs:
+      all_packages: ${{ steps.discover.outputs.all_packages }}
+      dart_packages: ${{ steps.discover.outputs.dart_packages }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Discover workspace packages
+        id: discover
+        run: |
+          python3 - <<'EOF'
+          import json, os, yaml
+
+          with open('pubspec.yaml') as f:
+              root = yaml.safe_load(f)
+
+          all_packages = []
+          dart_packages = []
+
+          for path in root.get('workspace', []):
+              name = path.split('/')[-1]
+              pkg = {'path': path, 'name': name}
+              all_packages.append(pkg)
+
+              pkg_pubspec_path = os.path.join(path, 'pubspec.yaml')
+              if os.path.exists(pkg_pubspec_path):
+                  with open(pkg_pubspec_path) as f:
+                      data = yaml.safe_load(f)
+                  deps = data.get('dependencies', {})
+                  is_flutter = isinstance(deps.get('flutter'), dict)
+                  if not is_flutter:
+                      dart_packages.append(pkg)
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write(f"all_packages={json.dumps(all_packages)}\n")
+              out.write(f"dart_packages={json.dumps(dart_packages)}\n")
+          EOF
+
+  analyze:
+    name: Analyze / ${{ matrix.package.name }}
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.setup.outputs.all_packages) }}
     steps:
       - uses: actions/checkout@v6
 
@@ -22,46 +67,47 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable
+          cache: true
 
-      - name: Setup Melos
-        uses: bluefireteam/melos-action@v3
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: pub-${{ runner.os }}-
 
       - name: Install dependencies
         run: dart pub get
 
-      - name: Analyze package datahub
-        run: cd packages/datahub && dart analyze
-      - name: Analyze package datahub_aperture
-        run: cd packages/datahub_aperture && dart analyze
-      - name: Analyze package datahub_aperture_frontend
-        run: cd packages/datahub_aperture_frontend && dart analyze
-      - name: Analyze package datahub_codegen
-        run: cd packages/datahub_codegen && dart analyze
-      - name: Analyze package datahub_postgres
-        run: cd packages/datahub_postgres && dart analyze
+      - name: Analyze
+        run: cd ${{ matrix.package.path }} && dart analyze
 
   test:
-    name: Tests
+    name: Test / ${{ matrix.package.name }}
+    needs: setup
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.setup.outputs.dart_packages) }}
     steps:
       - uses: actions/checkout@v6
+
       - name: Setup Dart & Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: stable
-      - name: Setup Melos
-        uses: bluefireteam/melos-action@v3
+          cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: pub-${{ runner.os }}-
 
       - name: Install dependencies
         run: dart pub get
 
-      - name: Test package datahub
-        run: cd packages/datahub && dart test
-      - name: Test package datahub_aperture
-        run: cd packages/datahub_aperture && dart test
- #     - name: Test package datahub_aperture_frontend
- #       run: cd packages/datahub_aperture_frontend && flutter test
-      - name: Test package datahub_codegen
-        run: cd packages/datahub_codegen && dart test
-      - name: Test package datahub_postgres
-        run: cd packages/datahub_postgres && dart test
+      - name: Test
+        run: cd ${{ matrix.package.path }} && dart test
