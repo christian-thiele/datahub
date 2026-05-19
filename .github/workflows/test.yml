@@ -12,6 +12,7 @@ on:
 
 jobs:
   test:
+    name: Run Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -21,11 +22,14 @@ jobs:
         with:
           channel: stable
 
+      - name: Setup Melos
+        uses: bluefireteam/melos-action@v3
+
       - name: Install dependencies
-        run: flutter pub get
+        run: dart pub get
 
       - name: Analyze
-        run: dart run melos analyze
+        run: melos analyze
 
       - name: Test
-        run: dart run melos test
+        run: melos test
