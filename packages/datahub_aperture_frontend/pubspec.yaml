@@ -4,7 +4,7 @@ resolution: workspace
 
 publish_to: 'none'
 
-version: 0.1.0-dev.6
+version: 0.1.0-dev.7
 
 environment:
   sdk: ^3.9.0
@@ -43,8 +43,8 @@ dependencies:
   latlong2: ^0.9.1
   geojson_vi: ^2.2.5
 
-  datahub: ^0.18.0-dev.18
-  datahub_aperture: ^0.1.0-dev.9
+  datahub: ^0.18.0-dev.19
+  datahub_aperture: ^0.1.0-dev.10
   url_launcher: ^6.3.2
   pointycastle: ^4.0.0
   web: ^1.1.1
