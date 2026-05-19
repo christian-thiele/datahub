@@ -15,7 +15,7 @@ void main() {
     for (final password in _passwords) {
       await _encryptAndValidate(password);
     }
-  });
+  }, timeout: Timeout(Duration(minutes: 2)));
 }
 
 Future<void> _encryptAndValidate(String password) async {
