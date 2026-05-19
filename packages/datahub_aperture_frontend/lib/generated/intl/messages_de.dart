@@ -22,7 +22,7 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m0(userName) => "von ${userName}";
 
-  static String m1(resourceName) => "Neue ${resourceName}";
+  static String m1(resourceName) => "${resourceName} hinzufügen";
 
   static String m2(length) => "Wert zu lang. (> ${length})";
 
@@ -52,7 +52,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "password": MessageLookupByLibrary.simpleMessage("Passwort"),
     "refresh": MessageLookupByLibrary.simpleMessage("Aktualisieren"),
     "resourceDeleted": MessageLookupByLibrary.simpleMessage(
-      "Ressource Gelöscht.",
+      "Ressource gelöscht.",
     ),
     "resourceSaved": MessageLookupByLibrary.simpleMessage("Gespeichert!"),
     "revert": MessageLookupByLibrary.simpleMessage("Zurücksetzen"),
@@ -63,7 +63,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "revisionVersion": MessageLookupByLibrary.simpleMessage("Version #"),
     "save": MessageLookupByLibrary.simpleMessage("Speichern"),
     "saveAndSchedule": MessageLookupByLibrary.simpleMessage(
-      "Speichern und Planen",
+      "Speichern und planen",
     ),
     "saveAsDraft": MessageLookupByLibrary.simpleMessage(
       "Als Entwurf Speichern",
