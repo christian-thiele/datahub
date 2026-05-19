@@ -20,7 +20,6 @@ void main() {
 
 Future<void> _encryptAndValidate(String password) async {
   final hash = await Argon2Id.createEncodedHash(password);
-  print('$password -> $hash');
   expect(hash, startsWith('\$argon2id'));
   expect(Argon2Id.verify(password, hash), completion(isTrue));
   for (final wrongPassword in _passwords.where((p) => p != password)) {
