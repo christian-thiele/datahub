@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-05-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub_codegen` - `v0.18.0-dev.9`](#datahub_codegen---v0180-dev9)
+
+---
+
+#### `datahub_codegen` - `v0.18.0-dev.9`
+
+ - **FIX**(codegen): fixed nullable enum with library prefix.
+
+
 ## 2026-05-19
 
 ### Changes
