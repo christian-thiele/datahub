@@ -54,7 +54,7 @@ class CodecHelper {
     }
 
     if (type.element is EnumElement) {
-      return '(v, {String? name}) => $codec.decodeEnum(v, ${type.element!.displayName}.values, name: name)';
+      return '(v, {String? name}) => $codec.decodeEnum(v, ${typeImportPrefix(type, library)}${type.element!.displayName}.values, name: name)';
     }
 
     if (type.isDartCoreList || type.isDartCoreMap) {

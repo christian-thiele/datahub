@@ -2,7 +2,7 @@ import 'dart:typed_data';
 
 import 'package:datahub/data.dart';
 
-import 'contact_type.dart';
+import 'contact_type.dart' as ext;
 
 part 'person.g.dart';
 
@@ -16,7 +16,7 @@ class Person extends $Person {
   final DateTime? birthday;
   final bool isBlocked;
   final Uint8List picture;
-  final ContactType type;
+  final ext.ContactType? type;
 
   const Person({
     this.id = 0,

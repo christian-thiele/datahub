@@ -72,13 +72,17 @@ abstract interface class $Person with DataObject<Person> {
     toJson: (value) => $$codec.encodeUint8List(value),
   );
 
-  static final $type = DataField<Person, ContactType>(
+  static final $type = DataField<Person, ext.ContactType?>(
     name: 'type',
     valueOf: (p) => p.type,
-    fromJson: (value, {String? name}) =>
-        $$codec.decodeEnum(value, ContactType.values, name: name),
-    toJson: (value) => $$codec.encodeEnum(value),
-    constraints: [EnumConstraint(values: ContactType.values)],
+    fromJson: (value, {String? name}) => $$codec.decodeNullable(
+      value,
+      (v, {String? name}) =>
+          $$codec.decodeEnum(v, ext.ContactType.values, name: name),
+      name: name,
+    ),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeEnum),
+    constraints: [EnumConstraint(values: ext.ContactType.values)],
   );
 
   static final DataBean<Person> bean = DataBean<Person>(
@@ -112,7 +116,8 @@ abstract interface class $Person with DataObject<Person> {
     bool nullBirthday = false,
     bool? isBlocked,
     Uint8List? picture,
-    ContactType? type,
+    ext.ContactType? type,
+    bool nullType = false,
   }) {
     final $data = this as Person;
     return Person(
@@ -124,7 +129,7 @@ abstract interface class $Person with DataObject<Person> {
       birthday: nullBirthday ? null : (birthday ?? $data.birthday),
       isBlocked: isBlocked ?? $data.isBlocked,
       picture: picture ?? $data.picture,
-      type: type ?? $data.type,
+      type: nullType ? null : (type ?? $data.type),
     );
   }
 
