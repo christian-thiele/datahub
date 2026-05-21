@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:boost/boost.dart';
+import 'package:datahub/config.dart';
 import 'package:datahub/utils.dart';
 import 'package:yaml/yaml.dart';
 
@@ -111,6 +112,20 @@ class ComposeEnvironmentInstance {
     required this.projectId,
     required this.servicePorts,
   });
+
+  Map<String, dynamic> buildConfiguration({List<(String, String)>? remap}) {
+    final servicesConfig = <String, Map<String, dynamic>>{};
+
+    for (final service in servicePorts) {
+      final serviceConfig = servicesConfig[service.name] ??=
+          <String, dynamic>{};
+      serviceConfig['host'] ??= '127.0.0.1';
+      serviceConfig['port'] ??= service.hostPort;
+      serviceConfig[service.containerPort.toString()] ??= service.hostPort;
+    }
+
+    return {'services': servicesConfig, 'composeProject': projectId};
+  }
 
   Future<void> down() async {
     final process = await io.Process.start('docker', [

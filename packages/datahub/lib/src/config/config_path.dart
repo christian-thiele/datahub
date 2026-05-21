@@ -21,6 +21,8 @@ class ConfigPath {
   ConfigPath join(ConfigPath path) =>
       ConfigPath.fromParts([...parts, ...path.parts]);
 
+  dynamic getFrom(dynamic values) => _getFrom(parts, values);
+
   /// Creates a [ConfigPath] selecting [value] in [this] path.
   ConfigPath operator [](String value) =>
       ConfigPath.fromParts([...parts, ...value.split('.')]);
@@ -36,4 +38,17 @@ class ConfigPath {
   String toString() => parts.join('.');
 
   static bool _isValidPart(String part) => _regex.hasMatch(part);
+
+  static dynamic _getFrom(Iterable<String> path, dynamic values) {
+    if (path.isEmpty) {
+      return values;
+    }
+
+    if (values is! Map<String, dynamic> || !values.containsKey(path.first)) {
+      return null;
+    }
+
+    final next = values[path.first];
+    return _getFrom(path.skip(1), next);
+  }
 }

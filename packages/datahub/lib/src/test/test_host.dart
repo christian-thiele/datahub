@@ -14,16 +14,9 @@ part 'test_runner_service.dart';
 
 class TestHost extends ServiceHost {
   final List<Component> components;
-  final Map<String, dynamic> initialConfig;
-  final List<File> initialConfigFiles;
   final FutureOr<void> Function() testBody;
 
-  TestHost({
-    required this.components,
-    required this.initialConfig,
-    required this.initialConfigFiles,
-    required this.testBody,
-  });
+  TestHost({required this.components, required this.testBody});
 
   @override
   Component buildRoot() {
@@ -53,15 +46,6 @@ class TestHost extends ServiceHost {
       ],
     );
   }
-
-  @override
-  Future<void> initialize() async {
-    for (final file in initialConfigFiles) {
-      configuration.addConfigFile(file);
-    }
-    configuration.addConfigMap(initialConfig);
-    return await super.initialize();
-  }
 }
 
 @isTest
@@ -86,25 +70,12 @@ void declareTest(
   dart_test.group(name, () {
     TestHost? host;
 
-    final environmentConfig = <String, dynamic>{};
+    Map<String, dynamic>? environmentConfig;
     if (environment case final environment?) {
       late final ComposeEnvironmentInstance environmentInstance;
       dart_test.setUpAll(() async {
         environmentInstance = await environment.up();
-        final servicesConfig = <String, Map<String, dynamic>>{};
-
-        for (final service in environmentInstance.servicePorts) {
-          final serviceConfig = servicesConfig[service.name] ??=
-              <String, dynamic>{};
-          serviceConfig['host'] ??= '127.0.0.1';
-          serviceConfig['port'] ??= service.hostPort;
-          serviceConfig[service.containerPort.toString()] ??= service.hostPort;
-        }
-
-        environmentConfig['test'] = {
-          'services': servicesConfig,
-          'composeProject': environmentInstance.projectId,
-        };
+        environmentConfig = {'test': environmentInstance.buildConfiguration()};
       });
 
       dart_test.tearDownAll(() async {
@@ -113,13 +84,13 @@ void declareTest(
     }
 
     dart_test.setUp(() async {
-      host = TestHost(
-        components: components,
-        initialConfig: {...environmentConfig, ...config},
-        initialConfigFiles: configFiles,
-        testBody: body,
-      );
-      await host?.initialize();
+      final testHost = TestHost(components: components, testBody: body);
+      for (final file in configFiles) {
+        testHost.configuration.addConfigFile(file);
+      }
+      testHost.configuration.addConfigMap(config);
+      await testHost.initialize();
+      host = testHost;
     });
 
     dart_test.test(
@@ -137,6 +108,7 @@ void declareTest(
       if (host?.state == ServiceHostState.initialized) {
         await host?.shutdown();
       }
+      host = null;
     });
   }, location: testLocation);
 }

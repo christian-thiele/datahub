@@ -18,7 +18,7 @@ class Configuration {
       Environment.dev;
 
   T read<T>(ConfigPath path) {
-    final raw = _getFrom(path.parts, _configMap);
+    final raw = path.getFrom(_configMap);
     if (raw == null) {
       if (null is T) {
         return null as T;
@@ -84,7 +84,7 @@ class Configuration {
       final value = configArgument.substring(splitPoint + 1);
       addValue(path, value);
     } else {
-      log.error('Invalid command line argument "$configArgument".');
+      log.error('Invalid config directive "$configArgument".');
     }
   }
 
@@ -111,7 +111,7 @@ class Configuration {
   }
 
   /// Merges [map] into this configuration.
-  void addConfigMap(Map<String, dynamic> map) {
+  void addConfigMap(Map map) {
     merge(_configMap, map);
   }
 
@@ -126,7 +126,14 @@ class Configuration {
   /// primitives will replace existing values.
   ///
   /// Keys in [source] that are not of type [String] will be ignored.
-  static void merge(Map<String, dynamic> target, Map source) {
+  ///
+  /// [referenceRoot] is used to resolve configuration references ($-syntax).
+  /// If null, [target] will be used as reference root.
+  static void merge(
+    Map<String, dynamic> target,
+    Map source, {
+    Map<String, dynamic>? referenceRoot,
+  }) {
     dynamic clean(dynamic v) {
       if (v is Map) {
         // avoid unmodifiable maps
@@ -135,6 +142,11 @@ class Configuration {
         return map;
       } else if (v is Iterable) {
         return v.map(clean).toList();
+      } else if (v case final String str when str.startsWith('\\\$')) {
+        // escaping leading $ (reference syntax) with \$
+        return str.substring(1);
+      } else if (v case final String str when str.startsWith('\$')) {
+        return ConfigPath(str.substring(1)).getFrom(referenceRoot ?? target);
       } else {
         return v;
       }
@@ -169,18 +181,5 @@ class Configuration {
       value,
       (v, k) => <String, dynamic>{k: v},
     );
-  }
-
-  static dynamic _getFrom(Iterable<String> path, dynamic values) {
-    if (path.isEmpty) {
-      return values;
-    }
-
-    if (values is! Map<String, dynamic> || !values.containsKey(path.first)) {
-      return null;
-    }
-
-    final next = values[path.first];
-    return _getFrom(path.skip(1), next);
   }
 }
