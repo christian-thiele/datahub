@@ -85,6 +85,9 @@ void declareTest(
 
     dart_test.setUp(() async {
       final testHost = TestHost(components: components, testBody: body);
+      if (environmentConfig case final config?) {
+        testHost.configuration.addConfigMap(config);
+      }
       for (final file in configFiles) {
         testHost.configuration.addConfigFile(file);
       }

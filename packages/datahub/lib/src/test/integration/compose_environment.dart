@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io' as io;
 
 import 'package:boost/boost.dart';
-import 'package:datahub/config.dart';
 import 'package:datahub/utils.dart';
 import 'package:yaml/yaml.dart';
 
