@@ -35,19 +35,6 @@ class Configuration {
     }
   }
 
-  static dynamic _getFrom(Iterable<String> path, dynamic values) {
-    if (path.isEmpty) {
-      return values;
-    }
-
-    if (values is! Map<String, dynamic> || !values.containsKey(path.first)) {
-      return null;
-    }
-
-    final next = values[path.first];
-    return _getFrom(path.skip(1), next);
-  }
-
   T readEnum<T>(ConfigPath path, List<T> values) {
     final String value;
     if (null is T) {
@@ -66,6 +53,14 @@ class Configuration {
           values.whereType<Enum>().toList(),
         )
         as T;
+  }
+
+  /// Adds a single value value to the configuration map.
+  ///
+  /// The value can be a primitive, [Map] or [List].
+  /// Maps will be merged while Lists and primitives will be replaced.
+  void addValue(ConfigPath path, dynamic value) {
+    addConfigMap(createSubtree(path, value));
   }
 
   /// Add a single config value by using the command line syntax.
@@ -87,7 +82,7 @@ class Configuration {
     if (splitPoint > 0) {
       final path = ConfigPath(configArgument.substring(0, splitPoint));
       final value = configArgument.substring(splitPoint + 1);
-      _merge(_configMap, _singleValueAsMap(path, value));
+      addValue(path, value);
     } else {
       log.error('Invalid command line argument "$configArgument".');
     }
@@ -104,11 +99,9 @@ class Configuration {
     final stringContent = configFile.readAsStringSync();
     final ext = extension(configFile.path);
     if (ext == '.yaml' || ext == '.yml') {
-      final content = loadYaml(stringContent);
-      _merge(_configMap, content);
+      addConfigMap(loadYaml(stringContent));
     } else if (ext == '.json') {
-      final content = jsonDecode(stringContent);
-      _merge(_configMap, content);
+      addConfigMap(jsonDecode(stringContent));
     } else {
       throw Exception(
         'Unknown config file type of file ${configFile.path}. '
@@ -117,17 +110,28 @@ class Configuration {
     }
   }
 
-  /// Add values to the config map.
+  /// Merges [map] into this configuration.
   void addConfigMap(Map<String, dynamic> map) {
-    _merge(_configMap, map);
+    merge(_configMap, map);
   }
 
-  static void _merge(Map<String, dynamic> target, Map map) {
+  /// Merges values from [configuration] into this configuration.
+  void addConfiguration(Configuration configuration) {
+    addConfigMap(configuration._configMap);
+  }
+
+  /// Merges [source] into [target].
+  ///
+  /// Maps that already exist in [target] will be merged while lists and
+  /// primitives will replace existing values.
+  ///
+  /// Keys in [source] that are not of type [String] will be ignored.
+  static void merge(Map<String, dynamic> target, Map source) {
     dynamic clean(dynamic v) {
       if (v is Map) {
         // avoid unmodifiable maps
         final map = <String, dynamic>{};
-        _merge(map, v);
+        merge(map, v);
         return map;
       } else if (v is Iterable) {
         return v.map(clean).toList();
@@ -136,20 +140,20 @@ class Configuration {
       }
     }
 
-    for (final entry in map.entries) {
+    for (final entry in source.entries) {
       if (entry.key is! String) {
         continue;
       }
 
       if (target[entry.key] is Map<String, dynamic> && entry.value is Map) {
-        _merge(target[entry.key], entry.value);
+        merge(target[entry.key], entry.value);
       } else {
         target[entry.key] = clean(entry.value);
       }
     }
   }
 
-  Map<String, dynamic> _singleValueAsMap(ConfigPath path, dynamic value) {
+  static Map<String, dynamic> createSubtree(ConfigPath path, dynamic value) {
     if (path.isRoot) {
       if (value is Map<String, dynamic>) {
         return value;
@@ -165,5 +169,18 @@ class Configuration {
       value,
       (v, k) => <String, dynamic>{k: v},
     );
+  }
+
+  static dynamic _getFrom(Iterable<String> path, dynamic values) {
+    if (path.isEmpty) {
+      return values;
+    }
+
+    if (values is! Map<String, dynamic> || !values.containsKey(path.first)) {
+      return null;
+    }
+
+    final next = values[path.first];
+    return _getFrom(path.skip(1), next);
   }
 }
