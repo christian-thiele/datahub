@@ -79,19 +79,13 @@ void main() {
   group('Configuration - reference syntax', () {
     test('resolves simple reference', () {
       final config = Configuration();
-      config.addConfigMap({
-        'original': 'hello',
-        'reference': r'$original',
-      });
+      config.addConfigMap({'original': 'hello', 'reference': r'$original'});
       expect(config.read<String>(ConfigPath('reference')), 'hello');
     });
 
     test('resolves int reference', () {
       final config = Configuration();
-      config.addConfigMap({
-        'port': 8080,
-        'servicePort': r'$port',
-      });
+      config.addConfigMap({'port': 8080, 'servicePort': r'$port'});
       expect(config.read<int>(ConfigPath('servicePort')), 8080);
     });
 
@@ -113,15 +107,18 @@ void main() {
       );
     });
 
-    test('forward reference (target defined after reference) resolves to null', () {
-      // Map iteration order is insertion order; forward references can't resolve.
-      final config = Configuration();
-      config.addConfigMap({
-        'reference': r'$original', // processed before 'original' is in target
-        'original': 'hello',
-      });
-      expect(config.read<String?>(ConfigPath('reference')), isNull);
-    });
+    test(
+      'forward reference (target defined after reference) resolves to null',
+      () {
+        // Map iteration order is insertion order; forward references can't resolve.
+        final config = Configuration();
+        config.addConfigMap({
+          'reference': r'$original', // processed before 'original' is in target
+          'original': 'hello',
+        });
+        expect(config.read<String?>(ConfigPath('reference')), isNull);
+      },
+    );
   });
 
   group('Configuration - reference escaping', () {
@@ -133,10 +130,7 @@ void main() {
 
     test(r'escaped \$ does not resolve even when target key exists', () {
       final config = Configuration();
-      config.addConfigMap({
-        'target': 'resolved',
-        'escaped': r'\$target',
-      });
+      config.addConfigMap({'target': 'resolved', 'escaped': r'\$target'});
       expect(config.read<String>(ConfigPath('escaped')), r'$target');
     });
 
@@ -150,10 +144,7 @@ void main() {
   group('Configuration - circular references', () {
     test('direct circular reference resolves to null', () {
       final config = Configuration();
-      config.addConfigMap({
-        'a': r'$b',
-        'b': r'$a',
-      });
+      config.addConfigMap({'a': r'$b', 'b': r'$a'});
       // Whichever is processed first sees the other as unresolved.
       expect(config.read<dynamic>(ConfigPath('a')), isNull);
       expect(config.read<dynamic>(ConfigPath('b')), isNull);
@@ -167,11 +158,7 @@ void main() {
 
     test('three-way circular reference all resolve to null', () {
       final config = Configuration();
-      config.addConfigMap({
-        'a': r'$b',
-        'b': r'$c',
-        'c': r'$a',
-      });
+      config.addConfigMap({'a': r'$b', 'b': r'$c', 'c': r'$a'});
       expect(config.read<dynamic>(ConfigPath('a')), isNull);
       expect(config.read<dynamic>(ConfigPath('b')), isNull);
       expect(config.read<dynamic>(ConfigPath('c')), isNull);

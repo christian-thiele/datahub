@@ -27,7 +27,10 @@ const _fullConfig = {
   'intValue': 1,
   'doubleValue': 1.123,
   'enumValue': 'optionB',
-  'nested': {'key': 'value', 'deep': {'level': 'deep_value'}},
+  'nested': {
+    'key': 'value',
+    'deep': {'level': 'deep_value'},
+  },
 };
 
 void assertAllConfigValues() {
@@ -65,27 +68,22 @@ void main() {
     config: _fullConfig,
   );
 
-  declareTest(
-    'Code-based: default value used when key is absent',
-    [],
-    () {
-      expect(
-        Config<String>('missing', defaultValue: 'fallback').read(),
-        'fallback',
-      );
-      expect(Config<int>('missing', defaultValue: 42).read(), 42);
-      expect(Config<bool>('missing', defaultValue: false).read(), isFalse);
-      expect(
-        Config<TestEnumConfig>(
-          'missing',
-          defaultValue: TestEnumConfig.c,
-          values: TestEnumConfig.values,
-        ).read(),
-        TestEnumConfig.c,
-      );
-    },
-    config: const {},
-  );
+  declareTest('Code-based: default value used when key is absent', [], () {
+    expect(
+      Config<String>('missing', defaultValue: 'fallback').read(),
+      'fallback',
+    );
+    expect(Config<int>('missing', defaultValue: 42).read(), 42);
+    expect(Config<bool>('missing', defaultValue: false).read(), isFalse);
+    expect(
+      Config<TestEnumConfig>(
+        'missing',
+        defaultValue: TestEnumConfig.c,
+        values: TestEnumConfig.values,
+      ).read(),
+      TestEnumConfig.c,
+    );
+  }, config: const {});
 
   declareTest(
     'Code-based: Config.value() always returns its fixed value',
