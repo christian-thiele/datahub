@@ -1,0 +1,72 @@
+part of 'resource_element_create_cubit.dart';
+
+sealed class ResourceElementCreateState {}
+
+final class ResourceElementCreateLoading extends ResourceElementCreateState {}
+
+abstract class ResourceElementCreateValue extends ResourceElementCreateState {
+  final ResourceDescription description;
+  final List<ResourceField> fields;
+  final Map<ResourceField, dynamic> changes;
+
+  ResourceElementCreateValue({
+    required this.description,
+    required this.fields,
+    required this.changes,
+  });
+
+  ResourceElementCreateSaving saving() => ResourceElementCreateSaving(
+    fields: fields,
+    changes: changes,
+    description: description,
+  );
+}
+
+final class ResourceElementCreateEditing extends ResourceElementCreateValue {
+  final Map<ResourceField, String> validation;
+
+  bool get isValid => validation.isEmpty;
+
+  ResourceElementCreateEditing({
+    required super.description,
+    required super.fields,
+    required super.changes,
+    required this.validation,
+  });
+}
+
+final class ResourceElementCreateSaving extends ResourceElementCreateValue {
+  ResourceElementCreateSaving({
+    required super.description,
+    required super.fields,
+    required super.changes,
+  });
+
+  ResourceElementCreateState saved(String id, int? version) =>
+      ResourceElementCreateSaved(
+        fields: fields,
+        changes: changes,
+        id: id,
+        version: version,
+        description: description,
+      );
+}
+
+final class ResourceElementCreateSaved extends ResourceElementCreateValue {
+  final String id;
+  final int? version;
+
+  ResourceElementCreateSaved({
+    required this.id,
+    required this.version,
+    required super.fields,
+    required super.changes,
+    required super.description,
+  });
+}
+
+final class ResourceElementCreateError extends ResourceElementCreateState {
+  final String? message;
+
+  ResourceElementCreateError({this.message});
+}

@@ -1,0 +1,11 @@
+.dart_tool/
+.pub-cache/
+.pub/
+.packages
+
+build/
+**/doc/api/
+
+example/
+
+lib/frontend_bundle.dart

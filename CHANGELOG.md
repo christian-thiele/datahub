@@ -1,149 +1,187 @@
-## 0.16.5
-- TransferCodec, TransferBean
-  - added debug property "name" for error messages
+# Change Log
+
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## 2026-05-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.20`](#datahub---v0180-dev20)
+ - [`datahub_aperture` - `v0.1.0-dev.11`](#datahub_aperture---v010-dev11)
+ - [`datahub_codegen` - `v0.18.0-dev.10`](#datahub_codegen---v0180-dev10)
+ - [`datahub_postgres` - `v0.18.0-dev.15`](#datahub_postgres---v0180-dev15)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_aperture` - `v0.1.0-dev.11`
+ - `datahub_codegen` - `v0.18.0-dev.10`
+ - `datahub_postgres` - `v0.18.0-dev.15`
+
+---
+
+#### `datahub` - `v0.18.0-dev.20`
+
+ - **REFACTOR**(config): restructured Configuration and exposed more api.
+ - **FIX**(test): fixed environment configuration.
+ - **FEAT**(config): config reference syntax.
 
 
-## 0.16.4
-- ApiEndpoint
-  - minor error handling fix
-- Filter
-  - isIn empty list fix
+## 2026-05-20
 
-## 0.16.3
-- ApiService
-  - ApiRequestException default error response json
-- JWTSession
-  - convenience accessors to JWT payload
+### Changes
 
-## 0.16.2
-- EventHubService
-  - fixed error handling
-- AmqpBrokerService
-  - default heartbeat period 3 seconds
-- CLI
-  - fixed docker compose command
+---
 
-## 0.16.1
-- EventHubService
-  - fixed bad state channel reconnect
+Packages with breaking changes:
 
-## 0.16.0
-- Added HttpClient / HttpServer as multi-version HTTP implementations
-- ApiService
-  - added HTTP/2 support (using HttpServer)
-  - added protocol negotiation
-  - removed legacy auth system
-- ByteStreamResponse / FileResponse
-  - Content-Disposition is transmitted regardless of availability of filename
-- RestClient
-  - added HTTP/2 support (using HttpClient)
-  - header values are now List<String> instead of String
-  - URL-params are now encoded using RoutePattern
-  - added HttpAuth, BearerAuth, BasicAuth
-- Persistence
-  - added any, first, count as extensions to DatabaseContext
-  - added any, first, count, mutate operations to CRUDRepository
-  - added context parameter to all CRUDRepository methods to allow compositing
-- Broker
-  - AmqpBrokerService
-    - added heartbeat period support (dart_ampq ^0.2.3)
-  - added EventHubs
-  - Utils
-    - added MIME type / extension mapper
-  - added Collection Library
-- Config
-  - moved all ConfigService related classes to datahub/services.dart
-- BaseService
-  - initialize and shutdown are not abstract anymore
-    (removed the requirement to override them)
-- KeyService / JWT
-  - added JWT class, KeyService for public key caching
-- TransferEncoding
-  - rework of codec system
-- ServiceHost
-  - ServiceHost is now ApplicationHost
-  - added TestHost
-    - with test methods for unit testing
-- CLI
-  - added test command
-- S3Service, MinioService
+ - There are no breaking changes in this release.
 
-## 0.15.2
-- ApiService
-  - fixed internal error when handling request not matching base path
+Packages with other changes:
 
-## 0.15.1
-- DatabaseContext.query
-  - inner and outer joins supported with nullable / non-null return types
+ - [`datahub_codegen` - `v0.18.0-dev.9`](#datahub_codegen---v0180-dev9)
 
-## 0.15.0
-- DataBean
-  - reduced complexity on abstract classes
-  - changed type constraints on DatabaseContext methods
-- DatabaseContext.query
-  - can now return DAOs from joins (no longer constrained to DataBean as source)
+---
 
-## 0.14.9
-- added Duration to transfer codec (represented as milliseconds)
+#### `datahub_codegen` - `v0.18.0-dev.9`
 
-## 0.14.8
-- DataHub CLI
-  - fixed build-args feature
+ - **FIX**(codegen): fixed nullable enum with library prefix.
 
-## 0.14.7
-- DataHub CLI
-  - fixed build-args feature
 
-## 0.14.6
-- DataHub CLI
-  - added build-args support
+## 2026-05-19
 
-## 0.14.5
-- ApiRequest
-  - added getBody for transfer objects as request body
+### Changes
 
-## 0.14.4
-- fixed Repository transaction return value
+---
 
-## 0.14.3
-- fixed SQL building for postgres (name escape bugs)
+Packages with breaking changes:
 
-## 0.14.2
-- fixed rest_client with Map<String, dynamic> / List
+ - There are no breaking changes in this release.
 
-## 0.14.1
-- fixed Repository (missing initializeSchema)
+Packages with other changes:
 
-## 0.14.0
-- updated boost dependency
-- added rest_client library
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.8`](#datahub_aperture_frontend---v010-dev8)
 
-## 0.13.2
-- use "Authorization" header instead of "session-token"
+---
 
-## 0.13.1
-- moved decodeTyped to utils library
-- added List<String>, List<int>, List<double> to decodeTyped
-- ConfigService.fetch / BaseService.config now accepts nullable types
+#### `datahub_aperture_frontend` - `v0.1.0-dev.8`
 
-## 0.13.0
-- Transaction Support
-  - added DatabaseContext
-  - database migrations run in transactions
-- added Repository and CRUDRepository
+ - **DOCS**: fixed README.md.
 
-## 0.12.4
-- added force flag to datahub create (CLI)
 
-## 0.12.3
-- fixed dart pub get call in CLI
+## 2026-05-19
 
-## 0.12.2
-- added DataHub CLI
+### Changes
 
-## 0.12.1
-- fixed dependencies
+---
 
-## 0.12.0
-- Started datahub package
-- All code generation is now in datahub_codegen
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.19`](#datahub---v0180-dev19)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.7`](#datahub_aperture_frontend---v010-dev7)
+ - [`datahub_aperture` - `v0.1.0-dev.10`](#datahub_aperture---v010-dev10)
+ - [`datahub_codegen` - `v0.18.0-dev.8`](#datahub_codegen---v0180-dev8)
+ - [`datahub_postgres` - `v0.18.0-dev.14`](#datahub_postgres---v0180-dev14)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_aperture` - `v0.1.0-dev.10`
+ - `datahub_codegen` - `v0.18.0-dev.8`
+ - `datahub_postgres` - `v0.18.0-dev.14`
+
+---
+
+#### `datahub` - `v0.18.0-dev.19`
+
+ - **FIX**(ci): fixed timeout argon2id test on ci.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.7`
+
+ - **FIX**(docker): use flutter:beta base image.
+
+
+## 2026-05-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.18`](#datahub---v0180-dev18)
+ - [`datahub_aperture` - `v0.1.0-dev.9`](#datahub_aperture---v010-dev9)
+ - [`datahub_codegen` - `v0.18.0-dev.7`](#datahub_codegen---v0180-dev7)
+ - [`datahub_postgres` - `v0.18.0-dev.13`](#datahub_postgres---v0180-dev13)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_aperture` - `v0.1.0-dev.9`
+ - `datahub_codegen` - `v0.18.0-dev.7`
+ - `datahub_postgres` - `v0.18.0-dev.13`
+
+---
+
+#### `datahub` - `v0.18.0-dev.18`
+
+ - **FIX**(ci): skip httpbin related tests due to CI issues.
+
+
+## 2026-05-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.17`](#datahub---v0180-dev17)
+ - [`datahub_aperture` - `v0.1.0-dev.8`](#datahub_aperture---v010-dev8)
+ - [`datahub_codegen` - `v0.18.0-dev.6`](#datahub_codegen---v0180-dev6)
+ - [`datahub_postgres` - `v0.18.0-dev.12`](#datahub_postgres---v0180-dev12)
+
+---
+
+#### `datahub` - `v0.18.0-dev.17`
+
+ - **FIX**(ci): use melos conventions.
+ - **FIX**: argon2 test ci problem.
+
+#### `datahub_aperture` - `v0.1.0-dev.8`
+
+ - **FIX**(ci): use melos conventions.
+
+#### `datahub_codegen` - `v0.18.0-dev.6`
+
+ - **FIX**(ci): use melos conventions.
+
+#### `datahub_postgres` - `v0.18.0-dev.12`
+
+ - **FIX**(ci): use melos conventions.
+ - **FIX**: timeout test port.
+

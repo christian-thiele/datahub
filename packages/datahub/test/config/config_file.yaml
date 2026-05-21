@@ -1,0 +1,26 @@
+stringValue: hello
+
+strList:
+  - a
+  - list
+  - of
+  - strings
+
+intList:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+
+dynList: [ 1, 2, 'three', true ]
+isBool: true
+isNotBool: false
+intValue: 1
+doubleValue: 1.123
+enumValue: optionB
+
+nested:
+  key: value
+  deep:
+    level: deep_value

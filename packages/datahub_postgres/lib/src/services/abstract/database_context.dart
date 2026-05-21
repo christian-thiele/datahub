@@ -1,0 +1,3 @@
+class DatabaseContext {
+  const DatabaseContext();
+}

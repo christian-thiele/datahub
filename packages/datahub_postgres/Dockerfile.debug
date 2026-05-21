@@ -1,0 +1,9 @@
+# Specify the Dart SDK base image version using dart:<version> (ex: dart:2.12)
+FROM dart:3.4 AS build
+
+WORKDIR /app
+ADD pubspec.* /app/
+RUN dart pub get
+
+ADD . /app
+RUN dart pub get --offline

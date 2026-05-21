@@ -1,0 +1,20 @@
+name: Publish package datahub_aperture to pub.dev
+
+on:
+  push:
+    tags:
+      - 'datahub_aperture-v*'
+
+jobs:
+  test:
+    name: Run Tests
+    uses: ./.github/workflows/test.yml
+
+  publish:
+    name: Publish Package
+    needs: test
+    permissions:
+      id-token: write
+    uses: dart-lang/setup-dart/.github/workflows/publish.yml@v1
+    with:
+      working-directory: packages/datahub_aperture

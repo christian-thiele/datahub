@@ -1,0 +1,18 @@
+builders:
+  data_builder:
+    import: "package:datahub_codegen/datahub_codegen.dart"
+    builder_factories: [ "dataBuilder" ]
+    build_extensions: { ".dart": [ ".data.g.part" ] }
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: [ "source_gen:combining_builder" ]
+
+targets:
+  datahub_codegen:
+    auto_apply_builders: false
+  datahub_codegen:test:
+    builders:
+      datahub_codegen:data_builder:
+        enabled: true
+    sources:
+      - test/**

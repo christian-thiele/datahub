@@ -1,8 +1,0 @@
-FROM dart:2.18 AS build
-
-WORKDIR /app
-COPY pubspec.* ./
-RUN dart pub get
-
-COPY . .
-RUN dart pub get --offline

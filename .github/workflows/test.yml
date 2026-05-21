@@ -1,0 +1,123 @@
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+      - version/*
+  workflow_call:
+
+jobs:
+  setup:
+    name: Discover packages
+    runs-on: ubuntu-latest
+    outputs:
+      all_packages: ${{ steps.discover.outputs.all_packages }}
+      dart_packages: ${{ steps.discover.outputs.dart_packages }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Discover workspace packages
+        id: discover
+        run: |
+          python3 - <<'EOF'
+          import json, os, yaml
+
+          with open('pubspec.yaml') as f:
+              root = yaml.safe_load(f)
+
+          all_packages = []
+          dart_packages = []
+
+          for path in root.get('workspace', []):
+              name = path.split('/')[-1]
+              pkg = {'path': path, 'name': name}
+              all_packages.append(pkg)
+
+              pkg_pubspec_path = os.path.join(path, 'pubspec.yaml')
+              if os.path.exists(pkg_pubspec_path):
+                  with open(pkg_pubspec_path) as f:
+                      data = yaml.safe_load(f)
+                  deps = data.get('dependencies', {})
+                  is_flutter = isinstance(deps.get('flutter'), dict)
+                  if not is_flutter:
+                      dart_packages.append(pkg)
+
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as out:
+              out.write(f"all_packages={json.dumps(all_packages)}\n")
+              out.write(f"dart_packages={json.dumps(dart_packages)}\n")
+          EOF
+
+  analyze:
+    name: Analyze / ${{ matrix.package.name }}
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.setup.outputs.all_packages) }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache Dart & Flutter
+        uses: actions/cache@v5
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+          restore-keys: ${{ runner.OS }}-flutter-install-cache-
+
+      - name: Setup Dart & Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Cache pub dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Analyze
+        run: cd ${{ matrix.package.path }} && dart analyze
+
+  test:
+    name: Test / ${{ matrix.package.name }}
+    needs: setup
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        package: ${{ fromJson(needs.setup.outputs.dart_packages) }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache Dart & Flutter
+        uses: actions/cache@v5
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+          restore-keys: ${{ runner.OS }}-flutter-install-cache-
+
+      - name: Setup Dart & Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Cache dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: dart pub get
+
+      - name: Test
+        run: cd ${{ matrix.package.path }} && dart test
