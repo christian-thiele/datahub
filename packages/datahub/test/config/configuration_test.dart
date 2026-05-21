@@ -119,6 +119,26 @@ void main() {
         expect(config.read<String?>(ConfigPath('reference')), isNull);
       },
     );
+
+    test('resolves reference inside nested map to root-level key', () {
+      // Regression: recursive merge was not passing referenceRoot, so $-references
+      // inside nested maps would try to resolve against the nested map (and fail).
+      final config = Configuration();
+      config.addConfigMap({
+        'host': 'db.example.com',
+        'db': {'host': r'$host'},
+      });
+      expect(config.read<String>(ConfigPath('db.host')), 'db.example.com');
+    });
+
+    test('resolves reference in nested map merged from second addConfigMap', () {
+      // Regression: the merge(target[key], entry.value) recursive call was also
+      // not forwarding referenceRoot when both sides had the same map key.
+      final config = Configuration();
+      config.addConfigMap({'host': 'primary.example.com', 'db': {}});
+      config.addConfigMap({'db': {'host': r'$host'}});
+      expect(config.read<String>(ConfigPath('db.host')), 'primary.example.com');
+    });
   });
 
   group('Configuration - reference escaping', () {

@@ -15,7 +15,7 @@ class Configuration {
 
   Environment get environment =>
       readEnum<Environment?>(ConfigPath('environment'), Environment.values) ??
-      Environment.dev;
+          Environment.dev;
 
   T read<T>(ConfigPath path) {
     final raw = path.getFrom(_configMap);
@@ -49,10 +49,10 @@ class Configuration {
     }
 
     return JsonDataCodec().decodeEnum<Enum>(
-          value,
-          values.whereType<Enum>().toList(),
-        )
-        as T;
+      value,
+      values.whereType<Enum>().toList(),
+    )
+    as T;
   }
 
   /// Adds a single value value to the configuration map.
@@ -105,7 +105,7 @@ class Configuration {
     } else {
       throw Exception(
         'Unknown config file type of file ${configFile.path}. '
-        'Supported file types are yaml and json.',
+            'Supported file types are yaml and json.',
       );
     }
   }
@@ -130,15 +130,15 @@ class Configuration {
   /// [referenceRoot] is used to resolve configuration references ($-syntax).
   /// If null, [target] will be used as reference root.
   static void merge(
-    Map<String, dynamic> target,
-    Map source, {
-    Map<String, dynamic>? referenceRoot,
-  }) {
+      Map<String, dynamic> target,
+      Map source, {
+        Map<String, dynamic>? referenceRoot,
+      }) {
     dynamic clean(dynamic v) {
       if (v is Map) {
         // avoid unmodifiable maps
         final map = <String, dynamic>{};
-        merge(map, v);
+        merge(map, v, referenceRoot: referenceRoot ?? target);
         return map;
       } else if (v is Iterable) {
         return v.map(clean).toList();
@@ -158,7 +158,11 @@ class Configuration {
       }
 
       if (target[entry.key] is Map<String, dynamic> && entry.value is Map) {
-        merge(target[entry.key], entry.value);
+        merge(
+          target[entry.key],
+          entry.value,
+          referenceRoot: referenceRoot ?? target,
+        );
       } else {
         target[entry.key] = clean(entry.value);
       }
@@ -179,7 +183,7 @@ class Configuration {
 
     return path.parts.reversed.fold<dynamic>(
       value,
-      (v, k) => <String, dynamic>{k: v},
+          (v, k) => <String, dynamic>{k: v},
     );
   }
 }
