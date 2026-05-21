@@ -3,6 +3,40 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-05-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.20`](#datahub---v0180-dev20)
+ - [`datahub_aperture` - `v0.1.0-dev.11`](#datahub_aperture---v010-dev11)
+ - [`datahub_codegen` - `v0.18.0-dev.10`](#datahub_codegen---v0180-dev10)
+ - [`datahub_postgres` - `v0.18.0-dev.15`](#datahub_postgres---v0180-dev15)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_aperture` - `v0.1.0-dev.11`
+ - `datahub_codegen` - `v0.18.0-dev.10`
+ - `datahub_postgres` - `v0.18.0-dev.15`
+
+---
+
+#### `datahub` - `v0.18.0-dev.20`
+
+ - **REFACTOR**(config): restructured Configuration and exposed more api.
+ - **FIX**(test): fixed environment configuration.
+ - **FEAT**(config): config reference syntax.
+
+
 ## 2026-05-20
 
 ### Changes

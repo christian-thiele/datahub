@@ -1,3 +1,9 @@
+## 0.18.0-dev.20
+
+ - **REFACTOR**(config): restructured Configuration and exposed more api.
+ - **FIX**(test): fixed environment configuration.
+ - **FEAT**(config): config reference syntax.
+
 ## 0.18.0-dev.19
 
  - **FIX**(ci): fixed timeout argon2id test on ci.

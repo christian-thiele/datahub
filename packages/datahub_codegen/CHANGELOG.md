@@ -1,3 +1,7 @@
+## 0.18.0-dev.10
+
+ - Update a dependency to the latest release.
+
 ## 0.18.0-dev.9
 
  - **FIX**(codegen): fixed nullable enum with library prefix.
