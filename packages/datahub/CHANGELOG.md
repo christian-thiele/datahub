@@ -1,3 +1,7 @@
+## 0.18.0-dev.21
+
+ - **FIX**(config): fixed config reference resolution.
+
 ## 0.18.0-dev.20
 
  - **REFACTOR**(config): restructured Configuration and exposed more api.
