@@ -1,3 +1,5 @@
+import 'data_field.dart';
+import 'data_object.dart';
 import 'expression.dart';
 import 'sort.dart';
 
@@ -8,6 +10,15 @@ sealed class Filter {
   const Filter();
 
   bool get isEmpty;
+
+  /// Evaluates this filter against [object] and returns whether it matches.
+  ///
+  /// This provides in-memory filter evaluation with semantics matching the
+  /// PostgreSQL implementation:
+  /// - String `contains`/`isIn` use case-insensitive regex matching
+  /// - List `contains` checks element membership
+  /// - null comparisons use `== null` / `!= null` semantics
+  bool matches(DataObject object);
 
   Filter and(Filter other) => Filter.andGroup([this, other]);
 
@@ -71,6 +82,11 @@ final class FilterGroup extends Filter {
   const FilterGroup(this.filters, this.isConjunction);
 
   @override
+  bool matches(DataObject object) => isConjunction
+      ? filters.every((f) => f.matches(object))
+      : filters.any((f) => f.matches(object));
+
+  @override
   bool get isEmpty => filters.every((element) => element.isEmpty);
 
   @override
@@ -127,6 +143,13 @@ final class CompareFilter extends Filter {
   });
 
   @override
+  bool matches(DataObject object) {
+    final leftVal = _evaluateExpression(object, left);
+    final rightVal = _evaluateExpression(object, right);
+    return _compare(leftVal, type, rightVal);
+  }
+
+  @override
   bool get isEmpty => false;
 
   @override
@@ -137,10 +160,87 @@ final class EmptyFilter extends Filter {
   const EmptyFilter();
 
   @override
+  bool matches(DataObject object) => true;
+
+  @override
   final bool isEmpty = true;
 
   @override
   Filter reduce() => this;
+}
+
+dynamic _evaluateExpression(DataObject object, Expression expression) {
+  return switch (expression) {
+    ValueExpression(:final value) => value,
+    final DataField field => field.valueOf(object),
+    _ => throw UnsupportedError(
+      'Expression of type ${expression.runtimeType} cannot be evaluated.',
+    ),
+  };
+}
+
+bool _compare(dynamic left, CompareType type, dynamic right) {
+  // Null handling (matches PostgreSQL IS NULL / IS NOT NULL)
+  if (right == null) {
+    return switch (type) {
+      CompareType.equals => left == null,
+      CompareType.notEquals => left != null,
+      _ => false,
+    };
+  }
+  if (left == null) {
+    return switch (type) {
+      CompareType.equals => false,
+      CompareType.notEquals => true,
+      _ => false,
+    };
+  }
+
+  // String contains/isIn: case-insensitive regex (matches PostgreSQL ~*)
+  if (left is String && right is String) {
+    if (type == CompareType.contains) {
+      return RegExp(right, caseSensitive: false).hasMatch(left);
+    }
+    if (type == CompareType.isIn) {
+      return RegExp(left, caseSensitive: false).hasMatch(right);
+    }
+  }
+
+  // List contains: element membership (matches PostgreSQL ANY)
+  if (left is List && type == CompareType.contains) {
+    return left.contains(right);
+  }
+
+  // List isIn: element membership (matches PostgreSQL ANY)
+  if (right is List && type == CompareType.isIn) {
+    return right.contains(left);
+  }
+
+  // DateTime comparisons
+  if (left is DateTime && right is DateTime) {
+    return switch (type) {
+      CompareType.equals ||
+      CompareType.contains ||
+      CompareType.isIn => left.isAtSameMomentAs(right),
+      CompareType.notEquals => !left.isAtSameMomentAs(right),
+      CompareType.greaterThan => left.isAfter(right),
+      CompareType.lessThan => left.isBefore(right),
+      CompareType.greaterOrEqual => !left.isBefore(right),
+      CompareType.lessOrEqual => !left.isAfter(right),
+    };
+  }
+
+  // Default comparisons
+  return switch (type) {
+    CompareType.equals ||
+    CompareType.contains ||
+    CompareType.isIn => left == right,
+    CompareType.notEquals => left != right,
+    CompareType.greaterThan => (left as Comparable).compareTo(right) > 0,
+    CompareType.lessThan => (left as Comparable).compareTo(right) < 0,
+    CompareType.greaterOrEqual => (left as Comparable).compareTo(right) >= 0,
+    CompareType.lessOrEqual => (left as Comparable).compareTo(right) <= 0,
+  };
 }
 
 extension ExpressionFilterExtension on Expression {

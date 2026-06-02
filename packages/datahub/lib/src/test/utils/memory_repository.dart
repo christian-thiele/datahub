@@ -132,57 +132,7 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
     }
   }
 
-  bool evaluateFilter(T data, Filter filter) {
-    return switch (filter) {
-      FilterGroup(isConjunction: true, :final filters) => filters.every(
-        (f) => evaluateFilter(data, f),
-      ),
-      FilterGroup(isConjunction: false, :final filters) => filters.any(
-        (f) => evaluateFilter(data, f),
-      ),
-      EmptyFilter() => true,
-      CompareFilter() => evaluateCompare(data, filter),
-    };
-  }
-
-  dynamic evaluateExpression(T data, Expression expression) {
-    return switch (expression) {
-      ValueExpression(:final value) => value,
-      final DataField field => field.valueOf(data),
-      Expression() => throw UnsupportedExpressionError(
-        expression,
-        library: 'MemoryRepository',
-      ),
-    };
-  }
-
-  bool evaluateCompare(T data, CompareFilter filter) {
-    final left = evaluateExpression(data, filter.left);
-    final right = evaluateExpression(data, filter.right);
-    if (left is DateTime && right is DateTime) {
-      return switch (filter.type) {
-        CompareType.equals ||
-        CompareType.contains ||
-        CompareType.isIn => left.isAtSameMomentAs(right),
-        CompareType.notEquals => !left.isAtSameMomentAs(right),
-        CompareType.greaterThan => left.isAfter(right),
-        CompareType.lessThan => left.isBefore(right),
-        CompareType.greaterOrEqual => !left.isBefore(right),
-        CompareType.lessOrEqual => !left.isAfter(right),
-      };
-    }
-
-    return switch (filter.type) {
-      CompareType.equals ||
-      CompareType.contains ||
-      CompareType.isIn => left == right,
-      CompareType.notEquals => left != right,
-      CompareType.greaterThan => left > right,
-      CompareType.lessThan => left < right,
-      CompareType.greaterOrEqual => left >= right,
-      CompareType.lessOrEqual => left <= right,
-    };
-  }
+  bool evaluateFilter(T data, Filter filter) => filter.matches(data);
 
   @override
   Future<R> atomic<R>(Future<R> Function() delegate) async {
