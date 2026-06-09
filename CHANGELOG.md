@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-06-09
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.22`](#datahub---v0180-dev22)
+ - [`datahub_aperture` - `v0.1.0-dev.13`](#datahub_aperture---v010-dev13)
+ - [`datahub_codegen` - `v0.18.0-dev.12`](#datahub_codegen---v0180-dev12)
+ - [`datahub_postgres` - `v0.18.0-dev.17`](#datahub_postgres---v0180-dev17)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_aperture` - `v0.1.0-dev.13`
+ - `datahub_codegen` - `v0.18.0-dev.12`
+ - `datahub_postgres` - `v0.18.0-dev.17`
+
+---
+
+#### `datahub` - `v0.18.0-dev.22`
+
+ - **FEAT**(data): added in-memory filter evaluation.
+
+
 ## 2026-05-22
 
 ### Changes

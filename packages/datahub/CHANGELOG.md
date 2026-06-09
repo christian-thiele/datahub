@@ -1,3 +1,7 @@
+## 0.18.0-dev.22
+
+ - **FEAT**(data): added in-memory filter evaluation.
+
 ## 0.18.0-dev.21
 
  - **FIX**(config): fixed config reference resolution.
