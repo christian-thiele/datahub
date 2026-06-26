@@ -1,3 +1,7 @@
+## 0.18.0-dev.23
+
+ - **FIX**(datahub): fixed exports.
+
 ## 0.18.0-dev.22
 
  - **FEAT**(data): added in-memory filter evaluation.

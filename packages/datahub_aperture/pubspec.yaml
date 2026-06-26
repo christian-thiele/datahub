@@ -1,6 +1,6 @@
 name: datahub_aperture
 description: An easy to use administration frontend for DataHub services.
-version: 0.1.0-dev.13
+version: 0.1.0-dev.14
 resolution: workspace
 
 environment:
@@ -8,12 +8,12 @@ environment:
 
 dependencies:
   boost: ^2.0.0
-  datahub: ^0.18.0-dev.22
+  datahub: ^0.18.0-dev.23
   pointycastle: 4.0.0
 
 dev_dependencies:
   build_runner: ^2.4.11
-  datahub_codegen: ^0.18.0-dev.12
-  datahub_postgres: ^0.18.0-dev.17
+  datahub_codegen: ^0.18.0-dev.13
+  datahub_postgres: ^0.18.0-dev.18
   lints: ^6.0.0
   test: ^1.26.2
