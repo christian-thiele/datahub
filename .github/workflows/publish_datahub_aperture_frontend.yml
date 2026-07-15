@@ -21,9 +21,11 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - name: Extract version from tag
-        id: tag
-        run: echo "version=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+      - name: Extract version from pubspec.yaml
+        id: version
+        run: |
+          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
