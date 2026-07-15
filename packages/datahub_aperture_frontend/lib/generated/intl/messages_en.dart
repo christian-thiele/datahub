@@ -66,6 +66,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "scheduleRevision": MessageLookupByLibrary.simpleMessage(
       "Schedule Revision",
     ),
+    "search": MessageLookupByLibrary.simpleMessage("Search"),
     "time": MessageLookupByLibrary.simpleMessage("Time"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Timestamp"),
     "username": MessageLookupByLibrary.simpleMessage("Username"),

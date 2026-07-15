@@ -69,6 +69,7 @@ class MessageLookup extends MessageLookupByLibrary {
       "Als Entwurf Speichern",
     ),
     "scheduleRevision": MessageLookupByLibrary.simpleMessage("Revision planen"),
+    "search": MessageLookupByLibrary.simpleMessage("Suche"),
     "time": MessageLookupByLibrary.simpleMessage("Uhrzeit"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Zeitstempel"),
     "username": MessageLookupByLibrary.simpleMessage("Benutzername"),

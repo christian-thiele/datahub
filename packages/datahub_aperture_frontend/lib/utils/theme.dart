@@ -28,8 +28,18 @@ class ApertureThemeData {
     ),
     appBarTheme: AppBarTheme(leadingWidth: 128),
     inputDecorationTheme: InputDecorationTheme(
-      border: OutlineInputBorder(),
+      border: OutlineInputBorder(borderRadius: BorderRadius.circular(4)),
       isDense: true,
+    ),
+    searchBarTheme: SearchBarThemeData(
+      shape: WidgetStateProperty.all(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+      ),
+      padding: WidgetStateProperty.all(EdgeInsets.all(0)),
+      constraints: BoxConstraints(minHeight: 36, maxHeight: double.infinity),
+      elevation: WidgetStateProperty.all(0),
+      backgroundColor: WidgetStateProperty.all(Colors.transparent),
+      surfaceTintColor: WidgetStateProperty.all(Colors.transparent),
     ),
     cardTheme: CardThemeData(
       margin: EdgeInsetsGeometry.zero,

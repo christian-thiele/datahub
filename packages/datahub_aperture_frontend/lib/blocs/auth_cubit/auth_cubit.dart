@@ -22,11 +22,19 @@ class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
 
   Future<void> _init(ApertureBootstrap bootstrap) async {
     authService.stream.listen(_onAuthServiceUpdated);
-    await authService.initialize(
-      Uri.parse(bootstrap.oidcIssuer),
-      clientId: bootstrap.oidcClientId,
-      clientSecret: bootstrap.oidcClientSecret,
-    );
+    try {
+      await authService.initialize(
+        Uri.parse(bootstrap.oidcIssuer),
+        clientId: bootstrap.oidcClientId,
+        clientSecret: bootstrap.oidcClientSecret,
+      );
+    } catch (e) {
+      if (e case ApiRequestException(:final message)) {
+        emit(AuthStateError(message: message));
+      } else {
+        emit(AuthStateError(message: null));
+      }
+    }
   }
 
   void _onAuthServiceUpdated(bool authenticated) async {

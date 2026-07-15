@@ -35,5 +35,6 @@
   "deleteScheduled": "Delete scheduled",
   "loginAuthcode": "Login via IDP",
   "ok": "OK",
-  "revert": "Revert"
+  "revert": "Revert",
+  "search": "Search"
 }

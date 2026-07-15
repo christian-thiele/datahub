@@ -313,6 +313,11 @@ class S {
   String get revert {
     return Intl.message('Revert', name: 'revert', desc: '', args: []);
   }
+
+  /// `Search`
+  String get search {
+    return Intl.message('Search', name: 'search', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -66,10 +66,13 @@ class ResourcePage extends StatelessWidget {
                     FilterView(
                       fields: filter.fields,
                       filters: filter.filters,
+                      search: filter.search,
                       onAdd: (model) =>
                           context.read<ResourceCubit>().addFilter(model),
                       onRemove: (idx) =>
                           context.read<ResourceCubit>().removeFilter(idx),
+                      onSearchSubmit: (search) =>
+                          context.read<ResourceCubit>().updateSearch(search),
                     ),
                     Expanded(
                       child: ResourceList(
