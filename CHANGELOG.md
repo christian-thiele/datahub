@@ -3,6 +3,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-07-15
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub_aperture` - `v0.1.0-dev.15`](#datahub_aperture---v010-dev15)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.9`](#datahub_aperture_frontend---v010-dev9)
+
+---
+
+#### `datahub_aperture` - `v0.1.0-dev.15`
+
+ - **FEAT**(aperture): add search functionality with test data generation.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.9`
+
+ - **FEAT**(aperture): add search functionality with test data generation.
+
+
 ## 2026-06-26
 
 ### Changes

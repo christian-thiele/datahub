@@ -1,3 +1,7 @@
+## 0.1.0-dev.15
+
+ - **FEAT**(aperture): add search functionality with test data generation.
+
 ## 0.1.0-dev.14
 
  - Update a dependency to the latest release.

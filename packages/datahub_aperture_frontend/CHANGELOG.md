@@ -1,3 +1,7 @@
+## 0.1.0-dev.9
+
+ - **FEAT**(aperture): add search functionality with test data generation.
+
 ## 0.1.0-dev.8
 
  - **DOCS**: fixed README.md.
