@@ -25,11 +25,13 @@ jobs:
         run: |
           sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
           sudo chmod +x /usr/local/bin/yq
+          yq --version
 
       - name: Extract version from pubspec.yaml
-        id: version
+        id: tag
         run: |
           VERSION=$(yq '.version' packages/datahub_aperture_frontend/pubspec.yaml)
+          echo "Extracted version: $VERSION"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
