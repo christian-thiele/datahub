@@ -1,4 +1,4 @@
-## 0.1.0-dev.11
+## 0.1.0-dev.12
 
  - **FEAT**(aperture): add search functionality with test data generation.
 
