@@ -29,7 +29,7 @@ jobs:
       - name: Extract version from pubspec.yaml
         id: version
         run: |
-          VERSION=$(yq '.version' pubspec.yaml)
+          VERSION=$(yq '.version' packages/datahub_aperture_frontend/pubspec.yaml)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU

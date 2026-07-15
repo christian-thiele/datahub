@@ -16,6 +16,11 @@ class ApiBootstrapRepository implements BootstrapRepository {
         when value.isNotEmpty) {
       baseUri = Uri.parse(value);
     } else if (kIsWeb) {
+      // When Aperture is deployed via the official docker image, the
+      // entrypoint.sh stores the API_URL environment variable in the
+      // .env file in the web root for the client app to fetch.
+      // This way the flutter app can be precompiled and still read
+      // environment variables from the docker deployments.
       final baseHref = getBaseHref();
       final baseClient = await RestClient.connect(
         baseHref,
