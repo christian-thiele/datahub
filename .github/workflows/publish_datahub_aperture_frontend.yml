@@ -21,10 +21,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      - name: Install yq
+        run: |
+          sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          sudo chmod +x /usr/local/bin/yq
+
       - name: Extract version from pubspec.yaml
         id: version
         run: |
-          VERSION=$(grep '^version:' pubspec.yaml | sed 's/version: //' | tr -d '[:space:]')
+          VERSION=$(yq '.version' pubspec.yaml)
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Set up QEMU
