@@ -12,7 +12,7 @@ class Person extends $Person {
   @MinLengthConstraint(length: 3)
   @MaxLengthConstraint(length: 30)
   final String firstName;
-  @ApertureDisplayField()
+  @ApertureField(isDisplayField: true)
   @MinLengthConstraint(length: 3)
   final String lastName;
   @ElementConstraint(constraint: RegExpConstraint(expression: '^[^\\s]*\$'))

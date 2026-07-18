@@ -1,5 +1,4 @@
 import 'package:datahub/datahub.dart';
-import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/services.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 
@@ -21,15 +20,14 @@ void main() => runApp([
   TestAuthProvider(),
   ApiService(
     routes: [
-      ApertureApi(
-        configDelegate: ApertureConfigDataDelegate(
-          dataResources: [
-            ApertureDataResource($Person.bean, Find<DataRepository<Person>>()),
-            ApertureDataResource($Todo.bean, Find<DataRepository<Todo>>()),
-          ],
-        ),
+      const ApertureApi(
         oidcIssuer: Config.value('http://localhost:8081/realms/local-oidc'),
         oidcClientId: Config.value('aperture'),
+
+        resources: [
+          ApertureResource(repository: Find<DataRepository<Person>>()),
+          ApertureResource(repository: Find<DataRepository<Todo>>()),
+        ],
       ),
     ],
   ),

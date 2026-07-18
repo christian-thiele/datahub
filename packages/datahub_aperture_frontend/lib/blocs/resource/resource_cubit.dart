@@ -92,9 +92,12 @@ class ResourceCubit extends Cubit<ResourceState> {
           filter ??
           switch (state.filter) {
             InitialFilterState(:final search) => FilterState(
-              fields: _getFilterFields(resource),
+              filterFields: _getFilterFields(resource),
+              sortFields: _getSortFields(resource),
               filters: [],
               search: search,
+              sortField: _getSortFields(resource).firstOrNull,
+              sortAscending: true,
             ),
             _ => state.filter,
           };
@@ -104,6 +107,8 @@ class ResourceCubit extends Cubit<ResourceState> {
       final response = await _resourceRepository.getResourceElements(
         resourceId,
         filter: _buildFilter(resource, effectiveFilter),
+        sortFieldId: effectiveFilter.sortField?.id,
+        sortAscending: effectiveFilter.sortAscending,
         offset: effectivePaging.offset,
         limit: effectivePaging.pageSize,
       );
@@ -140,9 +145,31 @@ class ResourceCubit extends Cubit<ResourceState> {
     )) {
       update(
         filter: FilterState(
-          fields: filter.fields,
+          filterFields: filter.filterFields,
+          sortFields: filter.sortFields,
           filters: [...filter.filters, model],
           search: filter.search,
+          sortField: filter.sortField,
+          sortAscending: filter.sortAscending,
+        ),
+        paging: Paging.empty(0, pageSize),
+      );
+    }
+  }
+
+  void setSort(ResourceField? field, bool ascending) {
+    if (state case ResourceValue(
+      :final filter,
+      paging: Paging(:final pageSize),
+    )) {
+      update(
+        filter: FilterState(
+          filterFields: filter.filterFields,
+          sortFields: filter.sortFields,
+          filters: filter.filters,
+          search: filter.search,
+          sortField: field,
+          sortAscending: ascending,
         ),
         paging: Paging.empty(0, pageSize),
       );
@@ -156,9 +183,12 @@ class ResourceCubit extends Cubit<ResourceState> {
     )) {
       update(
         filter: FilterState(
-          fields: filter.fields,
+          filterFields: filter.filterFields,
+          sortFields: filter.sortFields,
           filters: filter.filters.copyWithRemoved(index),
           search: filter.search,
+          sortField: filter.sortField,
+          sortAscending: filter.sortAscending,
         ),
         paging: Paging.empty(0, pageSize),
       );
@@ -172,9 +202,12 @@ class ResourceCubit extends Cubit<ResourceState> {
     )) {
       update(
         filter: FilterState(
-          fields: filter.fields,
+          filterFields: filter.filterFields,
+          sortFields: filter.sortFields,
           filters: filter.filters,
           search: text,
+          sortField: filter.sortField,
+          sortAscending: filter.sortAscending,
         ),
         paging: Paging.empty(0, pageSize),
       );
@@ -225,20 +258,42 @@ class ResourceCubit extends Cubit<ResourceState> {
 
   List<ResourceField> _getFilterFields(ResourceDescription resource) {
     return [
-      ...resource.fields.where(
-        (e) =>
-            [
+      ...resource.fields.where((field) {
+        if (!field.allowFilter) {
+          return false;
+        }
+
+        return [
               ResourceFieldType.string,
               ResourceFieldType.stringEnum,
               ResourceFieldType.int,
               ResourceFieldType.double,
               ResourceFieldType.bool,
               ResourceFieldType.timestamp,
-            ].contains(e.type) ||
-            (e.type == ResourceFieldType.list &&
-                e.objectDescription?.firstOrNull?.type ==
-                    ResourceFieldType.string),
-      ),
+            ].contains(field.type) ||
+            (field.type == ResourceFieldType.list &&
+                field.objectDescription?.firstOrNull?.type ==
+                    ResourceFieldType.string);
+      }),
+    ];
+  }
+
+  List<ResourceField> _getSortFields(ResourceDescription resource) {
+    return [
+      ...resource.fields.where((field) {
+        if (!field.allowSort) {
+          return false;
+        }
+
+        return [
+          ResourceFieldType.string,
+          ResourceFieldType.stringEnum,
+          ResourceFieldType.int,
+          ResourceFieldType.double,
+          ResourceFieldType.bool,
+          ResourceFieldType.timestamp,
+        ].contains(field.type);
+      }),
     ];
   }
 }

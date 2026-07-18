@@ -4,7 +4,10 @@ import 'package:web/web.dart' as html show document;
 /// Reads the raw `href` attribute (e.g. `/app/`) and resolves it against
 /// [Uri.base] so the origin is preserved.
 Uri getBaseHref() {
-  final href =
-      html.document.querySelector('base')?.getAttribute('href') ?? '/';
+  final href = html.document.querySelector('base')?.getAttribute('href') ?? '/';
   return Uri.base.resolve(href);
+}
+
+void notifyBootstrapDone() {
+  html.document.querySelector('flutter-view')?.classList.add('ready');
 }

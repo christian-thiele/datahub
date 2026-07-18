@@ -6,7 +6,5 @@ part 'simple_auth_refresh_request.g.dart';
 class SimpleAuthRefreshRequest extends $SimpleAuthRefreshRequest {
   final String refreshToken;
 
-  const SimpleAuthRefreshRequest({
-    required this.refreshToken,
-  });
+  const SimpleAuthRefreshRequest({required this.refreshToken});
 }

@@ -1,38 +1,121 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
+    <base href="$FLUTTER_BASE_HREF">
 
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
+    <meta charset="UTF-8">
+    <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+    <meta name="description" content="DataHub Aperture Frontend">
 
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="Aperture">
+    <link rel="apple-touch-icon" href="icons/Icon-192.png">
 
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
-  <base href="$FLUTTER_BASE_HREF">
+    <link rel="icon" type="image/png" href="favicon.png"/>
 
-  <meta charset="UTF-8">
-  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="description" content="DataHub Aperture Frontend">
+    <title>Aperture</title>
+    <link rel="manifest" href="manifest.json">
 
-  <!-- iOS meta tags & icons -->
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black">
-  <meta name="apple-mobile-web-app-title" content="Aperture">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+    <style>
+        .flutter-loader {
+          display: none !important;
+        }
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png"/>
+        flutter-view {
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
 
-  <title>Aperture</title>
-  <link rel="manifest" href="manifest.json">
+        flutter-view.ready {
+          opacity: 1;
+        }
+
+        body {
+          margin: 0;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #fff;
+        }
+
+        .aperture-spinner {
+          width: 96px;
+          height: 96px;
+          color: #404654;
+        }
+    </style>
 </head>
 <body>
-  <script src="flutter_bootstrap.js" async></script>
+
+<svg viewBox="-1.3125 -1.3125 2.625 2.625" class="aperture-spinner">
+    <defs>
+        <mask id="blade-mask-1" maskUnits="userSpaceOnUse"
+              x="-1.3125" y="-1.3125" width="2.625" height="2.625">
+            <path class="mask-white" fill="white" stroke="black" stroke-width="0.1"/>
+            <path class="mask-black" fill="black" transform="rotate(60)"/>
+        </mask>
+        <g id="blade-1" mask="url(#blade-mask-1)">
+            <path class="blade-path" fill="currentColor"/>
+        </g>
+    </defs>
+    <g class="rotor">
+        <use href="#blade-1"/>
+        <use href="#blade-1" transform="rotate(60)"/>
+        <use href="#blade-1" transform="rotate(120)"/>
+        <use href="#blade-1" transform="rotate(180)"/>
+        <use href="#blade-1" transform="rotate(240)"/>
+        <use href="#blade-1" transform="rotate(300)"/>
+    </g>
+</svg>
+
+<script>
+    (function () {
+      const DURATION = 3000;           // Duration(seconds: 3)
+      const K = 0.7;                   // modulation depth
+      const TURNS_PER_CYCLE = 3;
+      const START_VALUE = 0.35;        // AnimationController value: 0.35
+      const TWO_PI = 2 * Math.PI;
+
+      const rotors = document.querySelectorAll('.rotor');
+      const paths = document.querySelectorAll('.blade-path, .mask-white, .mask-black');
+
+      // padDown(value, 0.1, 0)
+      function padDown(v, padLeft, padRight) {
+        const fac = 1 / (1 - padLeft - padRight);
+        return Math.min(1, Math.max(0, (v - padLeft) * fac));
+      }
+
+      function bladePath(holeSize) {
+        const ry = 0.55 + holeSize * 0.45;
+        return `M 1 0 A 1 1 0 0 1 -1 0 A 1.05 ${ry} 0 0 0 1 0 Z`;
+      }
+
+      const t0 = performance.now();
+
+      function frame(now) {
+        const t = (START_VALUE + (now - t0) / DURATION) % 1;
+
+        const holeT = padDown(t, 0.1, 0);
+        const hole = Math.sin(holeT * TWO_PI - Math.PI / 2) / 2 + 0.5;
+
+        const rotation = TWO_PI * TURNS_PER_CYCLE *
+          (t - (K / TWO_PI) * Math.sin(TWO_PI * t));
+
+        const d = bladePath(hole);
+        paths.forEach(p => p.setAttribute('d', d));
+
+        const transform = `scale(0.8) rotate(${rotation * 180 / Math.PI})`;
+        rotors.forEach(r => r.setAttribute('transform', transform));
+
+        requestAnimationFrame(frame);
+      }
+      requestAnimationFrame(frame);
+    })();
+</script>
+
+<script src="flutter_bootstrap.js" async></script>
+
 </body>
 </html>

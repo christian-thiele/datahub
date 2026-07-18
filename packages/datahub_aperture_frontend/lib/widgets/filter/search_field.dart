@@ -41,7 +41,6 @@ class _SearchFieldState extends State<SearchField> {
       builder: (context, _) {
         return TextFormField(
           controller: _controller,
-          expands: true,
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.search),
             enabledBorder: (_controller.text.isNotEmpty)

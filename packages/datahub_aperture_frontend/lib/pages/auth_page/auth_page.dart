@@ -8,10 +8,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 
 class AuthPage extends StatelessWidget {
-  final String? state;
-  final String? code;
-
-  const AuthPage({super.key, this.state, this.code});
+  const AuthPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +16,10 @@ class AuthPage extends StatelessWidget {
       child: BlocListener<AuthCubit, AuthState>(
         listener: (context, state) {
           if (state is AuthStateAuthorized) {
-            context.go('/');
+            context.go(switch (GoRouter.of(context).state.uri.queryParameters) {
+              {'redirect': final redirect} => redirect,
+              _ => '/',
+            });
           }
         },
         child: BlocBuilder<AuthCubit, AuthState>(

@@ -18,6 +18,8 @@ class ResourceField extends $ResourceField {
   final List<ResourceField>? objectDescription;
   final List<String>? enumValues;
   final ResourceFieldLookup? lookup;
+  final bool allowFilter;
+  final bool allowSort;
 
   const ResourceField({
     required this.id,
@@ -31,5 +33,7 @@ class ResourceField extends $ResourceField {
     this.objectDescription,
     this.enumValues,
     this.lookup,
+    this.allowFilter = true,
+    this.allowSort = true,
   });
 }

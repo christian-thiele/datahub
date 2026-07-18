@@ -1,3 +1,4 @@
+import 'package:datahub_aperture_frontend/repositories.dart';
 import 'package:datahub_aperture_frontend/utils/bootstrap.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
@@ -13,5 +14,5 @@ void main() {
   initializeDateFormatting();
   findSystemLocale().then((locale) => Intl.systemLocale = locale);
   GoogleFonts.config.allowRuntimeFetching = false;
-  runApp(const Bootstrap(child: ApertureApp()));
+  runApp(Bootstrap(child: Repositories(child: ApertureApp())));
 }

@@ -24,7 +24,7 @@ abstract interface class $Todo with DataObject<Todo> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString(value, name: name),
     toJson: (value) => $$codec.encodeString(value),
-    meta: [const ApertureDisplayField()],
+    meta: [const ApertureField(isDisplayField: true)],
     constraints: [
       const MinLengthConstraint<String?>(length: 1),
       const MaxLengthConstraint<String?>(length: 255),

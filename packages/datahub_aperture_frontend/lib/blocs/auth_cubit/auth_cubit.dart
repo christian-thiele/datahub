@@ -28,6 +28,8 @@ class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
         clientId: bootstrap.oidcClientId,
         clientSecret: bootstrap.oidcClientSecret,
       );
+
+      await initializeAuthStrategy();
     } catch (e) {
       if (e case ApiRequestException(:final message)) {
         emit(AuthStateError(message: message));

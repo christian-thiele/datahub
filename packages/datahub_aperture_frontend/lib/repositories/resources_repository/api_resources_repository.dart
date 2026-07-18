@@ -71,6 +71,8 @@ class ApiResourcesRepository extends ApiRepository
   Future<ResourceElementsResponse> getResourceElements(
     String resourceId, {
     ResourceFilter? filter,
+    String? sortFieldId,
+    bool sortAscending = true,
     int offset = 0,
     int limit = 25,
   }) async {
@@ -83,6 +85,8 @@ class ApiResourcesRepository extends ApiRepository
             'offset': [offset.toString()],
             'limit': [limit.toString()],
             if (filter != null) 'filter': [jsonEncode(filter)],
+            if (sortFieldId != null) 'sort': [sortFieldId],
+            if (sortFieldId != null) 'asc': [sortAscending.toString()],
           },
         )
         .thenGetData($ResourceElementsResponse.bean);

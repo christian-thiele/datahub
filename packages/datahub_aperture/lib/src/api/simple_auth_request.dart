@@ -7,8 +7,5 @@ class SimpleAuthRequest extends $SimpleAuthRequest {
   final String username;
   final String password;
 
-  const SimpleAuthRequest({
-    required this.username,
-    required this.password,
-  });
+  const SimpleAuthRequest({required this.username, required this.password});
 }

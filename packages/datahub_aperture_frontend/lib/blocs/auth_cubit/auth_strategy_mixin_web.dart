@@ -7,6 +7,7 @@ import 'auth_cubit.dart';
 
 mixin AuthStrategyMixin on Cubit<AuthState> {
   AuthService get authService;
+
   Future<void> receiveAuthorizationCode(String state, String code);
 
   Future<void> loginAuthCode() async {
@@ -25,6 +26,15 @@ mixin AuthStrategyMixin on Cubit<AuthState> {
           emit(AuthStateError(message: null));
         }
       }
+    }
+  }
+
+  Future<void> initializeAuthStrategy() async {
+    if (Uri.base.queryParameters case {
+      'state': final state,
+      'code': final code,
+    }) {
+      await authService.signInAuthorizationCode(state, code);
     }
   }
 }

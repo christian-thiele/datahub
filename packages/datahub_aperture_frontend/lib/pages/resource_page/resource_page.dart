@@ -64,9 +64,15 @@ class ResourcePage extends StatelessWidget {
                       ],
                     ),
                     FilterView(
-                      fields: filter.fields,
+                      filterFields: filter.filterFields,
                       filters: filter.filters,
                       search: filter.search,
+                      sortField: filter.sortField,
+                      sortAscending: filter.sortAscending,
+                      sortFields: filter.sortFields,
+                      onSortSelect: (field, ascending) => context
+                          .read<ResourceCubit>()
+                          .setSort(field, ascending),
                       onAdd: (model) =>
                           context.read<ResourceCubit>().addFilter(model),
                       onRemove: (idx) =>

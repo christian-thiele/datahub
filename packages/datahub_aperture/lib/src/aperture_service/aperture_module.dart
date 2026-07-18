@@ -6,4 +6,3 @@ abstract interface class ApertureModule {
 
   List<ApiRoute> buildApiRoutes(String base);
 }
-

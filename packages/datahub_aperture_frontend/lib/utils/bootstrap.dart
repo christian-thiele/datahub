@@ -3,6 +3,7 @@ import 'package:datahub_aperture_frontend/blocs/bootstrap/bootstrap_cubit.dart';
 import 'package:datahub_aperture_frontend/repositories/bootstrap_repository/api_bootstrap_repository.dart';
 import 'package:datahub_aperture_frontend/repositories/bootstrap_repository/bootstrap_repository.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
+import 'package:datahub_aperture_frontend/utils/web_utils.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
 import 'package:flutter/material.dart';
@@ -42,23 +43,28 @@ class Bootstrap extends StatelessWidget {
         create: (context) => BootstrapCubit(
           RepositoryProvider.of<BootstrapRepository>(context, listen: false),
         ),
-        child: BlocBuilder<BootstrapCubit, BootstrapState>(
-          builder: (context, state) {
-            return switch (state) {
-              BootstrapSuccess() => child,
-              BootstrapLoading() => _SingleWidgetApp(
-                child: LoadingView(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+        child: BlocListener<BootstrapCubit, BootstrapState>(
+          listenWhen: (p, c) => p is BootstrapLoading && c is! BootstrapLoading,
+          listener: (context, state) => notifyBootstrapDone(),
+          child: BlocBuilder<BootstrapCubit, BootstrapState>(
+            builder: (context, state) {
+              return switch (state) {
+                BootstrapSuccess() => child,
+                BootstrapLoading() => _SingleWidgetApp(
+                  child: LoadingView(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                 ),
-              ),
-              BootstrapError(:final message) => _SingleWidgetApp(
-                child: ErrorView(
-                  message: message,
-                  onRetryPressed: () => context.read<BootstrapCubit>().update(),
+                BootstrapError(:final message) => _SingleWidgetApp(
+                  child: ErrorView(
+                    message: message,
+                    onRetryPressed: () =>
+                        context.read<BootstrapCubit>().update(),
+                  ),
                 ),
-              ),
-            };
-          },
+              };
+            },
+          ),
         ),
       ),
     );

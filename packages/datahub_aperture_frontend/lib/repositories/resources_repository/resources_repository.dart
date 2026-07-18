@@ -10,6 +10,8 @@ abstract interface class ResourcesRepository {
   Future<ResourceElementsResponse> getResourceElements(
     String resourceId, {
     ResourceFilter? filter,
+    String? sortFieldId,
+    bool sortAscending = true,
     int offset = 0,
     int limit = 25,
   });

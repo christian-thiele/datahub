@@ -38,6 +38,14 @@ class _ApertureAppState extends State<ApertureApp>
 
   GoRouter buildRouter(BuildContext context) => GoRouter(
     refreshListenable: BlocListenable(context.read<AuthCubit>()),
+    onException: (context, state, router) => router.go(
+      '/error',
+      extra: {
+        'error': state.error?.message,
+        if (state.extra case {'redirect': final String redirect?})
+          'redirect': redirect,
+      },
+    ),
     routes: [
       GoRoute(
         path: '/error',
@@ -45,11 +53,19 @@ class _ApertureAppState extends State<ApertureApp>
           return Scaffold(
             body: Center(
               child: ErrorView(
-                message: switch (state.extra) {
-                  {'error': final String message} => message,
+                message: switch (state) {
+                  GoRouterState(:final error?) => error.message,
+                  GoRouterState(extra: {'error': final String message}) =>
+                    message,
                   _ => null,
                 },
-                onRetryPressed: () => context.go('/'),
+                onRetryPressed: () {
+                  if (state.extra case {'redirect': final String redirect?}) {
+                    context.go(redirect);
+                  } else {
+                    context.go('/');
+                  }
+                },
               ),
             ),
           );
@@ -57,28 +73,15 @@ class _ApertureAppState extends State<ApertureApp>
       ),
       ShellRoute(
         routes: [
-          GoRoute(
-            path: '/auth',
-            builder: (context, state) => AuthPage(
-              state: state.uri.queryParameters['state'],
-              code: state.uri.queryParameters['code'],
-            ),
-            redirect: (context, state) {
-              if (state.uri.queryParameters case {
-                'state': final state,
-                'code': final code,
-              }) {
-                context.read<AuthCubit>().receiveAuthorizationCode(state, code);
-                return '/auth';
-              }
-
-              return null;
-            },
-          ),
+          GoRoute(path: '/auth', builder: (context, state) => const AuthPage()),
           ShellRoute(
             redirect: (context, state) {
               if (context.read<AuthCubit>().state is! AuthStateAuthorized) {
-                return '/auth';
+                if (state.fullPath != null && state.fullPath != '/') {
+                  return '/auth?redirect=${Uri.encodeQueryComponent(state.uri.path)}';
+                } else {
+                  return '/auth';
+                }
               }
 
               return null;
@@ -152,34 +155,29 @@ class _ApertureAppState extends State<ApertureApp>
 
   @override
   Widget build(BuildContext context) {
-    return Repositories(
-      child: BlocProvider(
-        create: (context) => AuthCubit(
-          bootstrap: Bootstrap.of(context),
-          authService: RepositoryProvider.of<AuthService>(
-            context,
-            listen: false,
+    return BlocProvider(
+      create: (context) => AuthCubit(
+        bootstrap: Bootstrap.of(context),
+        authService: RepositoryProvider.of<AuthService>(context, listen: false),
+      ),
+      child: Builder(
+        builder: (context) => MaterialApp.router(
+          title: switch (Bootstrap.of(context).environment) {
+            Environment.prod => Bootstrap.of(context).title,
+            final env =>
+              '${Bootstrap.of(context).title} [${env.name.toUpperCase()}]',
+          },
+          theme: ApertureThemeData.buildWithSeedColor(
+            Color(Bootstrap.of(context).theme.color),
           ),
-        ),
-        child: Builder(
-          builder: (context) => MaterialApp.router(
-            title: switch (Bootstrap.of(context).environment) {
-              Environment.prod => Bootstrap.of(context).title,
-              final env =>
-                '${Bootstrap.of(context).title} [${env.name.toUpperCase()}]',
-            },
-            theme: ApertureThemeData.buildWithSeedColor(
-              Color(Bootstrap.of(context).theme.color),
-            ),
-            localizationsDelegates: [
-              S.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-              GlobalCupertinoLocalizations.delegate,
-            ],
-            supportedLocales: S.delegate.supportedLocales,
-            routerConfig: router ??= buildRouter(context),
-          ),
+          localizationsDelegates: [
+            S.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          supportedLocales: S.delegate.supportedLocales,
+          routerConfig: router ??= buildRouter(context),
         ),
       ),
     );

@@ -1,6 +1,6 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
-import 'package:datahub_aperture_frontend/utils/base_href.dart';
+import 'package:datahub_aperture_frontend/utils/web_utils.dart';
 import 'package:flutter/foundation.dart';
 
 import 'bootstrap_repository.dart';

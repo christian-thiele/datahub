@@ -12,12 +12,10 @@ void main(List<String> args) => runApp([
   TestAuthProvider(),
   ApiService(
     routes: [
-      ApertureApi(
-        configDelegate: ApertureConfigStaticDelegate(
-          modules: [TaskManagerModule()],
-        ),
+      const ApertureApi(
         oidcIssuer: Config.value('http://localhost:8081/realms/local-oidc'),
         oidcClientId: Config.value('aperture'),
+        modules: [TaskManagerModule()],
       ),
     ],
   ),

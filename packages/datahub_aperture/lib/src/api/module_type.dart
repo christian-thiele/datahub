@@ -1,3 +1,1 @@
-enum ModuleType {
-  taskManager,
-}
+enum ModuleType { taskManager }

@@ -6,10 +6,14 @@ import 'dart:math' as math;
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/services.dart';
+import 'package:datahub_aperture/src/utils/data_description_builders.dart';
 
 class ApertureApi extends ApiNode {
-  final ApertureConfigDelegate configDelegate;
-
+  final Config<String> title;
+  final ApertureTheme theme;
+  final List<ApertureResource> resources;
+  final List<ApertureAction> actions;
+  final List<ApertureModule> modules;
   final Config<String> basePath;
   final Config<String> oidcIssuer;
   final Config<String?> oidcAudience;
@@ -19,8 +23,12 @@ class ApertureApi extends ApiNode {
   final Config<String> oidcIdentityField;
   final Config<String> oidcUsernameField;
 
-  ApertureApi({
-    required this.configDelegate,
+  const ApertureApi({
+    this.title = const Config('aperture.title', defaultValue: 'Aperture'),
+    this.theme = const ApertureTheme(),
+    this.resources = const [],
+    this.actions = const [],
+    this.modules = const [],
     this.basePath = const Config(
       'aperture.basePath',
       defaultValue: '/aperture',
@@ -49,8 +57,8 @@ class ApertureApi extends ApiNode {
           matchers: [RoutePattern('$base/api/bootstrap')],
         ),
         get: (request) => ApertureBootstrap(
-          title: configDelegate.title,
-          theme: configDelegate.theme,
+          title: title.read(),
+          theme: theme,
           environment: Context.ofZone().environment,
           oidcIssuer: oidcIssuer.read(),
           oidcScopes: oidcScopes.read(),
@@ -65,29 +73,36 @@ class ApertureApi extends ApiNode {
           ResourceEndpoint(
             matcher: RoutePattern('$base/api/resources/'),
             get: (request) async {
-              return configDelegate.resources
-                  .map((e) => e.description)
+              final beans = resources
+                  .map((e) => e.repository.find().bean)
                   .toList();
+
+              return resources.map((e) => e.buildDescription(beans)).toList();
             },
           ),
           ResourceEndpoint(
             matcher: RoutePattern('$base/api/resources/{resourceId}'),
             get: (request) async {
               final id = request.getRouteParam<String>('resourceId');
-              return configDelegate.resources
+
+              final beans = resources
+                  .map((e) => e.repository.find().bean)
+                  .toList();
+
+              return resources
                   .firstWhere(
-                    (e) => e.description.id == id,
+                    (e) => buildResourceId(e) == id,
                     orElse: () => throw ApiRequestException.notFound(),
                   )
-                  .description;
+                  .buildDescription(beans);
             },
           ),
           ResourceEndpoint(
             matcher: RoutePattern('$base/api/resources/{resourceId}/elements'),
             get: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
-              final resource = configDelegate.resources.firstWhere(
-                (resource) => resource.description.id == resourceId,
+              final resource = resources.firstWhere(
+                (resource) => buildResourceId(resource) == resourceId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
@@ -102,9 +117,12 @@ class ApertureApi extends ApiNode {
                   ? $ResourceFilter.fromJson(jsonDecode(encodedFilter))
                   : null;
 
-              // TODO sort
+              final sortFieldId = request.getParam<String?>('sort');
+              final sortAscending = request.getParam<bool?>('asc') ?? true;
+
               final elements = await repo.readAll(
                 filter: _buildFilter(repo, filter),
+                sort: _buildSort(repo, sortFieldId, sortAscending),
                 offset: offset,
                 limit: limit + 1,
               );
@@ -120,8 +138,8 @@ class ApertureApi extends ApiNode {
             },
             post: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
-              final resource = configDelegate.resources.firstWhere(
-                (resource) => resource.description.id == resourceId,
+              final resource = resources.firstWhere(
+                (resource) => buildResourceId(resource) == resourceId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
@@ -166,8 +184,8 @@ class ApertureApi extends ApiNode {
             ),
             get: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
-              final resource = configDelegate.resources.firstWhere(
-                (resource) => resource.description.id == resourceId,
+              final resource = resources.firstWhere(
+                (resource) => buildResourceId(resource) == resourceId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
               final repo = resource.repository.find();
@@ -195,8 +213,8 @@ class ApertureApi extends ApiNode {
             },
             patch: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
-              final resource = configDelegate.resources.firstWhere(
-                (resource) => resource.description.id == resourceId,
+              final resource = resources.firstWhere(
+                (resource) => buildResourceId(resource) == resourceId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
@@ -248,8 +266,8 @@ class ApertureApi extends ApiNode {
             },
             delete: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
-              final resource = configDelegate.resources.firstWhere(
-                (resource) => resource.description.id == resourceId,
+              final resource = resources.firstWhere(
+                (resource) => buildResourceId(resource) == resourceId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
@@ -283,26 +301,30 @@ class ApertureApi extends ApiNode {
               final elementId = request.getRouteParam<String>('elementId');
               final actionId = request.getRouteParam<String>('actionId');
 
-              final resource = configDelegate.resources.firstWhere(
-                (resource) => resource.description.id == resourceId,
+              final resource = resources.firstWhere(
+                (resource) => buildResourceId(resource) == resourceId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
               final action = resource.actions.firstWhere(
-                (action) => action.description.id == actionId,
+                (action) => buildResourceActionId(action) == actionId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
               final parameters = await request.getJsonBody();
 
-              final taskId = await action.handler(elementId, parameters);
+              final taskId = await action.handle(elementId, parameters);
               return {if (taskId != null) 'taskId': taskId};
             },
           ),
           ResourceEndpoint(
             matcher: RoutePattern('$base/api/actions'),
             get: (request) async {
-              return configDelegate.actions.map((e) => e.description).toList();
+              final beans = resources
+                  .map((e) => e.repository.find().bean)
+                  .toList();
+
+              return actions.map((e) => e.buildDescription(beans)).toList();
             },
           ),
           ResourceEndpoint(
@@ -310,23 +332,23 @@ class ApertureApi extends ApiNode {
             post: (request) async {
               final actionId = request.getRouteParam<String>('actionId');
 
-              final action = configDelegate.actions.firstWhere(
-                (action) => action.description.id == actionId,
+              final action = actions.firstWhere(
+                (action) => buildResourceActionId(action) == actionId,
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
               final parameters = await request.getJsonBody();
-              final taskId = await action.handler(null, parameters);
+              final taskId = await action.handle(null, parameters);
               return {if (taskId != null) 'taskId': taskId};
             },
           ),
           ResourceEndpoint(
             matcher: RoutePattern('$base/api/modules'),
             get: (request) async {
-              return configDelegate.modules.map((e) => e.description).toList();
+              return modules.map((e) => e.description).toList();
             },
           ),
-          for (final module in configDelegate.modules)
+          for (final module in modules)
             ...module.buildApiRoutes(
               '$base/api/modules/${module.description.id}',
             ),
@@ -407,6 +429,14 @@ class ApertureApi extends ApiNode {
       log.warn('Filter error: ${e.toString()}');
       return Filter.empty;
     }
+  }
+
+  static Sort _buildSort(DataRepository repo, String? fieldId, bool ascending) {
+    if (fieldId == null) {
+      return Sort.empty;
+    }
+    final field = repo.bean.fields.firstWhere((e) => e.name == fieldId);
+    return field.sort(ascending);
   }
 
   // TODO find a way not to need this?

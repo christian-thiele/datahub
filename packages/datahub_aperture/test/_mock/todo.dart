@@ -11,7 +11,7 @@ class Todo extends $Todo {
   final int id;
   @MinLengthConstraint(length: 1)
   @MaxLengthConstraint(length: 255)
-  @ApertureDisplayField()
+  @ApertureField(isDisplayField: true)
   final String title;
   final String description;
   final DateTime? dueDate;

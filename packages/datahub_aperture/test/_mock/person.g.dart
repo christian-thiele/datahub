@@ -36,7 +36,7 @@ abstract interface class $Person with DataObject<Person> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString(value, name: name),
     toJson: (value) => $$codec.encodeString(value),
-    meta: [const ApertureDisplayField()],
+    meta: [const ApertureField(isDisplayField: true)],
     constraints: [const MinLengthConstraint<String?>(length: 3)],
   );
 
@@ -48,7 +48,7 @@ abstract interface class $Person with DataObject<Person> {
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
     constraints: [
       const ElementConstraint<String?, List<String?>>(
-        constraint: RegExpConstraint<String?>(expression: '^[^\\s]*\$'),
+        constraint: const RegExpConstraint<String?>(expression: '^[^\\s]*\$'),
       ),
     ],
   );

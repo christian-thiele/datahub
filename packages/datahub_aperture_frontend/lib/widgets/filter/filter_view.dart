@@ -11,19 +11,27 @@ import 'double_filter_section.dart';
 import 'int_filter_section.dart';
 
 class FilterView extends StatelessWidget {
-  final List<ResourceField> fields;
+  final List<ResourceField> filterFields;
+  final List<ResourceField> sortFields;
   final List<FilterModel> filters;
+  final ResourceField? sortField;
+  final bool sortAscending;
   final void Function(int) onRemove;
   final void Function(FilterModel) onAdd;
+  final void Function(ResourceField?, bool) onSortSelect;
   final ValueChanged<String>? onSearchSubmit;
   final String search;
 
   const FilterView({
     super.key,
-    required this.fields,
+    required this.filterFields,
+    required this.sortFields,
     required this.filters,
+    required this.sortField,
+    required this.sortAscending,
     required this.onRemove,
     required this.onAdd,
+    required this.onSortSelect,
     this.onSearchSubmit,
     this.search = '',
   });
@@ -39,7 +47,7 @@ class FilterView extends StatelessWidget {
         },
       ),
       menuChildren: [
-        for (final field in fields)
+        for (final field in filterFields)
           Builder(
             builder: (context) {
               return SubmenuButton(
@@ -87,6 +95,27 @@ class FilterView extends StatelessWidget {
       ],
     );
 
+    final sortButton = MenuAnchor(
+      alignmentOffset: Offset(0, 8),
+      builder: (context, controller, _) => ActionChip(
+        label: IconText(Icons.sort, 'Sort by ${sortField?.name}', iconSize: 16),
+        onPressed: () {
+          controller.isOpen ? controller.close() : controller.open();
+        },
+      ),
+      menuChildren: [
+        for (final field in sortFields)
+          Builder(
+            builder: (context) {
+              return MenuItemButton(
+                child: Text(field.name),
+                onPressed: () => onSortSelect(field, true),
+              );
+            },
+          ),
+      ],
+    );
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -96,10 +125,11 @@ class FilterView extends StatelessWidget {
           Row(
             mainAxisSize: MainAxisSize.max,
             crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 16,
+            spacing: 8,
             children: [
-              Expanded(child: SearchField(value: search, onSubmit: onSearchSubmit)),
-              filterButton,
+              Expanded(
+                child: SearchField(value: search, onSubmit: onSearchSubmit),
+              ),
             ],
           ),
         Wrap(
@@ -109,7 +139,9 @@ class FilterView extends StatelessWidget {
           alignment: WrapAlignment.start,
           runAlignment: WrapAlignment.start,
           children: [
-            if (onSearchSubmit == null) filterButton,
+            filterButton,
+            if (sortFields.isNotEmpty) sortButton,
+
             for (final (idx, filter) in filters.indexed)
               RawChip(
                 label: Text(filterDescription(filter)),
