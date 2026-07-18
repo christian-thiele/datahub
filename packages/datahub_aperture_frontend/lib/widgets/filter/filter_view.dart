@@ -98,7 +98,18 @@ class FilterView extends StatelessWidget {
     final sortButton = MenuAnchor(
       alignmentOffset: Offset(0, 8),
       builder: (context, controller, _) => ActionChip(
-        label: IconText(Icons.sort, 'Sort by ${sortField?.name}', iconSize: 16),
+        label: Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 4,
+          children: [
+            Icon(Icons.sort, size: 16),
+            Text('Sort by ${sortField?.name}'),
+            Icon(
+              sortAscending ? Icons.arrow_drop_up : Icons.arrow_drop_down,
+              size: 16,
+            ),
+          ],
+        ),
         onPressed: () {
           controller.isOpen ? controller.close() : controller.open();
         },
@@ -107,9 +118,19 @@ class FilterView extends StatelessWidget {
         for (final field in sortFields)
           Builder(
             builder: (context) {
+              final isSelected = field.id == sortField?.id;
               return MenuItemButton(
+                trailingIcon: isSelected
+                    ? Icon(
+                        sortAscending
+                            ? Icons.arrow_drop_up
+                            : Icons.arrow_drop_down,
+                        size: 16,
+                      )
+                    : null,
                 child: Text(field.name),
-                onPressed: () => onSortSelect(field, true),
+                onPressed: () =>
+                    onSortSelect(field, isSelected ? !sortAscending : true),
               );
             },
           ),
