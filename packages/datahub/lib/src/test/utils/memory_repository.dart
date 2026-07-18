@@ -86,8 +86,11 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
     int? limit,
   }) async {
     final sorted = _map.values.toList();
-    if (sort case ExpressionSort(expression: final DataField sortField)) {
-      sorted.sortBy((e) => sortField.valueOf(e) as Comparable);
+    if (sort case ExpressionSort(
+      expression: final DataField sortField,
+      :final ascending,
+    )) {
+      sorted.sortBy((e) => sortField.valueOf(e) as Comparable, ascending);
     }
 
     return sorted
