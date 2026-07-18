@@ -136,7 +136,9 @@ void main() {
       // not forwarding referenceRoot when both sides had the same map key.
       final config = Configuration();
       config.addConfigMap({'host': 'primary.example.com', 'db': {}});
-      config.addConfigMap({'db': {'host': r'$host'}});
+      config.addConfigMap({
+        'db': {'host': r'$host'},
+      });
       expect(config.read<String>(ConfigPath('db.host')), 'primary.example.com');
     });
   });

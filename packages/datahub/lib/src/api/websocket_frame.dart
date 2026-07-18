@@ -55,7 +55,8 @@ class WebsocketFrame {
   }
 }
 
-class WebsocketFrameDecoder extends StreamTransformerBase<Uint8List, WebsocketFrame> {
+class WebsocketFrameDecoder
+    extends StreamTransformerBase<Uint8List, WebsocketFrame> {
   const WebsocketFrameDecoder();
 
   @override
@@ -90,10 +91,18 @@ class WebsocketFrameDecoder extends StreamTransformerBase<Uint8List, WebsocketFr
 
         var offset = 2;
         if (payloadLength == 126) {
-          payloadLength = ByteData.sublistView(Uint8List.fromList(buffer), 2, 4).getUint16(0);
+          payloadLength = ByteData.sublistView(
+            Uint8List.fromList(buffer),
+            2,
+            4,
+          ).getUint16(0);
           offset += 2;
         } else if (payloadLength == 127) {
-          payloadLength = ByteData.sublistView(Uint8List.fromList(buffer), 2, 10).getUint64(0);
+          payloadLength = ByteData.sublistView(
+            Uint8List.fromList(buffer),
+            2,
+            10,
+          ).getUint64(0);
           offset += 8;
         }
 
@@ -107,7 +116,9 @@ class WebsocketFrameDecoder extends StreamTransformerBase<Uint8List, WebsocketFr
 
         if (buffer.length < offset + payloadLength) return;
 
-        final payload = Uint8List.fromList(buffer.sublist(offset, offset + payloadLength));
+        final payload = Uint8List.fromList(
+          buffer.sublist(offset, offset + payloadLength),
+        );
         buffer.removeRange(0, offset + payloadLength);
 
         if (maskingKey != null) {
@@ -140,7 +151,8 @@ class WebsocketFrameDecoder extends StreamTransformerBase<Uint8List, WebsocketFr
   }
 }
 
-class WebsocketFrameEncoder extends StreamTransformerBase<WebsocketFrame, Uint8List> {
+class WebsocketFrameEncoder
+    extends StreamTransformerBase<WebsocketFrame, Uint8List> {
   const WebsocketFrameEncoder();
 
   @override

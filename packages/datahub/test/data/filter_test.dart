@@ -56,8 +56,13 @@ class Person with DataObject<Person> {
   String get $$name => 'Person';
 
   @override
-  List<DataField<Person, dynamic>> get $$fields =>
-      [$name, $age, $email, $createdAt, $tags];
+  List<DataField<Person, dynamic>> get $$fields => [
+    $name,
+    $age,
+    $email,
+    $createdAt,
+    $tags,
+  ];
 
   @override
   Map<String, dynamic> toJson() => {
@@ -90,12 +95,7 @@ void main() {
     tags: ['user'],
   );
 
-  final charlie = Person(
-    name: 'Charlie',
-    age: 35,
-    createdAt: later,
-    tags: [],
-  );
+  final charlie = Person(name: 'Charlie', age: 35, createdAt: later, tags: []);
 
   group('EmptyFilter', () {
     test('matches everything', () {
@@ -254,7 +254,9 @@ void main() {
     });
 
     test('OR group', () {
-      final filter = Person.$name.equals('Alice').or(Person.$name.equals('Bob'));
+      final filter = Person.$name
+          .equals('Alice')
+          .or(Person.$name.equals('Bob'));
       expect(filter.matches(alice), isTrue);
       expect(filter.matches(bob), isTrue);
       expect(filter.matches(charlie), isFalse);
