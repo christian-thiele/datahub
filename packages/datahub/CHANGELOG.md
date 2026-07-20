@@ -1,3 +1,7 @@
+## 0.18.0-dev.24
+
+ - **FIX**(test): sort direction in memory repository.
+
 ## 0.18.0-dev.23
 
  - **FIX**(datahub): fixed exports.

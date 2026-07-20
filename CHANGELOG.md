@@ -3,6 +3,49 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-07-20
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.24`](#datahub---v0180-dev24)
+ - [`datahub_aperture` - `v0.1.0-dev.16`](#datahub_aperture---v010-dev16)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.13`](#datahub_aperture_frontend---v010-dev13)
+ - [`datahub_codegen` - `v0.18.0-dev.14`](#datahub_codegen---v0180-dev14)
+ - [`datahub_postgres` - `v0.18.0-dev.19`](#datahub_postgres---v0180-dev19)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_codegen` - `v0.18.0-dev.14`
+ - `datahub_postgres` - `v0.18.0-dev.19`
+
+---
+
+#### `datahub` - `v0.18.0-dev.24`
+
+ - **FIX**(test): sort direction in memory repository.
+
+#### `datahub_aperture` - `v0.1.0-dev.16`
+
+ - **FEAT**(aperture): add metadata annotations and fix revisable check.
+ - **FEAT**(aperture): search bar and sorting.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.13`
+
+ - **FEAT**(aperture): add confirmation dialog for resource deletion.
+ - **FEAT**(aperture): sort direction visualization.
+ - **FEAT**(aperture): search bar and sorting.
+
+
 ## 2026-07-15
 
 ### Changes

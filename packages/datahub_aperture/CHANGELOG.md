@@ -1,3 +1,8 @@
+## 0.1.0-dev.16
+
+ - **FEAT**(aperture): add metadata annotations and fix revisable check.
+ - **FEAT**(aperture): search bar and sorting.
+
 ## 0.1.0-dev.15
 
  - **FEAT**(aperture): add search functionality with test data generation.
