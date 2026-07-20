@@ -1,13 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:path/path.dart';
-import 'package:yaml/yaml.dart';
+
 import 'package:datahub/data.dart';
 import 'package:datahub/telemetry.dart';
+import 'package:path/path.dart';
+import 'package:yaml/yaml.dart';
 
-import 'config_path.dart';
 import 'config_exception.dart';
-
+import 'config_path.dart';
 import 'environment.dart';
 
 class Configuration {

@@ -2,26 +2,26 @@ import 'dart:typed_data';
 
 import 'package:buffer/buffer.dart';
 
-import 'geometry_collection.dart';
-import 'line_string.dart';
 import 'byte_order.dart';
+import 'geometry_collection.dart';
 import 'geometry_type.dart';
+import 'line_string.dart';
 import 'multi_line_string.dart';
 import 'multi_point.dart';
 import 'multi_polygon.dart';
 import 'point.dart';
 import 'polygon.dart';
 
-export 'geometry_collection.dart';
 export 'byte_order.dart';
-export 'geometry_type.dart';
 export 'geometry.dart';
+export 'geometry_collection.dart';
+export 'geometry_type.dart';
+export 'line_string.dart';
+export 'multi_line_string.dart';
+export 'multi_point.dart';
+export 'multi_polygon.dart';
 export 'point.dart';
 export 'polygon.dart';
-export 'multi_point.dart';
-export 'multi_line_string.dart';
-export 'multi_polygon.dart';
-export 'line_string.dart';
 
 const wkbZ = 0x80000000;
 const wkbM = 0x40000000;

@@ -1,11 +1,10 @@
 import 'package:boost/boost.dart';
 
-import 'meta/meta_data.dart';
-
 import 'data_bean.dart';
 import 'data_codec.dart';
 import 'expression.dart';
 import 'meta/data_field_constraint.dart';
+import 'meta/meta_data.dart';
 
 class DataField<Data, FieldType> implements Expression {
   final String name;

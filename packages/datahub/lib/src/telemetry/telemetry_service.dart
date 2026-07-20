@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:datahub/config.dart';
+import 'package:datahub/scaffold.dart';
 import 'package:datahub/utils.dart';
 
 import 'logs/log_exporter.dart';
@@ -9,23 +10,19 @@ import 'logs/log_listener.dart';
 import 'logs/log_message.dart';
 import 'logs/severity_level.dart';
 import 'logs/stdout_log_exporter.dart';
-
-import 'metrics/metric.dart';
-import 'metrics/metric_collector.dart';
 import 'metrics/counter_metric.dart';
 import 'metrics/gauge_metric.dart';
 import 'metrics/histogram_metric.dart';
+import 'metrics/metric.dart';
+import 'metrics/metric_collector.dart';
+import 'metrics/metrics_exporter.dart';
 import 'metrics/prometheus_exporter.dart';
 import 'metrics/sample_group.dart';
-import 'metrics/metrics_exporter.dart';
-
 import 'trace/discard_trace_exporter.dart';
 import 'trace/open_telemetry_trace_exporter.dart';
 import 'trace/span.dart';
 import 'trace/trace_exporter.dart';
 import 'trace/tracer.dart';
-
-import 'package:datahub/scaffold.dart';
 
 /// Internal service for collecting and exposing application metrics.
 ///

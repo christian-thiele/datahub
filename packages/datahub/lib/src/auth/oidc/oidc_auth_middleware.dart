@@ -1,7 +1,7 @@
 import 'package:datahub/api.dart';
 import 'package:datahub/auth.dart';
-import 'package:datahub/scaffold.dart';
 import 'package:datahub/config.dart';
+import 'package:datahub/scaffold.dart';
 
 class OidcSession implements Session {
   @override

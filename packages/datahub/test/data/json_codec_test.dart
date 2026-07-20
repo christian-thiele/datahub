@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:math' show Random;
 import 'dart:typed_data';
 
-import 'package:test/test.dart';
 import 'package:datahub/datahub.dart';
+import 'package:test/test.dart';
 
 const codec = JsonDataCodec();
 

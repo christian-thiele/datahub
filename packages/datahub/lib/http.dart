@@ -4,12 +4,12 @@
 library;
 
 export 'src/http/basic_auth.dart';
-export 'src/http/token_auth.dart';
 export 'src/http/http_auth.dart';
 export 'src/http/http_client.dart';
 export 'src/http/http_form_data.dart';
 export 'src/http/http_headers.dart';
-export 'src/http/http_response.dart';
-export 'src/http/http_request_method.dart';
 export 'src/http/http_request.dart';
+export 'src/http/http_request_method.dart';
+export 'src/http/http_response.dart';
 export 'src/http/http_server.dart';
+export 'src/http/token_auth.dart';

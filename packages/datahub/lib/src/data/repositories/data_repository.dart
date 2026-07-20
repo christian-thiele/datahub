@@ -1,6 +1,6 @@
-import '../data_object.dart';
-import '../data_field.dart';
 import '../data_bean.dart';
+import '../data_field.dart';
+import '../data_object.dart';
 import '../filter.dart';
 import '../sort.dart';
 

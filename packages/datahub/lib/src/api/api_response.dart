@@ -3,10 +3,9 @@ import 'dart:io' as io;
 import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
-import 'package:path/path.dart' as p;
-
 import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
+import 'package:path/path.dart' as p;
 
 import '../http/http_headers.dart';
 import '../http/http_response.dart';

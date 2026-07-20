@@ -1,10 +1,10 @@
-import 'data_repository.dart';
-import 'revisable_inconsistency_exception.dart';
-import 'revision_data.dart';
 import '../data_field.dart';
 import '../data_object.dart';
 import '../filter.dart';
 import '../sort.dart';
+import 'data_repository.dart';
+import 'revisable_inconsistency_exception.dart';
+import 'revision_data.dart';
 
 /// An interface with default DataRepository adapter for [Component]s providing
 /// CRUD functionality for revisable [DataObject] collections.

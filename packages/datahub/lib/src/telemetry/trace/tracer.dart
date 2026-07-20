@@ -2,10 +2,10 @@ import 'dart:async';
 
 import 'package:boost/boost.dart';
 
-import 'span.dart';
-import '../telemetry_scope.dart';
 import '../span_id.dart';
+import '../telemetry_scope.dart';
 import '../trace_id.dart';
+import 'span.dart';
 
 class Tracer implements TelemetryScope {
   static const _tracerKeyPrefix = 'datahub_telemetry_tracer';

@@ -1,8 +1,8 @@
 import 'dart:io' as io;
 
 import 'package:datahub/api.dart';
-import 'package:datahub/rest_client.dart';
 import 'package:datahub/http.dart';
+import 'package:datahub/rest_client.dart';
 
 /// Utility for testing [ApiService] endpoints in unit tests.
 ///

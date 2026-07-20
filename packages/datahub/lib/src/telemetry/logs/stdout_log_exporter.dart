@@ -1,14 +1,15 @@
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
+
 import 'package:boost/boost.dart';
 import 'package:datahub/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:stack_trace/stack_trace.dart';
 
-import 'severity_level.dart';
 import 'log_exporter.dart';
 import 'log_message.dart';
+import 'severity_level.dart';
 
 enum LogBodyFormat { logfmt, json, message, pretty }
 

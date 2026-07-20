@@ -1,13 +1,12 @@
+import 'dart:async';
+
 import 'package:datahub/config.dart';
+import 'package:datahub/rest_client.dart';
+import 'package:datahub/scaffold.dart';
+import 'package:datahub/utils.dart';
 import 'package:pointycastle/pointycastle.dart';
 
-import 'package:datahub/rest_client.dart';
-import 'package:datahub/utils.dart';
-
 import 'cache_key.dart';
-
-import 'dart:async';
-import 'package:datahub/scaffold.dart';
 
 /// This service provides a centralized cache for public keys.
 ///

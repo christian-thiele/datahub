@@ -1,5 +1,5 @@
-import 'package:test/test.dart';
 import 'package:datahub/utils.dart';
+import 'package:test/test.dart';
 
 import 'matchers/status_code_matcher.dart';
 

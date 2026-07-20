@@ -2,8 +2,8 @@ import 'dart:convert';
 
 import 'package:boost/boost.dart';
 
-import 'token_auth.dart';
 import 'http_headers.dart';
+import 'token_auth.dart';
 
 class BasicAuth implements TokenAuth {
   @override

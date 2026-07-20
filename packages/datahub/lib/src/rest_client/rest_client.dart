@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:io' as io;
 import 'dart:typed_data';
 
-import 'package:datahub/http.dart';
 import 'package:datahub/api.dart';
+import 'package:datahub/http.dart';
 import 'package:datahub/utils.dart';
 
 import 'rest_response.dart';

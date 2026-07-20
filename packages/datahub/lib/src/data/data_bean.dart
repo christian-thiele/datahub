@@ -1,13 +1,13 @@
 import 'package:boost/boost.dart';
 
-import 'meta/meta_data.dart';
-import 'meta/id.dart';
-import 'meta/data_field_constraint.dart';
-import 'data_object.dart';
-import 'data_field.dart';
 import 'data_codec.dart';
-import 'validation_exception.dart';
+import 'data_field.dart';
+import 'data_object.dart';
+import 'meta/data_field_constraint.dart';
+import 'meta/id.dart';
+import 'meta/meta_data.dart';
 import 'missing_id_field_error.dart';
+import 'validation_exception.dart';
 
 /// Contains all "static" properties of a [DataObject].
 final class DataBean<T extends DataObject> {

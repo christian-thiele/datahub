@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:args/args.dart';
+import 'package:datahub/src/services/key_service/key_service.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
 import 'package:rxdart/rxdart.dart';
-import 'package:datahub/src/services/key_service/key_service.dart';
 
 import 'service_host.dart';
 

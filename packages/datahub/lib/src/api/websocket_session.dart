@@ -3,10 +3,7 @@ import 'dart:io' as io;
 import 'dart:typed_data';
 
 import 'package:datahub/datahub.dart';
-import 'package:datahub/scaffold.dart';
 
-import 'api_request.dart';
-import 'websocket_frame.dart';
 
 class WebsocketSession implements StreamSink<WebsocketFrame> {
   final ApiRequest initialRequest;

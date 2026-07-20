@@ -1,8 +1,8 @@
 import 'package:datahub/scaffold.dart';
 
+import '../telemetry_service.dart';
 import 'log_message.dart';
 import 'severity_level.dart';
-import '../telemetry_service.dart';
 
 const LogHelper log = LogHelper._();
 

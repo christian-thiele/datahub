@@ -1,22 +1,18 @@
 import 'dart:async';
 
 import 'package:datahub/config.dart';
-import 'package:datahub/utils.dart';
 import 'package:datahub/telemetry.dart';
+import 'package:datahub/utils.dart';
 import 'package:meta/meta.dart';
 
-import 'tree_node.dart';
 import 'service_registry.dart';
-
-part 'context.dart';
+import 'tree_node.dart';
 
 part 'component.dart';
-
-part 'service.dart';
-
-part 'scope.dart';
-
+part 'context.dart';
 part 'find.dart';
+part 'scope.dart';
+part 'service.dart';
 
 enum ServiceHostState { uninitialized, initializing, initialized, shutdown }
 

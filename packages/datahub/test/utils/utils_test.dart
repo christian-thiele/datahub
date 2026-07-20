@@ -1,9 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub/src/cli/utils.dart';
-import 'package:boost/boost.dart';
 import 'package:test/test.dart';
 
 void main() {

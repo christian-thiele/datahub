@@ -1,6 +1,5 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
-import 'package:datahub_aperture/icons.dart';
 import 'package:datahub_aperture/utils.dart';
 
 typedef ApertureActionHandler<TParameters> =

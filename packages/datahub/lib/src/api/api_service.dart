@@ -1,10 +1,11 @@
 import 'dart:async';
 import 'dart:io' as io;
+
 import 'package:boost/boost.dart';
 import 'package:datahub/config.dart';
-import 'package:datahub/telemetry.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/scaffold.dart';
+import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
 
 import 'api_request.dart';

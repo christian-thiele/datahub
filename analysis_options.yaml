@@ -1,4 +1,5 @@
 include: package:lints/recommended.yaml
 analyzer:
-#   exclude:
-#     - path/to/excluded/files/**
+linter:
+  rules:
+    directives_ordering: true
