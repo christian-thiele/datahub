@@ -42,8 +42,6 @@ ResourceDescription buildResourceDescription(
 
   final meta = bean.metaOfType<Meta>();
 
-  // TODO fix this shit
-  final isRevisable = true;
   final isReadOnly = false;
   return ResourceDescription(
     id: buildResourceId(res),
@@ -51,7 +49,7 @@ ResourceDescription buildResourceDescription(
     namePlural: meta?.namePlural,
     icon: meta?.icon ?? Icons.data_object,
     readOnly: isReadOnly,
-    revisable: isRevisable,
+    revisable: repository is RevisableDataRepository,
     actions: [
       for (final action in res.actions) action.buildDescription(relatedBeans),
     ],

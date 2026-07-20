@@ -1,5 +1,8 @@
 import 'package:datahub/data.dart';
+import 'package:meta/meta_meta.dart';
 
+/// Annotation for DataObject fields
+@Target({TargetKind.field})
 final class ApertureField extends MetaData {
   final bool isDisplayField;
   final bool readOnly;
