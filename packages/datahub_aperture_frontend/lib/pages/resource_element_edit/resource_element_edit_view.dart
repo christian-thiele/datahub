@@ -1,13 +1,13 @@
-import 'package:datahub_aperture_frontend/generated/l10n.dart';
-import 'package:datahub_aperture_frontend/widgets/dialogs/schedule_dialog.dart';
-import 'package:datahub_aperture_frontend/widgets/resources/revision_view.dart';
-import 'package:datahub_aperture_frontend/widgets/side_panel.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/models/filtered_resource.dart';
 import 'package:datahub_aperture_frontend/models/view_models/action_model.dart';
+import 'package:datahub_aperture_frontend/widgets/dialogs/schedule_dialog.dart';
 import 'package:datahub_aperture_frontend/widgets/form_fields/resource_field_form.dart';
 import 'package:datahub_aperture_frontend/widgets/icon_text.dart';
 import 'package:datahub_aperture_frontend/widgets/options_button.dart';
+import 'package:datahub_aperture_frontend/widgets/resources/revision_view.dart';
+import 'package:datahub_aperture_frontend/widgets/side_panel.dart';
 import 'package:flutter/material.dart';
 
 import 'resource_relation_view.dart';

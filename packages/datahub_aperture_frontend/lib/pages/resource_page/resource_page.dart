@@ -1,10 +1,10 @@
 import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
-import 'package:datahub_aperture_frontend/utils/route_helper.dart';
-import 'package:datahub_aperture_frontend/widgets/filter/filter_view.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
+import 'package:datahub_aperture_frontend/utils/route_helper.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
+import 'package:datahub_aperture_frontend/widgets/filter/filter_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
 import 'package:datahub_aperture_frontend/widgets/resources/resource_list.dart';
 import 'package:flutter/material.dart';

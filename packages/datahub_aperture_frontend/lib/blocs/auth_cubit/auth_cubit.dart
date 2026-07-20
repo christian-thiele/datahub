@@ -1,7 +1,7 @@
+import 'package:bloc/bloc.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
-import 'package:bloc/bloc.dart';
 import 'package:datahub_aperture_frontend/services.dart';
 
 import 'auth_strategy_mixin_web.dart'

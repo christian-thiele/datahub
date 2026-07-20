@@ -1,7 +1,7 @@
 import 'package:datahub/api.dart';
+import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/repositories/bootstrap_repository/bootstrap_repository.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:datahub_aperture/api.dart';
 
 part 'bootstrap_state.dart';
 

@@ -1,8 +1,8 @@
+import 'package:bloc/bloc.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/blocs/error_state.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
-import 'package:bloc/bloc.dart';
 
 part 'module_state.dart';
 

@@ -1,8 +1,8 @@
 import 'dart:math';
 
+import 'package:boost/boost.dart';
 import 'package:datahub_aperture_frontend/widgets/map/editor_layer.dart';
 import 'package:datahub_aperture_frontend/widgets/map/utils.dart';
-import 'package:boost/boost.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart' hide Path;

@@ -1,6 +1,6 @@
+import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/widgets/dialogs/schedule_dialog.dart';
-import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/widgets/icon_text.dart';
 import 'package:datahub_aperture_frontend/widgets/options_button.dart';
 import 'package:flutter/material.dart';

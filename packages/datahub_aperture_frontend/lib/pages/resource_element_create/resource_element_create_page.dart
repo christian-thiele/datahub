@@ -1,6 +1,6 @@
+import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/blocs/resource_element/resource_element_create_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
-import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';

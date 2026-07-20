@@ -1,10 +1,10 @@
+import 'package:bloc/bloc.dart';
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
-import 'package:datahub_aperture_frontend/models/filtered_resource.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/models/filtered_resource.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
-import 'package:bloc/bloc.dart';
 
 part 'resource_element_edit_state.dart';
 

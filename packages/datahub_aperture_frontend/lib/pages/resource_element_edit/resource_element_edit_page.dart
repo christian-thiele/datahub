@@ -3,13 +3,13 @@ import 'package:datahub_aperture_frontend/blocs/resource_element/resource_elemen
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/models/view_models/action_model.dart';
 import 'package:datahub_aperture_frontend/pages/resource_element_edit/element_action_dialog.dart';
+import 'package:datahub_aperture_frontend/pages/resource_element_edit/resource_element_edit_view.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/dialogs/confirmation_dialog.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_overlay.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
-import 'package:datahub_aperture_frontend/pages/resource_element_edit/resource_element_edit_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';

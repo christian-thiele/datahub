@@ -9,9 +9,9 @@ import 'package:geojson_vi/geojson_vi.dart';
 import 'package:latlong2/latlong.dart' hide Path;
 
 import 'editor_controls.dart';
-import 'ring_creator.dart';
 import 'polygon_editor.dart';
 import 'polygon_painter.dart';
+import 'ring_creator.dart';
 
 class EditorPolygon {
   final List<LatLng> bounds;

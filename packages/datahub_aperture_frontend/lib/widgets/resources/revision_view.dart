@@ -1,5 +1,5 @@
-import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/widgets/data/entity_list_view.dart';
 import 'package:datahub_aperture_frontend/widgets/data/user_entity_view.dart';
 import 'package:datahub_aperture_frontend/widgets/data/value_view.dart';
