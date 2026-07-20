@@ -24,15 +24,20 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(resourceName) => "New ${resourceName}";
 
-  static String m2(length) => "Value too long. (> ${length})";
+  static String m2(elementName) =>
+      "Are you sure you want to delete element \"${elementName}\"?";
 
-  static String m3(expression) => "Value must match the pattern: ${expression}";
+  static String m3(length) => "Value too long. (> ${length})";
+
+  static String m4(expression) => "Value must match the pattern: ${expression}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "actions": MessageLookupByLibrary.simpleMessage("Actions"),
     "author": MessageLookupByLibrary.simpleMessage("Author"),
     "byUsername": m0,
+    "cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
+    "caution": MessageLookupByLibrary.simpleMessage("Warning"),
     "date": MessageLookupByLibrary.simpleMessage("Date"),
     "delete": MessageLookupByLibrary.simpleMessage("Delete"),
     "deleteScheduled": MessageLookupByLibrary.simpleMessage("Delete scheduled"),
@@ -49,6 +54,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "noElements": MessageLookupByLibrary.simpleMessage("No Elements"),
     "ok": MessageLookupByLibrary.simpleMessage("OK"),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
+    "reallyDeleteElement": m2,
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "resourceDeleted": MessageLookupByLibrary.simpleMessage(
       "Resource Deleted.",
@@ -70,8 +76,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "time": MessageLookupByLibrary.simpleMessage("Time"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Timestamp"),
     "username": MessageLookupByLibrary.simpleMessage("Username"),
-    "validationMaxLength": m2,
-    "validationPattern": m3,
+    "validationMaxLength": m3,
+    "validationPattern": m4,
     "validationRequired": MessageLookupByLibrary.simpleMessage(
       "Value is required.",
     ),

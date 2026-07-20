@@ -3,6 +3,7 @@ import 'package:datahub_aperture_frontend/modules/task_manager/repositories/task
 import 'package:datahub_aperture_frontend/modules/task_manager/task_manager_log_page.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/task_manager_module_page.dart';
 import 'package:datahub_aperture_frontend/repositories/api_repository.dart';
+import 'package:datahub_aperture_frontend/utils/route_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -38,6 +39,7 @@ class _ApertureAppState extends State<ApertureApp>
 
   GoRouter buildRouter(BuildContext context) => GoRouter(
     refreshListenable: BlocListenable(context.read<AuthCubit>()),
+    observers: [RouteHelper.routeObserver],
     onException: (context, state, router) => router.go(
       '/error',
       extra: {

@@ -36,5 +36,8 @@
   "loginAuthcode": "Login via IDP",
   "ok": "OK",
   "revert": "Revert",
-  "search": "Search"
+  "search": "Search",
+  "cancel": "Cancel",
+  "caution": "Warning",
+  "reallyDeleteElement": "Are you sure you want to delete element \"{elementName}\"?"
 }

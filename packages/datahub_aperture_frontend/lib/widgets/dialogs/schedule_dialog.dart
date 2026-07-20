@@ -9,6 +9,22 @@ class ScheduleDialog extends StatefulWidget {
 
   @override
   State<ScheduleDialog> createState() => _ScheduleDialogState();
+
+  static Future<void> show(
+    BuildContext context, {
+    required String text,
+    required void Function(DateTime) onSavePressed,
+  }) {
+    return showDialog(
+      context: context,
+      builder: (context) =>
+          ScheduleDialog(title: S.of(context).scheduleRevision),
+    ).then((result) {
+      if (result case DateTime liveDate) {
+        onSavePressed.call(liveDate);
+      }
+    });
+  }
 }
 
 class _ScheduleDialogState extends State<ScheduleDialog> {

@@ -24,9 +24,12 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m1(resourceName) => "${resourceName} hinzufügen";
 
-  static String m2(length) => "Wert zu lang. (> ${length})";
+  static String m2(elementName) =>
+      "Sind Sie sicher, dass Sie Element \"${elementName}\" löschen möchten?";
 
-  static String m3(expression) =>
+  static String m3(length) => "Wert zu lang. (> ${length})";
+
+  static String m4(expression) =>
       "Wert muss dem Muster entsprechen: ${expression}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -34,6 +37,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "actions": MessageLookupByLibrary.simpleMessage("Aktionen"),
     "author": MessageLookupByLibrary.simpleMessage("Autor"),
     "byUsername": m0,
+    "cancel": MessageLookupByLibrary.simpleMessage("Abbrechen"),
+    "caution": MessageLookupByLibrary.simpleMessage("Achtung"),
     "date": MessageLookupByLibrary.simpleMessage("Datum"),
     "delete": MessageLookupByLibrary.simpleMessage("Löschen"),
     "deleteScheduled": MessageLookupByLibrary.simpleMessage("Löschen planen"),
@@ -50,6 +55,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "noElements": MessageLookupByLibrary.simpleMessage("Keine Elemente"),
     "ok": MessageLookupByLibrary.simpleMessage("OK"),
     "password": MessageLookupByLibrary.simpleMessage("Passwort"),
+    "reallyDeleteElement": m2,
     "refresh": MessageLookupByLibrary.simpleMessage("Aktualisieren"),
     "resourceDeleted": MessageLookupByLibrary.simpleMessage(
       "Ressource gelöscht.",
@@ -73,8 +79,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "time": MessageLookupByLibrary.simpleMessage("Uhrzeit"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Zeitstempel"),
     "username": MessageLookupByLibrary.simpleMessage("Benutzername"),
-    "validationMaxLength": m2,
-    "validationPattern": m3,
+    "validationMaxLength": m3,
+    "validationPattern": m4,
     "validationRequired": MessageLookupByLibrary.simpleMessage(
       "Wert ist erforderlich.",
     ),

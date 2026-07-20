@@ -45,7 +45,10 @@ class OptionsButton extends StatelessWidget {
       height: 32,
       child: Center(
         child: Padding(
-          padding: EdgeInsets.only(left: 24, right: 16),
+          padding: EdgeInsets.only(
+            left: 24,
+            right: menuChildren.isNotEmpty ? 16 : 24,
+          ),
           child: child,
         ),
       ),
@@ -111,12 +114,17 @@ class OptionsButton extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               pressable(mainPart, onMainPressed),
-              if (menuEnabled) divider,
-              pressable(sidePart, menuEnabled ? controller.open : null),
+              if (menuChildren.isNotEmpty) ...[
+                if (menuEnabled) divider,
+                pressable(sidePart, menuEnabled ? controller.open : null),
+              ],
             ],
           ),
           null => pressable(
-            Row(mainAxisSize: MainAxisSize.min, children: [mainPart, sidePart]),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [mainPart, if (menuChildren.isNotEmpty) sidePart],
+            ),
             menuEnabled ? controller.open : null,
           ),
         },

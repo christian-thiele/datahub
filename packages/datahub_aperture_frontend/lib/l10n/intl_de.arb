@@ -36,5 +36,8 @@
   "loginAuthcode": "Anmelden via IDP",
   "ok": "OK",
   "revert": "Zurücksetzen",
-  "search": "Suche"
+  "search": "Suche",
+  "cancel": "Abbrechen",
+  "caution": "Achtung",
+  "reallyDeleteElement": "Sind Sie sicher, dass Sie Element \"{elementName}\" löschen möchten?"
 }

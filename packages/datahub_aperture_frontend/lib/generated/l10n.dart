@@ -318,6 +318,26 @@ class S {
   String get search {
     return Intl.message('Search', name: 'search', desc: '', args: []);
   }
+
+  /// `Cancel`
+  String get cancel {
+    return Intl.message('Cancel', name: 'cancel', desc: '', args: []);
+  }
+
+  /// `Warning`
+  String get caution {
+    return Intl.message('Warning', name: 'caution', desc: '', args: []);
+  }
+
+  /// `Are you sure you want to delete element "{elementName}"?`
+  String reallyDeleteElement(Object elementName) {
+    return Intl.message(
+      'Are you sure you want to delete element "$elementName"?',
+      name: 'reallyDeleteElement',
+      desc: '',
+      args: [elementName],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {
