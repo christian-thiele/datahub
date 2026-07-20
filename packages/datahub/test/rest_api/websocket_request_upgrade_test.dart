@@ -4,11 +4,13 @@ import 'dart:convert';
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub/src/test/test_host.dart';
+import 'package:datahub/test.dart';
 import 'package:test/expect.dart';
 import 'package:web_socket/web_socket.dart';
 
 final testScenario = [
   ApiService(
+    port: Config.value(0),
     routes: [
       WebsocketEndpoint(
         onSession: (session) async {
@@ -38,7 +40,7 @@ final testScenario = [
 void main() {
   declareTest('ApiService Upgrade Connection', testScenario, () async {
     final socket = await WebSocket.connect(
-      Uri.parse('ws://localhost:8080'),
+      Uri(scheme: 'ws', host: 'localhost', port: Find<Api>().find().port),
       protocols: ['wrong-protocol', 'test-protocol'],
     );
 

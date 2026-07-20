@@ -10,6 +10,7 @@ void main() {
     'Websocket Ping-Pong',
     [
       ApiService(
+        port: Config.value(0),
         routes: [
           WebsocketEndpoint(
             onSession: (session) {
@@ -23,13 +24,14 @@ void main() {
       ),
     ],
     () async {
-      final socket = await io.Socket.connect('localhost', 8080);
+      final port = Find<Api>().find().port;
+      final socket = await io.Socket.connect('localhost', port);
       final broadcastSocket = socket.asBroadcastStream();
 
       // Minimal websocket handshake
       socket.write(
         'GET / HTTP/1.1\r\n'
-        'Host: localhost:8080\r\n'
+        'Host: localhost:$port\r\n'
         'Upgrade: websocket\r\n'
         'Connection: Upgrade\r\n'
         'Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\r\n'
