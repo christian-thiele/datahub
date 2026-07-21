@@ -87,7 +87,8 @@ class PostgresqlEnum extends PostgresqlDataType<Enum> {
   }
 }
 
-class PostgresqlEnumArray extends PostgresqlDataType<List<Enum>> {
+class PostgresqlEnumArray extends PostgresqlDataType<List<Enum>>
+    implements PostgresqlArray<Enum> {
   final List<Enum>? values;
 
   const PostgresqlEnumArray({this.values})
@@ -129,7 +130,10 @@ class PostgresqlDynamic extends PostgresqlDataType<dynamic> {
   const PostgresqlDynamic() : super('jsonb', pg.Type.jsonb);
 }
 
-class PostgresqlStringArray extends PostgresqlDataType<List<String>> {
+abstract interface class PostgresqlArray<T> {}
+
+class PostgresqlStringArray extends PostgresqlDataType<List<String>>
+    implements PostgresqlArray<String> {
   const PostgresqlStringArray() : super('_varchar', pg.Type.varCharArray);
 
   @override
@@ -146,7 +150,8 @@ class PostgresqlStringArray extends PostgresqlDataType<List<String>> {
   }
 }
 
-class PostgresqlIntArray extends PostgresqlDataType<List<int>> {
+class PostgresqlIntArray extends PostgresqlDataType<List<int>>
+    implements PostgresqlArray<int> {
   const PostgresqlIntArray() : super('_int8', pg.Type.integerArray);
 
   @override
@@ -160,7 +165,8 @@ class PostgresqlIntArray extends PostgresqlDataType<List<int>> {
   }
 }
 
-class PostgresqlDoubleArray extends PostgresqlDataType<List<double>> {
+class PostgresqlDoubleArray extends PostgresqlDataType<List<double>>
+    implements PostgresqlArray<double> {
   const PostgresqlDoubleArray() : super('_float8', pg.Type.doubleArray);
 
   @override
@@ -177,7 +183,8 @@ class PostgresqlDoubleArray extends PostgresqlDataType<List<double>> {
   }
 }
 
-class PostgresqlBoolArray extends PostgresqlDataType<List<bool>> {
+class PostgresqlBoolArray extends PostgresqlDataType<List<bool>>
+    implements PostgresqlArray<bool> {
   const PostgresqlBoolArray() : super('_boolean', pg.Type.booleanArray);
 
   @override

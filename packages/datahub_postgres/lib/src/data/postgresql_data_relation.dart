@@ -8,7 +8,7 @@ import 'package:datahub_postgres/data.dart';
 
 import 'package:postgres/postgres.dart' as pg;
 
-sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
+sealed class PostgresqlDataRelation<DataType extends DataObject> {
   PostgresqlRelation get relation;
 
   DataBean<DataType> get bean;
@@ -217,7 +217,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject<DataType>> {
   }
 }
 
-class PostgresqlDataTable<DataType extends DataObject<DataType>>
+class PostgresqlDataTable<DataType extends DataObject>
     extends PostgresqlDataRelation<DataType> {
   @override
   late final PostgresqlTable relation;

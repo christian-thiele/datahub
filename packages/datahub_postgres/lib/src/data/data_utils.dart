@@ -220,24 +220,42 @@ Sql _compareSql(
       RawSql(' ~* '),
       leftSql,
     ]),
+    (PostgresqlArray(), CompareType.contains, _) => Sql.join([
+      rightSql,
+      RawSql(' = '),
+      Sql.function('ANY', [leftSql]),
+    ]),
+    (_, CompareType.isIn, PostgresqlArray()) => Sql.join([
+      leftSql,
+      RawSql(' = '),
+      Sql.function('ANY', [rightSql]),
+    ]),
     (
-      PostgresqlStringArray() ||
-          PostgresqlIntArray() ||
-          PostgresqlDoubleArray() ||
-          PostgresqlBoolArray(),
+      PostgresqlJsonList() || PostgresqlJsonMap(),
       CompareType.contains,
-      _,
+      PostgresqlArray(),
     ) =>
-      rightSql + RawSql(' = ') + Sql.function('ANY', [leftSql]),
+      Sql.join([
+        leftSql,
+        RawSql(' @> '),
+        Sql.function('array_to_json', [rightSql]),
+        RawSql('::jsonb'),
+      ]),
+    (PostgresqlJsonList() || PostgresqlJsonMap(), CompareType.contains, _) =>
+      Sql.join([leftSql, RawSql(' @> '), rightSql]),
     (
-      _,
+      PostgresqlArray(),
       CompareType.isIn,
-      PostgresqlStringArray() ||
-          PostgresqlIntArray() ||
-          PostgresqlDoubleArray() ||
-          PostgresqlBoolArray(),
+      PostgresqlJsonList() || PostgresqlJsonMap(),
     ) =>
-      leftSql + RawSql(' = ') + Sql.function('ANY', [rightSql]),
+      Sql.join([
+        rightSql,
+        RawSql(' @> '),
+        Sql.function('array_to_json', [leftSql]),
+        RawSql('::jsonb'),
+      ]),
+    (_, CompareType.isIn, PostgresqlJsonList() || PostgresqlJsonMap()) =>
+      Sql.join([rightSql, RawSql(' @> '), leftSql]),
     _ => Sql.join([
       leftSql,
       switch (type) {
