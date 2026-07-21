@@ -35,6 +35,12 @@ abstract class PostgresqlDataType<T> {
     Enum() => Sql.text(value.name),
     int() || double() || bool() => RawSql(value.toString()),
     DateTime() => RawSql('"${value.toIso8601String()}"'),
+    List<String>() => RawSql(
+      '\'{${value.map(Sql.escapeTextForArrayLiteral).join(',')}}\'::text[]',
+    ),
+    List<int>() => RawSql('\'{${value.join(',')}}\'::int[]'),
+    List<double>() => RawSql('\'{${value.join(',')}}\'::double precision[]'),
+    List<bool>() => RawSql('\'{${value.join(',')}}\'::boolean[]'),
     Map<String, dynamic>() || List<dynamic>() => Sql.join([
       Sql.text(jsonEncode(const JsonDataCodec().encodeDynamic(value))),
       RawSql('::jsonb'),

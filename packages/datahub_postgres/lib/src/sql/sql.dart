@@ -72,6 +72,10 @@ sealed class Sql {
     return "'${text.replaceAll(r'\', r'\\').replaceAll("'", "''")}'";
   }
 
+  static String escapeTextForArrayLiteral(String text) {
+    return '"${text.replaceAll(r'\', r'\\').replaceAll('"', r'\"')}"';
+  }
+
   static String escapeName(String name) {
     if (name.isEmpty || name.length > 128) {
       throw SqlException(
