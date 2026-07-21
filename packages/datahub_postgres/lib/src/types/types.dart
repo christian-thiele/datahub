@@ -87,49 +87,6 @@ class PostgresqlEnum extends PostgresqlDataType<Enum> {
   }
 }
 
-class PostgresqlEnumArray extends PostgresqlDataType<List<Enum>>
-    implements PostgresqlArray<Enum> {
-  final List<Enum>? values;
-
-  const PostgresqlEnumArray({this.values})
-    : super('_varchar', pg.Type.varCharArray);
-
-  @override
-  dynamic encode(List<Enum>? value) => value?.map((e) => e.name).toList();
-
-  @override
-  List<Enum>? decode(dynamic value) {
-    return switch (value) {
-      List<String>() =>
-        value
-            .map((e) => PostgresqlEnum._decodeElement(values, e))
-            .nonNulls
-            .toList(),
-      List() when value.isEmpty => const <Enum>[],
-      _ => throw TypeDecodeException.typeMismatch(
-        List<Enum>,
-        value.runtimeType,
-      ),
-    };
-  }
-}
-
-class PostgresqlByteArray extends PostgresqlDataType<Uint8List> {
-  const PostgresqlByteArray() : super('bytea', pg.Type.byteArray);
-}
-
-class PostgresqlJsonMap extends PostgresqlDataType<Map<String, dynamic>> {
-  const PostgresqlJsonMap() : super('jsonb', pg.Type.jsonb);
-}
-
-class PostgresqlJsonList extends PostgresqlDataType<List<dynamic>> {
-  const PostgresqlJsonList() : super('jsonb', pg.Type.jsonb);
-}
-
-class PostgresqlDynamic extends PostgresqlDataType<dynamic> {
-  const PostgresqlDynamic() : super('jsonb', pg.Type.jsonb);
-}
-
 abstract interface class PostgresqlArray<T> {}
 
 class PostgresqlStringArray extends PostgresqlDataType<List<String>>
@@ -201,11 +158,83 @@ class PostgresqlBoolArray extends PostgresqlDataType<List<bool>>
   }
 }
 
-class PostgresqlObject<T> extends PostgresqlDataType<T> {
+class PostgresqlEnumArray extends PostgresqlDataType<List<Enum>>
+    implements PostgresqlArray<Enum> {
+  final List<Enum>? values;
+
+  const PostgresqlEnumArray({this.values})
+    : super('_varchar', pg.Type.varCharArray);
+
+  @override
+  dynamic encode(List<Enum>? value) => value?.map((e) => e.name).toList();
+
+  @override
+  List<Enum>? decode(dynamic value) {
+    return switch (value) {
+      List<String>() =>
+        value
+            .map((e) => PostgresqlEnum._decodeElement(values, e))
+            .nonNulls
+            .toList(),
+      List() when value.isEmpty => const <Enum>[],
+      _ => throw TypeDecodeException.typeMismatch(
+        List<Enum>,
+        value.runtimeType,
+      ),
+    };
+  }
+}
+
+class PostgresqlByteArray extends PostgresqlDataType<Uint8List>
+    implements PostgresqlArray {
+  const PostgresqlByteArray() : super('bytea', pg.Type.byteArray);
+}
+
+interface class PostgresqlJson {}
+
+class PostgresqlJsonMap extends PostgresqlDataType<Map<String, dynamic>>
+    implements PostgresqlJson {
+  const PostgresqlJsonMap() : super('jsonb', pg.Type.jsonb);
+}
+
+class PostgresqlJsonList extends PostgresqlDataType<List<dynamic>>
+    implements PostgresqlJson {
+  const PostgresqlJsonList() : super('jsonb', pg.Type.jsonb);
+}
+
+class PostgresqlDynamic extends PostgresqlDataType<dynamic>
+    implements PostgresqlJson {
+  const PostgresqlDynamic() : super('jsonb', pg.Type.jsonb);
+}
+
+/// jsonb map that represents a DataObject
+class PostgresqlObject<T> extends PostgresqlDataType<T>
+    implements PostgresqlJson {
   final Encoder<T> encoder;
   final Decoder<T> decoder;
 
   const PostgresqlObject(this.encoder, this.decoder)
+    : super('jsonb', pg.Type.jsonb);
+
+  @override
+  dynamic encode(T? value) => (value != null) ? encoder(value) : null;
+
+  @override
+  T? decode(dynamic value) {
+    return switch (value) {
+      null => null,
+      _ => decoder(value),
+    };
+  }
+}
+
+/// jsonb list of maps that represent DataObjects
+class PostgresqlObjectList<T> extends PostgresqlDataType<T>
+    implements PostgresqlJson {
+  final Encoder<T> encoder;
+  final Decoder<T> decoder;
+
+  const PostgresqlObjectList(this.encoder, this.decoder)
     : super('jsonb', pg.Type.jsonb);
 
   @override

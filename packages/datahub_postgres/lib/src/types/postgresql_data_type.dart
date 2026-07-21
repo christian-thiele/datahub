@@ -90,11 +90,11 @@ abstract class PostgresqlDataType<T> {
       // map types
       // TODO not complete
       // json types
-      final t when t.isSubtypeOf<List<DataObject>?>() => PostgresqlObject(
+      final t when t.isSubtypeOf<List<DataObject>?>() => PostgresqlObjectList(
         field.toJson,
         field.fromJson,
       ),
-      final t when t.isSubtypeOf<Map<DataObject, dynamic>?>() =>
+      final t when t.isSubtypeOf<Map<String, DataObject>?>() =>
         PostgresqlObject(field.toJson, field.fromJson),
       final t when t.isSubtypeOf<Map<String, dynamic>?>() =>
         const PostgresqlJsonMap(),
