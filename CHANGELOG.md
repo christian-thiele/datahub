@@ -3,6 +3,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-07-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub_postgres` - `v0.18.0-dev.20`](#datahub_postgres---v0180-dev20)
+
+---
+
+#### `datahub_postgres` - `v0.18.0-dev.20`
+
+ - **FIX**(datahub_postgres): fixed array and json type filters.
+ - **FIX**(datahub_postgres): correct literals for array types.
+ - **FIX**: fixed repository / website in pubpsec files for all packages.
+
+
 ## 2026-07-20
 
 ### Changes

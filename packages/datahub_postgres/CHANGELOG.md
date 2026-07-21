@@ -1,3 +1,9 @@
+## 0.18.0-dev.20
+
+ - **FIX**(datahub_postgres): fixed array and json type filters.
+ - **FIX**(datahub_postgres): correct literals for array types.
+ - **FIX**: fixed repository / website in pubpsec files for all packages.
+
 ## 0.18.0-dev.19
 
  - Update a dependency to the latest release.
