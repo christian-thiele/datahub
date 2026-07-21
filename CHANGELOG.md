@@ -15,6 +15,27 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`datahub_postgres` - `v0.18.0-dev.21`](#datahub_postgres---v0180-dev21)
+
+---
+
+#### `datahub_postgres` - `v0.18.0-dev.21`
+
+ - **FIX**(datahub_postgres): fixed json type handling.
+
+
+## 2026-07-21
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`datahub_postgres` - `v0.18.0-dev.20`](#datahub_postgres---v0180-dev20)
 
 ---

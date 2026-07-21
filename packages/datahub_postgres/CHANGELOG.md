@@ -1,3 +1,7 @@
+## 0.18.0-dev.21
+
+ - **FIX**(datahub_postgres): fixed json type handling.
+
 ## 0.18.0-dev.20
 
  - **FIX**(datahub_postgres): fixed array and json type filters.
