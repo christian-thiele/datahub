@@ -4,7 +4,6 @@ import 'dart:typed_data';
 
 import 'package:datahub/datahub.dart';
 
-
 class WebsocketSession implements StreamSink<WebsocketFrame> {
   final ApiRequest initialRequest;
   final String acceptKey;
