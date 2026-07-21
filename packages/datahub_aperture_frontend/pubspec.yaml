@@ -1,5 +1,7 @@
 name: datahub_aperture_frontend
 description: "DataHub Aperture Frontend"
+homepage: https://datahubproject.net
+repository: https://github.com/christian-thiele/datahub
 resolution: workspace
 
 publish_to: 'none'
