@@ -210,34 +210,31 @@ void main() {
       },
     );
 
-    test(
-      'Should either serve waiter or retain item when give() coincides '
-      'with take() timeout',
-      () async {
-        final pool = Pool(1, createItem);
-        final item = await pool.take();
+    test('Should either serve waiter or retain item when give() coincides '
+        'with take() timeout', () async {
+      final pool = Pool(1, createItem);
+      final item = await pool.take();
 
-        // schedule give() to race with the waiter's timeout
-        Timer(Duration(milliseconds: 100), () => pool.give(item));
+      // schedule give() to race with the waiter's timeout
+      Timer(Duration(milliseconds: 100), () => pool.give(item));
 
-        Item? received;
-        try {
-          received = await pool.take(timeout: Duration(milliseconds: 100));
-        } on TimeoutException catch (_) {
-          // acceptable outcome of the race
-        }
+      Item? received;
+      try {
+        received = await pool.take(timeout: Duration(milliseconds: 100));
+      } on TimeoutException catch (_) {
+        // acceptable outcome of the race
+      }
 
-        if (received != null) {
-          pool.give(received);
-        } else {
-          // wait for the scheduled give() to have fired
-          await Future.delayed(const Duration(milliseconds: 100));
-        }
+      if (received != null) {
+        pool.give(received);
+      } else {
+        // wait for the scheduled give() to have fired
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
 
-        // whichever side won, the item must not be stranded in "taken"
-        expect(pool, poolState(1, 1, 1));
-      },
-    );
+      // whichever side won, the item must not be stranded in "taken"
+      expect(pool, poolState(1, 1, 1));
+    });
 
     test('Should throw when giving an item that is not taken', () async {
       final pool = Pool(2, createItem);
