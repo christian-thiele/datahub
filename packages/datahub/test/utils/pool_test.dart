@@ -518,6 +518,72 @@ void main() {
       expect(pool, poolState(1, 1, 0));
     });
 
+    test('Should remove expired idle items in background', () async {
+      final removed = <Item>[];
+      final pool = Pool(
+        2,
+        createItem,
+        maxLifetime: Duration(milliseconds: 100),
+        maintenanceInterval: Duration(milliseconds: 50),
+        onRemoveItem: (i) async => removed.add(i),
+      );
+      await pool.fill();
+      expect(pool, poolState(2, 2, 2));
+
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // expired items were evicted without any take() call
+      expect(removed.length, equals(2));
+      expect(pool, poolState(2, 0, 0));
+      await pool.dispose();
+    });
+
+    test('Should refill pool during maintenance when autoRefill is '
+        'enabled', () async {
+      final pool = Pool(
+        2,
+        createItem,
+        maxLifetime: Duration(milliseconds: 100),
+        maintenanceInterval: Duration(milliseconds: 50),
+        autoRefill: true,
+      );
+      await pool.fill();
+      final item1 = await pool.take();
+      final item2 = await pool.take();
+      final originalIds = {item1.id, item2.id};
+      pool.give(item1);
+      pool.give(item2);
+
+      await Future.delayed(const Duration(milliseconds: 300));
+
+      // expired items were replaced with fresh ones
+      expect(pool.total, equals(2));
+      final fresh = await pool.take(timeout: Duration(seconds: 5));
+      expect(originalIds, isNot(contains(fresh.id)));
+      await pool.dispose();
+    });
+
+    test('Should not remove taken items during maintenance', () async {
+      final removed = <Item>[];
+      final pool = Pool(
+        1,
+        createItem,
+        maxLifetime: Duration(milliseconds: 100),
+        maintenanceInterval: Duration(milliseconds: 50),
+        onRemoveItem: (i) async => removed.add(i),
+      );
+      final item = await pool.take();
+
+      await Future.delayed(const Duration(milliseconds: 300));
+      expect(removed, isEmpty);
+
+      // once given back, the expired item is reaped by maintenance
+      pool.give(item);
+      await Future.delayed(const Duration(milliseconds: 150));
+      expect(removed.single.id, equals(item.id));
+      await pool.dispose();
+    });
+
     test('Should remove idle items when disposed', () async {
       final removed = <Item>[];
       final pool = Pool(

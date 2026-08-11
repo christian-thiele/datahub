@@ -46,6 +46,13 @@ class PostgresqlService implements Service {
   /// pool, at the cost of one extra round-trip per connection use.
   final Config<bool> resetConnectionOnReturn;
 
+  /// Interval for background maintenance of the connection pool.
+  ///
+  /// On every maintenance run, idle connections that exceeded
+  /// [maxConnectionLifetime] are closed and the pool is refilled up to
+  /// [targetPoolSize].
+  final Config<Duration> poolMaintenanceInterval;
+
   final Config<bool> enableMetrics;
   final Config<String> metricPrefix;
 
@@ -77,6 +84,10 @@ class PostgresqlService implements Service {
     this.resetConnectionOnReturn = const Config<bool>(
       'resetConnectionOnReturn',
       defaultValue: true,
+    ),
+    this.poolMaintenanceInterval = const Config<Duration>(
+      'poolMaintenanceInterval',
+      defaultValue: Duration(seconds: 30),
     ),
     this.enableMetrics = const Config<bool>(
       'enableMetrics',
@@ -149,6 +160,10 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
 
   @override
   Config<bool> get resetConnectionOnReturn => service.resetConnectionOnReturn;
+
+  @override
+  Config<Duration> get poolMaintenanceInterval =>
+      service.poolMaintenanceInterval;
 
   @override
   Config<bool> get enableMetrics => service.enableMetrics;

@@ -24,6 +24,8 @@ mixin DatabaseConnectionManager<
     checkIsLive: (c) => c.isOpen,
     maxQueueLength: read(poolQueueLimit),
     onReturn: read(resetConnectionOnReturn) ? (c) => c.reset() : null,
+    maintenanceInterval: read(poolMaintenanceInterval),
+    autoRefill: true,
     onChange: _updateMetrics,
     onRemoveItem: (c) => c.close(),
   );
@@ -37,6 +39,8 @@ mixin DatabaseConnectionManager<
   Config<int> get poolQueueLimit;
 
   Config<bool> get resetConnectionOnReturn;
+
+  Config<Duration> get poolMaintenanceInterval;
 
   Config<bool> get enableMetrics;
 

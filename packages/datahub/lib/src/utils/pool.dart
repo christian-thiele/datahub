@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:datahub/api.dart';
 import 'package:datahub/telemetry.dart';
@@ -27,6 +28,20 @@ class Pool<T> {
   final Duration checkIsLiveTimeout;
   final Duration onReturnTimeout;
 
+  /// Interval for background maintenance: idle items that exceeded
+  /// [maxLifetime] are evicted and, if [autoRefill] is set, the pool is
+  /// topped back up to [targetSize].
+  ///
+  /// Maintenance only runs when [maxLifetime] is set or [autoRefill] is
+  /// enabled. While the maintenance timer is active, the pool keeps the
+  /// isolate alive until [dispose] is called.
+  final Duration maintenanceInterval;
+
+  /// Whether background maintenance refills the pool up to [targetSize].
+  final bool autoRefill;
+
+  Timer? _maintenanceTimer;
+
   /// Maximum number of [take] requests waiting for an item at the same time.
   ///
   /// When the pool is exhausted and the queue has reached this length,
@@ -54,9 +69,44 @@ class Pool<T> {
     this.onReturnTimeout = const Duration(seconds: 10),
     this.maxLifetime,
     this.maxQueueLength,
+    this.maintenanceInterval = const Duration(seconds: 30),
+    this.autoRefill = false,
     this.onChange,
   }) : _checkIsLive = checkIsLive,
-       _onReturn = onReturn;
+       _onReturn = onReturn {
+    if (maxLifetime != null || autoRefill) {
+      _maintenanceTimer = Timer.periodic(
+        maintenanceInterval,
+        (_) => unawaited(_runMaintenance()),
+      );
+    }
+  }
+
+  Future<void> _runMaintenance() async {
+    final expired = _items.where(_isExpired).toList();
+    if (expired.isNotEmpty) {
+      log.debug(
+        'Pool: Removing ${expired.length} idle item(s) that reached '
+        'max lifetime.',
+      );
+      for (final poolItem in expired) {
+        remove(poolItem.item);
+      }
+    }
+
+    if (autoRefill) {
+      try {
+        await fill();
+      } catch (e, stack) {
+        log.error('Pool: Background refill failed.', error: e, stack: stack);
+      }
+    }
+  }
+
+  /// Whether the item exceeded [maxLifetime], with a per-item jitter so
+  /// items created together do not all expire at the same moment.
+  bool _isExpired(_PoolItem<T> item) =>
+      maxLifetime != null && item.age > maxLifetime! * item.lifetimeJitter;
 
   /// Fills the pool up to [targetSize] by creating missing items in parallel.
   ///
@@ -360,7 +410,7 @@ class Pool<T> {
   }
 
   Future<bool> _isLive(_PoolItem<T> item) async {
-    if (maxLifetime != null && item.age > maxLifetime!) {
+    if (_isExpired(item)) {
       log.debug('Pool: Item reached max lifetime.');
       return false;
     }
@@ -430,6 +480,7 @@ class Pool<T> {
       return;
     }
     _disposed = true;
+    _maintenanceTimer?.cancel();
 
     final waiters = List.of(_queue);
     _queue.clear();
@@ -476,7 +527,13 @@ class _PoolItem<T> {
   final T item;
   final DateTime createTimestamp;
 
-  _PoolItem(this.item) : createTimestamp = DateTime.now();
+  /// Randomized factor (0.9 - 1.0) applied to the pool's max lifetime so
+  /// that items created together do not all expire at the same moment.
+  final double lifetimeJitter;
+
+  _PoolItem(this.item)
+    : createTimestamp = DateTime.now(),
+      lifetimeJitter = 0.9 + Random().nextDouble() * 0.1;
 
   Duration get age => DateTime.now().difference(createTimestamp);
 }
