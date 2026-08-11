@@ -236,6 +236,111 @@ void main() {
       expect(pool, poolState(1, 1, 1));
     });
 
+    test('Should apply timeouts to concurrent take() calls independently, '
+        'not serially', () async {
+      final pool = Pool(1, createItem);
+      final item = await pool.take();
+
+      final watch = Stopwatch()..start();
+      final results = await Future.wait([
+        for (var i = 0; i < 3; i++)
+          pool
+              .take(timeout: Duration(milliseconds: 200))
+              .then((_) => 'item', onError: (_) => 'timeout'),
+      ]);
+      watch.stop();
+
+      expect(results, everyElement(equals('timeout')));
+      // waiters time out concurrently (~200ms), not one after another (600ms)
+      expect(watch.elapsed, lessThan(const Duration(milliseconds: 500)));
+      pool.give(item);
+    });
+
+    test(
+      'Should not block timed take() behind take() without timeout',
+      () async {
+        final pool = Pool(1, createItem);
+        final item = await pool.take();
+
+        // waits indefinitely for the item to come back
+        final infiniteTake = pool.take(timeout: null);
+
+        // must time out on its own instead of waiting behind infiniteTake
+        await expectLater(
+          () => pool.take(timeout: Duration(milliseconds: 100)),
+          throwsA(isA<TimeoutException>()),
+        );
+
+        pool.give(item);
+        final served = await infiniteTake;
+        expect(served.id, equals(item.id));
+      },
+    );
+
+    test('Should not create more than targetSize items under concurrent '
+        'take() calls', () async {
+      final pool = Pool(2, createItem);
+
+      final items = await Future.wait([
+        for (var i = 0; i < 5; i++)
+          () async {
+            final item = await pool.take(timeout: Duration(seconds: 5));
+            expect(pool.total, lessThanOrEqualTo(2));
+            await Future.delayed(const Duration(milliseconds: 20));
+            pool.give(item);
+            return item;
+          }(),
+      ]);
+
+      expect(pool, poolState(2, 2, 2));
+      expect(items.map((i) => i.id).toSet().length, lessThanOrEqualTo(2));
+    });
+
+    test('Should not leak capacity when item creation fails', () async {
+      var fail = true;
+      final pool = Pool<Item>(1, () async {
+        if (fail) {
+          throw Exception('creation failed');
+        }
+        return Item();
+      });
+
+      await expectLater(() => pool.take(), throwsException);
+      expect(pool, poolState(1, 0, 0));
+
+      fail = false;
+      await pool.take();
+      expect(pool, poolState(1, 1, 0));
+    });
+
+    test('Should wake queued waiter when item creation fails', () async {
+      var fail = true;
+      final pool = Pool<Item>(1, () async {
+        await Future.delayed(const Duration(milliseconds: 50));
+        if (fail) {
+          fail = false;
+          throw Exception('creation failed');
+        }
+        return Item();
+      });
+
+      // first take reserves the only slot and will fail creation,
+      // second take queues up behind it
+      final take1 = pool.take(timeout: Duration(seconds: 5));
+      final take2 = pool.take(timeout: Duration(seconds: 5));
+
+      await expectLater(take1, throwsException);
+
+      // the queued waiter must be woken to create a replacement item
+      // instead of waiting for the full timeout
+      final watch = Stopwatch()..start();
+      await take2;
+      watch.stop();
+
+      expect(watch.elapsed, lessThan(const Duration(seconds: 1)));
+      expect(pool, poolState(1, 1, 0));
+    });
+
     test('Should throw when giving an item that is not taken', () async {
       final pool = Pool(2, createItem);
       await pool.fill();

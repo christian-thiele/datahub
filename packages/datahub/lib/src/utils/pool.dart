@@ -1,7 +1,5 @@
 import 'dart:async';
 
-import 'package:boost/boost.dart';
-
 // TODO docs
 // TODO replace "prints" with onError callback for implementing library to handle
 class Pool<T> {
@@ -13,13 +11,19 @@ class Pool<T> {
   final FutureOr<bool> Function(T)? _checkIsLive;
   final Future<void> Function(T)? onRemoveItem;
   final void Function()? onChange;
-  final _takeSemaphore = Semaphore();
+
+  /// Number of items currently being created for reserved take() calls.
+  ///
+  /// Counted into [total] so that concurrent [take] calls cannot decide to
+  /// create more items than [targetSize] allows while creations are still
+  /// in flight.
+  int _creating = 0;
 
   int targetSize;
   final Duration? maxLifetime;
   final Duration checkIsLiveTimeout;
 
-  int get total => _items.length + _taken.length;
+  int get total => _items.length + _taken.length + _creating;
 
   int get available => _items.length;
 
@@ -81,16 +85,6 @@ class Pool<T> {
     }
   }
 
-  T giveReserved(T item) {
-    final poolItem =
-        _taken.where((t) => t.item == item).firstOrNull ?? _PoolItem(item);
-    if (!_taken.contains(poolItem)) {
-      _taken.add(poolItem);
-    }
-    onChange?.call();
-    return item;
-  }
-
   /// Takes an item from the pool and provides it to the delegate.
   ///
   /// After delegate completes, the item is given back to the pool.
@@ -100,9 +94,11 @@ class Pool<T> {
   /// its target size but all elements are taken, the request for an item
   /// is queued and completed as soon as an element becomes available again.
   ///
-  /// The [timeout] can be set to null, which means never. In the worst case,
-  /// this method can take up to [timeout] + [checkIsLiveTimeout] to complete
-  /// with an item or an error.
+  /// The [timeout] limits the time spent waiting for an item to become
+  /// available, including time spent waiting in the queue. It can be set to
+  /// null, which means waiting indefinitely. In the worst case, this method
+  /// can take up to [timeout] + [checkIsLiveTimeout] + the duration of a
+  /// single item creation to complete with an item or an error.
   Future<R> use<R>(
     FutureOr<R> Function(T) delegate, {
     Duration? timeout,
@@ -121,85 +117,115 @@ class Pool<T> {
   /// pool using [give] to make it available again. To avoid leaks, consider
   /// using [use] instead of [take] and [give].
   ///
-  /// If the pool is not filled to the target size yet, a new item
-  /// is created using the [_createItem] delegate. If the pool has reached
-  /// its target size but all elements are taken, the request for an item
-  /// is queued and completed as soon as an element becomes available again.
+  /// If an idle item is available, it is returned after passing the liveness
+  /// check. If not, and the pool has not reached its target size yet, a new
+  /// item is created using the [_createItem] delegate. Otherwise the request
+  /// is queued (FIFO) and completed as soon as an item becomes available
+  /// again.
   ///
-  /// The [timeout] can be set to null, which means never. In the worst case,
-  /// this method can take up to [timeout] + [checkIsLiveTimeout] to complete
-  /// with an item or an error.
+  /// The [timeout] limits the time spent waiting for an item to become
+  /// available, including time spent waiting in the queue. It can be set to
+  /// null, which means waiting indefinitely. In the worst case, this method
+  /// can take up to [timeout] + [checkIsLiveTimeout] + the duration of a
+  /// single item creation to complete with an item or an error.
   Future<T> take({Duration? timeout = const Duration(seconds: 30)}) async {
-    return await _takeSemaphore.runLocked(() async {
-      return await _takeInternal(timeout);
-    });
-  }
+    final watch = Stopwatch()..start();
 
-  Future<T> _takeInternal(Duration? timeout) async {
-    if (available < 1 && total < targetSize) {
-      return giveReserved(await _createItem());
-    } else {
-      try {
-        final watch = Stopwatch()..start();
-        final item = await _getNextOrEnqueue(timeout);
+    while (true) {
+      // All bookkeeping between checking the pool state and reserving an
+      // item / creation slot / queue position is synchronous, so concurrent
+      // take() calls cannot interleave within a single decision.
+      if (_items.isNotEmpty) {
+        final item = _items.removeAt(0);
+        _taken.add(item);
+        onChange?.call();
 
         if (await _isLive(item)) {
-          watch.stop();
           return item.item;
-        } else {
-          _taken.removeWhere((i) => i.item == item.item);
-          remove(item.item);
-          watch.stop();
-          if (timeout == null || watch.elapsed < timeout) {
-            return await _takeInternal(
-              timeout?.apply((t) => t - watch.elapsed),
-            );
-          } else {
-            throw TimeoutException('Pool: take() timed out after $timeout.');
-          }
         }
-      } on TimeoutException catch (_) {
-        // TimeoutException will show timeout after remaining duration,
-        // not total duration, so replace the exception stack-upwards with
-        // total timeout
+
+        _taken.remove(item);
+        remove(item.item);
+      } else if (total < targetSize) {
+        _creating++;
+        onChange?.call();
+        try {
+          final poolItem = _PoolItem(await _createItem());
+          _taken.add(poolItem);
+          return poolItem.item;
+        } catch (_) {
+          // Creation failed, so the reserved capacity opens up again. Wake
+          // the next queued waiter (if any) to let it retry and create a
+          // replacement instead of waiting for an item that may never come.
+          if (_queue.isNotEmpty) {
+            _queue.removeAt(0).completeError(const _RetryTake());
+          }
+          rethrow;
+        } finally {
+          _creating--;
+          onChange?.call();
+        }
+      } else {
+        final _PoolItem<T> item;
+        try {
+          item = await _enqueue(_remainingTimeout(timeout, watch));
+        } on TimeoutException catch (_) {
+          // The queue timeout reports the remaining duration, not the total
+          // duration, so replace the exception with the total timeout.
+          throw TimeoutException('Pool: take() timed out after $timeout.');
+        } on _RetryTake catch (_) {
+          continue;
+        }
+
+        if (await _isLive(item)) {
+          return item.item;
+        }
+
+        _taken.remove(item);
+        remove(item.item);
+      }
+
+      // only reached after receiving a dead item: retry within timeout
+      if (timeout != null && watch.elapsed >= timeout) {
         throw TimeoutException('Pool: take() timed out after $timeout.');
       }
     }
   }
 
-  Future<_PoolItem<T>> _getNextOrEnqueue(Duration? timeout) async {
-    if (_items.isNotEmpty) {
-      final item = _items.removeAt(0);
-      _taken.add(item);
-      onChange?.call();
-      return item;
-    } else {
-      final completer = Completer<_PoolItem<T>>();
-      _queue.add(completer);
-      onChange?.call();
+  Duration? _remainingTimeout(Duration? timeout, Stopwatch watch) {
+    if (timeout == null) {
+      return null;
+    }
+    final remaining = timeout - watch.elapsed;
+    return remaining.isNegative ? Duration.zero : remaining;
+  }
 
-      // The timeout decision and the queue removal must happen in a single
-      // synchronous step: a waiter that is timed out is dequeued in the same
-      // event-loop callback that fails it, so [give] can never complete a
-      // waiter that already timed out (which would drop the item and leak it
-      // as permanently taken).
-      Timer? timeoutTimer;
-      if (timeout != null) {
-        timeoutTimer = Timer(timeout, () {
-          if (_queue.remove(completer)) {
-            onChange?.call();
-            completer.completeError(
-              TimeoutException('Pool: take() timed out after $timeout.'),
-            );
-          }
-        });
-      }
+  Future<_PoolItem<T>> _enqueue(Duration? timeout) async {
+    final completer = Completer<_PoolItem<T>>();
+    _queue.add(completer);
+    onChange?.call();
 
-      try {
-        return await completer.future;
-      } finally {
-        timeoutTimer?.cancel();
-      }
+    // The timeout decision and the queue removal must happen in a single
+    // synchronous step: a waiter that is timed out is dequeued in the same
+    // event-loop callback that fails it, so [give] can never complete a
+    // waiter that already timed out (which would drop the item and leak it
+    // as permanently taken).
+    Timer? timeoutTimer;
+    if (timeout != null) {
+      timeoutTimer = Timer(timeout, () {
+        if (_queue.remove(completer)) {
+          onChange?.call();
+          completer.completeError(
+            TimeoutException('Pool: take() timed out after $timeout.'),
+          );
+        }
+      });
+    }
+
+    try {
+      return await completer.future;
+    } finally {
+      timeoutTimer?.cancel();
     }
   }
 
@@ -248,6 +274,13 @@ class Pool<T> {
       print('onRemoveItem threw exception: $error');
     }
   }
+}
+
+/// Internal signal for queued waiters in [Pool.take]: capacity opened up
+/// (e.g. a concurrent item creation failed), retry taking instead of
+/// waiting for an item to be given back.
+class _RetryTake implements Exception {
+  const _RetryTake();
 }
 
 class _PoolItem<T> {
