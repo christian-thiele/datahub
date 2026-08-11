@@ -72,14 +72,16 @@ void declareTest(
 
     Map<String, dynamic>? environmentConfig;
     if (environment case final environment?) {
-      late final ComposeEnvironmentInstance environmentInstance;
+      ComposeEnvironmentInstance? environmentInstance;
       dart_test.setUpAll(() async {
-        environmentInstance = await environment.up();
-        environmentConfig = {'test': environmentInstance.buildConfiguration()};
+        final instance = await environment.up();
+        environmentInstance = instance;
+        environmentConfig = {'test': instance.buildConfiguration()};
       });
 
       dart_test.tearDownAll(() async {
-        await environmentInstance.down();
+        await environmentInstance?.down();
+        environmentInstance = null;
       });
     }
 
