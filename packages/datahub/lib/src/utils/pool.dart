@@ -11,6 +11,7 @@ class Pool<T> {
 
   final FutureOr<T> Function() _createItem;
   final FutureOr<bool> Function(T)? _checkIsLive;
+  final FutureOr<void> Function(T)? _onReturn;
   final Future<void> Function(T)? onRemoveItem;
   final void Function()? onChange;
 
@@ -24,6 +25,7 @@ class Pool<T> {
   int targetSize;
   final Duration? maxLifetime;
   final Duration checkIsLiveTimeout;
+  final Duration onReturnTimeout;
 
   /// Maximum number of [take] requests waiting for an item at the same time.
   ///
@@ -48,10 +50,13 @@ class Pool<T> {
     this.onRemoveItem,
     FutureOr<bool> Function(T)? checkIsLive,
     this.checkIsLiveTimeout = const Duration(seconds: 10),
+    FutureOr<void> Function(T)? onReturn,
+    this.onReturnTimeout = const Duration(seconds: 10),
     this.maxLifetime,
     this.maxQueueLength,
     this.onChange,
-  }) : _checkIsLive = checkIsLive;
+  }) : _checkIsLive = checkIsLive,
+       _onReturn = onReturn;
 
   Future<void> fill() async {
     for (var i = 0; i < targetSize; i++) {
@@ -65,6 +70,11 @@ class Pool<T> {
   /// pool. This guards against double-give and foreign items, either of
   /// which would result in the same item being handed out to multiple
   /// consumers at once. To add a new item to the pool, use [adopt] instead.
+  ///
+  /// If an [onReturn] delegate is set, it runs before the item becomes
+  /// available to other consumers. If the delegate throws or does not
+  /// complete within [onReturnTimeout], the item is removed from the pool
+  /// instead.
   void give(T item) {
     final poolItem = _taken.where((t) => t.item == item).firstOrNull;
     if (poolItem == null) {
@@ -74,6 +84,43 @@ class Pool<T> {
     }
 
     // items returned after dispose are finalized instead of pooled
+    if (_disposed) {
+      _taken.remove(poolItem);
+      onChange?.call();
+      _finalizeItem(poolItem.item);
+      return;
+    }
+
+    if (_onReturn == null) {
+      _release(poolItem);
+    } else {
+      // the item stays accounted as taken while the return delegate runs,
+      // so it cannot be handed out or double-counted in the meantime
+      unawaited(_returnItem(poolItem));
+    }
+  }
+
+  Future<void> _returnItem(_PoolItem<T> poolItem) async {
+    try {
+      final result = _onReturn!(poolItem.item);
+      if (result is Future) {
+        await result.timeout(onReturnTimeout);
+      }
+    } catch (e) {
+      print('Pool: onReturn threw exception: $e');
+      _taken.remove(poolItem);
+      onChange?.call();
+      _finalizeItem(poolItem.item);
+      // The failed item freed up capacity. Wake the next queued waiter
+      // (if any) to let it create a replacement instead of waiting for
+      // an item that may never come.
+      if (_queue.isNotEmpty && total < targetSize) {
+        _queue.removeAt(0).completeError(const _RetryTake());
+      }
+      return;
+    }
+
+    // the pool may have been disposed while the return delegate ran
     if (_disposed) {
       _taken.remove(poolItem);
       onChange?.call();

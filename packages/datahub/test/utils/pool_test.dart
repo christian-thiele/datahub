@@ -380,6 +380,88 @@ void main() {
       expect(item2.id, equals(item.id));
     });
 
+    test('Should run onReturn before item becomes available again', () async {
+      final returned = <Item>[];
+      final pool = Pool(
+        1,
+        createItem,
+        onReturn: (i) async {
+          await Future.delayed(const Duration(milliseconds: 50));
+          returned.add(i);
+        },
+      );
+      final item = await pool.take();
+
+      pool.give(item);
+      // while onReturn runs, the item is still accounted as taken
+      expect(pool, poolState(1, 1, 0));
+
+      final item2 = await pool.take(timeout: Duration(seconds: 5));
+      expect(returned.single.id, equals(item.id));
+      expect(item2.id, equals(item.id));
+    });
+
+    test('Should remove item when onReturn fails', () async {
+      final removed = <Item>[];
+      final pool = Pool(
+        1,
+        createItem,
+        onReturn: (i) async => throw Exception('reset failed'),
+        onRemoveItem: (i) async => removed.add(i),
+      );
+      final item = await pool.take();
+
+      pool.give(item);
+      await Future.delayed(Duration.zero);
+
+      expect(removed.single.id, equals(item.id));
+      expect(pool, poolState(1, 0, 0));
+
+      // pool recovers by creating a fresh item
+      final item2 = await pool.take(timeout: Duration(seconds: 5));
+      expect(item2.id, isNot(equals(item.id)));
+    });
+
+    test('Should remove item when onReturn times out', () async {
+      final removed = <Item>[];
+      final pool = Pool(
+        1,
+        createItem,
+        onReturn: (i) => Completer<void>().future,
+        onReturnTimeout: const Duration(milliseconds: 100),
+        onRemoveItem: (i) async => removed.add(i),
+      );
+      final item = await pool.take();
+
+      pool.give(item);
+      await Future.delayed(const Duration(milliseconds: 200));
+
+      expect(removed.single.id, equals(item.id));
+      expect(pool, poolState(1, 0, 0));
+    });
+
+    test('Should let queued waiter recover when onReturn fails', () async {
+      final pool = Pool(
+        1,
+        createItem,
+        onReturn: (i) async => throw Exception('reset failed'),
+      );
+      final item = await pool.take();
+      final waiter = pool.take(timeout: Duration(seconds: 5));
+
+      // returning the item fails the reset, so the waiter must be woken
+      // to create a replacement instead of waiting for the full timeout
+      pool.give(item);
+
+      final watch = Stopwatch()..start();
+      final replacement = await waiter;
+      watch.stop();
+
+      expect(watch.elapsed, lessThan(const Duration(seconds: 1)));
+      expect(replacement.id, isNot(equals(item.id)));
+      expect(pool, poolState(1, 1, 0));
+    });
+
     test('Should remove idle items when disposed', () async {
       final removed = <Item>[];
       final pool = Pool(
