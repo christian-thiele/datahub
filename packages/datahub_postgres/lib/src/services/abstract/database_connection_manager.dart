@@ -22,6 +22,7 @@ mixin DatabaseConnectionManager<
     _create,
     maxLifetime: read(maxConnectionLifetime),
     checkIsLive: (c) => c.isOpen,
+    maxQueueLength: read(poolQueueLimit),
     onChange: _updateMetrics,
     onRemoveItem: (c) => c.close(),
   );
@@ -31,6 +32,8 @@ mixin DatabaseConnectionManager<
   Config<Duration> get maxConnectionLifetime;
 
   Config<Duration> get poolTimeout;
+
+  Config<int> get poolQueueLimit;
 
   Config<bool> get enableMetrics;
 

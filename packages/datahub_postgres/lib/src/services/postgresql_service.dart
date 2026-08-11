@@ -36,6 +36,7 @@ class PostgresqlService implements Service {
   final Config<int> targetPoolSize;
   final Config<Duration> maxConnectionLifetime;
   final Config<Duration> poolTimeout;
+  final Config<int> poolQueueLimit;
   final Config<bool> enableMetrics;
   final Config<String> metricPrefix;
 
@@ -63,6 +64,7 @@ class PostgresqlService implements Service {
       'poolTimeout',
       defaultValue: Duration(seconds: 5),
     ),
+    this.poolQueueLimit = const Config<int>('poolQueueLimit', defaultValue: 10),
     this.enableMetrics = const Config<bool>(
       'enableMetrics',
       defaultValue: true,
@@ -128,6 +130,9 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
 
   @override
   Config<Duration> get poolTimeout => service.poolTimeout;
+
+  @override
+  Config<int> get poolQueueLimit => service.poolQueueLimit;
 
   @override
   Config<bool> get enableMetrics => service.enableMetrics;
