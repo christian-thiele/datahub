@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:datahub/api.dart';
+
 // TODO docs
 // TODO replace "prints" with onError callback for implementing library to handle
 class Pool<T> {
@@ -23,6 +25,14 @@ class Pool<T> {
   final Duration? maxLifetime;
   final Duration checkIsLiveTimeout;
 
+  /// Maximum number of [take] requests waiting for an item at the same time.
+  ///
+  /// When the pool is exhausted and the queue has reached this length,
+  /// further [take] calls fail immediately with a [PoolQueueLimitException]
+  /// instead of queueing up. This provides backpressure under overload
+  /// instead of unbounded memory growth. Null means unlimited.
+  final int? maxQueueLength;
+
   int get total => _items.length + _taken.length + _creating;
 
   int get available => _items.length;
@@ -34,6 +44,7 @@ class Pool<T> {
     FutureOr<bool> Function(T)? checkIsLive,
     this.checkIsLiveTimeout = const Duration(seconds: 10),
     this.maxLifetime,
+    this.maxQueueLength,
     this.onChange,
   }) : _checkIsLive = checkIsLive;
 
@@ -128,6 +139,9 @@ class Pool<T> {
   /// null, which means waiting indefinitely. In the worst case, this method
   /// can take up to [timeout] + [checkIsLiveTimeout] + the duration of a
   /// single item creation to complete with an item or an error.
+  ///
+  /// Throws a [PoolQueueLimitException] immediately if the pool is exhausted
+  /// and [maxQueueLength] requests are already waiting for an item.
   Future<T> take({Duration? timeout = const Duration(seconds: 30)}) async {
     final watch = Stopwatch()..start();
 
@@ -201,6 +215,10 @@ class Pool<T> {
   }
 
   Future<_PoolItem<T>> _enqueue(Duration? timeout) async {
+    if (maxQueueLength != null && _queue.length >= maxQueueLength!) {
+      throw PoolQueueLimitException(maxQueueLength!);
+    }
+
     final completer = Completer<_PoolItem<T>>();
     _queue.add(completer);
     onChange?.call();
@@ -274,6 +292,21 @@ class Pool<T> {
       print('onRemoveItem threw exception: $error');
     }
   }
+}
+
+/// Thrown by [Pool.take] when the pool is exhausted and the queue of waiting
+/// requests has reached [Pool.maxQueueLength].
+///
+/// This is a backpressure signal: the pool is overloaded and the caller
+/// should fail fast instead of adding more waiters.
+class PoolQueueLimitException extends ApiRequestException {
+  final int queueLimit;
+
+  PoolQueueLimitException(this.queueLimit) : super(503, null);
+
+  @override
+  String toString() =>
+      'PoolQueueLimitException: Pool queue limit of $queueLimit reached.';
 }
 
 /// Internal signal for queued waiters in [Pool.take]: capacity opened up
