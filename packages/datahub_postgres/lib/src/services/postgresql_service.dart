@@ -37,6 +37,15 @@ class PostgresqlService implements Service {
   final Config<Duration> maxConnectionLifetime;
   final Config<Duration> poolTimeout;
   final Config<int> poolQueueLimit;
+
+  /// Whether to reset the session state of a connection (via `DISCARD ALL`)
+  /// before returning it to the connection pool.
+  ///
+  /// This prevents session state (session variables, temporary tables,
+  /// advisory locks, ...) from leaking between unrelated consumers of the
+  /// pool, at the cost of one extra round-trip per connection use.
+  final Config<bool> resetConnectionOnReturn;
+
   final Config<bool> enableMetrics;
   final Config<String> metricPrefix;
 
@@ -65,6 +74,10 @@ class PostgresqlService implements Service {
       defaultValue: Duration(seconds: 5),
     ),
     this.poolQueueLimit = const Config<int>('poolQueueLimit', defaultValue: 10),
+    this.resetConnectionOnReturn = const Config<bool>(
+      'resetConnectionOnReturn',
+      defaultValue: true,
+    ),
     this.enableMetrics = const Config<bool>(
       'enableMetrics',
       defaultValue: true,
@@ -133,6 +146,9 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
 
   @override
   Config<int> get poolQueueLimit => service.poolQueueLimit;
+
+  @override
+  Config<bool> get resetConnectionOnReturn => service.resetConnectionOnReturn;
 
   @override
   Config<bool> get enableMetrics => service.enableMetrics;

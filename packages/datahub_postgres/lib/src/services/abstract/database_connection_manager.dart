@@ -23,6 +23,7 @@ mixin DatabaseConnectionManager<
     maxLifetime: read(maxConnectionLifetime),
     checkIsLive: (c) => c.isOpen,
     maxQueueLength: read(poolQueueLimit),
+    onReturn: read(resetConnectionOnReturn) ? (c) => c.reset() : null,
     onChange: _updateMetrics,
     onRemoveItem: (c) => c.close(),
   );
@@ -34,6 +35,8 @@ mixin DatabaseConnectionManager<
   Config<Duration> get poolTimeout;
 
   Config<int> get poolQueueLimit;
+
+  Config<bool> get resetConnectionOnReturn;
 
   Config<bool> get enableMetrics;
 
@@ -67,6 +70,12 @@ mixin DatabaseConnectionManager<
 
     await _pool.fill();
     super.initialize();
+  }
+
+  @override
+  Future<void> dispose() async {
+    await _pool.dispose();
+    await super.dispose();
   }
 
   Future<TConnection> _create() async {

@@ -23,6 +23,14 @@ abstract class DatabaseConnection {
   /// be used anymore.
   Future<void> close();
 
+  /// Resets all session state on the connection (session variables,
+  /// temporary tables, advisory locks, prepared statements, ...).
+  ///
+  /// Called by the [DatabaseConnectionManager] before the connection is
+  /// returned to the connection pool, so that no session state leaks
+  /// between unrelated consumers of the pool.
+  Future<void> reset();
+
   /// Runs [delegate] inside a transaction.
   ///
   /// If [delegate] returns without throwing an exception, the transaction

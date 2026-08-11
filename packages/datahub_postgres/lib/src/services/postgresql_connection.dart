@@ -29,6 +29,15 @@ class PostgresqlConnection extends DatabaseConnection {
   bool get isOpen => _connection.isOpen;
 
   @override
+  Future<void> reset() async {
+    // DISCARD ALL resets the entire session state (equivalent to what
+    // PgBouncer runs between clients). It cannot run inside a transaction
+    // block, so a connection stuck in a transaction fails here and is
+    // removed from the pool instead of being reused.
+    await _connection.execute('DISCARD ALL', queryMode: QueryMode.simple);
+  }
+
+  @override
   Future<T> runTransaction<T>(
     Future<T> Function(PostgresqlContext context) delegate,
   ) async {
