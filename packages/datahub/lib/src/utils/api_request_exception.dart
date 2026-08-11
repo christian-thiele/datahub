@@ -40,6 +40,9 @@ class ApiRequestException extends ApiException {
 
   ApiRequestException.internalError([String? message]) : this(500, message);
 
+  ApiRequestException.serviceUnavailable([String? message])
+    : this(503, message);
+
   ApiResponse toResponse() => ApiRequestExceptionResponse(this);
 }
 

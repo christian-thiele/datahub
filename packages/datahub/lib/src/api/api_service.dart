@@ -25,12 +25,33 @@ class ApiService implements Service {
   final Find<Telemetry> telemetry;
   final Config<String?> address;
   final Config<int> port;
+
+  /// Maximum number of requests served concurrently.
+  ///
+  /// When this many requests are in flight, further requests are rejected
+  /// immediately with `503 Service Unavailable` instead of being handled.
+  /// This provides overload protection through backpressure. Null means
+  /// unlimited.
+  final Config<int?> concurrentRequestLimit;
+
+  final Config<bool> enableMetrics;
+  final Config<String> metricPrefix;
+
   final List<ApiNode> routes;
   final io.SecurityContext? securityContext;
 
   const ApiService({
     this.address = const Config('address'),
     this.port = const Config('port', defaultValue: 8080),
+    this.concurrentRequestLimit = const Config('concurrentRequestLimit'),
+    this.enableMetrics = const Config<bool>(
+      'enableMetrics',
+      defaultValue: true,
+    ),
+    this.metricPrefix = const Config<String>(
+      'metricPrefix',
+      defaultValue: 'api',
+    ),
     required this.routes,
     this.securityContext,
     this.telemetry = const Find(),
@@ -43,6 +64,10 @@ class ApiService implements Service {
 class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   late final HttpServer _server;
   late final List<ApiRoute> _routes;
+  late final int? _concurrentRequestLimit;
+  late final GaugeMetric? _activeRequestsMetric;
+  late final CounterMetric? _rejectedRequestsMetric;
+  int _activeRequests = 0;
 
   late final Telemetry telemetry;
 
@@ -56,6 +81,23 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   FutureOr<void> initialize() async {
     await super.initialize();
     telemetry = find(service.telemetry);
+    _concurrentRequestLimit = read(service.concurrentRequestLimit);
+    if (read(service.enableMetrics)) {
+      final prefix = read(service.metricPrefix);
+      _activeRequestsMetric = telemetry.gauge(
+        '${prefix}_active_requests',
+        help: 'Number of requests currently being served.',
+      );
+      _rejectedRequestsMetric = telemetry.counter(
+        '${prefix}_requests_rejected',
+        help:
+            'Number of requests rejected because the concurrent '
+            'request limit was reached.',
+      );
+    } else {
+      _activeRequestsMetric = null;
+      _rejectedRequestsMetric = null;
+    }
     _routes = service.routes.expand((e) => e.buildRoutes()).toList();
 
     final serveAddress = nullOrWhitespace(read(service.address))
@@ -94,6 +136,25 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   }
 
   Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
+    if (_concurrentRequestLimit case final int limit
+        when _activeRequests >= limit) {
+      _rejectedRequestsMetric?.inc();
+      return ApiRequestException.serviceUnavailable()
+          .toResponse()
+          .toHttpResponse(httpRequest.requestUri);
+    }
+
+    _activeRequests++;
+    _activeRequestsMetric?.set(_activeRequests);
+    try {
+      return await _handleRequest(httpRequest);
+    } finally {
+      _activeRequests--;
+      _activeRequestsMetric?.set(_activeRequests);
+    }
+  }
+
+  Future<HttpResponse> _handleRequest(HttpRequest httpRequest) async {
     try {
       final request = ApiRequest(
         httpRequest.requestUri,
