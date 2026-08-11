@@ -21,7 +21,7 @@ final testScenario = [
             }
             if (frame.opcode == WebsocketOpcode.binary) {
               session.sink.add(WebsocketFrame.binary(frame.payload));
-              session.sink.add(WebsocketFrame.close(200, 'done'));
+              session.sink.add(WebsocketFrame.close(4000, 'done'));
             }
           });
         },
@@ -59,7 +59,7 @@ void main() {
           completer2.complete();
         case CloseReceived(code: final code, reason: final reason):
           log.debug('Connection to server closed: $code [$reason]');
-          expect(code, 200);
+          expect(code, 4000);
           expect(reason, 'done');
           completer3.complete();
       }

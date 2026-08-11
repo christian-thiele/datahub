@@ -192,6 +192,14 @@ class HttpServer {
           throw Exception('Remote closed stream.');
         }
 
+        if (response is UpgradeHttpResponse) {
+          // websockets over HTTP/2 require extended CONNECT (RFC 8441),
+          // which is not implemented
+          throw ApiException(
+            'Connection upgrade is not supported over HTTP/2.',
+          );
+        }
+
         final headers = [
           http2.Header.ascii(':status', response.statusCode.toString()),
           ...response.headers.entries.expand(

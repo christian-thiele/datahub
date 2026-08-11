@@ -13,12 +13,37 @@ enum WebsocketOpcode {
   final int value;
   const WebsocketOpcode(this.value);
 
+  /// Whether this is a control frame opcode (close, ping, pong).
+  bool get isControl => (value & 0x8) != 0;
+
   static WebsocketOpcode fromValue(int value) {
-    return WebsocketOpcode.values.firstWhere(
-      (e) => e.value == value,
-      orElse: () => throw Exception('Unknown opcode: $value'),
-    );
+    return maybeFromValue(value) ??
+        (throw WebsocketProtocolException('Unknown opcode: $value.'));
   }
+
+  static WebsocketOpcode? maybeFromValue(int value) {
+    for (final opcode in WebsocketOpcode.values) {
+      if (opcode.value == value) {
+        return opcode;
+      }
+    }
+    return null;
+  }
+}
+
+/// An incoming frame violated RFC 6455.
+///
+/// [closeCode] is the websocket close code that should be sent to the
+/// peer when failing the connection (usually 1002 protocol error or
+/// 1009 message too big).
+class WebsocketProtocolException implements Exception {
+  final String message;
+  final int closeCode;
+
+  WebsocketProtocolException(this.message, [this.closeCode = 1002]);
+
+  @override
+  String toString() => 'WebsocketProtocolException: $message';
 }
 
 class WebsocketFrame {
@@ -27,6 +52,17 @@ class WebsocketFrame {
   final Uint8List payload;
 
   String get text => utf8.decode(payload);
+
+  /// Close code carried by a close frame, if any.
+  int? get closeCode => opcode == WebsocketOpcode.close && payload.length >= 2
+      ? ByteData.sublistView(payload).getUint16(0)
+      : null;
+
+  /// Close reason carried by a close frame, if any.
+  String? get closeReason =>
+      opcode == WebsocketOpcode.close && payload.length > 2
+      ? utf8.decode(payload.sublist(2), allowMalformed: true)
+      : null;
 
   WebsocketFrame(this.opcode, this.payload, {this.fin = true});
 
@@ -47,7 +83,22 @@ class WebsocketFrame {
 
   static Uint8List _encodeClosePayload(int? code, String? reason) {
     if (code == null) return Uint8List(0);
+    // RFC 6455 section 7.4: 1004-1006 and 1015 must not be sent on the wire,
+    // codes below 1000 and above 4999 are invalid.
+    if (code < 1000 ||
+        code > 4999 ||
+        (code >= 1004 && code <= 1006) ||
+        code == 1015) {
+      throw ArgumentError.value(code, 'code', 'Invalid websocket close code');
+    }
     final reasonBytes = reason != null ? utf8.encode(reason) : Uint8List(0);
+    if (reasonBytes.length > 123) {
+      throw ArgumentError.value(
+        reason,
+        'reason',
+        'Close reason must not exceed 123 bytes of UTF-8',
+      );
+    }
     final payload = Uint8List(2 + reasonBytes.length);
     payload.buffer.asByteData().setUint16(0, code);
     payload.setAll(2, reasonBytes);
@@ -57,23 +108,68 @@ class WebsocketFrame {
 
 class WebsocketFrameDecoder
     extends StreamTransformerBase<Uint8List, WebsocketFrame> {
-  const WebsocketFrameDecoder();
+  /// 16 MiB
+  static const defaultMaxFrameSize = 0x1000000;
+
+  /// Maximum accepted payload size of a single frame. Larger frames fail
+  /// the connection with close code 1009 (message too big).
+  final int maxFrameSize;
+
+  /// Whether frames are required to be masked (RFC 6455 section 5.1
+  /// requires this for client-to-server frames).
+  final bool requireMask;
+
+  const WebsocketFrameDecoder({
+    this.maxFrameSize = defaultMaxFrameSize,
+    this.requireMask = true,
+  });
 
   @override
   Stream<WebsocketFrame> bind(Stream<Uint8List> stream) {
     final controller = StreamController<WebsocketFrame>();
-    final buffer = <int>[];
+    final buffer = BytesBuilder(copy: false);
+    StreamSubscription<Uint8List>? subscription;
+    // bytes required in [buffer] before parsing is attempted again
+    var needed = 2;
+    var failed = false;
+
+    void fail(WebsocketProtocolException exception) {
+      failed = true;
+      controller.addError(exception);
+      subscription?.cancel();
+      controller.close();
+    }
 
     void onData(Uint8List data) {
-      buffer.addAll(data);
+      if (failed) return;
+      buffer.add(data);
+      if (buffer.length < needed) return;
 
-      while (buffer.length >= 2) {
-        final b1 = buffer[0];
-        final b2 = buffer[1];
+      final bytes = buffer.takeBytes();
+      var offset = 0;
+
+      while (!failed) {
+        final remaining = bytes.length - offset;
+        if (remaining < 2) {
+          needed = 2;
+          break;
+        }
+
+        final b1 = bytes[offset];
+        final b2 = bytes[offset + 1];
+
+        if (b1 & 0x70 != 0) {
+          fail(
+            WebsocketProtocolException(
+              'Unexpected RSV bits (no extension negotiated).',
+            ),
+          );
+          break;
+        }
 
         final fin = (b1 & 0x80) != 0;
-        final opcodeValue = b1 & 0x0F;
-        final mask = (b2 & 0x80) != 0;
+        final opcode = WebsocketOpcode.maybeFromValue(b1 & 0x0F);
+        final masked = (b2 & 0x80) != 0;
         var payloadLength = b2 & 0x7F;
 
         var headerSize = 2;
@@ -82,69 +178,98 @@ class WebsocketFrameDecoder
         } else if (payloadLength == 127) {
           headerSize += 8;
         }
-
-        if (mask) {
+        if (masked) {
           headerSize += 4;
         }
 
-        if (buffer.length < headerSize) return;
+        if (remaining < headerSize) {
+          needed = headerSize;
+          break;
+        }
 
-        var offset = 2;
         if (payloadLength == 126) {
-          payloadLength = ByteData.sublistView(
-            Uint8List.fromList(buffer),
-            2,
-            4,
-          ).getUint16(0);
-          offset += 2;
+          payloadLength = ByteData.sublistView(bytes, offset).getUint16(2);
         } else if (payloadLength == 127) {
-          payloadLength = ByteData.sublistView(
-            Uint8List.fromList(buffer),
-            2,
-            10,
-          ).getUint64(0);
-          offset += 8;
+          payloadLength = ByteData.sublistView(bytes, offset).getUint64(2);
         }
 
-        final List<int>? maskingKey;
-        if (mask) {
-          maskingKey = buffer.sublist(offset, offset + 4);
-          offset += 4;
-        } else {
-          maskingKey = null;
+        if (opcode == null) {
+          fail(WebsocketProtocolException('Unknown opcode: ${b1 & 0x0F}.'));
+          break;
         }
 
-        if (buffer.length < offset + payloadLength) return;
+        if (opcode.isControl && (!fin || payloadLength > 125)) {
+          fail(
+            WebsocketProtocolException(
+              'Control frames must not be fragmented or carry more than '
+              '125 bytes of payload.',
+            ),
+          );
+          break;
+        }
 
+        if (requireMask && !masked) {
+          fail(
+            WebsocketProtocolException(
+              'Client-to-server frames must be masked.',
+            ),
+          );
+          break;
+        }
+
+        // payloadLength < 0 catches 64-bit lengths overflowing Dart's
+        // signed int
+        if (payloadLength < 0 || payloadLength > maxFrameSize) {
+          fail(
+            WebsocketProtocolException(
+              'Frame payload exceeds maximum of $maxFrameSize bytes.',
+              1009,
+            ),
+          );
+          break;
+        }
+
+        final frameSize = headerSize + payloadLength;
+        if (remaining < frameSize) {
+          needed = frameSize;
+          break;
+        }
+
+        final payloadOffset = offset + headerSize;
         final payload = Uint8List.fromList(
-          buffer.sublist(offset, offset + payloadLength),
+          Uint8List.sublistView(
+            bytes,
+            payloadOffset,
+            payloadOffset + payloadLength,
+          ),
         );
-        buffer.removeRange(0, offset + payloadLength);
 
-        if (maskingKey != null) {
+        if (masked) {
+          final maskOffset = payloadOffset - 4;
           for (var i = 0; i < payload.length; i++) {
-            payload[i] ^= maskingKey[i % 4];
+            payload[i] ^= bytes[maskOffset + (i % 4)];
           }
         }
 
-        try {
-          final opcode = WebsocketOpcode.fromValue(opcodeValue);
-          controller.add(WebsocketFrame(opcode, payload, fin: fin));
-        } catch (e) {
-          controller.addError(e);
-        }
+        controller.add(WebsocketFrame(opcode, payload, fin: fin));
+        offset += frameSize;
+        needed = 2;
+      }
+
+      if (!failed && offset < bytes.length) {
+        buffer.add(Uint8List.sublistView(bytes, offset));
       }
     }
 
     controller.onListen = () {
-      final subscription = stream.listen(
+      subscription = stream.listen(
         onData,
         onError: controller.addError,
         onDone: controller.close,
       );
-      controller.onPause = subscription.pause;
-      controller.onResume = subscription.resume;
-      controller.onCancel = subscription.cancel;
+      controller.onPause = subscription!.pause;
+      controller.onResume = subscription!.resume;
+      controller.onCancel = subscription!.cancel;
     };
 
     return controller.stream;

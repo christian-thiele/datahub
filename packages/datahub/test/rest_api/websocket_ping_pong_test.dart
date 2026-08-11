@@ -16,7 +16,7 @@ void main() {
             onSession: (session) {
               session.stream.listen((event) {});
             },
-            chooseProtocol: (protocols) => protocols.firstOrNull ?? '',
+            chooseProtocol: (protocols) => protocols.firstOrNull,
             heartbeatInterval: const Duration(milliseconds: 200),
             heartbeatTimeout: const Duration(milliseconds: 500),
           ),
@@ -42,7 +42,8 @@ void main() {
       final pings = <WebsocketFrame>[];
       final doneCompleter = Completer();
 
-      final encoder = const WebsocketFrameEncoder();
+      // Masked empty PONG frame (client-to-server frames must be masked).
+      const maskedPong = [0x8A, 0x80, 0x00, 0x00, 0x00, 0x00];
 
       final subscription = broadcastSocket.listen(
         (data) {
@@ -50,7 +51,7 @@ void main() {
           if (data.length >= 2 && data[0] == 0x89 && data[1] == 0x00) {
             pings.add(WebsocketFrame.ping());
             if (pings.length <= 2) {
-              socket.add(encoder.encodeFrame(WebsocketFrame.pong()));
+              socket.add(maskedPong);
             }
           }
         },

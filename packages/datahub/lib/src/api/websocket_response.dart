@@ -8,7 +8,7 @@ class WebsocketResponse extends ApiResponse {
   final String acceptKey;
   final String? protocol;
 
-  void Function(Socket) onSocket;
+  final void Function(Socket) onSocket;
 
   WebsocketResponse({
     required this.onSocket,
