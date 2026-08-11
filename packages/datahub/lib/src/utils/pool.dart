@@ -35,13 +35,38 @@ class Pool<T> {
 
   Future<void> fill() async {
     for (var i = 0; i < targetSize; i++) {
-      give(await _createItem());
+      adopt(await _createItem());
     }
   }
 
+  /// Returns a previously taken [item] back to the pool.
+  ///
+  /// Throws a [StateError] if the item is not currently taken from this
+  /// pool. This guards against double-give and foreign items, either of
+  /// which would result in the same item being handed out to multiple
+  /// consumers at once. To add a new item to the pool, use [adopt] instead.
   void give(T item) {
-    final poolItem =
-        _taken.where((t) => t.item == item).firstOrNull ?? _PoolItem(item);
+    final poolItem = _taken.where((t) => t.item == item).firstOrNull;
+    if (poolItem == null) {
+      throw StateError(
+        'Cannot give item: Item is not currently taken from this pool.',
+      );
+    }
+    _release(poolItem);
+  }
+
+  /// Adds an externally created [item] to the pool.
+  ///
+  /// Throws a [StateError] if the item is already part of this pool.
+  void adopt(T item) {
+    if (_taken.any((t) => t.item == item) ||
+        _items.any((t) => t.item == item)) {
+      throw StateError('Cannot adopt item: Item is already part of the pool.');
+    }
+    _release(_PoolItem(item));
+  }
+
+  void _release(_PoolItem<T> poolItem) {
     if (_queue.isNotEmpty) {
       final next = _queue.removeAt(0);
       if (!_taken.contains(poolItem)) {

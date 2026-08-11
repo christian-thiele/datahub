@@ -29,7 +29,7 @@ void main() {
     test('Should make given items available', () async {
       final pool = Pool(2, createItem);
       await pool.fill();
-      pool.give(Item());
+      pool.adopt(Item());
       expect(pool, poolState(2, 3, 3));
       await pool.take();
       await pool.take();
@@ -80,8 +80,8 @@ void main() {
         checkIsLive: checkLiveWhereId(liveItem.id),
         checkIsLiveTimeout: Duration(milliseconds: 500),
       );
-      pool.give(liveItem);
-      pool.give(deadItem);
+      pool.adopt(liveItem);
+      pool.adopt(deadItem);
 
       final item1 = await pool.take();
       expect(pool, poolState(2, 2, 1));
@@ -104,9 +104,9 @@ void main() {
         checkIsLive: checkLiveAlwaysOn,
         maxLifetime: Duration(milliseconds: 400),
       );
-      pool.give(deadItem);
+      pool.adopt(deadItem);
       await Future.delayed(const Duration(milliseconds: 500));
-      pool.give(liveItem);
+      pool.adopt(liveItem);
 
       expect(pool, poolState(2, 2, 2));
       final item1 = await pool.take();
@@ -180,12 +180,53 @@ void main() {
         checkIsLive: checkLiveNever,
         onRemoveItem: (i) async => completer.complete(i),
       );
-      pool.give(item);
+      pool.adopt(item);
       await pool.take();
       expect(
         completer.future,
         completion(isA<Item>().having((i) => i.id, 'id', equals(item.id))),
       );
+    });
+
+    test('Should throw when giving an item that is not taken', () async {
+      final pool = Pool(2, createItem);
+      await pool.fill();
+
+      // foreign item, never part of the pool
+      expect(() => pool.give(Item()), throwsStateError);
+      expect(pool, poolState(2, 2, 2));
+
+      // double give
+      final item = await pool.take();
+      pool.give(item);
+      expect(() => pool.give(item), throwsStateError);
+      expect(pool, poolState(2, 2, 2));
+    });
+
+    test('Should not hand out the same item twice after double give', () async {
+      final pool = Pool(2, createItem);
+      await pool.fill();
+      final item = await pool.take();
+      pool.give(item);
+      try {
+        pool.give(item);
+      } on StateError catch (_) {}
+
+      final item1 = await pool.take();
+      final item2 = await pool.take();
+      expect(item1.id, isNot(equals(item2.id)));
+    });
+
+    test('Should throw when adopting an item already in the pool', () async {
+      final pool = Pool(2, createItem);
+      final item = Item();
+      pool.adopt(item);
+      expect(() => pool.adopt(item), throwsStateError);
+      expect(pool, poolState(2, 1, 1));
+
+      final taken = await pool.take();
+      expect(() => pool.adopt(taken), throwsStateError);
+      expect(pool, poolState(2, 1, 0));
     });
 
     test(
