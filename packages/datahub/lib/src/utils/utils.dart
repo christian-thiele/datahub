@@ -54,6 +54,7 @@ const Map<int, String> _statusCodes = {
   415: 'Unsupported Media Type',
   416: 'Requested Range Not Satisfiable',
   417: 'Expectation Failed',
+  418: 'I\'m a teapot',
   421: 'Misdirected Request',
   426: 'Upgrade Required',
   428: 'Precondition Required',
