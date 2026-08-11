@@ -178,16 +178,27 @@ class Pool<T> {
       _queue.add(completer);
       onChange?.call();
 
-      if (timeout == null) {
+      // The timeout decision and the queue removal must happen in a single
+      // synchronous step: a waiter that is timed out is dequeued in the same
+      // event-loop callback that fails it, so [give] can never complete a
+      // waiter that already timed out (which would drop the item and leak it
+      // as permanently taken).
+      Timer? timeoutTimer;
+      if (timeout != null) {
+        timeoutTimer = Timer(timeout, () {
+          if (_queue.remove(completer)) {
+            onChange?.call();
+            completer.completeError(
+              TimeoutException('Pool: take() timed out after $timeout.'),
+            );
+          }
+        });
+      }
+
+      try {
         return await completer.future;
-      } else {
-        try {
-          return await completer.future.timeout(timeout);
-        } on TimeoutException catch (_) {
-          _queue.remove(completer);
-          onChange?.call();
-          rethrow;
-        }
+      } finally {
+        timeoutTimer?.cancel();
       }
     }
   }
