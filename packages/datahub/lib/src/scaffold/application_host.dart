@@ -105,8 +105,7 @@ class ApplicationHost extends ServiceHost {
   }
 
   void _onSignal(ProcessSignal signal) {
-    if (state == ServiceHostState.initialized &&
-        signal == ProcessSignal.sigint) {
+    if (state == ServiceHostState.initialized) {
       findComponent(Find<Telemetry?>(), null)?.publishLog(
         LogMessage(
           timestamp: DateTime.timestamp(),
