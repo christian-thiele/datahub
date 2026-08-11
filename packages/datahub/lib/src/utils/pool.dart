@@ -1,9 +1,9 @@
 import 'dart:async';
 
 import 'package:datahub/api.dart';
+import 'package:datahub/telemetry.dart';
 
 // TODO docs
-// TODO replace "prints" with onError callback for implementing library to handle
 class Pool<T> {
   final _items = <_PoolItem<T>>[];
   final _taken = <_PoolItem<T>>{};
@@ -146,8 +146,12 @@ class Pool<T> {
       if (result is Future) {
         await result.timeout(onReturnTimeout);
       }
-    } catch (e) {
-      print('Pool: onReturn threw exception: $e');
+    } catch (e, stack) {
+      log.error(
+        'Pool: onReturn delegate threw exception.',
+        error: e,
+        stack: stack,
+      );
       _taken.remove(poolItem);
       onChange?.call();
       _finalizeItem(poolItem.item);
@@ -357,7 +361,7 @@ class Pool<T> {
 
   Future<bool> _isLive(_PoolItem<T> item) async {
     if (maxLifetime != null && item.age > maxLifetime!) {
-      print('Pool: Item reached max lifetime.');
+      log.debug('Pool: Item reached max lifetime.');
       return false;
     }
 
@@ -367,17 +371,23 @@ class Pool<T> {
           case Future<bool> isLiveFuture:
             try {
               return await isLiveFuture.timeout(checkIsLiveTimeout);
-            } on TimeoutException catch (_) {
-              print(
+            } on TimeoutException catch (e, stack) {
+              log.error(
                 'Pool: Liveness check timed out after $checkIsLiveTimeout.',
+                error: e,
+                stack: stack,
               );
               return false;
             }
           case bool isLive:
             return isLive;
         }
-      } catch (e) {
-        print('Pool: Liveness check threw exception: $e');
+      } catch (e, stack) {
+        log.error(
+          'Pool: Liveness check threw exception.',
+          error: e,
+          stack: stack,
+        );
         return false;
       }
     } else {
@@ -397,11 +407,11 @@ class Pool<T> {
 
   void _finalizeItem(T item) {
     try {
-      onRemoveItem?.call(item).catchError((error, stack) {
-        print('onRemoveItem threw exception: $error');
+      onRemoveItem?.call(item).catchError((Object error, StackTrace stack) {
+        log.error('onRemoveItem threw exception.', error: error, stack: stack);
       });
-    } catch (error) {
-      print('onRemoveItem threw exception: $error');
+    } catch (error, stack) {
+      log.error('onRemoveItem threw exception.', error: error, stack: stack);
     }
   }
 
@@ -433,8 +443,8 @@ class Pool<T> {
     for (final poolItem in idle) {
       try {
         await onRemoveItem?.call(poolItem.item);
-      } catch (error) {
-        print('onRemoveItem threw exception: $error');
+      } catch (error, stack) {
+        log.error('onRemoveItem threw exception.', error: error, stack: stack);
       }
     }
   }
