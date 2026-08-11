@@ -380,6 +380,62 @@ void main() {
       expect(item2.id, equals(item.id));
     });
 
+    test('Should not overfill when fill() is called repeatedly', () async {
+      final pool = Pool(3, createItem);
+      await pool.fill();
+      await pool.fill();
+      expect(pool, poolState(3, 3, 3));
+    });
+
+    test('Should only top up missing items on fill()', () async {
+      final pool = Pool(3, createItem);
+      final item = await pool.take();
+      await pool.fill();
+      expect(pool, poolState(3, 3, 2));
+      pool.give(item);
+      expect(pool, poolState(3, 3, 3));
+    });
+
+    test('Should create items in parallel when filling', () async {
+      final pool = Pool(5, createItem);
+      final watch = Stopwatch()..start();
+      await pool.fill();
+      watch.stop();
+      expect(pool, poolState(5, 5, 5));
+      // 5 items with 50ms creation each: parallel ~50ms, serial 250ms
+      expect(watch.elapsed, lessThan(const Duration(milliseconds: 200)));
+    });
+
+    test('Should keep successfully created items when fill() partially '
+        'fails', () async {
+      var count = 0;
+      final pool = Pool<Item>(3, () async {
+        await Future.delayed(const Duration(milliseconds: 20));
+        if (++count == 2) {
+          throw Exception('creation failed');
+        }
+        return Item();
+      });
+
+      await expectLater(() => pool.fill(), throwsException);
+      expect(pool, poolState(3, 2, 2));
+
+      // a later fill() tops up the missing item
+      await pool.fill();
+      expect(pool, poolState(3, 3, 3));
+    });
+
+    test('Should account for in-flight creations when filling', () async {
+      final pool = Pool(2, createItem);
+      // reserves one creation slot before fill() starts
+      final takeFuture = pool.take();
+      await pool.fill();
+      final item = await takeFuture;
+      expect(pool, poolState(2, 2, 1));
+      pool.give(item);
+      expect(pool, poolState(2, 2, 2));
+    });
+
     test('Should run onReturn before item becomes available again', () async {
       final returned = <Item>[];
       final pool = Pool(

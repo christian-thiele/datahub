@@ -58,9 +58,49 @@ class Pool<T> {
   }) : _checkIsLive = checkIsLive,
        _onReturn = onReturn;
 
+  /// Fills the pool up to [targetSize] by creating missing items in parallel.
+  ///
+  /// Existing items — idle, taken and currently in creation — are counted,
+  /// so repeated calls never overfill the pool.
+  ///
+  /// If some creations fail, the successfully created items are still added
+  /// to the pool and the first error is rethrown; a later call can top the
+  /// pool up again.
   Future<void> fill() async {
-    for (var i = 0; i < targetSize; i++) {
-      adopt(await _createItem());
+    if (_disposed) {
+      throw StateError('Pool has been disposed.');
+    }
+
+    final missing = targetSize - total;
+    if (missing <= 0) {
+      return;
+    }
+
+    _creating += missing;
+    onChange?.call();
+
+    await Future.wait([for (var i = 0; i < missing; i++) _fillOne()]);
+  }
+
+  Future<void> _fillOne() async {
+    try {
+      final item = await _createItem();
+      if (_disposed) {
+        _finalizeItem(item);
+      } else {
+        _release(_PoolItem(item));
+      }
+    } catch (_) {
+      // Creation failed, so the reserved capacity opens up again. Wake
+      // the next queued waiter (if any) to let it retry and create a
+      // replacement instead of waiting for an item that may never come.
+      if (_queue.isNotEmpty) {
+        _queue.removeAt(0).completeError(const _RetryTake());
+      }
+      rethrow;
+    } finally {
+      _creating--;
+      onChange?.call();
     }
   }
 
