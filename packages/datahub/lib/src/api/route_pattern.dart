@@ -178,11 +178,17 @@ class RoutePattern implements RouteMatcher {
     return _segments.map((s) => s.encode(stringValues)).join();
   }
 
+  static final _matchExpCache = <String, RegExp>{};
+
   /// Decodes a path using the route pattern.
   ///
   /// Path parameters will be stored in the returned [Route] object.
   RoutePatternMatch? tryMatch(String path) {
-    final match = RegExp(routeMatchExp, caseSensitive: false).firstMatch(path);
+    final regExp = _matchExpCache[routeMatchExp] ??= RegExp(
+      routeMatchExp,
+      caseSensitive: false,
+    );
+    final match = regExp.firstMatch(path);
     if (match == null) {
       return null;
     }
