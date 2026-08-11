@@ -34,6 +34,14 @@ class ApiService implements Service {
   /// unlimited.
   final Config<int?> concurrentRequestLimit;
 
+  /// Maximum duration to wait for active requests to complete when the
+  /// service is disposed.
+  ///
+  /// During shutdown, no new requests are accepted and requests currently
+  /// being served are given this much time to complete. Connections that
+  /// are still active after the timeout are closed forcefully.
+  final Config<Duration> shutdownTimeout;
+
   final Config<bool> enableMetrics;
   final Config<String> metricPrefix;
 
@@ -44,6 +52,10 @@ class ApiService implements Service {
     this.address = const Config('address'),
     this.port = const Config('port', defaultValue: 8080),
     this.concurrentRequestLimit = const Config('concurrentRequestLimit'),
+    this.shutdownTimeout = const Config<Duration>(
+      'shutdownTimeout',
+      defaultValue: Duration(seconds: 30),
+    ),
     this.enableMetrics = const Config<bool>(
       'enableMetrics',
       defaultValue: true,
@@ -65,9 +77,11 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   late final HttpServer _server;
   late final List<ApiRoute> _routes;
   late final int? _concurrentRequestLimit;
+  late final Duration _shutdownTimeout;
   late final GaugeMetric? _activeRequestsMetric;
   late final CounterMetric? _rejectedRequestsMetric;
   int _activeRequests = 0;
+  bool _disposing = false;
 
   late final Telemetry telemetry;
 
@@ -82,6 +96,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
     await super.initialize();
     telemetry = find(service.telemetry);
     _concurrentRequestLimit = read(service.concurrentRequestLimit);
+    _shutdownTimeout = read(service.shutdownTimeout);
     if (read(service.enableMetrics)) {
       final prefix = read(service.metricPrefix);
       _activeRequestsMetric = telemetry.gauge(
@@ -136,6 +151,13 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   }
 
   Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
+    if (_disposing) {
+      _rejectedRequestsMetric?.inc();
+      return ApiRequestException.serviceUnavailable()
+          .toResponse()
+          .toHttpResponse(httpRequest.requestUri);
+    }
+
     if (_concurrentRequestLimit case final int limit
         when _activeRequests >= limit) {
       _rejectedRequestsMetric?.inc();
@@ -299,67 +321,32 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
 
   @override
   FutureOr<void> dispose() async {
-    await _server.close();
+    _disposing = true;
+    await _server.stopAccepting();
+
+    final watch = Stopwatch()..start();
+    while (_activeRequests > 0 && watch.elapsed < _shutdownTimeout) {
+      await Future.delayed(const Duration(milliseconds: 50));
+    }
+
+    if (_activeRequests > 0) {
+      log.warn(
+        '$_activeRequests request(s) still active after shutdown timeout '
+        '($_shutdownTimeout). Closing connections forcefully.',
+      );
+      await _server.close(force: true);
+    } else {
+      try {
+        await _server.close().timeout(_shutdownTimeout - watch.elapsed);
+      } on TimeoutException {
+        log.warn(
+          'Open connections did not close within the shutdown timeout. '
+          'Closing connections forcefully.',
+        );
+        await _server.close(force: true);
+      }
+    }
+
     await super.dispose();
   }
 }
-
-/*
-class _ApiServiceIsolate {
-  late final HttpServer _server;
-
-  static Future<void> run(io.ServerSocket socket) async {
-    final instance = _ApiServiceIsolate();
-    instance._server = HttpServer(
-      socket,
-      instance.handleRequest,
-      instance._onSocketError,
-      instance._onProtocolError,
-      instance._onStreamError,
-    );
-  }
-
-  Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
-    try {
-      final request = ApiRequest(
-        httpRequest.requestUri,
-        httpRequest.method,
-        httpRequest.headers,
-        <String, String>{},
-        httpRequest.bodyData,
-      );
-
-      final (handler, routeParams) = findEndpoint(_routes, request);
-      request.routeParams.addAll(routeParams);
-      final response = await handler(request);
-      return response.toHttpResponse(httpRequest.requestUri);
-    } on ApiRequestException catch (e) {
-      return e.toResponse().toHttpResponse(httpRequest.requestUri);
-    } catch (e, stack) {
-      if (Context.ofZone().environment == Environment.dev) {
-        return DebugResponse(
-          e,
-          stack,
-          500,
-        ).toHttpResponse(httpRequest.requestUri);
-      } else {
-        return ApiRequestException.internalError(
-          'Internal Server Error',
-        ).toResponse().toHttpResponse(httpRequest.requestUri);
-      }
-    }
-  }
-
-  void _onSocketError(dynamic e, StackTrace? trace) {
-    log.error('Error while listening to socket.', error: e, stack: trace);
-  }
-
-  void _onProtocolError(dynamic e, StackTrace? trace) {
-    log.warn('Error during protocol negotiation.', error: e, stack: trace);
-  }
-
-  void _onStreamError(dynamic e, StackTrace? trace) {
-    log('Error while handling HTTP2 stream.\n$e');
-  }
-}
-*/

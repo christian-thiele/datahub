@@ -30,6 +30,10 @@ class HttpServer {
 
   late final io.HttpServer _http1;
 
+  final _http2Connections = <http2.ServerTransportConnection>{};
+  final _http2Finishing = <Future<void>>[];
+  bool _stopped = false;
+
   HttpServer(
     this._serverSocket,
     this.requestHandler,
@@ -136,10 +140,17 @@ class HttpServer {
   }
 
   void _handleHttp2Socket(io.Socket socket) {
+    if (_stopped) {
+      socket.destroy();
+      return;
+    }
+
     final connection = http2.ServerTransportConnection.viaSocket(socket);
+    _http2Connections.add(connection);
     connection.incomingStreams.listen(
       _handleHttp2Stream,
       onError: onStreamError,
+      onDone: () => _http2Connections.remove(connection),
     );
   }
 
@@ -152,7 +163,7 @@ class HttpServer {
       unawaited(stream.outgoingMessages.done.then((_) => terminated.cancel()));
       stream.onTerminated = (_) => terminated.cancel();
 
-      stream.incomingMessages.listen(
+      final incomingSubscription = stream.incomingMessages.listen(
         (event) async {
           if (event is http2.HeadersStreamMessage) {
             if (event.endStream) {
@@ -271,6 +282,12 @@ class HttpServer {
         }
 
         await stream.outgoingMessages.close();
+      } finally {
+        // Stop receiving request data the handler did not consume, so it
+        // does not accumulate in [dataController]. Since the outgoing side
+        // is already closed at this point, this resets the stream if the
+        // remote is still sending data.
+        await incomingSubscription.cancel();
       }
     } catch (e, stack) {
       log.error('Error while handling HTTP2 stream.', error: e, stack: stack);
@@ -281,8 +298,38 @@ class HttpServer {
     await _http1.close();
   }
 
-  /// Closes the [HttpServer] and its [io.ServerSocket].
-  Future<void> close() async {
+  /// Stops accepting new connections and new requests, while allowing
+  /// requests that are currently being handled to complete.
+  ///
+  /// The server socket is closed, idle HTTP/1.1 keep-alive connections are
+  /// closed (active ones are closed after their current request) and HTTP/2
+  /// connections are finished gracefully via GOAWAY, closing as soon as all
+  /// of their active streams are done.
+  Future<void> stopAccepting() async {
+    if (_stopped) {
+      return;
+    }
+    _stopped = true;
+
     await _serverSocket.close();
+    await _http1.close();
+    for (final connection in _http2Connections.toList()) {
+      _http2Finishing.add(connection.finish().catchError((_) {}));
+    }
+  }
+
+  /// Closes the [HttpServer] and its [io.ServerSocket].
+  ///
+  /// Waits for requests that are currently being handled to complete, unless
+  /// [force] is true, in which case active connections are closed
+  /// immediately.
+  Future<void> close({bool force = false}) async {
+    await stopAccepting();
+    if (force) {
+      await _http1.close(force: true);
+      await Future.wait(_http2Connections.toList().map((c) => c.terminate()));
+    } else {
+      await Future.wait(_http2Finishing);
+    }
   }
 }
