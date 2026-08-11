@@ -33,9 +33,14 @@ class Pool<T> {
   /// instead of unbounded memory growth. Null means unlimited.
   final int? maxQueueLength;
 
+  bool _disposed = false;
+
   int get total => _items.length + _taken.length + _creating;
 
   int get available => _items.length;
+
+  /// Whether [dispose] has been called.
+  bool get isDisposed => _disposed;
 
   Pool(
     this.targetSize,
@@ -67,6 +72,15 @@ class Pool<T> {
         'Cannot give item: Item is not currently taken from this pool.',
       );
     }
+
+    // items returned after dispose are finalized instead of pooled
+    if (_disposed) {
+      _taken.remove(poolItem);
+      onChange?.call();
+      _finalizeItem(poolItem.item);
+      return;
+    }
+
     _release(poolItem);
   }
 
@@ -74,6 +88,9 @@ class Pool<T> {
   ///
   /// Throws a [StateError] if the item is already part of this pool.
   void adopt(T item) {
+    if (_disposed) {
+      throw StateError('Pool has been disposed.');
+    }
     if (_taken.any((t) => t.item == item) ||
         _items.any((t) => t.item == item)) {
       throw StateError('Cannot adopt item: Item is already part of the pool.');
@@ -143,6 +160,10 @@ class Pool<T> {
   /// Throws a [PoolQueueLimitException] immediately if the pool is exhausted
   /// and [maxQueueLength] requests are already waiting for an item.
   Future<T> take({Duration? timeout = const Duration(seconds: 30)}) async {
+    if (_disposed) {
+      throw StateError('Pool has been disposed.');
+    }
+
     final watch = Stopwatch()..start();
 
     while (true) {
@@ -284,12 +305,50 @@ class Pool<T> {
 
     _items.removeWhere((i) => i.item == item);
     onChange?.call();
+    _finalizeItem(item);
+  }
+
+  void _finalizeItem(T item) {
     try {
       onRemoveItem?.call(item).catchError((error, stack) {
         print('onRemoveItem threw exception: $error');
       });
     } catch (error) {
       print('onRemoveItem threw exception: $error');
+    }
+  }
+
+  /// Shuts down the pool.
+  ///
+  /// All queued [take] requests are completed with a [StateError], all idle
+  /// items are removed via [onRemoveItem] and further calls to [take],
+  /// [adopt] and [fill] throw a [StateError].
+  ///
+  /// Items that are taken at the time of disposal are not touched; they are
+  /// finalized via [onRemoveItem] as soon as they are given back with [give].
+  ///
+  /// Calling dispose more than once has no effect.
+  Future<void> dispose() async {
+    if (_disposed) {
+      return;
+    }
+    _disposed = true;
+
+    final waiters = List.of(_queue);
+    _queue.clear();
+    for (final waiter in waiters) {
+      waiter.completeError(StateError('Pool has been disposed.'));
+    }
+
+    final idle = List.of(_items);
+    _items.clear();
+    onChange?.call();
+    for (final poolItem in idle) {
+      try {
+        await onRemoveItem?.call(poolItem.item);
+      } catch (error) {
+        print('onRemoveItem threw exception: $error');
+      }
     }
   }
 }

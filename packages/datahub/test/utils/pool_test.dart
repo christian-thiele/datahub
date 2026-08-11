@@ -380,6 +380,63 @@ void main() {
       expect(item2.id, equals(item.id));
     });
 
+    test('Should remove idle items when disposed', () async {
+      final removed = <Item>[];
+      final pool = Pool(
+        2,
+        createItem,
+        onRemoveItem: (i) async => removed.add(i),
+      );
+      await pool.fill();
+
+      await pool.dispose();
+
+      expect(removed.length, equals(2));
+      expect(pool, poolState(2, 0, 0));
+      expect(pool.isDisposed, isTrue);
+    });
+
+    test('Should fail queued waiters when disposed', () async {
+      final pool = Pool(1, createItem);
+      final item = await pool.take();
+      final waiter = expectLater(
+        pool.take(timeout: null),
+        throwsStateError,
+      );
+
+      await pool.dispose();
+
+      await waiter;
+      pool.give(item);
+      expect(pool, poolState(1, 0, 0));
+    });
+
+    test('Should finalize items given back after dispose', () async {
+      final removed = <Item>[];
+      final pool = Pool(
+        1,
+        createItem,
+        onRemoveItem: (i) async => removed.add(i),
+      );
+      final item = await pool.take();
+
+      await pool.dispose();
+      expect(removed, isEmpty);
+
+      pool.give(item);
+      expect(removed.single.id, equals(item.id));
+      expect(pool, poolState(1, 0, 0));
+    });
+
+    test('Should reject take(), adopt() and fill() after dispose', () async {
+      final pool = Pool(2, createItem);
+      await pool.dispose();
+
+      await expectLater(() => pool.take(), throwsStateError);
+      expect(() => pool.adopt(Item()), throwsStateError);
+      await expectLater(() => pool.fill(), throwsStateError);
+    });
+
     test('Should throw when giving an item that is not taken', () async {
       final pool = Pool(2, createItem);
       await pool.fill();
