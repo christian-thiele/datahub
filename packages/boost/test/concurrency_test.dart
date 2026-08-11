@@ -9,6 +9,8 @@ void main() {
   test('runGuarded', _runGuardedTest);
   test('cancelOn', _cancelOnTest);
   test('Semaphore.runLocked', _semaphoreTest);
+  test('Semaphore.lock FIFO order', _semaphoreFifoTest);
+  test('Semaphore.lock no barging', _semaphoreNoBargingTest);
   test('Semaphore.debounce', _semaphoreDebounceTest);
   test('Semaphore.throttle', _semaphoreThrottleTest);
   test('Lazy', _lazyTest);
@@ -74,6 +76,45 @@ Future _cancelOnTest() async {
   await Future.delayed(Duration(seconds: 2));
   token2.cancel();
   expect(await future2, equals('x'));
+}
+
+Future _semaphoreFifoTest() async {
+  final semaphore = Semaphore();
+  final order = <int>[];
+
+  await semaphore.lock();
+
+  final futures = [
+    for (var i = 0; i < 5; i++)
+      semaphore.runLocked(() async {
+        order.add(i);
+        await Future.delayed(Duration(milliseconds: 10));
+      }),
+  ];
+
+  semaphore.release();
+  await Future.wait(futures);
+
+  expect(order, orderedEquals([0, 1, 2, 3, 4]));
+}
+
+Future _semaphoreNoBargingTest() async {
+  final semaphore = Semaphore();
+  final order = <int>[];
+
+  await semaphore.lock();
+
+  // waits for the lock
+  final waiter = semaphore.runLocked(() async => order.add(1));
+
+  semaphore.release();
+
+  // called synchronously after release: must queue up behind the
+  // waiter instead of grabbing the lock ahead of it
+  final latecomer = semaphore.runLocked(() async => order.add(2));
+
+  await Future.wait([waiter, latecomer]);
+  expect(order, orderedEquals([1, 2]));
 }
 
 Future _semaphoreTest() async {

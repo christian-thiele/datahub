@@ -1,11 +1,16 @@
 import 'dart:async';
 
 /// A semaphore prevents asynchronous code from being executed simultaneously.
+///
+/// Waiters are served strictly in FIFO order: releasing the lock hands it
+/// over directly to the longest-waiting caller, so later callers cannot
+/// barge in ahead of the queue and no waiter can be starved.
 class Semaphore {
-  Completer? completer;
+  final _waiters = <Completer<void>>[];
+  bool _locked = false;
   Object? _scheduledKey;
 
-  bool get isLocked => !(completer?.isCompleted ?? true);
+  bool get isLocked => _locked;
 
   /// Function [job] is executed immediately if the semaphore is not locked,
   /// as soon as the last scheduled job finishes otherwise.
@@ -50,17 +55,20 @@ class Semaphore {
     });
   }
 
-  /// Locks the semaphore. The Future completes as soon as the semaphore is
-  /// released and can be locked again.
+  /// Locks the semaphore. The Future completes as soon as all earlier
+  /// holders of the lock released it. Waiters acquire the lock in FIFO
+  /// order.
   ///
   /// Most of the time [runLocked], [debounce] or [throttle] should be preferred.
-  Future lock() async {
-    if (completer != null) {
-      await completer!.future;
-      await lock();
-      return;
+  Future<void> lock() {
+    if (!_locked) {
+      _locked = true;
+      return Future.value();
     }
-    completer = Completer();
+
+    final waiter = Completer<void>();
+    _waiters.add(waiter);
+    return waiter.future;
   }
 
   /// Releases the current lock on the semaphore.
@@ -68,8 +76,11 @@ class Semaphore {
   /// This is only necessary for special use cases in conjunction with [lock].
   /// Most of the time [runLocked], [debounce] or [throttle] should be preferred.
   void release() {
-    final temp = completer;
-    completer = null;
-    temp?.complete();
+    if (_waiters.isNotEmpty) {
+      // hand the lock over to the next waiter; the semaphore stays locked
+      _waiters.removeAt(0).complete();
+    } else {
+      _locked = false;
+    }
   }
 }
