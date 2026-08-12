@@ -7,8 +7,16 @@ class ConfigException extends ApiException {
 }
 
 class ConfigPathException extends ConfigException {
-  ConfigPathException(String path)
-    : super(path, 'Configuration does not provide a value for "$path".');
+  /// An existing config path that closely resembles [path], if the
+  /// configuration holds one.
+  final String? suggestion;
+
+  ConfigPathException(String path, {this.suggestion})
+    : super(
+        path,
+        'Configuration does not provide a value for "$path".'
+        '${suggestion == null ? '' : ' Did you mean "$suggestion"?'}',
+      );
 }
 
 /// Thrown when a config path is not well formed, e.g. because one of its

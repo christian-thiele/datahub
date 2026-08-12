@@ -1,19 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:datahub/data.dart';
-import 'package:datahub/telemetry.dart';
-import 'package:path/path.dart';
+import 'package:datahub/datahub.dart';
+import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
-
-import 'config_exception.dart';
-import 'config_path.dart';
-import 'environment.dart';
 
 class Configuration {
   static const _codec = JsonDataCodec();
 
   final _configMap = <String, dynamic>{};
+
+  /// Paths that were already checked for a possible misspelling, so that a
+  /// config value read on every request is only reported once.
+  final _diagnosedPaths = <String>{};
 
   Environment? _environment;
 
@@ -29,9 +27,20 @@ class Configuration {
     final raw = _resolve(path.getFrom(_configMap), {path.toString()});
     if (raw == null) {
       if (null is T) {
+        if (_diagnosedPaths.add(path.toString())) {
+          if (_findSimilarPath(path) case final suggestion?) {
+            log.warn(
+              'Configuration does not provide a value for "$path", '
+              'but does provide "$suggestion". Possible typo?',
+            );
+          }
+        }
         return null as T;
       } else {
-        throw ConfigPathException(path.toString());
+        throw ConfigPathException(
+          path.toString(),
+          suggestion: _findSimilarPath(path),
+        );
       }
     }
 
@@ -69,6 +78,82 @@ class Configuration {
       );
     }
   }
+
+  /// Searches the configuration for a path that closely resembles [path].
+  ///
+  /// Walks [path] as far as the configuration actually goes and compares the
+  /// first segment that is missing against the keys available at that point.
+  /// Returns the full path of the best candidate, or null when nothing
+  /// resembles the missing segment closely enough.
+  String? _findSimilarPath(ConfigPath path) {
+    final prefix = <String>[];
+    dynamic current = _configMap;
+
+    for (final segment in path.parts) {
+      if (current is! Map<String, dynamic>) {
+        // The path descends into a value, so there are no keys to compare.
+        return null;
+      }
+
+      if (current.containsKey(segment)) {
+        prefix.add(segment);
+        current = current[segment];
+        continue;
+      }
+
+      if (_closestKey(segment, current.keys) case final candidate?) {
+        // Joined by hand: a config key is not necessarily a valid ConfigPath
+        // segment, and a diagnostic must never throw.
+        return [...prefix, candidate].join('.');
+      }
+
+      return null;
+    }
+
+    // Every segment exists, so the value itself is null. Not a typo.
+    return null;
+  }
+
+  /// Returns the key out of [keys] that [segment] was most likely meant to be.
+  static String? _closestKey(String segment, Iterable<String> keys) {
+    final normalized = _normalizeKey(segment);
+
+    // A key differing only in case or in "-" / "_" separators is a far more
+    // common mistake than a misspelling, and is reported without a distance
+    // budget.
+    for (final key in keys) {
+      if (_normalizeKey(key) == normalized) {
+        return key;
+      }
+    }
+
+    // Very short keys are close to everything, so guessing at them produces
+    // more noise than signal.
+    if (normalized.length < 3) {
+      return null;
+    }
+
+    final maxDistance = normalized.length < 5 ? 1 : 2;
+
+    String? best;
+    var bestDistance = maxDistance + 1;
+    for (final key in keys) {
+      final distance = normalized.damerauLevenshteinDistance(
+        _normalizeKey(key),
+      );
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        best = key;
+      }
+    }
+
+    return best;
+  }
+
+  static final _separators = RegExp(r'[-_]');
+
+  static String _normalizeKey(String key) =>
+      key.toLowerCase().replaceAll(_separators, '');
 
   /// Adds a single value value to the configuration map.
   ///
@@ -124,7 +209,7 @@ class Configuration {
       throw ConfigFileException(configFile.path, 'does not exist.');
     }
 
-    final ext = extension(configFile.path).toLowerCase();
+    final ext = p.extension(configFile.path).toLowerCase();
     if (ext != '.yaml' && ext != '.yml' && ext != '.json') {
       throw ConfigFileException(
         configFile.path,
@@ -164,6 +249,7 @@ class Configuration {
   void addConfigMap(Map map) {
     merge(_configMap, map);
     _environment = null;
+    _diagnosedPaths.clear();
   }
 
   /// Merges values from [configuration] into this configuration.

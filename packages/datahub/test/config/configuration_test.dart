@@ -166,6 +166,189 @@ void main() {
     });
   });
 
+  group('Configuration - typo diagnostics', () {
+    /// Captures what [body] writes via `print`, which is where [log] ends up
+    /// when there is no surrounding [Context].
+    List<String> captureLog(void Function() body) {
+      final lines = <String>[];
+      runZoned(
+        body,
+        zoneSpecification: ZoneSpecification(
+          print: (_, _, _, line) => lines.add(line),
+        ),
+      );
+      return lines;
+    }
+
+    Configuration configOf(Map<String, dynamic> map) =>
+        Configuration()..addConfigMap(map);
+
+    test('suggests a misspelled leaf key', () {
+      final config = configOf({
+        'db': {'hsot': 'db.example.com'},
+      });
+      final lines = captureLog(
+        () => config.read<String?>(ConfigPath('db.host')),
+      );
+      expect(lines.single, contains('db.hsot'));
+    });
+
+    test('suggests a misspelled intermediate key', () {
+      final config = configOf({
+        'datbase': {'host': 'db.example.com'},
+      });
+      final lines = captureLog(
+        () => config.read<String?>(ConfigPath('database.host')),
+      );
+      expect(lines.single, contains('datbase'));
+    });
+
+    test('suggests a key that only differs in separators or case', () {
+      for (final key in [
+        'max-connections',
+        'max_connections',
+        'MaxConnections',
+      ]) {
+        final config = configOf({
+          'db': {key: 4},
+        });
+        final lines = captureLog(
+          () => config.read<int?>(ConfigPath('db.maxConnections')),
+        );
+        expect(lines.single, contains(key), reason: 'for key "$key"');
+      }
+    });
+
+    // The whole point of only speaking up on a near miss: a config value that
+    // is simply not set is completely normal and must stay silent, or the
+    // warning becomes noise nobody reads.
+    test('stays silent when nothing resembles the missing path', () {
+      final config = configOf({
+        'db': {'host': 'db.example.com'},
+      });
+      expect(
+        captureLog(() => config.read<int?>(ConfigPath('db.timeout'))),
+        isEmpty,
+      );
+    });
+
+    test('stays silent when the configuration is empty', () {
+      final config = Configuration();
+      expect(
+        captureLog(() => config.read<String?>(ConfigPath('db.host'))),
+        isEmpty,
+      );
+    });
+
+    test('stays silent when the path descends into a value', () {
+      final config = configOf({'db': 'not-a-map'});
+      expect(
+        captureLog(() => config.read<String?>(ConfigPath('db.host.port'))),
+        isEmpty,
+      );
+    });
+
+    test('stays silent when the key exists but holds null', () {
+      final config = configOf({
+        'db': {'host': null},
+      });
+      expect(
+        captureLog(() => config.read<String?>(ConfigPath('db.host'))),
+        isEmpty,
+      );
+    });
+
+    test('warns only once for a path read repeatedly', () {
+      final config = configOf({
+        'db': {'hsot': 'db.example.com'},
+      });
+      final lines = captureLog(() {
+        for (var i = 0; i < 5; i++) {
+          config.read<String?>(ConfigPath('db.host'));
+        }
+      });
+      expect(lines, hasLength(1));
+    });
+
+    test('warns again after the configuration changed', () {
+      final config = configOf({
+        'db': {'hsot': 'db.example.com'},
+      });
+      expect(
+        captureLog(() => config.read<String?>(ConfigPath('db.host'))),
+        hasLength(1),
+      );
+      config.addConfigMap({'unrelated': 1});
+      expect(
+        captureLog(() => config.read<String?>(ConfigPath('db.host'))),
+        hasLength(1),
+      );
+    });
+
+    test('a required value reports the suggestion on the exception', () {
+      final config = configOf({
+        'db': {'hsot': 'db.example.com'},
+      });
+      expect(
+        () => config.read<String>(ConfigPath('db.host')),
+        throwsA(
+          isA<ConfigPathException>()
+              .having((e) => e.suggestion, 'suggestion', 'db.hsot')
+              .having((e) => e.message, 'message', contains('db.hsot')),
+        ),
+      );
+    });
+
+    test('a required value carries no suggestion when nothing is close', () {
+      final config = configOf({
+        'db': {'host': 'db.example.com'},
+      });
+      expect(
+        () => config.read<String>(ConfigPath('db.timeout')),
+        throwsA(
+          isA<ConfigPathException>().having(
+            (e) => e.suggestion,
+            'suggestion',
+            isNull,
+          ),
+        ),
+      );
+    });
+
+    test('picks the closest of several candidates', () {
+      // "host" is within budget too, but "hosts" is one edit closer. It is
+      // listed second so that a first-match-wins bug would be caught.
+      final config = configOf({'host': 'a', 'hosts': 'b'});
+      final lines = captureLog(
+        () => config.read<String?>(ConfigPath('hostss')),
+      );
+      expect(lines.single, contains('"hosts"'));
+    });
+
+    test('treats a transposition as a single edit', () {
+      // Plain Levenshtein scores a swap as two substitutions, which would put
+      // this common typo out of budget for a short key.
+      final config = configOf({'port': 8080});
+      final lines = captureLog(() => config.read<int?>(ConfigPath('prot')));
+      expect(lines.single, contains('"port"'));
+    });
+
+    test('does not suggest a key that is merely short', () {
+      final config = configOf({'a': 1, 'b': 2});
+      expect(captureLog(() => config.read<int?>(ConfigPath('z'))), isEmpty);
+    });
+
+    test('a key that survives normalization is not reported as a typo', () {
+      final config = configOf({
+        'db': {'host': 'db.example.com'},
+      });
+      expect(
+        captureLog(() => config.read<String?>(ConfigPath('db.host'))),
+        isEmpty,
+      );
+    });
+  });
+
   group('Configuration - types', () {
     late Configuration config;
 

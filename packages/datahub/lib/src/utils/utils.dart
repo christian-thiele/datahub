@@ -161,6 +161,59 @@ extension StringExtension on String {
       }
     }
   }
+
+  /// The Damerau-Levenshtein distance (optimal string alignment) between [a]
+  /// and [other].
+  ///
+  /// Swapping two adjacent characters counts as a single edit rather than two
+  /// substitutions, since transposing them is one of the most common typos.
+  int damerauLevenshteinDistance(String other) {
+    if (this == other) {
+      return 0;
+    }
+
+    if (isEmpty) {
+      return other.length;
+    }
+
+    if (other.isEmpty) {
+      return length;
+    }
+
+    // Three rows are kept, because a transposition looks two rows back.
+    var beforePrevious = List<int>.filled(other.length + 1, 0);
+    var previous = List<int>.generate(other.length + 1, (i) => i);
+    var current = List<int>.filled(other.length + 1, 0);
+
+    for (var i = 0; i < length; i++) {
+      current[0] = i + 1;
+
+      for (var j = 0; j < other.length; j++) {
+        final substitution =
+            previous[j] + (codeUnitAt(i) == other.codeUnitAt(j) ? 0 : 1);
+        var best = math.min(
+          substitution,
+          math.min(current[j] + 1, previous[j + 1] + 1),
+        );
+
+        if (i > 0 &&
+            j > 0 &&
+            codeUnitAt(i) == other.codeUnitAt(j - 1) &&
+            codeUnitAt(i - 1) == other.codeUnitAt(j)) {
+          best = math.min(best, beforePrevious[j - 1] + 1);
+        }
+
+        current[j + 1] = best;
+      }
+
+      final done = beforePrevious;
+      beforePrevious = previous;
+      previous = current;
+      current = done;
+    }
+
+    return previous[other.length];
+  }
 }
 
 /// Decode unsigned BigInt value from base64 with or without padding.
