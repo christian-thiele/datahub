@@ -26,7 +26,7 @@ class Configuration {
       Environment.dev;
 
   T read<T>(ConfigPath path) {
-    final raw = path.getFrom(_configMap);
+    final raw = _resolve(path.getFrom(_configMap), {path.toString()});
     if (raw == null) {
       if (null is T) {
         return null as T;
@@ -141,45 +141,77 @@ class Configuration {
   ///
   /// Keys in [source] that are not of type [String] will be ignored.
   ///
-  /// [referenceRoot] is used to resolve configuration references ($-syntax).
-  /// If null, [target] will be used as reference root.
-  static void merge(
-    Map<String, dynamic> target,
-    Map source, {
-    Map<String, dynamic>? referenceRoot,
-  }) {
-    dynamic clean(dynamic v) {
-      if (v is Map) {
-        // avoid unmodifiable maps
-        final map = <String, dynamic>{};
-        merge(map, v, referenceRoot: referenceRoot ?? target);
-        return map;
-      } else if (v is Iterable) {
-        return v.map(clean).toList();
-      } else if (v case final String str when str.startsWith('\\\$')) {
-        // escaping leading $ (reference syntax) with \$
-        return str.substring(1);
-      } else if (v case final String str when str.startsWith('\$')) {
-        return ConfigPath(str.substring(1)).getFrom(referenceRoot ?? target);
-      } else {
-        return v;
-      }
-    }
-
+  /// Values are stored verbatim. Configuration references ($-syntax) are
+  /// resolved when the value is read, not when it is merged.
+  static void merge(Map<String, dynamic> target, Map source) {
     for (final entry in source.entries) {
       if (entry.key is! String) {
         continue;
       }
 
       if (target[entry.key] is Map<String, dynamic> && entry.value is Map) {
-        merge(
-          target[entry.key],
-          entry.value,
-          referenceRoot: referenceRoot ?? target,
-        );
+        merge(target[entry.key], entry.value);
       } else {
-        target[entry.key] = clean(entry.value);
+        target[entry.key] = _normalize(entry.value);
       }
+    }
+  }
+
+  /// Converts [value] into modifiable, [String] keyed collections.
+  ///
+  /// Config sources such as yaml provide unmodifiable maps and lists with
+  /// non-[String] key types, which cannot be merged into.
+  static dynamic _normalize(dynamic value) {
+    if (value is Map) {
+      final map = <String, dynamic>{};
+      merge(map, value);
+      return map;
+    } else if (value is Iterable) {
+      return value.map(_normalize).toList();
+    } else {
+      return value;
+    }
+  }
+
+  /// Resolves configuration references ($-syntax) inside [value].
+  ///
+  /// Maps and lists are resolved element-wise and are always rebuilt, so that
+  /// readers never receive a reference to the internal config map.
+  ///
+  /// [visited] holds the reference paths that were followed to arrive at
+  /// [value] and is used to detect circular references. Every reference that
+  /// is followed descends with its own copy of the set, so that two references
+  /// to the same path in sibling values are not mistaken for a cycle.
+  dynamic _resolve(dynamic value, Set<String> visited) {
+    switch (value) {
+      case final Map<String, dynamic> map:
+        return map.map((key, v) => MapEntry(key, _resolve(v, visited)));
+
+      case final List<dynamic> list:
+        return list.map((v) => _resolve(v, visited)).toList();
+
+      case final String str when str.startsWith(r'\$'):
+        // escaping leading $ (reference syntax) with \$
+        return str.substring(1);
+
+      case final String str when str.startsWith(r'$'):
+        final reference = ConfigPath(str.substring(1));
+        final referencePath = reference.toString();
+
+        if (visited.contains(referencePath)) {
+          throw ConfigReferenceException(referencePath, [
+            ...visited,
+            referencePath,
+          ]);
+        }
+
+        return _resolve(reference.getFrom(_configMap), {
+          ...visited,
+          referencePath,
+        });
+
+      default:
+        return value;
     }
   }
 

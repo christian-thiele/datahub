@@ -23,6 +23,19 @@ class ConfigTypeException extends ConfigException {
       );
 }
 
+/// Thrown when configuration references ($-syntax) form a cycle.
+class ConfigReferenceException extends ConfigException {
+  /// The chain of references that led back to [path], in the order they were
+  /// followed.
+  final List<String> references;
+
+  ConfigReferenceException(String path, this.references)
+    : super(
+        path,
+        'Circular configuration reference: ${references.join(' -> ')}.',
+      );
+}
+
 /// Thrown when a config value is well typed but not one of the accepted
 /// values, e.g. an unknown name for an enum typed config.
 class ConfigValueException extends ConfigException {
