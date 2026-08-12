@@ -36,8 +36,8 @@ class GeometryCollection extends Geometry {
   Uint8List toBytes(ByteOrder byteOrder) {
     final bytes = ByteDataWriter(endian: byteOrder.endian);
     bytes.writeUint32(geometry.length);
-    for (final ring in geometry) {
-      bytes.write(ring.toBytes(byteOrder));
+    for (final member in geometry) {
+      bytes.write(member.toWKB(byteOrder));
     }
     return bytes.toBytes();
   }

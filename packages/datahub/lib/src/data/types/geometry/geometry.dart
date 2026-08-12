@@ -39,75 +39,105 @@ abstract class Geometry {
   const Geometry(this.srid, this.type, this.hasZ, this.hasM);
 
   static Geometry parseEWKB(Uint8List bytes) {
-    final byteOrder = ByteOrder.read(bytes.first);
-
-    final reader = ByteDataReader(endian: byteOrder.endian);
+    final reader = ByteDataReader(endian: ByteOrder.read(bytes.first).endian);
     reader.add(bytes);
-    reader.readInt8();
-
-    final typeDef = reader.readUint32();
-    final hasZ = typeDef & wkbZ != 0;
-    final hasM = typeDef & wkbM != 0;
-    final hasSRID = typeDef & wkbSRID != 0;
-
-    final baseType = typeDef & ~wkbZ & ~wkbM & ~wkbSRID;
-    final type = GeometryType.read(baseType);
-
-    final srid = hasSRID ? reader.readUint32() : null;
-
-    switch (type) {
-      case GeometryType.point:
-        return Point.read(srid, reader, hasZ, hasM);
-      case GeometryType.lineString:
-        return LineString.read(srid, reader, hasZ, hasM);
-      case GeometryType.polygon:
-        return Polygon.read(srid, reader, hasZ, hasM);
-      case GeometryType.multiPoint:
-        return MultiPoint.read(srid, reader, hasZ, hasM);
-      case GeometryType.multiLineString:
-        return MultiLineString.read(srid, reader, hasZ, hasM);
-      case GeometryType.multiPolygon:
-        return MultiPolygon.read(srid, reader, hasZ, hasM);
-      case GeometryType.geometryCollection:
-        return GeometryCollection.read(srid, reader, hasZ, hasM);
-    }
+    return read(null, reader, false, false);
   }
 
+  /// Reads a geometry including the byte order and type it starts with.
+  ///
+  /// This is how a geometry is encoded on its own as well as inside a multi
+  /// geometry or a collection. [srid], [hasZ] and [hasM] of the enclosing
+  /// geometry apply to a member that does not declare them itself.
   static Geometry read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
-    reader.readUint8();
-    final typeDef = reader.readUint32();
-    final baseType = typeDef & ~wkbZ & ~wkbM & ~wkbSRID;
-    final type = GeometryType.read(baseType);
-
-    switch (type) {
-      case GeometryType.point:
-        return Point.read(srid, reader, hasZ, hasM);
-      case GeometryType.lineString:
-        return LineString.read(srid, reader, hasZ, hasM);
-      case GeometryType.polygon:
-        return Polygon.read(srid, reader, hasZ, hasM);
-      case GeometryType.multiPoint:
-        return MultiPoint.read(srid, reader, hasZ, hasM);
-      case GeometryType.multiLineString:
-        return MultiLineString.read(srid, reader, hasZ, hasM);
-      case GeometryType.multiPolygon:
-        return MultiPolygon.read(srid, reader, hasZ, hasM);
-      case GeometryType.geometryCollection:
-        return GeometryCollection.read(srid, reader, hasZ, hasM);
+    final byteOrder = ByteOrder.read(reader.readUint8());
+    if (byteOrder.endian != reader.endian) {
+      // Members are allowed to bring their own byte order, but no writer makes
+      // use of that and the reader is fixed to the one of the outermost
+      // geometry, so reading on would quietly produce garbage.
+      throw FormatException(
+        'Geometry member is ${byteOrder.name} encoded, which differs from the '
+        'byte order of the geometry containing it.',
+      );
     }
+
+    final typeDef = reader.readUint32();
+    final type = GeometryType.read(typeDef & ~wkbZ & ~wkbM & ~wkbSRID);
+
+    return _readBody(
+      type,
+      typeDef & wkbSRID != 0 ? reader.readUint32() : srid,
+      reader,
+      hasZ || typeDef & wkbZ != 0,
+      hasM || typeDef & wkbM != 0,
+    );
   }
 
-  Uint8List toEWKB({ByteOrder byteOrder = ByteOrder.wkbNDR}) {
+  /// Reads a member of a multi geometry, which has to be a [T].
+  static T readMember<T extends Geometry>(
+    int? srid,
+    ByteDataReader reader,
+    bool hasZ,
+    bool hasM,
+  ) {
+    final member = read(srid, reader, hasZ, hasM);
+    if (member is! T) {
+      throw FormatException(
+        'Expected a $T inside the multi geometry, got a ${member.type.name}.',
+      );
+    }
+
+    return member;
+  }
+
+  /// Reads the coordinates that follow the header of a geometry of [type].
+  static Geometry _readBody(
+    GeometryType type,
+    int? srid,
+    ByteDataReader reader,
+    bool hasZ,
+    bool hasM,
+  ) => switch (type) {
+    GeometryType.point => Point.read(srid, reader, hasZ, hasM),
+    GeometryType.lineString => LineString.read(srid, reader, hasZ, hasM),
+    GeometryType.polygon => Polygon.read(srid, reader, hasZ, hasM),
+    GeometryType.multiPoint => MultiPoint.read(srid, reader, hasZ, hasM),
+    GeometryType.multiLineString => MultiLineString.read(
+      srid,
+      reader,
+      hasZ,
+      hasM,
+    ),
+    GeometryType.multiPolygon => MultiPolygon.read(srid, reader, hasZ, hasM),
+    GeometryType.geometryCollection => GeometryCollection.read(
+      srid,
+      reader,
+      hasZ,
+      hasM,
+    ),
+  };
+
+  /// The extended WKB representation, which adds the [srid] to the type.
+  Uint8List toEWKB({ByteOrder byteOrder = ByteOrder.wkbNDR}) =>
+      _write(byteOrder, srid);
+
+  /// The plain WKB representation, which is how this geometry is written as a
+  /// member of a multi geometry or a collection: only the geometry containing
+  /// it carries an SRID.
+  Uint8List toWKB(ByteOrder byteOrder) => _write(byteOrder, null);
+
+  Uint8List _write(ByteOrder byteOrder, int? srid) {
     final builder = ByteDataWriter(endian: byteOrder.endian);
-    builder.writeInt8(byteOrder.id);
-    final typeInt =
-        type.id |
-        (srid != null ? wkbSRID : 0) |
-        (hasZ ? wkbZ : 0) |
-        (hasM ? wkbM : 0);
-    builder.writeInt32(typeInt);
+    builder.writeUint8(byteOrder.id);
+    builder.writeUint32(
+      type.id |
+          (srid != null ? wkbSRID : 0) |
+          (hasZ ? wkbZ : 0) |
+          (hasM ? wkbM : 0),
+    );
+
     if (srid != null) {
-      builder.writeInt32(srid!);
+      builder.writeUint32(srid);
     }
 
     builder.write(toBytes(byteOrder));

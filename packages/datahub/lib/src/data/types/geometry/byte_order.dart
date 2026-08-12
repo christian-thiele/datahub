@@ -9,6 +9,8 @@ enum ByteOrder {
   final int id;
   final Endian endian;
 
-  static ByteOrder read(int id) =>
-      ByteOrder.values.firstWhere((e) => e.id == id);
+  static ByteOrder read(int id) => ByteOrder.values.firstWhere(
+    (e) => e.id == id,
+    orElse: () => throw FormatException('Unknown WKB byte order: $id'),
+  );
 }

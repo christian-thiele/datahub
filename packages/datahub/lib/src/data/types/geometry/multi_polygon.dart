@@ -20,7 +20,10 @@ class MultiPolygon extends Geometry {
     final length = reader.readUint32();
     return MultiPolygon(
       srid,
-      List.generate(length, (i) => Polygon.read(srid, reader, hasZ, hasM)),
+      List.generate(
+        length,
+        (i) => Geometry.readMember<Polygon>(srid, reader, hasZ, hasM),
+      ),
       hasZ,
       hasM,
     );
@@ -31,7 +34,7 @@ class MultiPolygon extends Geometry {
     final bytes = ByteDataWriter(endian: byteOrder.endian);
     bytes.writeUint32(polygons.length);
     for (final polygon in polygons) {
-      bytes.write(polygon.toBytes(byteOrder));
+      bytes.write(polygon.toWKB(byteOrder));
     }
     return bytes.toBytes();
   }

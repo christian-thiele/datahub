@@ -20,7 +20,10 @@ class MultiLineString extends Geometry {
     final length = reader.readUint32();
     return MultiLineString(
       srid,
-      List.generate(length, (i) => LineString.read(srid, reader, hasZ, hasM)),
+      List.generate(
+        length,
+        (i) => Geometry.readMember<LineString>(srid, reader, hasZ, hasM),
+      ),
       hasZ,
       hasM,
     );
@@ -31,7 +34,7 @@ class MultiLineString extends Geometry {
     final bytes = ByteDataWriter(endian: byteOrder.endian);
     bytes.writeUint32(lineStrings.length);
     for (final lineString in lineStrings) {
-      bytes.write(lineString.toBytes(byteOrder));
+      bytes.write(lineString.toWKB(byteOrder));
     }
     return bytes.toBytes();
   }

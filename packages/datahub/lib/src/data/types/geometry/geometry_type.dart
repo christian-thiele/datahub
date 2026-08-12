@@ -11,6 +11,8 @@ enum GeometryType {
 
   final int id;
 
-  static GeometryType read(int id) =>
-      GeometryType.values.firstWhere((e) => e.id == id);
+  static GeometryType read(int id) => GeometryType.values.firstWhere(
+    (e) => e.id == id,
+    orElse: () => throw FormatException('Unknown WKB geometry type: $id'),
+  );
 }

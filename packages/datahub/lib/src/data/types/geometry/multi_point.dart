@@ -20,7 +20,10 @@ class MultiPoint extends Geometry {
     final length = reader.readUint32();
     return MultiPoint(
       srid,
-      List.generate(length, (i) => Point.read(srid, reader, hasZ, hasM)),
+      List.generate(
+        length,
+        (i) => Geometry.readMember<Point>(srid, reader, hasZ, hasM),
+      ),
       hasZ,
       hasM,
     );
@@ -31,7 +34,7 @@ class MultiPoint extends Geometry {
     final bytes = ByteDataWriter(endian: byteOrder.endian);
     bytes.writeUint32(points.length);
     for (final point in points) {
-      bytes.write(point.toBytes(byteOrder));
+      bytes.write(point.toWKB(byteOrder));
     }
     return bytes.toBytes();
   }
