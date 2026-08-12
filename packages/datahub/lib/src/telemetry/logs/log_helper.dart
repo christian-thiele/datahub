@@ -16,22 +16,24 @@ final class LogHelper {
     StackTrace? stack,
     Map<String, String> labels = const {},
   }) {
-    if (Context.maybeOfZone() case final context?) {
-      final telemetry = context.find(Find<Telemetry>());
-      telemetry.publishLog(
-        LogMessage(
-          timestamp: DateTime.timestamp(),
-          line: line,
-          level: level,
-          stack: stack,
-          error: error,
-          labels: labels,
-          span: telemetry.getDefaultTracer().findParentSpan(),
-        ),
-      );
-    } else {
+    final telemetry = Context.maybeOfZone()?.find(Find<Telemetry?>());
+
+    if (telemetry == null) {
       print(line);
+      return;
     }
+
+    telemetry.publishLog(
+      LogMessage(
+        timestamp: DateTime.timestamp(),
+        line: line,
+        level: level,
+        stack: stack,
+        error: error,
+        labels: labels,
+        span: telemetry.getDefaultTracer().findParentSpan(),
+      ),
+    );
   }
 
   void trace(

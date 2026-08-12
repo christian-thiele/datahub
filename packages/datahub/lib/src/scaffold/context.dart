@@ -76,14 +76,19 @@ final class Context {
       zoneValues: {_symbol: this},
       zoneSpecification: ZoneSpecification(
         print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
-          final message = LogMessage(
-            timestamp: DateTime.timestamp(),
-            level: SeverityLevel.debug,
-            line: line,
+          final telemetry = _registry.findComponent(Find<Telemetry?>(), _scope);
+          if (telemetry == null) {
+            parent.print(zone, line);
+            return;
+          }
+
+          telemetry.publishLog(
+            LogMessage(
+              timestamp: DateTime.timestamp(),
+              level: SeverityLevel.debug,
+              line: line,
+            ),
           );
-          _registry
-              .findComponent(Find<Telemetry>(), _scope)
-              .publishLog(message);
         },
       ),
     );
