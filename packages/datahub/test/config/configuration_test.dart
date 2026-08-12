@@ -1,7 +1,113 @@
+import 'dart:io';
+
 import 'package:datahub/config.dart';
 import 'package:test/test.dart';
 
 void main() {
+  group('Configuration - config files', () {
+    late Directory tempDir;
+
+    setUp(() => tempDir = Directory.systemTemp.createTempSync('datahub_cfg'));
+    tearDown(() => tempDir.deleteSync(recursive: true));
+
+    File write(String name, String content) =>
+        File('${tempDir.path}/$name')..writeAsStringSync(content);
+
+    test('reads a yaml file', () {
+      final config = Configuration();
+      config.addConfigFile(write('a.yaml', 'key: value\n'));
+      expect(config.read<String>(ConfigPath('key')), 'value');
+    });
+
+    test('reads a json file', () {
+      final config = Configuration();
+      config.addConfigFile(write('a.json', '{"key": "value"}'));
+      expect(config.read<String>(ConfigPath('key')), 'value');
+    });
+
+    test('accepts .yml and upper case extensions', () {
+      final config = Configuration();
+      config.addConfigFile(write('a.yml', 'a: 1\n'));
+      config.addConfigFile(write('b.YAML', 'b: 2\n'));
+      config.addConfigFile(write('c.JSON', '{"c": 3}'));
+      expect(config.read<int>(ConfigPath('a')), 1);
+      expect(config.read<int>(ConfigPath('b')), 2);
+      expect(config.read<int>(ConfigPath('c')), 3);
+    });
+
+    test('an empty file contributes nothing', () {
+      final config = Configuration();
+      config.addConfigFile(write('empty.yaml', ''));
+      config.addConfigFile(write('comment.yaml', '# nothing to see here\n'));
+      expect(config.read<String?>(ConfigPath('anything')), isNull);
+    });
+
+    // Each of these used to escape as a raw _TypeError, PathNotFoundException
+    // or bare Exception, none of which named the offending file usefully.
+    test('a missing file throws ConfigFileException', () {
+      expect(
+        () => Configuration().addConfigFile(File('${tempDir.path}/nope.yaml')),
+        throwsA(
+          isA<ConfigFileException>().having(
+            (e) => e.file,
+            'file',
+            '${tempDir.path}/nope.yaml',
+          ),
+        ),
+      );
+    });
+
+    test('an unknown extension throws ConfigFileException', () {
+      expect(
+        () => Configuration().addConfigFile(write('a.conf', 'a: 1\n')),
+        throwsA(isA<ConfigFileException>()),
+      );
+    });
+
+    test('a non-map yaml root throws ConfigFileException', () {
+      expect(
+        () => Configuration().addConfigFile(write('list.yaml', '- a\n- b\n')),
+        throwsA(isA<ConfigFileException>()),
+      );
+      expect(
+        () =>
+            Configuration().addConfigFile(write('scalar.yaml', 'just text\n')),
+        throwsA(isA<ConfigFileException>()),
+      );
+    });
+
+    test('a non-map json root throws ConfigFileException', () {
+      expect(
+        () => Configuration().addConfigFile(write('list.json', '[1, 2]')),
+        throwsA(isA<ConfigFileException>()),
+      );
+    });
+
+    test('malformed content throws ConfigFileException', () {
+      expect(
+        () => Configuration().addConfigFile(write('bad.yaml', 'a: [1, 2\n')),
+        throwsA(isA<ConfigFileException>()),
+      );
+      expect(
+        () => Configuration().addConfigFile(write('bad.json', '{"a": ')),
+        throwsA(isA<ConfigFileException>()),
+      );
+    });
+
+    test('yaml maps and lists become modifiable and can be merged into', () {
+      final config = Configuration();
+      config.addConfigFile(
+        write('a.yaml', 'db:\n  host: a\n  port: 1\nlist:\n  - 1\n'),
+      );
+      config.addConfigMap({
+        'db': {'host': 'b'},
+      });
+      expect(config.read<String>(ConfigPath('db.host')), 'b');
+      expect(config.read<int>(ConfigPath('db.port')), 1);
+      expect(config.read<List<int>>(ConfigPath('list')), orderedEquals([1]));
+    });
+  });
+
   group('Configuration - types', () {
     late Configuration config;
 

@@ -221,6 +221,85 @@ void main() {
   );
 
   // -------------------------------------------------------------------------
+  // Accepted values on non-enum configs
+  //
+  // values: used to be consulted for enum typed configs only and was silently
+  // ignored everywhere else.
+  // -------------------------------------------------------------------------
+
+  declareTest('Values: an accepted value is returned', [], () {
+    expect(
+      Config<String>('mode', values: const ['fast', 'slow']).read(),
+      'fast',
+    );
+  }, config: const {'mode': 'fast'});
+
+  declareTest(
+    'Values: a value outside values: is rejected',
+    [],
+    () {
+      expect(
+        () => Config<String>('mode', values: const ['fast', 'slow']).read(),
+        throwsA(
+          isA<ConfigValueException>()
+              .having((e) => e.path, 'path', 'mode')
+              .having((e) => e.value, 'value', 'turbo')
+              .having(
+                (e) => e.allowedValues,
+                'allowedValues',
+                orderedEquals(['fast', 'slow']),
+              ),
+        ),
+      );
+    },
+    config: const {'mode': 'turbo'},
+  );
+
+  declareTest('Values: works for non-String types', [], () {
+    expect(Config<int>('retries', values: const [1, 3, 5]).read(), 3);
+    expect(
+      () => Config<int>('timeout', values: const [1, 3, 5]).read(),
+      throwsA(isA<ConfigValueException>()),
+    );
+  }, config: const {'retries': 3, 'timeout': 4});
+
+  declareTest('Values: the defaultValue is not subject to values:', [], () {
+    // The default is the declaring code's own choice, not user input.
+    expect(
+      Config<String>(
+        'missing',
+        defaultValue: 'anything',
+        values: const ['fast', 'slow'],
+      ).read(),
+      'anything',
+    );
+  }, config: const {});
+
+  declareTest(
+    'Values: a configured value is checked even when a defaultValue exists',
+    [],
+    () {
+      expect(
+        () => Config<String>(
+          'mode',
+          defaultValue: 'fast',
+          values: const ['fast', 'slow'],
+        ).read(),
+        throwsA(isA<ConfigValueException>()),
+      );
+    },
+    config: const {'mode': 'turbo'},
+  );
+
+  declareTest('Values: no values: means no restriction', [], () {
+    expect(Config<String>('mode').read(), 'turbo');
+  }, config: const {'mode': 'turbo'});
+
+  declareTest('Values: Config.value() is not restricted', [], () {
+    expect(Config<String>.value('turbo').read(), 'turbo');
+  }, config: const {});
+
+  // -------------------------------------------------------------------------
   // File-based configuration — YAML
   // -------------------------------------------------------------------------
 

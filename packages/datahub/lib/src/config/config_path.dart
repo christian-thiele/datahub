@@ -1,16 +1,21 @@
 import 'dart:collection';
 
+import 'config_exception.dart';
+
 /// Represents a config value path.
 class ConfigPath {
-  static final _regex = RegExp(r'^\w+$', multiLine: false);
-
   final List<String> parts;
 
   ConfigPath(String path) : this.fromParts(path.split('.'));
 
   ConfigPath.fromParts(List<String> parts)
-    : parts = UnmodifiableListView(parts),
-      assert(parts.every(_isValidPart));
+    : parts = UnmodifiableListView(parts) {
+    for (final part in parts) {
+      if (!_isValidPart(part)) {
+        throw InvalidConfigPathException(parts.join('.'), part);
+      }
+    }
+  }
 
   ConfigPath.root() : this.fromParts(const []);
 
@@ -37,7 +42,11 @@ class ConfigPath {
   @override
   String toString() => parts.join('.');
 
-  static bool _isValidPart(String part) => _regex.hasMatch(part);
+  /// A segment may hold any key a config source can provide, as long as the
+  /// path stays unambiguous: it must be non-empty and must not contain the
+  /// "." separator.
+  static bool _isValidPart(String part) =>
+      part.isNotEmpty && !part.contains('.');
 
   static dynamic _getFrom(Iterable<String> path, dynamic values) {
     if (path.isEmpty) {

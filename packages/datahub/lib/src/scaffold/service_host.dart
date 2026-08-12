@@ -268,36 +268,67 @@ abstract class ServiceHost implements ServiceRegistry {
 
   @override
   T readConfig<T>(Config<T> config, TreeNode scope) {
-    final scopePath = scope.getConfigPath();
-    return switch (config) {
-      PathConfig<Enum?>(
-        :final path,
-        :final T defaultValue?,
-        :final List<T> values?,
-      )
-          when values.isNotEmpty =>
-        configuration.readEnum<T?>(scopePath.join(ConfigPath(path)), values) ??
-            defaultValue,
-      PathConfig<Enum?>(:final path, :final List<T> values?)
-          when values.isNotEmpty =>
-        configuration.readEnum<T>(scopePath.join(ConfigPath(path)), values),
-      // Enum typed configs cannot be decoded without knowing the possible
-      // values. Falling through to the generic cases below would surface this
-      // as a confusing type error - or not at all, for as long as the value
-      // stays unset and a defaultValue covers it up.
-      PathConfig<Enum?>(:final path) => throw ConfigDeclarationException(
-        scopePath.join(ConfigPath(path)).toString(),
-        'Config<$T> at "$path" requires a non-empty "values" parameter. '
-        'Enum typed configuration cannot be decoded without the list of '
-        'possible values, e.g. Config<MyEnum>(..., values: MyEnum.values).',
-      ),
-      PathConfig<T>(:final path, :final defaultValue?) =>
-        configuration.read<T?>(scopePath.join(ConfigPath(path))) ??
-            defaultValue,
-      PathConfig<T>(:final path) => configuration.read<T>(
-        scopePath.join(ConfigPath(path)),
-      ),
-      ValueConfig<T>(:final value) => value,
-    };
+    switch (config) {
+      case ValueConfig<T>(:final value):
+        return value;
+
+      case PathConfig<T>(:final path, :final defaultValue, :final values):
+        final configPath = scope.getConfigPath().join(ConfigPath(path));
+
+        // Enum typed configs are decoded by name and therefore need to know
+        // the possible values. Without them the declaration is broken, which
+        // would otherwise surface as a confusing type error - or not at all,
+        // for as long as the value stays unset and a defaultValue covers it up.
+        if (config is PathConfig<Enum?>) {
+          if (values == null || values.isEmpty) {
+            throw ConfigDeclarationException(
+              configPath.toString(),
+              'Config<$T> at "$path" requires a non-empty "values" parameter. '
+              'Enum typed configuration cannot be decoded without the list of '
+              'possible values, e.g. Config<MyEnum>(..., values: MyEnum.values).',
+            );
+          }
+
+          if (defaultValue != null) {
+            return configuration.readEnum<T?>(configPath, values) ??
+                defaultValue;
+          }
+
+          return configuration.readEnum<T>(configPath, values);
+        }
+
+        if (defaultValue != null) {
+          final value = configuration.read<T?>(configPath);
+          // The default is the declaring code's own choice and is not
+          // subject to the accepted values.
+          return value == null
+              ? defaultValue
+              : _checkValues(configPath, value, values);
+        }
+
+        return _checkValues(
+          configPath,
+          configuration.read<T>(configPath),
+          values,
+        );
+    }
+  }
+
+  /// Checks [value] against the accepted [values] of a [Config], if it
+  /// declares any.
+  ///
+  /// Values are compared using `==`, so this is only meaningful for types with
+  /// value equality. Enum typed configs are restricted by their decoder
+  /// instead, see [Configuration.readEnum].
+  T _checkValues<T>(ConfigPath path, T value, List<T>? values) {
+    if (values == null || values.isEmpty || values.contains(value)) {
+      return value;
+    }
+
+    throw ConfigValueException(
+      path.toString(),
+      value.toString(),
+      values.map((v) => v.toString()).toList(),
+    );
   }
 }

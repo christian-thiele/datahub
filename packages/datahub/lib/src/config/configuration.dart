@@ -109,18 +109,44 @@ class Configuration {
   ///
   /// Supported file types are yaml and json.
   void addConfigFile(File configFile) {
-    final stringContent = configFile.readAsStringSync();
-    final ext = extension(configFile.path);
-    if (ext == '.yaml' || ext == '.yml') {
-      addConfigMap(loadYaml(stringContent));
-    } else if (ext == '.json') {
-      addConfigMap(jsonDecode(stringContent));
-    } else {
-      throw Exception(
-        'Unknown config file type of file ${configFile.path}. '
-        'Supported file types are yaml and json.',
+    if (!configFile.existsSync()) {
+      throw ConfigFileException(configFile.path, 'does not exist.');
+    }
+
+    final ext = extension(configFile.path).toLowerCase();
+    if (ext != '.yaml' && ext != '.yml' && ext != '.json') {
+      throw ConfigFileException(
+        configFile.path,
+        'is of an unknown file type. Supported file types are yaml and json.',
       );
     }
+
+    final dynamic content;
+    try {
+      final stringContent = configFile.readAsStringSync();
+      content = ext == '.json'
+          ? jsonDecode(stringContent)
+          : loadYaml(stringContent);
+    } on FormatException catch (e) {
+      throw ConfigFileException(configFile.path, 'could not be parsed: $e');
+    } on FileSystemException catch (e) {
+      throw ConfigFileException(configFile.path, 'could not be read: $e');
+    }
+
+    if (content == null) {
+      // An empty (or comment only) file simply contributes nothing.
+      return;
+    }
+
+    if (content is! Map) {
+      throw ConfigFileException(
+        configFile.path,
+        'must hold a map at its root but holds a value of type '
+        '"${content.runtimeType}".',
+      );
+    }
+
+    addConfigMap(content);
   }
 
   /// Merges [map] into this configuration.

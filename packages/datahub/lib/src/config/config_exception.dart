@@ -11,6 +11,30 @@ class ConfigPathException extends ConfigException {
     : super(path, 'Configuration does not provide a value for "$path".');
 }
 
+/// Thrown when a config path is not well formed, e.g. because one of its
+/// segments is empty.
+class InvalidConfigPathException extends ConfigException {
+  /// The offending segment of [path].
+  final String segment;
+
+  InvalidConfigPathException(String path, this.segment)
+    : super(
+        path,
+        'Config path "$path" is not well formed: "$segment" is not a valid '
+        'segment. Segments are separated by "." and must not be empty.',
+      );
+}
+
+/// Thrown when a config file cannot be read or does not contain a valid
+/// configuration.
+class ConfigFileException extends ConfigException {
+  /// The path of the offending file.
+  final String file;
+
+  ConfigFileException(this.file, String message)
+    : super('', 'Config file "$file" $message');
+}
+
 class ConfigTypeException extends ConfigException {
   final Type expectedType;
   final Type actualType;
