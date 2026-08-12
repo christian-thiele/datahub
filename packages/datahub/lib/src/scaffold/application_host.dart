@@ -80,27 +80,72 @@ class ApplicationHost extends ServiceHost {
 
   void _parseArguments() {
     final parser = ArgParser();
-    parser.addMultiOption(
-      'config',
-      abbr: 'c',
-      callback: (values) {
-        for (final value in values) {
-          configuration.addConfigDirective(value);
-        }
-      },
-    );
-    parser.addMultiOption(
-      'file',
-      abbr: 'f',
-      callback: (values) {
-        for (final value in values) {
-          configuration.addConfigFile(File(value));
-        }
-      },
-    );
+    parser.addMultiOption('config', abbr: 'c');
+    parser.addMultiOption('file', abbr: 'f');
+
     final result = parser.parse(arguments);
     if (result.rest.isNotEmpty) {
       log.warn('Unrecognized command line arguments: ${result.rest.join(' ')}');
+    }
+
+    // ArgParser invokes option callbacks grouped by option, not in the order
+    // the arguments were given, so the raw argument list is scanned instead to
+    // preserve the documented left-to-right override semantics of -c and -f.
+    for (final (option, value) in _optionsInOrder(parser)) {
+      switch (option) {
+        case 'config':
+          configuration.addConfigDirective(value);
+        case 'file':
+          configuration.addConfigFile(File(value));
+      }
+    }
+  }
+
+  /// Yields the options of [parser] in the order they appear in [arguments],
+  /// paired with their value.
+  ///
+  /// [arguments] is expected to have been parsed by [parser] beforehand, so
+  /// unknown options have already been rejected.
+  Iterable<(String, String)> _optionsInOrder(ArgParser parser) sync* {
+    for (var i = 0; i < arguments.length; i++) {
+      final argument = arguments[i];
+      if (argument == '--') {
+        return;
+      }
+
+      String? option;
+      String? value;
+
+      if (argument.startsWith('--')) {
+        final name = argument.substring(2);
+        final splitPoint = name.indexOf('=');
+        if (splitPoint >= 0) {
+          // --option=value
+          option = parser
+              .findByNameOrAlias(name.substring(0, splitPoint))
+              ?.name;
+          value = name.substring(splitPoint + 1);
+        } else {
+          // --option value
+          option = parser.findByNameOrAlias(name)?.name;
+        }
+      } else if (argument.length > 1 && argument.startsWith('-')) {
+        option = parser.findByAbbreviation(argument[1])?.name;
+        if (option != null && argument.length > 2) {
+          // -ovalue (ArgParser does not strip a leading '=' here)
+          value = argument.substring(2);
+        }
+      }
+
+      if (option == null) {
+        continue;
+      }
+
+      // Options without an attached value consume the following argument.
+      value ??= i + 1 < arguments.length ? arguments[++i] : null;
+      if (value != null) {
+        yield (option, value);
+      }
     }
   }
 
