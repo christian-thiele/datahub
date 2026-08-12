@@ -1,4 +1,7 @@
+import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:datahub/config.dart';
 import 'package:test/test.dart';
@@ -108,6 +111,61 @@ void main() {
     });
   });
 
+  group('Configuration - non-string keys', () {
+    /// Captures what [body] writes via `print`, which is where [log] ends up
+    /// when there is no surrounding [Context].
+    List<String> captureLog(void Function() body) {
+      final lines = <String>[];
+      runZoned(
+        body,
+        zoneSpecification: ZoneSpecification(
+          print: (_, _, _, line) => lines.add(line),
+        ),
+      );
+      return lines;
+    }
+
+    test('keeps string keys and drops the rest', () {
+      final config = Configuration();
+      captureLog(
+        () => config.addConfigMap(<dynamic, dynamic>{1: 'one', 'two': 2}),
+      );
+      expect(config.read<int>(ConfigPath('two')), 2);
+    });
+
+    test('warns about a dropped key instead of dropping it silently', () {
+      final config = Configuration();
+      final lines = captureLog(
+        () => config.addConfigMap(<dynamic, dynamic>{1: 'one'}),
+      );
+      expect(lines, hasLength(1));
+      expect(lines.single, contains('"1"'));
+      expect(lines.single, contains('int'));
+    });
+
+    test('warns about dropped keys in nested maps', () {
+      final config = Configuration();
+      final lines = captureLog(
+        () => config.addConfigMap({
+          'db': <dynamic, dynamic>{true: 'yes'},
+        }),
+      );
+      expect(lines, hasLength(1));
+      expect(lines.single, contains('"true"'));
+    });
+
+    test('stays quiet when every key is a string', () {
+      final config = Configuration();
+      final lines = captureLog(
+        () => config.addConfigMap({
+          'a': 1,
+          'b': {'c': 2},
+        }),
+      );
+      expect(lines, isEmpty);
+    });
+  });
+
   group('Configuration - types', () {
     late Configuration config;
 
@@ -200,6 +258,105 @@ void main() {
 
     test('returns null for missing nullable list', () {
       expect(config.read<List<String>?>(ConfigPath('nonExistent')), isNull);
+    });
+  });
+
+  group('Configuration - maps', () {
+    late Configuration config;
+
+    setUp(() {
+      config = Configuration();
+      config.addConfigMap({
+        'strMap': {'a': 'one', 'b': 'two'},
+        'intMap': {'a': 1, 'b': 2},
+        'mixed': {'a': 'one', 'b': 2},
+        'empty': <String, dynamic>{},
+      });
+    });
+
+    test('reads Map<String, dynamic>', () {
+      expect(config.read<Map<String, dynamic>>(ConfigPath('mixed')), {
+        'a': 'one',
+        'b': 2,
+      });
+    });
+
+    test('reads Map<String, String>', () {
+      // decodeType had no Map branch at all, so this threw while
+      // Map<String, dynamic> only ever worked because the raw value happened
+      // to satisfy TypeCheck.accepts.
+      expect(config.read<Map<String, String>>(ConfigPath('strMap')), {
+        'a': 'one',
+        'b': 'two',
+      });
+    });
+
+    test('reads Map<String, int>', () {
+      expect(config.read<Map<String, int>>(ConfigPath('intMap')), {
+        'a': 1,
+        'b': 2,
+      });
+    });
+
+    test('reads nullable maps, as a Config with a defaultValue does', () {
+      expect(config.read<Map<String, String>?>(ConfigPath('strMap')), {
+        'a': 'one',
+        'b': 'two',
+      });
+      expect(config.read<Map<String, dynamic>?>(ConfigPath('mixed')), {
+        'a': 'one',
+        'b': 2,
+      });
+      expect(
+        config.read<Map<String, String>?>(ConfigPath('nonExistent')),
+        isNull,
+      );
+    });
+
+    test('reads an empty map', () {
+      expect(config.read<Map<String, String>>(ConfigPath('empty')), isEmpty);
+    });
+
+    test('coerces map values like list values do', () {
+      expect(config.read<Map<String, String>>(ConfigPath('intMap')), {
+        'a': '1',
+        'b': '2',
+      });
+    });
+
+    test('throws ConfigTypeException when a value does not fit', () {
+      expect(
+        () => config.read<Map<String, int>>(ConfigPath('strMap')),
+        throwsA(isA<ConfigTypeException>()),
+      );
+    });
+
+    test('does not alias the internal map', () {
+      config.read<Map<String, dynamic>>(ConfigPath('mixed'))['a'] = 'mutated';
+      expect(config.read<String>(ConfigPath('mixed.a')), 'one');
+    });
+  });
+
+  group('Configuration - malformed values', () {
+    test('a malformed Uint8List reports a ConfigTypeException', () {
+      // base64Decode throws a FormatException, which used to escape unwrapped.
+      final config = Configuration();
+      config.addConfigMap({'key': 'not base64!!'});
+      expect(
+        () => config.read<Uint8List>(ConfigPath('key')),
+        throwsA(isA<ConfigTypeException>()),
+      );
+    });
+
+    test('a well formed Uint8List still decodes', () {
+      final config = Configuration();
+      config.addConfigMap({
+        'key': base64Encode([1, 2, 3]),
+      });
+      expect(
+        config.read<Uint8List>(ConfigPath('key')),
+        orderedEquals([1, 2, 3]),
+      );
     });
   });
 

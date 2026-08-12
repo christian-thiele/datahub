@@ -389,6 +389,46 @@ void main() {
     });
   });
 
+  group('Directive: values are literal', () {
+    // A directive value used to go through reference resolution, so a value
+    // starting with $ silently resolved to some other config value - or to
+    // nothing at all, if no such path existed.
+    test(r'a value starting with $ is not resolved as a reference', () {
+      final config = Configuration();
+      config.addConfigMap({'other': 'leaked'});
+      config.addConfigDirective(r'password=$other');
+      expect(config.read<String>(ConfigPath('password')), r'$other');
+    });
+
+    test(r'a $ value with no matching path is kept', () {
+      final config = Configuration();
+      config.addConfigDirective(r'password=$ecret');
+      expect(config.read<String>(ConfigPath('password')), r'$ecret');
+    });
+
+    test(r'a $ value that is not a valid path is kept', () {
+      // This used to blow up with an InvalidConfigPathException (an assertion
+      // error before that) while trying to parse "ecret!" as a config path.
+      final config = Configuration();
+      config.addConfigDirective(r'password=$ecret!');
+      expect(config.read<String>(ConfigPath('password')), r'$ecret!');
+    });
+
+    test(r'a $ inside the value was never a reference and is kept', () {
+      final config = Configuration();
+      config.addConfigDirective(r'password=hunter$2');
+      expect(config.read<String>(ConfigPath('password')), r'hunter$2');
+    });
+
+    test('references from config files still resolve', () {
+      final config = Configuration();
+      config.addConfigMap({'host': 'example.com', 'alias': r'$host'});
+      config.addConfigDirective(r'literal=$host');
+      expect(config.read<String>(ConfigPath('alias')), 'example.com');
+      expect(config.read<String>(ConfigPath('literal')), r'$host');
+    });
+  });
+
   group('Directive: invalid input', () {
     test('directive without = is ignored', () {
       final config = Configuration();

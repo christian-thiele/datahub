@@ -28,10 +28,14 @@ abstract class ServiceHost implements ServiceRegistry {
 
   void Function(Service)? _registerHandler;
 
+  /// Builds the component tree for [component] below [parent] and initializes
+  /// every service in it.
+  ///
+  /// Config scoping is not threaded through here: the config path of a node is
+  /// derived from its position in the tree, see [TreeNode.getConfigPath].
   Future<TreeNode> _initializeComponent(
     TreeNode? parent,
     Component component,
-    ConfigPath configScope,
   ) async {
     switch (component) {
       case final Service service:
@@ -72,7 +76,7 @@ abstract class ServiceHost implements ServiceRegistry {
         _registerHandler = null;
 
         for (final child in children) {
-          await _initializeComponent(node, child, configScope);
+          await _initializeComponent(node, child);
         }
 
         return node;
@@ -80,10 +84,6 @@ abstract class ServiceHost implements ServiceRegistry {
       case final Scope scope:
         final node = ScopeTreeNode(scope: scope);
         parent?.add(node);
-
-        final childConfigScope = scope.config != null
-            ? configScope[scope.config!]
-            : configScope;
 
         final context = Context._(
           environment: configuration.environment,
@@ -95,7 +95,7 @@ abstract class ServiceHost implements ServiceRegistry {
 
         await context.run(() async {
           for (final child in scope.components) {
-            await _initializeComponent(node, child, childConfigScope);
+            await _initializeComponent(node, child);
           }
         });
         return node;
@@ -147,7 +147,7 @@ abstract class ServiceHost implements ServiceRegistry {
   Future<void> initialize() async {
     if (_root == null) {
       _state = ServiceHostState.initializing;
-      _root = await _initializeComponent(null, buildRoot(), ConfigPath.root());
+      _root = await _initializeComponent(null, buildRoot());
       _state = ServiceHostState.initialized;
       _runPostInitializationCallbacks();
     } else {

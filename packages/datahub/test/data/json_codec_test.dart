@@ -663,7 +663,7 @@ void _decodeUint8List() {
   expect(() => codec.decodeUint8List(Object()), throwsA(isA<CodecException>()));
   expect(() => codec.decodeUint8List(true), throwsA(isA<CodecException>()));
   expect(() => codec.decodeUint8List(123.4), throwsA(isA<CodecException>()));
-  expect(() => codec.decodeUint8List('XX'), throwsA(isA<FormatException>()));
+  expect(() => codec.decodeUint8List('XX'), throwsA(isA<CodecException>()));
   expect(
     () => codec.decodeTyped<Uint8List?>(Object()),
     throwsA(isA<CodecException>()),
@@ -678,7 +678,7 @@ void _decodeUint8List() {
   );
   expect(
     () => codec.decodeNullable<Uint8List>('XX', codec.decodeUint8List),
-    throwsA(isA<FormatException>()),
+    throwsA(isA<CodecException>()),
   );
 }
 

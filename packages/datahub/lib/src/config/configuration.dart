@@ -39,6 +39,8 @@ class Configuration {
       return _codec.decodeTyped<T>(raw);
     } on CodecException catch (_) {
       throw ConfigTypeException(path.toString(), T, raw.runtimeType);
+    } on FormatException catch (_) {
+      throw ConfigTypeException(path.toString(), T, raw.runtimeType);
     }
   }
 
@@ -89,17 +91,26 @@ class Configuration {
   /// Config values and files override each other in the order they are provided
   /// as arguments.
   ///
-  /// TODO escape sequences
+  /// The value is always taken literally. Unlike values coming from a config
+  /// file it is not interpreted as a configuration reference ($-syntax), so a
+  /// value such as `$ecret` is stored as it is instead of being substituted
+  /// with the value at config path `ecret`.
+  ///
   void addConfigDirective(String configArgument) {
     final splitPoint = configArgument.indexOf('=');
     if (splitPoint > 0) {
       final path = ConfigPath(configArgument.substring(0, splitPoint));
       final value = configArgument.substring(splitPoint + 1);
-      addValue(path, value);
+      addValue(path, _escapeReference(value));
     } else {
       log.error('Invalid config directive "$configArgument".');
     }
   }
+
+  /// Escapes a leading `$` so that [value] survives reference resolution
+  /// unchanged.
+  static String _escapeReference(String value) =>
+      value.startsWith(r'$') ? '\\$value' : value;
 
   /// Read and add config file into the config map.
   ///
@@ -172,6 +183,10 @@ class Configuration {
   static void merge(Map<String, dynamic> target, Map source) {
     for (final entry in source.entries) {
       if (entry.key is! String) {
+        log.warn(
+          'Ignoring config key "${entry.key}" of type '
+          '"${entry.key.runtimeType}". Config keys must be strings.',
+        );
         continue;
       }
 

@@ -153,6 +153,33 @@ abstract class DataCodec {
       return decodeList<Uint8List>(value, decodeUint8List, name: name);
     }
 
+    // Map<String, dynamic> is checked first: every other Map<String, V> is a
+    // subtype of it, so testing it last would never match.
+    if (type.isSupertypeOf<Map<String, dynamic>>()) {
+      return decodeMap<dynamic>(value, decodeDynamic, name: name);
+    }
+    if (type.isSupertypeOf<Map<String, String>>()) {
+      return decodeMap<String>(value, decodeString, name: name);
+    }
+    if (type.isSupertypeOf<Map<String, int>>()) {
+      return decodeMap<int>(value, decodeInt, name: name);
+    }
+    if (type.isSupertypeOf<Map<String, double>>()) {
+      return decodeMap<double>(value, decodeDouble, name: name);
+    }
+    if (type.isSupertypeOf<Map<String, bool>>()) {
+      return decodeMap<bool>(value, decodeBool, name: name);
+    }
+    if (type.isSupertypeOf<Map<String, DateTime>>()) {
+      return decodeMap<DateTime>(value, decodeDateTime, name: name);
+    }
+    if (type.isSupertypeOf<Map<String, Duration>>()) {
+      return decodeMap<Duration>(value, decodeDuration, name: name);
+    }
+    if (type.isSupertypeOf<Map<String, Uint8List>>()) {
+      return decodeMap<Uint8List>(value, decodeUint8List, name: name);
+    }
+
     throw CodecException('Cannot decode ${type.name} typed.', null);
   }
 
@@ -319,11 +346,15 @@ class JsonDataCodec extends DataCodec {
 
   @override
   Uint8List decodeUint8List(dynamic e, {String? name}) {
-    return switch (e) {
-      Uint8List() => e,
-      String() => base64Decode(e),
-      _ => throw CodecException.typeMismatch(Uint8List, e.runtimeType, name),
-    };
+    try {
+      return switch (e) {
+        Uint8List() => e,
+        String() => base64Decode(e),
+        _ => throw CodecException.typeMismatch(Uint8List, e.runtimeType, name),
+      };
+    } on FormatException catch (_) {
+      throw CodecException.typeMismatch(Uint8List, e.runtimeType, name);
+    }
   }
 
   @override
@@ -343,12 +374,20 @@ class JsonDataCodec extends DataCodec {
 
   @override
   Geometry decodeGeometry(dynamic value, {String? name}) {
-    return switch (value) {
-      Geometry() => value,
-      String() => Geometry.parseEWKB(base64Decode(value)),
-      Uint8List() => Geometry.parseEWKB(value),
-      _ => throw CodecException.typeMismatch(Geometry, value.runtimeType, name),
-    };
+    try {
+      return switch (value) {
+        Geometry() => value,
+        String() => Geometry.parseEWKB(base64Decode(value)),
+        Uint8List() => Geometry.parseEWKB(value),
+        _ => throw CodecException.typeMismatch(
+          Geometry,
+          value.runtimeType,
+          name,
+        ),
+      };
+    } on FormatException catch (_) {
+      throw CodecException.typeMismatch(Geometry, value.runtimeType, name);
+    }
   }
 
   @override
