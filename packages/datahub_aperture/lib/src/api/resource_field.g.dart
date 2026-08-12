@@ -121,6 +121,22 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     toJson: (value) => $$codec.encodeNullable(value, (v) => v.toJson()),
   );
 
+  static final $allowFilter = DataField<ResourceField, bool>(
+    name: 'allowFilter',
+    valueOf: (p) => p.allowFilter,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? true), name: name),
+    toJson: (value) => $$codec.encodeBool(value),
+  );
+
+  static final $allowSort = DataField<ResourceField, bool>(
+    name: 'allowSort',
+    valueOf: (p) => p.allowSort,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? true), name: name),
+    toJson: (value) => $$codec.encodeBool(value),
+  );
+
   static final DataBean<ResourceField> bean = DataBean<ResourceField>(
     name: 'ResourceField',
     fields: List<DataField<ResourceField, dynamic>>.unmodifiable([
@@ -135,6 +151,8 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       $objectDescription,
       $enumValues,
       $lookup,
+      $allowFilter,
+      $allowSort,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
@@ -162,6 +180,8 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     bool nullEnumValues = false,
     ResourceFieldLookup? lookup,
     bool nullLookup = false,
+    bool? allowFilter,
+    bool? allowSort,
   }) {
     final $data = this as ResourceField;
     return ResourceField(
@@ -178,6 +198,8 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
           : (objectDescription ?? $data.objectDescription),
       enumValues: nullEnumValues ? null : (enumValues ?? $data.enumValues),
       lookup: nullLookup ? null : (lookup ?? $data.lookup),
+      allowFilter: allowFilter ?? $data.allowFilter,
+      allowSort: allowSort ?? $data.allowSort,
     );
   }
 
@@ -196,6 +218,8 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
           .toList(growable: false),
       enumValues: data['enumValues']?.cast<String>().toList(growable: false),
       lookup: data['lookup'],
+      allowFilter: data['allowFilter'] ?? true,
+      allowSort: data['allowSort'] ?? true,
     );
   }
 
@@ -245,6 +269,14 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
         data['lookup'],
         name: DataCodec.childName(name, 'lookup'),
       ),
+      allowFilter: $allowFilter.fromJson(
+        data['allowFilter'],
+        name: DataCodec.childName(name, 'allowFilter'),
+      ),
+      allowSort: $allowSort.fromJson(
+        data['allowSort'],
+        name: DataCodec.childName(name, 'allowSort'),
+      ),
     );
   }
 
@@ -263,6 +295,8 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       'objectDescription': $objectDescription.toJson($$data.objectDescription),
       'enumValues': $enumValues.toJson($$data.enumValues),
       'lookup': $lookup.toJson($$data.lookup),
+      'allowFilter': $allowFilter.toJson($$data.allowFilter),
+      'allowSort': $allowSort.toJson($$data.allowSort),
     }..removeWhere((k, v) => v == null);
   }
 }

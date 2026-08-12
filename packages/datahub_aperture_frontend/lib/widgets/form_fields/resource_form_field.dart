@@ -1,4 +1,5 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/widgets/geo_editor/model/geo_type_restriction.dart';
 import 'package:datahub_aperture_frontend/widgets/icon_text.dart';
 import 'package:flutter/material.dart';
 
@@ -121,6 +122,9 @@ class ResourceFormField extends StatelessWidget {
         isChanged: isChanged,
         onChanged: onChanged,
         error: error,
+        // ResourceField does not describe the accepted geometry types yet, so
+        // the editor offers all of them.
+        restriction: const GeoTypeRestriction.any(),
       ),
       ResourceFieldType.object => ResourceObjectFormField(
         field: field,
