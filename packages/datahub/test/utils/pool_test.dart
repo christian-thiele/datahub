@@ -341,32 +341,35 @@ void main() {
       expect(pool, poolState(1, 1, 0));
     });
 
-    test('Should fail take() immediately when queue limit is reached', () async {
-      final pool = Pool(1, createItem, maxQueueLength: 2);
-      final item = await pool.take();
+    test(
+      'Should fail take() immediately when queue limit is reached',
+      () async {
+        final pool = Pool(1, createItem, maxQueueLength: 2);
+        final item = await pool.take();
 
-      // fill the queue up to the limit
-      final waiter1 = pool.take(timeout: null);
-      final waiter2 = pool.take(timeout: null);
+        // fill the queue up to the limit
+        final waiter1 = pool.take(timeout: null);
+        final waiter2 = pool.take(timeout: null);
 
-      // over the limit: must fail fast instead of queueing
-      final watch = Stopwatch()..start();
-      await expectLater(
-        () => pool.take(),
-        throwsA(isA<PoolQueueLimitException>()),
-      );
-      watch.stop();
-      expect(watch.elapsed, lessThan(const Duration(seconds: 1)));
+        // over the limit: must fail fast instead of queueing
+        final watch = Stopwatch()..start();
+        await expectLater(
+          () => pool.take(),
+          throwsA(isA<PoolQueueLimitException>()),
+        );
+        watch.stop();
+        expect(watch.elapsed, lessThan(const Duration(seconds: 1)));
 
-      // queued waiters within the limit are served normally
-      pool.give(item);
-      final item1 = await waiter1;
-      pool.give(item1);
-      final item2 = await waiter2;
-      expect(item2.id, equals(item.id));
-      pool.give(item2);
-      expect(pool, poolState(1, 1, 1));
-    });
+        // queued waiters within the limit are served normally
+        pool.give(item);
+        final item1 = await waiter1;
+        pool.give(item1);
+        final item2 = await waiter2;
+        expect(item2.id, equals(item.id));
+        pool.give(item2);
+        expect(pool, poolState(1, 1, 1));
+      },
+    );
 
     test('Should not queue at all with queue limit of zero', () async {
       final pool = Pool(1, createItem, maxQueueLength: 0);
@@ -603,10 +606,7 @@ void main() {
     test('Should fail queued waiters when disposed', () async {
       final pool = Pool(1, createItem);
       final item = await pool.take();
-      final waiter = expectLater(
-        pool.take(timeout: null),
-        throwsStateError,
-      );
+      final waiter = expectLater(pool.take(timeout: null), throwsStateError);
 
       await pool.dispose();
 
