@@ -127,14 +127,13 @@ abstract class DataCodec {
       return decodeDuration(value, name: name);
     }
 
-    if (type.isListOf<String>()) {
-      return decodeList(value, decodeString);
-    }
-
     if (type.isExact<Uint8List>() || type.isExact<Uint8List?>()) {
       return decodeUint8List(value, name: name);
     }
 
+    if (type.isSupertypeOf<List<String>>()) {
+      return decodeList<String>(value, decodeString, name: name);
+    }
     if (type.isSupertypeOf<List<int>>()) {
       return decodeList<int>(value, decodeInt, name: name);
     }

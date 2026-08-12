@@ -74,6 +74,85 @@ void main() {
         throwsA(isA<ConfigTypeException>()),
       );
     });
+
+    test('reads nullable List<String>', () {
+      // Regression: List<String>? matched none of the decoder branches, so
+      // reading a present value threw instead of returning it. Every Config
+      // with a defaultValue goes through a nullable read.
+      expect(
+        config.read<List<String>?>(ConfigPath('strList')),
+        orderedEquals(['a', 'b', 'c']),
+      );
+    });
+
+    test('reads nullable List<int>', () {
+      expect(
+        config.read<List<int>?>(ConfigPath('intList')),
+        orderedEquals([1, 2, 3]),
+      );
+    });
+
+    test('returns null for missing nullable list', () {
+      expect(config.read<List<String>?>(ConfigPath('nonExistent')), isNull);
+    });
+  });
+
+  group('Configuration - enums', () {
+    late Configuration config;
+
+    setUp(() {
+      config = Configuration();
+      config.addConfigMap({'environment': 'prod', 'bogus': 'nonsense'});
+    });
+
+    test('reads a valid enum value', () {
+      expect(
+        config.readEnum<Environment>(
+          ConfigPath('environment'),
+          Environment.values,
+        ),
+        Environment.prod,
+      );
+    });
+
+    test('throws ConfigValueException for an unknown enum value', () {
+      expect(
+        () => config.readEnum<Environment>(
+          ConfigPath('bogus'),
+          Environment.values,
+        ),
+        throwsA(
+          isA<ConfigValueException>()
+              .having((e) => e.path, 'path', 'bogus')
+              .having((e) => e.value, 'value', 'nonsense')
+              .having(
+                (e) => e.allowedValues,
+                'allowedValues',
+                orderedEquals(['dev', 'test', 'stg', 'prod']),
+              ),
+        ),
+      );
+    });
+
+    test('environment defaults to dev when unset', () {
+      expect(Configuration().environment, Environment.dev);
+    });
+
+    test('environment reflects the config value', () {
+      expect(config.environment, Environment.prod);
+    });
+
+    test('cached environment is invalidated when the config changes', () {
+      expect(config.environment, Environment.prod);
+      config.addConfigDirective('environment=stg');
+      expect(config.environment, Environment.stg);
+    });
+
+    test('invalid environment throws ConfigValueException', () {
+      final invalid = Configuration();
+      invalid.addConfigMap({'environment': 'production'});
+      expect(() => invalid.environment, throwsA(isA<ConfigValueException>()));
+    });
   });
 
   group('Configuration - reference syntax', () {

@@ -95,6 +95,45 @@ void main() {
     config: const {},
   );
 
+  // A Config with a defaultValue is resolved as a nullable read, so every
+  // supported type must survive being decoded as `T?` while the value is
+  // actually present. List<String> used to be the odd one out.
+  declareTest(
+    'Code-based: list configs with a defaultValue read the configured value',
+    [],
+    () {
+      expect(
+        Config<List<String>>('strList', defaultValue: const []).read(),
+        orderedEquals(['a', 'list', 'of', 'strings']),
+      );
+      expect(
+        Config<List<int>>('intList', defaultValue: const []).read(),
+        orderedEquals([1, 2, 3, 4, 5]),
+      );
+      expect(
+        Config<List<dynamic>>('dynList', defaultValue: const []).read(),
+        orderedEquals([1, 2, 'three', true]),
+      );
+    },
+    config: _fullConfig,
+  );
+
+  declareTest(
+    'Code-based: list configs fall back to the defaultValue when absent',
+    [],
+    () {
+      expect(
+        Config<List<String>>('missing', defaultValue: const ['x']).read(),
+        orderedEquals(['x']),
+      );
+      expect(
+        Config<List<int>>('missing', defaultValue: const [7]).read(),
+        orderedEquals([7]),
+      );
+    },
+    config: const {},
+  );
+
   // -------------------------------------------------------------------------
   // File-based configuration — YAML
   // -------------------------------------------------------------------------
