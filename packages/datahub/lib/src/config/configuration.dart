@@ -11,9 +11,17 @@ import 'config_path.dart';
 import 'environment.dart';
 
 class Configuration {
+  static const _codec = JsonDataCodec();
+
   final _configMap = <String, dynamic>{};
 
-  Environment get environment =>
+  Environment? _environment;
+
+  /// The environment this application runs in.
+  ///
+  /// Resolved once and cached, since it is read for every [Context] that is
+  /// created. The cache is invalidated whenever the configuration changes.
+  Environment get environment => _environment ??=
       readEnum<Environment?>(ConfigPath('environment'), Environment.values) ??
       Environment.dev;
 
@@ -28,8 +36,7 @@ class Configuration {
     }
 
     try {
-      final codec = const JsonDataCodec();
-      return codec.decodeTyped<T>(raw);
+      return _codec.decodeTyped<T>(raw);
     } on CodecException catch (_) {
       throw ConfigTypeException(path.toString(), T, raw.runtimeType);
     }
@@ -48,11 +55,17 @@ class Configuration {
       value = read<String>(path);
     }
 
-    return JsonDataCodec().decodeEnum<Enum>(
-          value,
-          values.whereType<Enum>().toList(),
-        )
-        as T;
+    final enumValues = values.whereType<Enum>().toList();
+
+    try {
+      return _codec.decodeEnum<Enum>(value, enumValues) as T;
+    } on CodecException catch (_) {
+      throw ConfigValueException(
+        path.toString(),
+        value,
+        enumValues.map(_codec.encodeEnum).toList(),
+      );
+    }
   }
 
   /// Adds a single value value to the configuration map.
@@ -113,6 +126,7 @@ class Configuration {
   /// Merges [map] into this configuration.
   void addConfigMap(Map map) {
     merge(_configMap, map);
+    _environment = null;
   }
 
   /// Merges values from [configuration] into this configuration.

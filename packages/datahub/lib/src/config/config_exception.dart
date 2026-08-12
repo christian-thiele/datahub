@@ -22,3 +22,18 @@ class ConfigTypeException extends ConfigException {
         'while "$expectedType" is expected.',
       );
 }
+
+/// Thrown when a config value is well typed but not one of the accepted
+/// values, e.g. an unknown name for an enum typed config.
+class ConfigValueException extends ConfigException {
+  final String value;
+  final List<String> allowedValues;
+
+  ConfigValueException(String path, this.value, this.allowedValues)
+    : super(
+        path,
+        'Config value at path "$path" is "$value" '
+        'while one of ${allowedValues.map((v) => '"$v"').join(', ')} '
+        'is expected.',
+      );
+}
