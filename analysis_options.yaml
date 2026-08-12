@@ -1,5 +1,7 @@
 include: package:lints/recommended.yaml
 analyzer:
+  exclude:
+    - '**/*.g.dart'
 linter:
   rules:
     directives_ordering: true
