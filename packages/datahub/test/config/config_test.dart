@@ -135,6 +135,92 @@ void main() {
   );
 
   // -------------------------------------------------------------------------
+  // Enum configs without values:
+  //
+  // An enum typed Config can only be decoded when it is told the possible
+  // values. Without them the declaration is simply broken, so it must fail the
+  // same way whether or not the value happens to be set.
+  // -------------------------------------------------------------------------
+
+  declareTest(
+    'Enum: missing values: throws even though the value is set',
+    [],
+    () {
+      expect(
+        () => Config<TestEnumConfig>('enumValue').read(),
+        throwsA(isA<ConfigDeclarationException>()),
+      );
+    },
+    config: _fullConfig,
+  );
+
+  declareTest(
+    'Enum: missing values: throws instead of silently using the defaultValue',
+    [],
+    () {
+      // This used to return TestEnumConfig.a, hiding the broken declaration
+      // until someone actually configured the value.
+      expect(
+        () => Config<TestEnumConfig>(
+          'enumValue',
+          defaultValue: TestEnumConfig.a,
+        ).read(),
+        throwsA(isA<ConfigDeclarationException>()),
+      );
+    },
+    config: const {},
+  );
+
+  declareTest(
+    'Enum: empty values: is treated the same as missing values:',
+    [],
+    () {
+      expect(
+        () => Config<TestEnumConfig>('enumValue', values: const []).read(),
+        throwsA(isA<ConfigDeclarationException>()),
+      );
+    },
+    config: _fullConfig,
+  );
+
+  declareTest('Enum: nullable enum config without values: throws', [], () {
+    expect(
+      () => Config<TestEnumConfig?>('enumValue').read(),
+      throwsA(isA<ConfigDeclarationException>()),
+    );
+  }, config: _fullConfig);
+
+  declareTest('Enum: Config.value() needs no values: parameter', [], () {
+    expect(
+      Config<TestEnumConfig>.value(TestEnumConfig.c).read(),
+      TestEnumConfig.c,
+    );
+  }, config: const {});
+
+  declareTest(
+    'Enum: an unknown value reports the accepted values',
+    [],
+    () {
+      expect(
+        () => Config<TestEnumConfig>(
+          'enumValue',
+          values: TestEnumConfig.values,
+        ).read(),
+        throwsA(
+          isA<ConfigValueException>()
+              .having((e) => e.value, 'value', 'optionZ')
+              .having(
+                (e) => e.allowedValues,
+                'allowedValues',
+                orderedEquals(['optionA', 'optionB', 'optionC']),
+              ),
+        ),
+      );
+    },
+    config: const {'enumValue': 'optionZ'},
+  );
+
+  // -------------------------------------------------------------------------
   // File-based configuration — YAML
   // -------------------------------------------------------------------------
 

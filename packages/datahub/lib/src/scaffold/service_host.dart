@@ -274,11 +274,23 @@ abstract class ServiceHost implements ServiceRegistry {
         :final path,
         :final T defaultValue?,
         :final List<T> values?,
-      ) =>
+      )
+          when values.isNotEmpty =>
         configuration.readEnum<T?>(scopePath.join(ConfigPath(path)), values) ??
             defaultValue,
-      PathConfig<Enum?>(:final path, :final List<T> values?) =>
+      PathConfig<Enum?>(:final path, :final List<T> values?)
+          when values.isNotEmpty =>
         configuration.readEnum<T>(scopePath.join(ConfigPath(path)), values),
+      // Enum typed configs cannot be decoded without knowing the possible
+      // values. Falling through to the generic cases below would surface this
+      // as a confusing type error - or not at all, for as long as the value
+      // stays unset and a defaultValue covers it up.
+      PathConfig<Enum?>(:final path) => throw ConfigDeclarationException(
+        scopePath.join(ConfigPath(path)).toString(),
+        'Config<$T> at "$path" requires a non-empty "values" parameter. '
+        'Enum typed configuration cannot be decoded without the list of '
+        'possible values, e.g. Config<MyEnum>(..., values: MyEnum.values).',
+      ),
       PathConfig<T>(:final path, :final defaultValue?) =>
         configuration.read<T?>(scopePath.join(ConfigPath(path))) ??
             defaultValue,
