@@ -16,7 +16,11 @@ class TestHost extends ServiceHost {
   final List<Component> components;
   final FutureOr<void> Function() testBody;
 
-  TestHost({required this.components, required this.testBody});
+  TestHost({
+    required this.components,
+    required this.testBody,
+    super.environmentVariables,
+  });
 
   @override
   Component buildRoot() {
@@ -59,6 +63,7 @@ void declareTest(
   Map<String, dynamic> config = const {},
   List<File> configFiles = const [],
   ComposeEnvironment? environment,
+  Map<String, String>? environmentVariables,
 }) {
   final traceFrame = Trace.current(1).frames.first;
   final testLocation = dart_test.TestLocation(
@@ -86,7 +91,11 @@ void declareTest(
     }
 
     dart_test.setUp(() async {
-      final testHost = TestHost(components: components, testBody: body);
+      final testHost = TestHost(
+        components: components,
+        testBody: body,
+        environmentVariables: environmentVariables,
+      );
       if (environmentConfig case final config?) {
         testHost.configuration.addConfigMap(config);
       }

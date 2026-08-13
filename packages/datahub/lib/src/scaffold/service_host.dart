@@ -18,7 +18,10 @@ enum ServiceHostState { uninitialized, initializing, initialized, shutdown }
 
 abstract class ServiceHost implements ServiceRegistry {
   final _postInitializationCallbacks = <(FutureOr<void> Function(), Context)>[];
-  final configuration = Configuration();
+  final Configuration configuration;
+
+  ServiceHost({Map<String, String>? environmentVariables})
+    : configuration = Configuration(environmentVariables: environmentVariables);
 
   TreeNode? _root;
 

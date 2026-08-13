@@ -7,13 +7,28 @@ import 'package:yaml/yaml.dart';
 class Configuration {
   static const _codec = JsonDataCodec();
 
+  /// The reserved first segment of a reference that reads the process
+  /// environment instead of the configuration, as in `$env.DB_PASSWORD`.
+  static const environmentPrefix = 'env';
+
   final _configMap = <String, dynamic>{};
 
   /// Paths that were already checked for a possible misspelling, so that a
   /// config value read on every request is only reported once.
   final _diagnosedPaths = <String>{};
 
+  /// The environment variables that `$env.NAME` references resolve against.
+  final Map<String, String> _environmentVariables;
+
   Environment? _environment;
+
+  /// Creates an empty configuration.
+  ///
+  /// [environmentVariables] is what `$env.NAME` references read from and
+  /// defaults to the process environment. Pass a map to make configuration
+  /// that depends on the environment testable.
+  Configuration({Map<String, String>? environmentVariables})
+    : _environmentVariables = environmentVariables ?? Platform.environment;
 
   /// The environment this application runs in.
   ///
@@ -28,18 +43,16 @@ class Configuration {
     if (raw == null) {
       if (null is T) {
         if (_diagnosedPaths.add(path.toString())) {
-          if (_findSimilarPath(path) case final suggestion?) {
-            log.warn(
-              'Configuration does not provide a value for "$path", '
-              'but does provide "$suggestion". Possible typo?',
-            );
+          final target = _diagnosisTarget(path);
+          if (_findSimilarPath(target) case final suggestion?) {
+            _warnAboutTypo(path, target, suggestion);
           }
         }
         return null as T;
       } else {
         throw ConfigPathException(
           path.toString(),
-          suggestion: _findSimilarPath(path),
+          suggestion: _findSimilarPath(_diagnosisTarget(path)),
         );
       }
     }
@@ -79,6 +92,62 @@ class Configuration {
     }
   }
 
+  void _warnAboutTypo(ConfigPath path, ConfigPath target, String suggestion) {
+    if (target == path) {
+      log.warn(
+        'Configuration does not provide a value for "$path", '
+        'but does provide "$suggestion". Possible typo?',
+      );
+    } else {
+      log.warn(
+        'Configuration does not provide a value for "$path": '
+        'the reference "$target" holds no value, but "$suggestion" does. '
+        'Possible typo?',
+      );
+    }
+  }
+
+  /// The environment variable [reference] points at, or null when it does not
+  /// address the environment.
+  static String? _environmentVariableName(ConfigPath reference) {
+    if (reference.parts.length > 1 &&
+        reference.parts.first == environmentPrefix) {
+      // Joined back together so that an environment variable whose name
+      // contains a dot stays addressable.
+      return reference.parts.skip(1).join('.');
+    }
+
+    return null;
+  }
+
+  /// The path a missing value is best diagnosed against.
+  ///
+  /// When the value at [path] is a reference, [path] itself is present and the
+  /// reference target is the interesting one, so the chain is followed to the
+  /// first path that holds no value.
+  ConfigPath _diagnosisTarget(ConfigPath path) {
+    var target = path;
+    final seen = <String>{path.toString()};
+
+    while (true) {
+      final stored = target.getFrom(_configMap);
+      if (stored is! String ||
+          stored.startsWith(r'\$') ||
+          !stored.startsWith(r'$')) {
+        return target;
+      }
+
+      // Every reference in the chain already parsed during _resolve, so this
+      // cannot throw here.
+      final next = ConfigPath(stored.substring(1));
+      if (!seen.add(next.toString())) {
+        // A cycle is reported by _resolve, not here.
+        return target;
+      }
+      target = next;
+    }
+  }
+
   /// Searches the configuration for a path that closely resembles [path].
   ///
   /// Walks [path] as far as the configuration actually goes and compares the
@@ -86,6 +155,16 @@ class Configuration {
   /// Returns the full path of the best candidate, or null when nothing
   /// resembles the missing segment closely enough.
   String? _findSimilarPath(ConfigPath path) {
+    // A reference into the environment is compared against the variables that
+    // are actually set, not against the config map.
+    if (_environmentVariableName(path) case final name?) {
+      if (_closestKey(name, _environmentVariables.keys) case final candidate?) {
+        return '$environmentPrefix.$candidate';
+      }
+
+      return null;
+    }
+
     final prefix = <String>[];
     dynamic current = _configMap;
 
@@ -250,6 +329,14 @@ class Configuration {
     merge(_configMap, map);
     _environment = null;
     _diagnosedPaths.clear();
+
+    if (map.containsKey(environmentPrefix)) {
+      log.warn(
+        'Configuration defines the reserved root key "$environmentPrefix". '
+        'References of the form "\$$environmentPrefix.NAME" read the process '
+        'environment, so this section cannot be reached through them.',
+      );
+    }
   }
 
   /// Merges values from [configuration] into this configuration.
@@ -302,6 +389,20 @@ class Configuration {
 
   /// Resolves configuration references ($-syntax) inside [value].
   ///
+  /// `$path.to.value` reads another config value, while `$env.NAME` reads the
+  /// environment variable `NAME`:
+  ///
+  /// ```yaml
+  /// db:
+  ///   host: $env.DATABASE_HOST
+  ///   password: $env.DB_PASSWORD
+  /// ```
+  ///
+  /// An environment variable that is not set resolves to null, so the
+  /// [Config] default applies just as it would for any other absent value.
+  /// Environment variables are strings and are decoded like any other config
+  /// value, which covers the scalar types but not lists.
+  ///
   /// Maps and lists are resolved element-wise and are always rebuilt, so that
   /// readers never receive a reference to the internal config map.
   ///
@@ -323,6 +424,14 @@ class Configuration {
 
       case final String str when str.startsWith(r'$'):
         final reference = ConfigPath(str.substring(1));
+
+        if (_environmentVariableName(reference) case final name?) {
+          // Returned verbatim and never resolved again: a value coming from
+          // the environment is external input, so a "$" inside it is literal
+          // and must not be able to pull an unrelated config value.
+          return _environmentVariables[name];
+        }
+
         final referencePath = reference.toString();
 
         if (visited.contains(referencePath)) {

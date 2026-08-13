@@ -21,6 +21,7 @@ class ApplicationHost extends ServiceHost {
     required this.components,
     required this.arguments,
     required this.initialConfig,
+    super.environmentVariables,
   });
 
   Future<void> run() async {
