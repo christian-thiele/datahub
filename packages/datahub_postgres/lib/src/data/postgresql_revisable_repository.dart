@@ -400,6 +400,34 @@ mixin PostgresqlRevisableRepository<
   }
 
   @override
+  Future<TData?> first({
+    Filter filter = Filter.empty,
+    Sort sort = Sort.empty,
+    int offset = 0,
+  }) async {
+    final results = await readAll(
+      filter: filter,
+      sort: sort,
+      offset: offset,
+      limit: 1,
+    );
+    return results.firstOrNull;
+  }
+
+  @override
+  Future<bool> any({Filter filter = Filter.empty}) async {
+    return await find(postgresql).runTransaction((context) async {
+      final result = await dataView.select(
+        context,
+        [ValueExpression(1)],
+        filter: filter,
+        limit: 1,
+      );
+      return result.isNotEmpty;
+    });
+  }
+
+  @override
   Future<List<RevisionData<TData>>> readRevisionsById(
     id, {
     int? offset,

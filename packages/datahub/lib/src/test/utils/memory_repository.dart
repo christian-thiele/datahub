@@ -158,4 +158,23 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
       return id.toString();
     }
   }
+
+  @override
+  Future<bool> any({Filter filter = Filter.empty}) async {
+    return (await count(filter: filter)) > 0;
+  }
+
+  @override
+  Future<T?> first({
+    Filter filter = Filter.empty,
+    Sort sort = Sort.empty,
+    int offset = 0,
+  }) async {
+    return (await readAll(
+      filter: filter,
+      offset: offset,
+      sort: sort,
+      limit: 1,
+    )).firstOrNull;
+  }
 }

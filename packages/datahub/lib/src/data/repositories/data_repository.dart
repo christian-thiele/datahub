@@ -66,21 +66,14 @@ abstract class DataRepository<T extends DataObject> {
   /// Runs all calls to this repository from inside [delegate] inside an
   /// atomic transaction.
   Future<R> atomic<R>(Future<R> Function() delegate);
-}
 
-extension DataRepositoryExtension<T extends DataObject> on DataRepository<T> {
+  /// Returns the first element that matches the [filter].
   Future<T?> first({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
-  }) async {
-    final results = await readAll(
-      filter: filter,
-      sort: sort,
-      offset: offset,
-      limit: 1,
-    );
+  });
 
-    return results.firstOrNull;
-  }
+  /// Returns true if any element matches the [filter].
+  Future<bool> any({Filter filter = Filter.empty});
 }

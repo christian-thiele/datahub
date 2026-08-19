@@ -55,6 +55,55 @@ void main() {
             countWithFilter,
             equals(data.where((d) => d.isSpecial).length),
           );
+
+          expect(await repo.any(), isTrue);
+          expect(
+            await repo.any(filter: $Person.$isSpecial.equals(true)),
+            isFalse,
+          );
+          expect(
+            await repo.any(filter: $Person.$firstName.equals('Something')),
+            isTrue,
+          );
+
+          expect(
+            await repo.first(),
+            isA<Person>().having((e) => e.firstName, 'firstName', 'Something'),
+          );
+          expect(
+            await repo.first(filter: $Person.$isSpecial.equals(true)),
+            isNull,
+          );
+
+          await repo.create(
+            Person(
+              firstName: 'Another',
+              lastName: 'Person',
+              birthday: null,
+              isSpecial: true,
+            ),
+          );
+
+          expect(
+            await repo.any(filter: $Person.$isSpecial.equals(true)),
+            isTrue,
+          );
+          expect(
+            await repo.first(filter: $Person.$isSpecial.equals(true)),
+            isA<Person>().having((e) => e.firstName, 'firstName', 'Another'),
+          );
+          expect(
+            await repo.first(sort: $Person.$firstName.asc()),
+            isA<Person>().having((e) => e.firstName, 'firstName', 'Another'),
+          );
+          expect(
+            await repo.first(sort: $Person.$firstName.desc()),
+            isA<Person>().having((e) => e.firstName, 'firstName', 'Something'),
+          );
+          expect(
+            await repo.first(sort: $Person.$firstName.asc(), offset: 1),
+            isA<Person>().having((e) => e.firstName, 'firstName', 'Something'),
+          );
         });
       });
     },

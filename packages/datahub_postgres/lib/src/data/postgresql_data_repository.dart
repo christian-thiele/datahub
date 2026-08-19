@@ -116,18 +116,33 @@ mixin PostgresqlDataRepository<
     });
   }
 
+  @override
+  Future<bool> any({Filter filter = Filter.empty}) async {
+    return await find(postgresql).runTransaction((context) async {
+      // TODO aggregates should be abstract
+      final result = await dataRelation.select(
+        context,
+        [ValueExpression(1)],
+        filter: filter,
+        limit: 1,
+      );
+      return result.isNotEmpty;
+    });
+  }
+
+  @override
   Future<TData?> first({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
   }) async {
-    final result = await readAll(
+    final results = await readAll(
       filter: filter,
       sort: sort,
       offset: offset,
       limit: 1,
     );
-    return result.firstOrNull;
+    return results.firstOrNull;
   }
 
   @override

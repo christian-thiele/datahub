@@ -66,6 +66,20 @@ void main() {
               .having((e) => e.id, 'id', created.id),
         );
 
+        expect(await dataRepo.any(), isTrue);
+        expect(
+          await dataRepo.any(filter: $Person.$firstName.equals('Peter')),
+          isTrue,
+        );
+        expect(
+          await dataRepo.any(filter: $Person.$firstName.equals('Nobody')),
+          isFalse,
+        );
+        expect(
+          await dataRepo.first(filter: $Person.$firstName.equals('Nobody')),
+          isNull,
+        );
+
         expect(
           await revisableRepo.revisableReadById(created.id),
           isA<RevisionData<Person>>()
@@ -118,9 +132,33 @@ void main() {
               ),
         );
 
+        final second = await dataRepo.create(
+          Person(
+            firstName: 'Anna',
+            lastName: 'Lustig',
+            birthday: DateTime.utc(1940, 1, 1),
+          ),
+        );
+
+        expect(
+          await dataRepo.first(sort: $Person.$firstName.asc()),
+          isA<Person>().having((e) => e.id, 'id', second.id),
+        );
+        expect(
+          await dataRepo.first(sort: $Person.$firstName.desc()),
+          isA<Person>().having((e) => e.id, 'id', created.id),
+        );
+        expect(
+          await dataRepo.first(sort: $Person.$firstName.asc(), offset: 1),
+          isA<Person>().having((e) => e.id, 'id', created.id),
+        );
+
+        await dataRepo.deleteById(second.id);
+
         await dataRepo.deleteById(created.id);
         expect(await revisableRepo.readRevisionsById(created.id), hasLength(3));
         expect(await dataRepo.count(), equals(0));
+        expect(await dataRepo.any(), isFalse);
       });
     },
   );
