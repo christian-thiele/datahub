@@ -1,3 +1,8 @@
+## 2.0.1
+
+ - **FIX**(boost): fixed semaphore ensuring FIFO order.
+ - **FIX**: fixed repository / website in pubpsec files for all packages.
+
 ## 2.0.0
 
 ### Features added:

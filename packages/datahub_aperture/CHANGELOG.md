@@ -1,3 +1,7 @@
+## 0.1.0-dev.17
+
+ - **FEAT**(datahub_aperture_frontend): reworked GeoEditor to support all Geometry types.
+
 ## 0.1.0-dev.16
 
  - **FEAT**(aperture): add metadata annotations and fix revisable check.

@@ -6,7 +6,7 @@ resolution: workspace
 
 publish_to: 'none'
 
-version: 0.1.0-dev.13
+version: 0.1.0-dev.14
 
 environment:
   sdk: ^3.9.0
@@ -38,14 +38,14 @@ dependencies:
   bloc: ^9.2.0
   flutter_svg: ^2.2.4
   shared_preferences: ^2.5.3
-  boost: ^2.0.0
+  boost: ^2.0.1
   intl: ^0.20.0
   file_picker: ^11.0.2
   flutter_map: ^8.3.0
   latlong2: ^0.9.1
 
-  datahub: ^0.18.0-dev.24
-  datahub_aperture: ^0.1.0-dev.16
+  datahub: ^0.18.0-dev.25
+  datahub_aperture: ^0.1.0-dev.17
   url_launcher: ^6.3.2
   pointycastle: ^4.0.0
   web: ^1.1.1

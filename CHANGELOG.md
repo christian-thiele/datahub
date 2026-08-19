@@ -3,6 +3,80 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-08-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`boost` - `v2.0.1`](#boost---v201)
+ - [`datahub` - `v0.18.0-dev.25`](#datahub---v0180-dev25)
+ - [`datahub_aperture` - `v0.1.0-dev.17`](#datahub_aperture---v010-dev17)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.14`](#datahub_aperture_frontend---v010-dev14)
+ - [`datahub_codegen` - `v0.18.0-dev.15`](#datahub_codegen---v0180-dev15)
+ - [`datahub_postgres` - `v0.18.0-dev.22`](#datahub_postgres---v0180-dev22)
+
+---
+
+#### `boost` - `v2.0.1`
+
+ - **FIX**(boost): fixed semaphore ensuring FIFO order.
+ - **FIX**: fixed repository / website in pubpsec files for all packages.
+
+#### `datahub` - `v0.18.0-dev.25`
+
+ - **PERF**(api): optimized route pattern matching using regex cache.
+ - **FIX**(datahub): fixed early logging errors.
+ - **FIX**(config): minor fixes and improvements.
+ - **FIX**(config): fixed config directive ordering.
+ - **FIX**(config): fixed List<String> configuration values with default values.
+ - **FIX**(datahub): fixed GeometryCollection parsing and writing.
+ - **FIX**(datahub): fixed minor websocket bugs.
+ - **FIX**(datahub): fixed signal shutdown.
+ - **FIX**(test): improved docker environment management.
+ - **FIX**(datahub): improved logging for pool.
+ - **FIX**(datahub): added missing dispose for pool.
+ - **FIX**(datahub): fixed pool queueing behavior.
+ - **FIX**(datahub): fixed potential pool leak.
+ - **FIX**: fixed repository / website in pubpsec files for all packages.
+ - **FEAT**(datahub): added first and any methods to DataRepository.
+ - **FEAT**(config): added environment variable references.
+ - **FEAT**(config): added near-miss config warnings.
+ - **FEAT**(config): improved error handling for config files.
+ - **FEAT**(config): added enum config validation and improved error handling.
+ - **FEAT**(config): added lazy config reference resolution and improved error handling.
+ - **FEAT**(config): improved config performance and error handling.
+ - **FEAT**(api): graceful shutdown with timeout on ApiService.
+ - **FEAT**(datahub): added pool maintenance timer instead of passive eviction.
+ - **FEAT**(datahub): added pool queue limit.
+ - **FEAT**(datahub): tightened pool give and added adopt method to avoid silent corruption.
+
+#### `datahub_aperture` - `v0.1.0-dev.17`
+
+ - **FEAT**(datahub_aperture_frontend): reworked GeoEditor to support all Geometry types.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.14`
+
+ - **FIX**: fixed repository / website in pubpsec files for all packages.
+ - **FEAT**(datahub_aperture_frontend): reworked GeoEditor to support all Geometry types.
+
+#### `datahub_codegen` - `v0.18.0-dev.15`
+
+ - **FIX**: fixed repository / website in pubpsec files for all packages.
+
+#### `datahub_postgres` - `v0.18.0-dev.22`
+
+ - **FEAT**(datahub): added first and any methods to DataRepository.
+ - **FEAT**(datahub): added pool maintenance timer instead of passive eviction.
+ - **FEAT**(datahub_postgres): added connection pool queue limit.
+
+
 ## 2026-07-21
 
 ### Changes

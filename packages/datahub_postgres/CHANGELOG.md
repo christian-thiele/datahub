@@ -1,3 +1,9 @@
+## 0.18.0-dev.22
+
+ - **FEAT**(datahub): added first and any methods to DataRepository.
+ - **FEAT**(datahub): added pool maintenance timer instead of passive eviction.
+ - **FEAT**(datahub_postgres): added connection pool queue limit.
+
 ## 0.18.0-dev.21
 
  - **FIX**(datahub_postgres): fixed json type handling.

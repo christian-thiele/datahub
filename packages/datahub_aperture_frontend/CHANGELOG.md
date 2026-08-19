@@ -1,3 +1,8 @@
+## 0.1.0-dev.14
+
+ - **FIX**: fixed repository / website in pubpsec files for all packages.
+ - **FEAT**(datahub_aperture_frontend): reworked GeoEditor to support all Geometry types.
+
 ## 0.1.0-dev.13
 
  - **FEAT**(aperture): add confirmation dialog for resource deletion.
