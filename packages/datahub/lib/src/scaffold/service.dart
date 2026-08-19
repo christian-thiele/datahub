@@ -16,6 +16,9 @@ abstract class ServiceInstance<TService extends Service> {
   @mustCallSuper
   FutureOr<void> dispose() async {}
 
+  /// Why the host running this service was started.
+  HostPurpose get purpose => registry.purpose;
+
   T find<T>(Find<T> finder) => context.find<T>(finder);
 
   T read<T>(Config<T> config) => context.read<T>(config);

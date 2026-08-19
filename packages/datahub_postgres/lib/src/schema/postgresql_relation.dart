@@ -17,6 +17,9 @@ sealed class PostgresqlRelation {
     required this.attributes,
   });
 
+  /// The name of this relation, qualified by its schema.
+  String get qualifiedName => '$schemaName.$name';
+
   Future<void> ensureRelation(PostgresqlContext context);
 }
 
@@ -49,7 +52,7 @@ class PostgresqlTable extends PostgresqlRelation {
       log.warn(
         'Table "$schemaName"."$name" does not exist. Creating relation.',
       );
-      await context.executeLiteral(SqlCreateRelation(schemaName, this));
+      await context.executeLiteral(SqlCreateRelation.of(this));
     }
   }
 }
@@ -81,7 +84,7 @@ class PostgresqlView extends PostgresqlRelation {
 
     if (!viewResults.map((e) => e.first.toString()).contains(name)) {
       log.warn('View "$schemaName"."$name" does not exist. Creating relation.');
-      await context.executeLiteral(SqlCreateRelation(schemaName, this));
+      await context.executeLiteral(SqlCreateRelation.of(this));
     }
   }
 }
@@ -109,7 +112,7 @@ class PostgresqlSequence extends PostgresqlRelation {
       log.warn(
         'Sequence "$schemaName"."$name" does not exist. Creating relation.',
       );
-      await context.executeLiteral(SqlCreateRelation(schemaName, this));
+      await context.executeLiteral(SqlCreateRelation.of(this));
     }
   }
 }

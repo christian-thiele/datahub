@@ -1,6 +1,5 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/data.dart';
-import 'package:datahub/utils.dart';
 import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/services.dart';
 import 'package:datahub_postgres/sql.dart';
@@ -230,15 +229,10 @@ class PostgresqlDataTable<DataType extends DataObject>
     required String schemaName,
     required this.bean,
   }) {
-    relation = PostgresqlTable(
+    relation = DataSchemaBuilder.buildDataTable(
+      bean,
       schemaName: schemaName,
-      name:
-          name ??
-          toNamingConvention(bean.name, NamingConvention.lowerSnakeCase),
-      attributes: [
-        for (final field in bean.fields)
-          PostgresqlDataAttribute.fromField(field),
-      ],
+      name: name,
     );
   }
 }
@@ -259,9 +253,7 @@ class PostgresqlDataView<DataType extends DataObject<DataType>>
   }) {
     relation = PostgresqlView(
       schemaName: schemaName,
-      name:
-          name ??
-          toNamingConvention(bean.name, NamingConvention.lowerSnakeCase),
+      name: name ?? DataSchemaBuilder.relationNameOf(bean),
       select: select,
       attributes: [
         for (final field in bean.fields)

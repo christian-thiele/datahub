@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:args/args.dart';
+import 'package:datahub/src/config/config_arguments.dart';
 import 'package:datahub/src/services/key_service/key_service.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
@@ -54,7 +54,7 @@ class ApplicationHost extends ServiceHost {
   Future<void> initialize() async {
     if (state == ServiceHostState.uninitialized) {
       configuration.addConfigMap(initialConfig);
-      _parseArguments();
+      configuration.applyArguments(arguments);
       await super.initialize();
     } else {
       throw ApiException('ServiceHost already initialized.');
@@ -77,77 +77,6 @@ class ApplicationHost extends ServiceHost {
         Scope(name: 'application', components: components),
       ],
     );
-  }
-
-  void _parseArguments() {
-    final parser = ArgParser();
-    parser.addMultiOption('config', abbr: 'c');
-    parser.addMultiOption('file', abbr: 'f');
-
-    final result = parser.parse(arguments);
-    if (result.rest.isNotEmpty) {
-      log.warn('Unrecognized command line arguments: ${result.rest.join(' ')}');
-    }
-
-    // ArgParser invokes option callbacks grouped by option, not in the order
-    // the arguments were given, so the raw argument list is scanned instead to
-    // preserve the documented left-to-right override semantics of -c and -f.
-    for (final (option, value) in _optionsInOrder(parser)) {
-      switch (option) {
-        case 'config':
-          configuration.addConfigDirective(value);
-        case 'file':
-          configuration.addConfigFile(File(value));
-      }
-    }
-  }
-
-  /// Yields the options of [parser] in the order they appear in [arguments],
-  /// paired with their value.
-  ///
-  /// [arguments] is expected to have been parsed by [parser] beforehand, so
-  /// unknown options have already been rejected.
-  Iterable<(String, String)> _optionsInOrder(ArgParser parser) sync* {
-    for (var i = 0; i < arguments.length; i++) {
-      final argument = arguments[i];
-      if (argument == '--') {
-        return;
-      }
-
-      String? option;
-      String? value;
-
-      if (argument.startsWith('--')) {
-        final name = argument.substring(2);
-        final splitPoint = name.indexOf('=');
-        if (splitPoint >= 0) {
-          // --option=value
-          option = parser
-              .findByNameOrAlias(name.substring(0, splitPoint))
-              ?.name;
-          value = name.substring(splitPoint + 1);
-        } else {
-          // --option value
-          option = parser.findByNameOrAlias(name)?.name;
-        }
-      } else if (argument.length > 1 && argument.startsWith('-')) {
-        option = parser.findByAbbreviation(argument[1])?.name;
-        if (option != null && argument.length > 2) {
-          // -ovalue (ArgParser does not strip a leading '=' here)
-          value = argument.substring(2);
-        }
-      }
-
-      if (option == null) {
-        continue;
-      }
-
-      // Options without an attached value consume the following argument.
-      value ??= i + 1 < arguments.length ? arguments[++i] : null;
-      if (value != null) {
-        yield (option, value);
-      }
-    }
   }
 
   void _onSignal(ProcessSignal signal) {

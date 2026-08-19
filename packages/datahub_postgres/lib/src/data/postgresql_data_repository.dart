@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/data.dart';
+import 'package:datahub_postgres/migration.dart';
+import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/services.dart';
 import 'package:datahub_postgres/sql.dart';
 import 'package:meta/meta.dart';
@@ -25,7 +27,7 @@ mixin PostgresqlDataRepository<
   @override
   @mustCallSuper
   FutureOr<void> initialize() async {
-    super.initialize();
+    await super.initialize();
 
     dataRelation = PostgresqlDataTable(
       bean: bean,
@@ -35,8 +37,30 @@ mixin PostgresqlDataRepository<
           toNamingConvention(bean.name, NamingConvention.lowerSnakeCase),
     );
 
+    await ensureRelations([dataRelation.relation]);
+  }
+
+  /// Creates [relations] unless a [PostgresqlMigrations] service manages them.
+  ///
+  /// Creating a relation that migrations are responsible for would produce a
+  /// table no migration describes, which the next `migrate` run would then
+  /// try to create again.
+  @protected
+  Future<void> ensureRelations(List<PostgresqlRelation> relations) async {
+    final migrations = find(const Find<PostgresqlMigrations?>());
+    final unmanaged = [
+      for (final relation in relations)
+        if (!(migrations?.manages(relation.qualifiedName) ?? false)) relation,
+    ];
+
+    if (unmanaged.isEmpty) {
+      return;
+    }
+
     await find(postgresql).runTransaction((context) async {
-      await dataRelation.relation.ensureRelation(context);
+      for (final relation in unmanaged) {
+        await relation.ensureRelation(context);
+      }
     });
   }
 

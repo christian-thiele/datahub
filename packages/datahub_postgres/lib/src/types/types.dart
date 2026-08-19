@@ -109,7 +109,7 @@ class PostgresqlStringArray extends PostgresqlDataType<List<String>>
 
 class PostgresqlIntArray extends PostgresqlDataType<List<int>>
     implements PostgresqlArray<int> {
-  const PostgresqlIntArray() : super('_int8', pg.Type.integerArray);
+  const PostgresqlIntArray() : super('_int8', pg.Type.bigIntegerArray);
 
   @override
   List<int>? decode(value) {
@@ -142,7 +142,7 @@ class PostgresqlDoubleArray extends PostgresqlDataType<List<double>>
 
 class PostgresqlBoolArray extends PostgresqlDataType<List<bool>>
     implements PostgresqlArray<bool> {
-  const PostgresqlBoolArray() : super('_boolean', pg.Type.booleanArray);
+  const PostgresqlBoolArray() : super('_bool', pg.Type.booleanArray);
 
   @override
   List<bool>? decode(value) {

@@ -76,11 +76,18 @@ sealed class Sql {
     return '"${text.replaceAll(r'\', r'\\').replaceAll('"', r'\"')}"';
   }
 
+  /// The longest identifier postgres keeps intact.
+  ///
+  /// Anything longer is silently truncated, which would leave a schema that
+  /// can never match the one it was generated from - the migration describing
+  /// it would be regenerated forever.
+  static const maxNameLength = 63;
+
   static String escapeName(String name) {
-    if (name.isEmpty || name.length > 128) {
+    if (name.isEmpty || name.length > maxNameLength) {
       throw SqlException(
         'Name "$name" has invalid length. '
-        '(Must be in range 1 - 128)',
+        '(Must be in range 1 - $maxNameLength)',
       );
     }
 

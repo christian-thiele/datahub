@@ -1,4 +1,6 @@
 import 'package:datahub/datahub.dart';
+import 'package:datahub_postgres/migration.dart';
+import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/services.dart';
 
 import 'postgresql_revisable_repository.dart';
@@ -8,9 +10,13 @@ import 'postgresql_revisable_repository.dart';
 /// When access control or different behavior is required, use [PostgresqlRevisableRepository]
 /// as mixin for a [ServiceInstance] to override methods.
 class PostgresqlRevisableRepositoryService<TData extends DataObject<TData>>
-    implements Service {
+    implements PostgresqlSchemaOwner {
   final Find<Postgresql> postgresql;
+
+  @override
   final Config<String> schemaName;
+
+  @override
   final Config<String?> relationName;
   final DataBean<TData> bean;
 
@@ -20,6 +26,16 @@ class PostgresqlRevisableRepositoryService<TData extends DataObject<TData>>
     this.schemaName = const Config('schemaName', defaultValue: 'public'),
     this.relationName = const Config('relationName'),
   });
+
+  @override
+  List<PostgresqlRelation> buildRelations(
+    String schemaName,
+    String? relationName,
+  ) => DataSchemaBuilder.buildRevisableRelations(
+    bean,
+    schemaName: schemaName,
+    name: relationName,
+  ).all;
 
   @override
   ServiceInstance<PostgresqlRevisableRepositoryService> createInstance() =>
@@ -41,6 +57,9 @@ class _PostgresqlRevisableRepositoryServiceInstance<
 
   @override
   Config<String> get schemaName => service.schemaName;
+
+  @override
+  Config<String?> get relationName => service.relationName;
 
   @override
   DataBean<TData> get bean => service.bean;

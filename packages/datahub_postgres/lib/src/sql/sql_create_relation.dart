@@ -2,45 +2,62 @@ import 'package:boost/boost.dart';
 import 'package:datahub_postgres/schema.dart';
 
 import 'sql.dart';
-import 'sql_attribute_declaration.dart';
 import 'sql_qualified_relation.dart';
-import 'sql_table_constraint.dart';
 
+/// `CREATE TABLE` / `CREATE VIEW` / `CREATE SEQUENCE` for a [RelationSnapshot].
+///
+/// Relations are rendered from their snapshot rather than from the live schema
+/// model, so that a relation created at startup and the same relation created
+/// by a migration are guaranteed to produce identical DDL.
 class SqlCreateRelation with SqlBuilder {
-  final String schemaName;
-  final PostgresqlRelation relation;
+  final RelationSnapshot relation;
 
-  SqlCreateRelation(this.schemaName, this.relation);
+  /// Whether `IF NOT EXISTS` is added.
+  ///
+  /// Used where two processes can legitimately race to create the same
+  /// relation - the migration tracking table is created by whichever instance
+  /// gets there first. Views do not support it and ignore the flag.
+  final bool ifNotExists;
+
+  const SqlCreateRelation(this.relation, {this.ifNotExists = false});
+
+  SqlCreateRelation.of(PostgresqlRelation relation, {bool ifNotExists = false})
+    : this(RelationSnapshot.of(relation), ifNotExists: ifNotExists);
 
   @override
   Sql toSql() {
+    final name = SqlQualifiedRelation(
+      relation.schemaName,
+      relation.name,
+    ).toSql();
+
     switch (relation) {
-      case final PostgresqlTable relation:
+      case final TableSnapshot relation:
         return Sql.join([
           RawSql('CREATE TABLE '),
-          SqlQualifiedRelation(schemaName, relation.name).toSql(),
+          if (ifNotExists) RawSql('IF NOT EXISTS '),
+          name,
           RawSql(' ('),
           ...[
-            ...relation.attributes.map(
-              (e) => SqlAttributeDeclaration(e).toSql(),
-            ),
-            ...relation.constraints.map((e) => SqlTableConstraint(e).toSql()),
+            ...relation.attributes.map((e) => e.toDeclarationSql()),
+            ...relation.constraints.map((e) => e.toDeclarationSql()),
           ].separatedBy(RawSql(', ')),
           RawSql(')'),
         ]);
 
-      case final PostgresqlView relation:
+      case final ViewSnapshot relation:
         return Sql.join([
           RawSql('CREATE VIEW '),
-          SqlQualifiedRelation(schemaName, relation.name).toSql(),
+          name,
           RawSql(' AS '),
-          relation.select.toSql(),
+          RawSql(relation.select),
         ]);
 
-      case final PostgresqlSequence relation:
+      case SequenceSnapshot():
         return Sql.join([
           RawSql('CREATE SEQUENCE '),
-          SqlQualifiedRelation(schemaName, relation.name).toSql(),
+          if (ifNotExists) RawSql('IF NOT EXISTS '),
+          name,
         ]);
     }
   }

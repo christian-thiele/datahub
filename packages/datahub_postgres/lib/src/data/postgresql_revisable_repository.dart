@@ -1,6 +1,7 @@
 import 'package:datahub/datahub.dart';
 
 import 'dart:async';
+import 'package:datahub_postgres/migration.dart';
 import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/services.dart';
@@ -23,6 +24,8 @@ mixin PostgresqlRevisableRepository<
   Config<String> get schemaName =>
       const Config<String>('schemaName', defaultValue: 'public');
 
+  Config<String?> get relationName => const Config<String?>('relationName');
+
   Find<Postgresql> get postgresql => const Find<Postgresql>();
 
   @override
@@ -33,224 +36,41 @@ mixin PostgresqlRevisableRepository<
   late final PostgresqlView revisionView;
   late final PostgresqlDataView<TData> dataView;
 
-  static const _sysVersion = PostgresqlAttribute(
-    name: 'sys_version',
-    type: PostgresqlInt(),
-    constraints: [NotNullConstraint()],
-  );
-
-  static const _sysCreator = PostgresqlAttribute(
-    name: 'sys_creator',
-    type: PostgresqlString(),
-  );
-
-  static final _sysCreated = PostgresqlAttribute(
-    name: 'sys_created',
-    type: const PostgresqlDateTime(),
-    constraints: [
-      const NotNullConstraint(),
-      DefaultConstraint(RawSql('now()')),
-    ],
-  );
-
-  static final _sysFrom = PostgresqlAttribute(
-    name: 'sys_from',
-    type: const PostgresqlDateTime(),
-    constraints: [
-      const NotNullConstraint(),
-      DefaultConstraint(RawSql('now()')),
-    ],
-  );
-
-  static final _sysTo = PostgresqlAttribute(
-    name: 'sys_to',
-    type: const PostgresqlDateTime(),
-  );
-
-  static final _sysIsDeleted = PostgresqlAttribute(
-    name: 'sys_is_deleted',
-    type: const PostgresqlBool(),
-    constraints: [
-      const NotNullConstraint(),
-      DefaultConstraint(ParameterSql(false, const PostgresqlBool())),
-    ],
-  );
-
   @override
   FutureOr<void> initialize() async {
     await super.initialize();
     final effectiveSchemaName = read(schemaName);
 
-    await find(postgresql).runTransaction((context) async {
-      final relationName = toNamingConvention(
-        bean.name,
-        NamingConvention.lowerSnakeCase,
-      );
-      final sequenceFields = bean.fields.where(
-        (e) => e.type.isExact<int>() && e.hasMetaOfType<Id>((id) => id.auto),
-      );
-      final uuidFields = bean.fields.where(
-        (e) => e.type.isExact<String>() && e.hasMetaOfType<Id>((id) => id.auto),
-      );
+    final relations = DataSchemaBuilder.buildRevisableRelations(
+      bean,
+      schemaName: effectiveSchemaName,
+      name: read(relationName),
+    );
 
-      for (final sequence in sequenceFields) {
-        await PostgresqlSequence(
-          schemaName: effectiveSchemaName,
-          name: '${relationName}_${sequence.name}_seq',
-        ).ensureRelation(context);
-      }
+    _primaryAttribute = relations.primaryAttribute;
+    revisionTable = relations.table;
+    revisionView = relations.view;
 
-      final beanFieldAttributes = {
-        for (final field in bean.fields)
-          field: PostgresqlDataAttribute(
-            field: field,
-            name: toNamingConvention(
-              field.name,
-              NamingConvention.lowerSnakeCase,
-            ),
-            type: PostgresqlDataType.findForDataField(field),
-            constraints: [
-              if (sequenceFields.contains(field))
-                DefaultConstraint(
-                  Sql.function('nextval', [
-                    Sql.text(
-                      '$effectiveSchemaName.${relationName}_${field.name}_seq',
-                    ),
-                  ]),
-                ),
-              if (uuidFields.contains(field))
-                DefaultConstraint(RawSql('gen_random_uuid()')),
-              if (field is DataField<dynamic, Object>) NotNullConstraint(),
-            ],
-          ),
-      };
+    dataView = PostgresqlDataView(
+      bean: bean,
+      schemaName: revisionView.schemaName,
+      name: revisionView.name,
+      select: revisionView.select,
+    );
 
-      revisionTable = PostgresqlTable(
-        schemaName: effectiveSchemaName,
-        name: '${relationName}_revision',
-        attributes: [
-          _sysVersion,
-          _sysCreator,
-          _sysCreated,
-          _sysFrom,
-          _sysTo,
-          _sysIsDeleted,
+    final migrations = find(const Find<PostgresqlMigrations?>());
+    final unmanaged = [
+      for (final relation in relations.all)
+        if (!(migrations?.manages(relation.qualifiedName) ?? false)) relation,
+    ];
 
-          for (final field in bean.fields)
-            PostgresqlDataAttribute(
-              field: field,
-              name: toNamingConvention(
-                field.name,
-                NamingConvention.lowerSnakeCase,
-              ),
-              type: PostgresqlDataType.findForDataField(field),
-              constraints: [
-                if (sequenceFields.contains(field))
-                  DefaultConstraint(
-                    Sql.function('nextval', [
-                      Sql.text(
-                        '$effectiveSchemaName.${relationName}_${field.name}_seq',
-                      ),
-                    ]),
-                  ),
-                if (uuidFields.contains(field))
-                  DefaultConstraint(RawSql('gen_random_uuid()')),
-                if (field is DataField<dynamic, Object>) NotNullConstraint(),
-              ],
-            ),
-        ],
-        constraints: [
-          if (bean.idField case final idField?)
-            UniqueTableConstraint(
-              attributes: [beanFieldAttributes[idField]!, _sysVersion],
-            ),
-        ],
-      );
-
-      _primaryAttribute = revisionTable.attributes
-          .whereType<PostgresqlDataAttribute>()
-          .firstWhere((e) => e.field == bean.requireIdField);
-
-      revisionView = PostgresqlView(
-        schemaName: effectiveSchemaName,
-        name: relationName,
-        select: SqlSelect(
-          Sql.join([
-            SqlQualifiedRelation(effectiveSchemaName, revisionTable.name),
-            RawSql(' INNER JOIN ('),
-            SqlSelect(
-              SqlQualifiedRelation(effectiveSchemaName, revisionTable.name),
-              [
-                SqlTypedColumnAttribute.of(
-                  _primaryAttribute,
-                  relation: revisionTable.name,
-                ),
-                SqlAliasedAttribute(
-                  'sys_version_max',
-                  RawSqlAttribute(
-                    Sql.function('MAX', [
-                      SqlTypedColumnAttribute.of(
-                        _sysVersion,
-                        relation: revisionTable.name,
-                      ),
-                    ]),
-                  ),
-                ),
-              ],
-              where: Sql.join([
-                RawSql('now() >= '),
-                SqlTypedColumnAttribute.of(
-                  _sysFrom,
-                  relation: revisionTable.name,
-                ),
-                RawSql(' AND '),
-                Sql.joinWrap([
-                  SqlTypedColumnAttribute.of(
-                    _sysTo,
-                    relation: revisionTable.name,
-                  ),
-                  RawSql(' IS NULL OR now() <= '),
-                  SqlTypedColumnAttribute.of(
-                    _sysTo,
-                    relation: revisionTable.name,
-                  ),
-                ]),
-              ]),
-              group: SqlTypedColumnAttribute.of(
-                _primaryAttribute,
-                relation: revisionTable.name,
-              ),
-            ),
-            RawSql(') "sys_latest" ON '),
-            SqlTypedColumnAttribute.of(
-              _primaryAttribute,
-              relation: revisionTable.name,
-            ),
-            RawSql('= '),
-            SqlTypedColumnAttribute.of(
-              _primaryAttribute,
-              relation: 'sys_latest',
-            ),
-            RawSql(' AND '),
-            SqlTypedColumnAttribute.of(_sysVersion),
-            RawSql('= "sys_latest"."sys_version_max"'),
-          ]),
-          [SqlWildcard(relation: revisionTable.name)],
-          where: RawSql('NOT ') + SqlTypedColumnAttribute.of(_sysIsDeleted),
-        ),
-        attributes: revisionTable.attributes,
-      );
-
-      await revisionTable.ensureRelation(context);
-      await revisionView.ensureRelation(context);
-
-      dataView = PostgresqlDataView(
-        bean: bean,
-        schemaName: revisionView.schemaName,
-        name: revisionView.name,
-        select: revisionView.select,
-      );
-    });
+    if (unmanaged.isNotEmpty) {
+      await find(postgresql).runTransaction((context) async {
+        for (final relation in unmanaged) {
+          await relation.ensureRelation(context);
+        }
+      });
+    }
   }
 
   @override
@@ -301,10 +121,12 @@ mixin PostgresqlRevisableRepository<
         SqlInsert(
           SqlQualifiedRelation(read(schemaName), revisionTable.name),
           {
-            SqlTypedAttribute.of(_sysVersion): currentVersion + 1,
-            SqlTypedAttribute.of(_sysCreator): sessionIdentity,
-            SqlTypedAttribute.of(_sysFrom): from ?? RawSql('now()'),
-            SqlTypedAttribute.of(_sysIsDeleted): type < 0,
+            SqlTypedAttribute.of(DataSchemaBuilder.sysVersion):
+                currentVersion + 1,
+            SqlTypedAttribute.of(DataSchemaBuilder.sysCreator): sessionIdentity,
+            SqlTypedAttribute.of(DataSchemaBuilder.sysFrom):
+                from ?? RawSql('now()'),
+            SqlTypedAttribute.of(DataSchemaBuilder.sysIsDeleted): type < 0,
 
             if (currentRevision case RevisionData(
               data: final currentData,
@@ -320,7 +142,10 @@ mixin PostgresqlRevisableRepository<
               _primaryAttribute,
               relation: revisionTable.name,
             ),
-            SqlTypedAttribute.of(_sysFrom, relation: revisionTable.name),
+            SqlTypedAttribute.of(
+              DataSchemaBuilder.sysFrom,
+              relation: revisionTable.name,
+            ),
           ],
         ),
       );
@@ -338,11 +163,11 @@ mixin PostgresqlRevisableRepository<
                 dataView.attributes.map((e) => (e, revisionTable)),
               ),
               RawSql(' AND '),
-              SqlTypedColumnAttribute.of(_sysVersion),
+              SqlTypedColumnAttribute.of(DataSchemaBuilder.sysVersion),
               RawSql(' = '),
               ParameterSql(currentVersion, const PostgresqlInt()),
             ]),
-            {SqlTypedAttribute.of(_sysTo): resultSysFrom},
+            {SqlTypedAttribute.of(DataSchemaBuilder.sysTo): resultSysFrom},
           ),
         );
       }
@@ -443,7 +268,7 @@ mixin PostgresqlRevisableRepository<
             dataView.attributes.map((e) => (e, revisionTable)),
           ),
           order: Sql.join([
-            SqlTypedColumnAttribute.of(_sysVersion),
+            SqlTypedColumnAttribute.of(DataSchemaBuilder.sysVersion),
             RawSql(' DESC'),
           ]),
           offset: offset ?? 0,
@@ -477,7 +302,7 @@ mixin PostgresqlRevisableRepository<
                 dataView.attributes.map((e) => (e, revisionTable)),
               )!..wrap(),
               RawSql(' AND '),
-              SqlTypedColumnAttribute.of(_sysVersion),
+              SqlTypedColumnAttribute.of(DataSchemaBuilder.sysVersion),
               RawSql(' = '),
               ParameterSql(version, const PostgresqlInt()),
             ]),
@@ -526,12 +351,12 @@ mixin PostgresqlRevisableRepository<
 
     return RevisionData(
       data: data,
-      version: getValue(_sysVersion),
-      created: getValue(_sysCreated),
-      creator: getValue(_sysCreator),
-      from: getValue(_sysFrom),
-      to: getValue(_sysTo),
-      isDeleted: getValue(_sysIsDeleted),
+      version: getValue(DataSchemaBuilder.sysVersion),
+      created: getValue(DataSchemaBuilder.sysCreated),
+      creator: getValue(DataSchemaBuilder.sysCreator),
+      from: getValue(DataSchemaBuilder.sysFrom),
+      to: getValue(DataSchemaBuilder.sysTo),
+      isDeleted: getValue(DataSchemaBuilder.sysIsDeleted),
     );
   }
 }

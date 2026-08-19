@@ -18,7 +18,7 @@ abstract interface class Postgresql {
   });
 }
 
-class PostgresqlService implements Service {
+class PostgresqlService implements MigrationDependency {
   final Config<bool> logStatements;
 
   final Config<String> applicationName;

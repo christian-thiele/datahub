@@ -11,9 +11,11 @@ environment:
 dependencies:
   boost: ^2.0.1
   buffer: ^1.2.3
+  crypto: ^3.0.6
   datahub: ^0.18.0-dev.25
   postgres: ^3.5.8
   meta: ^1.16.0
+  path: ^1.8.2
 
 dev_dependencies:
   lints: ^6.0.0

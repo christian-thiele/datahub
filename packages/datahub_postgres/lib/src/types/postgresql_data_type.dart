@@ -62,9 +62,11 @@ abstract class PostgresqlDataType<T> {
       // plain types
       final t when t.isSubtypeOf<String?>() => const PostgresqlString(),
       final t when t.isSubtypeOf<Enum?>() => PostgresqlEnum(
-        values: field.constraints.whereType<EnumConstraint>().first.values,
+        values: field.constraints
+            .whereType<EnumConstraint>()
+            .firstOrNull
+            ?.values,
       ),
-      final t when t.isSubtypeOf<Enum?>() => const PostgresqlEnum(),
       final t when t.isSubtypeOf<int?>() => const PostgresqlInt(),
       final t when t.isSubtypeOf<double?>() => const PostgresqlDouble(),
       final t when t.isSubtypeOf<bool?>() => const PostgresqlBool(),
@@ -79,7 +81,10 @@ abstract class PostgresqlDataType<T> {
       final t when t.isSubtypeOf<List<String>?>() =>
         const PostgresqlStringArray(),
       final t when t.isSubtypeOf<List<Enum>?>() => PostgresqlEnumArray(
-        values: field.constraints.whereType<EnumConstraint>().first.values,
+        values: field.constraints
+            .whereType<EnumConstraint>()
+            .firstOrNull
+            ?.values,
       ),
       final t when t.isSubtypeOf<List<int>?>() => const PostgresqlIntArray(),
       final t when t.isSubtypeOf<List<double>?>() =>

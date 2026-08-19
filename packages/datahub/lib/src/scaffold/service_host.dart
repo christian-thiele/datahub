@@ -16,6 +16,19 @@ part 'service.dart';
 
 enum ServiceHostState { uninitialized, initializing, initialized, shutdown }
 
+/// Why a [ServiceHost] was started.
+enum HostPurpose {
+  /// The host runs the application.
+  application,
+
+  /// The host builds the component tree only to run a tool against the
+  /// declarations in it, for example the migration CLI.
+  ///
+  /// Services see this through [ServiceInstance.purpose] and skip whatever is
+  /// only meaningful once the application actually serves traffic.
+  tool,
+}
+
 abstract class ServiceHost implements ServiceRegistry {
   final _postInitializationCallbacks = <(FutureOr<void> Function(), Context)>[];
   final Configuration configuration;
@@ -28,6 +41,18 @@ abstract class ServiceHost implements ServiceRegistry {
   ServiceHostState _state = ServiceHostState.uninitialized;
 
   ServiceHostState get state => _state;
+
+  @override
+  HostPurpose get purpose => HostPurpose.application;
+
+  /// Whether [service] is initialized as part of this host.
+  ///
+  /// A host that only needs part of the tree - the migration CLI needs the
+  /// database connection but not the HTTP server - overrides this. Services
+  /// that are skipped keep their place in the tree but have no instance, so
+  /// nothing can find them.
+  @protected
+  bool shouldInitialize(Service service) => true;
 
   void Function(Service)? _registerHandler;
 
@@ -44,6 +69,10 @@ abstract class ServiceHost implements ServiceRegistry {
       case final Service service:
         final node = ServiceTreeNode(service: component);
         parent?.add(node);
+
+        if (!shouldInitialize(service)) {
+          return node;
+        }
 
         final context = Context._(
           environment: configuration.environment,
@@ -234,6 +263,16 @@ abstract class ServiceHost implements ServiceRegistry {
           }
         }
 
+        // A service registered from inside another service's initialize() is a
+        // child of it, so the parent has to be a candidate as well - it is the
+        // nearest match there is, and without this it would be the only node
+        // in the tree its own children cannot see.
+        if (parent case ServiceTreeNode(
+          :final instance?,
+        ) when finder.isCandidate(instance)) {
+          return parent;
+        }
+
         return peerSearch(parent, finder);
       }
 
@@ -267,6 +306,32 @@ abstract class ServiceHost implements ServiceRegistry {
         throw ApiException('Component tree not initialized.');
       }
     }
+  }
+
+  /// Returns every initialized service in the tree matching [finder].
+  ///
+  /// Unlike [findComponent] this does not stop at the first match, which is
+  /// what a tool needs when a project declares more than one of something -
+  /// two migration services for two schemas, for instance.
+  List<T> findAllComponents<T>(Find<T> finder) {
+    final results = <T>[];
+
+    void collect(TreeNode node) {
+      if (node case ServiceTreeNode(
+        :final instance?,
+      ) when finder.isCandidate(instance)) {
+        results.add(instance as T);
+      }
+      for (final child in node.children) {
+        collect(child);
+      }
+    }
+
+    if (_root case final root?) {
+      collect(root);
+    }
+
+    return results;
   }
 
   @override
