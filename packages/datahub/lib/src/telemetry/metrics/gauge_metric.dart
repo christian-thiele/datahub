@@ -124,7 +124,7 @@ class GaugeSeries {
     final watch = Stopwatch();
     watch.start();
     try {
-      return delegate();
+      return await delegate();
     } finally {
       watch.stop();
       setDuration(watch.elapsed);
