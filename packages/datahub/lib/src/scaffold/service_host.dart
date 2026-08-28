@@ -270,6 +270,22 @@ abstract class ServiceHost implements ServiceRegistry {
     }
   }
 
+  /// Runs [body] inside a [Context] bound to [scope], without requiring the
+  /// host to be initialized.
+  ///
+  /// Config reads resolve against the scope's position in the component
+  /// tree. Service lookups ([Find]) only succeed for initialized services.
+  R runInScope<R>(TreeNode scope, R Function() body) {
+    final context = Context._(
+      environment: configuration.environment,
+      registry: this,
+      scope: scope,
+      sessions: [],
+      debugName: 'scoped',
+    );
+    return context.run(body);
+  }
+
   @override
   T readConfig<T>(Config<T> config, TreeNode scope) {
     final scopePath = scope.getConfigPath();

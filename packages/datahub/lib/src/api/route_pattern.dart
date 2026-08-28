@@ -205,6 +205,41 @@ class RoutePattern implements RouteMatcher {
     return RoutePatternMatch(this, path, pathParams, wildcard);
   }
 
+  /// Placeholder parameters of this pattern, in order of appearance.
+  List<({String key, bool optional, String prefix})> get placeholders => [
+    for (final segment in _segments)
+      if (segment is _PLSegment)
+        (key: segment.key, optional: segment.optional, prefix: segment.prefix),
+  ];
+
+  /// Converts this route pattern into OpenAPI-style path strings.
+  ///
+  /// Optional placeholders produce multiple variants (with and without the
+  /// segment), since OpenAPI path parameters are always required. A trailing
+  /// wildcard is omitted (see [isWildcardPattern]).
+  List<String> get openApiPaths {
+    var variants = [<String>[]];
+    for (final segment in _segments) {
+      switch (segment) {
+        case _WildcardSegment():
+          continue;
+        case _PLSegment():
+          final part = '${segment.prefix}{${segment.key}}';
+          variants = [
+            for (final variant in variants) ...[
+              if (segment.optional) variant,
+              [...variant, part],
+            ],
+          ];
+        case _Segment():
+          variants = [
+            for (final variant in variants) [...variant, segment.source],
+          ];
+      }
+    }
+    return [for (final variant in variants) '/${variant.join('/')}'];
+  }
+
   /// Checks if there is a placeholder param with the given key in the pattern.
   bool containsParam(String key) {
     return _segments.any(

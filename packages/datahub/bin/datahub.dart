@@ -1,6 +1,7 @@
 import 'package:args/command_runner.dart';
 import 'package:datahub/src/cli/build_command.dart';
 import 'package:datahub/src/cli/create_command.dart';
+import 'package:datahub/src/cli/openapi_command.dart';
 import 'package:datahub/src/cli/test_command.dart';
 
 /// DataHub CLI Tool
@@ -9,6 +10,7 @@ void main(List<String> args) async {
   commandRunner.addCommand(CreateCommand());
   commandRunner.addCommand(BuildCommand());
   commandRunner.addCommand(TestCommand());
+  commandRunner.addCommand(OpenApiCommand());
   try {
     await commandRunner.run(args);
   } on UsageException catch (e) {

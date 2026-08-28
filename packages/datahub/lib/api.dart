@@ -6,3 +6,7 @@ export 'src/api/api_response.dart';
 export 'src/api/resource_endpoint.dart';
 export 'src/api/route_matcher.dart';
 export 'src/api/route_pattern.dart';
+export 'src/api/openapi/api_operation.dart';
+export 'src/api/openapi/openapi_builder.dart';
+export 'src/api/openapi/openapi_endpoint.dart';
+export 'src/api/openapi/openapi_schema.dart';

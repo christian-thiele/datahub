@@ -24,6 +24,7 @@ abstract class CliCommand extends Command<void> {
       if (argResults?['verbose'] ?? false) {
         stdout.write('\u001b[31m$stack\u001b[0m\n');
       }
+      exitCode = 1;
     }
 
     stdout.writeln();

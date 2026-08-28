@@ -6,6 +6,7 @@ import 'package:datahub/utils.dart';
 import 'package:rxdart/rxdart.dart';
 import 'package:datahub/src/services/key_service/key_service.dart';
 
+import 'describe_mode.dart';
 import 'service_host.dart';
 
 class ApplicationHost extends ServiceHost {
@@ -23,6 +24,14 @@ class ApplicationHost extends ServiceHost {
   });
 
   Future<void> run() async {
+    if (DescribeMode.fromEnvironment() case final describe?) {
+      configuration.addConfigMap(initialConfig);
+      _parseArguments();
+      await describe.execute(this);
+      await stdout.flush();
+      exit(0);
+    }
+
     final stopwatch = Stopwatch()..start();
     if (_runCompleter != null) {
       throw ApiError('ApplicationHost already running.');
