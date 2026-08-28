@@ -1,0 +1,10 @@
+include: package:lints/recommended.yaml
+
+linter:
+  rules:
+    directives_ordering: true
+
+analyzer:
+  errors:
+    # test_reflective_loader requires test methods to be named `test_...`.
+    non_constant_identifier_names: ignore

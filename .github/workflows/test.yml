@@ -121,3 +121,41 @@ jobs:
 
       - name: Test
         run: cd ${{ matrix.package.path }} && dart test
+
+  # datahub_lints resolves outside the pub workspace, so the discovery step
+  # above does not pick it up. Its analyzer dependency is pinned by
+  # analysis_server_plugin and moves independently of the framework.
+  lints:
+    name: Analyze & Test / datahub_lints
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Cache Dart & Flutter
+        uses: actions/cache@v5
+        with:
+          path: /opt/hostedtoolcache/flutter
+          key: ${{ runner.OS }}-flutter-install-cache-${{ env.flutter_version }}
+          restore-keys: ${{ runner.OS }}-flutter-install-cache-
+
+      - name: Setup Dart & Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Cache dependencies
+        uses: actions/cache@v5
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('**/pubspec.yaml') }}
+          restore-keys: pub-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: cd packages/datahub_lints && dart pub get
+
+      - name: Analyze
+        run: cd packages/datahub_lints && dart analyze
+
+      - name: Test
+        run: cd packages/datahub_lints && dart test
