@@ -28,9 +28,9 @@ class ProbeServiceInstance extends ServiceInstance<ProbeService> {
 
   @override
   Future<void> initialize() async {
+    await super.initialize();
     host = read(service.host);
     port = read(service.port);
-    await super.initialize();
   }
 }
 

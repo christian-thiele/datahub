@@ -1,7 +1,6 @@
 import 'package:test_reflective_loader/test_reflective_loader.dart';
 
 import 'util/plugin_test_base.dart';
-import 'util/stubs.dart';
 
 void main() {
   defineReflectiveSuite(() {
@@ -11,7 +10,8 @@ void main() {
     defineReflectiveTests(AddConstKeywordFixTest);
     defineReflectiveTests(AddEnumValuesFixTest);
     defineReflectiveTests(DataClassFixTest);
-    defineReflectiveTests(AddSuperInitializeFixTest);
+    defineReflectiveTests(MoveSuperInitializeFirstFixTest);
+    defineReflectiveTests(MoveSuperDisposeLastFixTest);
   });
 }
 
@@ -97,9 +97,7 @@ class AddAwaitFixTest extends PluginTestBase {
 @reflectiveTest
 class AddConstKeywordFixTest extends PluginTestBase {
   @override
-  List<String> get enabledLintRules => const [
-    'const_service_constructor',
-  ];
+  List<String> get enabledLintRules => const ['const_service_constructor'];
 
   test_addsConstToExistingConstructor() async {
     await assertFix(
@@ -230,51 +228,62 @@ class Person extends $Person {
 }
 
 @reflectiveTest
-class AddSuperInitializeFixTest extends PluginTestBase {
-  @override
-  Map<String, String> get extraStubs => {'datahub_postgres': postgresStub};
-
-  test_insertsSuperCall() async {
+class MoveSuperInitializeFirstFixTest extends PluginTestBase {
+  test_movesSuperCallToTop() async {
     await assertFix(
-      r'''
-import 'package:datahub/datahub.dart';
-import 'package:datahub_postgres/datahub_postgres.dart';
-
-class Repo implements Service {
-  const Repo();
-  @override
-  ServiceInstance createInstance() => RepoInstance();
-}
-
-class RepoInstance extends ServiceInstance<Repo>
-    with PostgresqlDataRepository<Repo, Object> {
-  @override
+      _instance('''  @override
   Future<void> initialize() async {
-    print('ready');
-  }
-}
-''',
-      at: 'initialize() async {\n    print',
-      fixKindId: 'datahub.fix.addSuperInitialize',
-      expected: r'''
-import 'package:datahub/datahub.dart';
-import 'package:datahub_postgres/datahub_postgres.dart';
-
-class Repo implements Service {
-  const Repo();
-  @override
-  ServiceInstance createInstance() => RepoInstance();
-}
-
-class RepoInstance extends ServiceInstance<Repo>
-    with PostgresqlDataRepository<Repo, Object> {
-  @override
+    print('before');
+    await super.initialize();
+  }'''),
+      at: 'await super.initialize();',
+      fixKindId: 'datahub.fix.moveSuperInitializeFirst',
+      expected: _instance('''  @override
   Future<void> initialize() async {
     await super.initialize();
-    print('ready');
+    print('before');
+  }'''),
+    );
+  }
+
+  test_movesPastSeveralStatements() async {
+    await assertFix(
+      _instance('''  @override
+  Future<void> initialize() async {
+    print('one');
+    print('two');
+    await super.initialize();
+    print('three');
+  }'''),
+      at: 'await super.initialize();',
+      fixKindId: 'datahub.fix.moveSuperInitializeFirst',
+      expected: _instance('''  @override
+  Future<void> initialize() async {
+    await super.initialize();
+    print('one');
+    print('two');
+    print('three');
+  }'''),
+    );
   }
 }
-''',
+
+@reflectiveTest
+class MoveSuperDisposeLastFixTest extends PluginTestBase {
+  test_movesSuperCallToBottom() async {
+    await assertFix(
+      _instance('''  @override
+  Future<void> dispose() async {
+    await super.dispose();
+    print('after');
+  }'''),
+      at: 'await super.dispose();',
+      fixKindId: 'datahub.fix.moveSuperDisposeLast',
+      expected: _instance('''  @override
+  Future<void> dispose() async {
+    print('after');
+    await super.dispose();
+  }'''),
     );
   }
 }

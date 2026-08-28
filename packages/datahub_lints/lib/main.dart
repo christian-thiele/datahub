@@ -7,18 +7,18 @@ import 'src/assists/generate_service_instance.dart';
 import 'src/fixes/add_await.dart';
 import 'src/fixes/add_const_keyword.dart';
 import 'src/fixes/add_enum_values.dart';
-import 'src/fixes/add_super_initialize.dart';
 import 'src/fixes/data_class_fixes.dart';
+import 'src/fixes/move_lifecycle_super.dart';
 import 'src/fixes/use_instance_accessor.dart';
 import 'src/fixes/use_instance_context.dart';
 import 'src/rules/aperture/relation_requires_relation_id.dart';
 import 'src/rules/config/enum_config_requires_values.dart';
 import 'src/rules/data/data_class_rules.dart';
-import 'src/rules/postgres/repository_requires_super_initialize.dart';
 import 'src/rules/scaffold/avoid_injection_in_initializer.dart';
 import 'src/rules/scaffold/avoid_zone_context_in_service.dart';
 import 'src/rules/scaffold/await_lifecycle_super.dart';
 import 'src/rules/scaffold/const_service_constructor.dart';
+import 'src/rules/scaffold/lifecycle_super_position.dart';
 import 'src/rules/scaffold/prefer_instance_accessor.dart';
 
 /// The entry point read by the Dart Analysis Server.
@@ -39,7 +39,6 @@ class DatahubLintsPlugin extends Plugin {
     _registerScaffoldRules(registry);
     _registerConfigRules(registry);
     _registerDataRules(registry);
-    _registerPostgresRules(registry);
     _registerApertureRules(registry);
     _registerAssists(registry);
   }
@@ -65,6 +64,18 @@ class DatahubLintsPlugin extends Plugin {
 
     registry.registerWarningRule(AwaitLifecycleSuperRule());
     registry.registerFixForRule(AwaitLifecycleSuperRule.code, AddAwait.new);
+
+    registry.registerWarningRule(SuperInitializeFirstRule());
+    registry.registerFixForRule(
+      SuperInitializeFirstRule.code,
+      MoveSuperInitializeFirst.new,
+    );
+
+    registry.registerWarningRule(SuperDisposeLastRule());
+    registry.registerFixForRule(
+      SuperDisposeLastRule.code,
+      MoveSuperDisposeLast.new,
+    );
 
     // No quick fix: moving the work into initialize() is not a mechanical
     // edit, so the correction message points there instead.
@@ -103,14 +114,6 @@ class DatahubLintsPlugin extends Plugin {
     registry.registerFixForRule(
       DataClassConstConstructorRule.code,
       AddDataClassConstructor.new,
-    );
-  }
-
-  void _registerPostgresRules(PluginRegistry registry) {
-    registry.registerWarningRule(RepositoryRequiresSuperInitializeRule());
-    registry.registerFixForRule(
-      RepositoryRequiresSuperInitializeRule.code,
-      AddSuperInitialize.new,
     );
   }
 

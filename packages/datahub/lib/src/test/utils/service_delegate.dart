@@ -27,9 +27,9 @@ class _ServiceDelegateInstance extends ServiceInstance<ServiceDelegate> {
 
   @override
   Future<void> dispose() async {
-    await super.dispose();
     if (service.dispose case final callback?) {
       await callback();
     }
+    await super.dispose();
   }
 }

@@ -4,7 +4,6 @@ import 'package:analyzer/dart/element/type.dart';
 /// Package names of the DataHub framework packages that rules key on.
 abstract final class DatahubPackages {
   static const datahub = 'datahub';
-  static const postgres = 'datahub_postgres';
   static const aperture = 'datahub_aperture';
 }
 

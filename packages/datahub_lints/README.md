@@ -65,6 +65,8 @@ separate command to run. The rules show up in your IDE and in `dart analyze`.
 | `prefer_instance_read` ⚠️ | `config.read()` inside a `ServiceInstance` | `read(config)` |
 | `avoid_zone_context_in_service` ⚠️ | `Context.ofZone()`, `Context.zoneFind()` and friends inside a `ServiceInstance` | `find(x)` / `read(x)` |
 | `await_lifecycle_super` ⚠️ | `super.initialize()` / `super.dispose()` left unawaited; both return `FutureOr<void>` | add `await` |
+| `super_initialize_first` ⚠️ | `super.initialize()` that is not the first statement of the override | move it to the top |
+| `super_dispose_last` ⚠️ | `super.dispose()` that is not the last statement of the override | move it to the bottom |
 | `avoid_injection_in_initializer` ⚠️ | `find()`, `read()` or `context` in a `ServiceInstance` constructor, where the context is not assigned yet | — |
 | `const_service_constructor` 💡 | a `Service` implementation without a const constructor | add `const` |
 
@@ -81,12 +83,6 @@ separate command to run. The rules show up in your IDE and in `dart analyze`.
 | `data_class_requires_part` ⚠️ | a `@Data()` class in a library without its `part '….g.dart';` | add the directive |
 | `data_class_extends_generated` ⚠️ | a `@Data()` class that does not extend `$Name` | add the superclass |
 | `data_class_const_constructor` ⚠️ | a `@Data()` class without an unnamed const constructor, or one taking positional parameters | add `const` / write the constructor |
-
-#### PostgreSQL
-
-| Rule | Reports | Fix |
-|------|---------|-----|
-| `postgres_repository_requires_super_initialize` ⚠️ | an `initialize()` override that never calls `super.initialize()` while mixing in `PostgresqlDataRepository` or `DatabaseConnectionManager` | add the call |
 
 #### Aperture
 

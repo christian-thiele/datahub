@@ -58,6 +58,7 @@ mixin DatabaseConnectionManager<
 
   @override
   Future<void> initialize() async {
+    await super.initialize();
     if (read(enableMetrics)) {
       final instrumentation = find(Find<Telemetry>());
       final prefix = read(metricPrefix);
@@ -73,7 +74,6 @@ mixin DatabaseConnectionManager<
     }
 
     await _pool.fill();
-    await super.initialize();
   }
 
   @override

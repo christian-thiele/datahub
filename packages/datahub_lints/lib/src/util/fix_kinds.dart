@@ -52,10 +52,16 @@ abstract final class DatahubFixKind {
     'Extend the generated data class',
   );
 
-  static const addSuperInitialize = FixKind(
-    'datahub.fix.addSuperInitialize',
+  static const moveSuperInitializeFirst = FixKind(
+    'datahub.fix.moveSuperInitializeFirst',
     DartFixKindPriority.standard,
-    'Add await super.initialize()',
+    'Move super.initialize() to the top',
+  );
+
+  static const moveSuperDisposeLast = FixKind(
+    'datahub.fix.moveSuperDisposeLast',
+    DartFixKindPriority.standard,
+    'Move super.dispose() to the bottom',
   );
 }
 

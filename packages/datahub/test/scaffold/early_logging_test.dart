@@ -49,6 +49,7 @@ class LoggingServiceInstance extends ServiceInstance<LoggingService> {
   Future<void> initialize() async {
     log.warn('a warning with no telemetry to publish to');
     print('a plain print with no telemetry to publish to');
+    // ignore: datahub_lints/super_initialize_first
     await super.initialize();
   }
 }

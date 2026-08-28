@@ -117,27 +117,6 @@ int offsetOf(String content, String snippet) {
   return offset;
 }
 
-/// Minimal stand-in for `package:datahub_postgres/datahub_postgres.dart`.
-const postgresStub = r'''
-import 'package:datahub/datahub.dart';
-
-abstract interface class Postgresql {}
-
-mixin PostgresqlDataRepository<TService extends Service, TData>
-    on ServiceInstance<TService> {
-  late final Object dataRelation;
-
-  @override
-  Future<void> initialize() async {}
-}
-
-mixin DatabaseConnectionManager<TService extends Service, TConnection>
-    on ServiceInstance<TService> {
-  @override
-  Future<void> initialize() async {}
-}
-''';
-
 /// Minimal stand-in for `package:datahub_aperture/datahub_aperture.dart`.
 const apertureStub = r'''
 final class ApertureRelation<T> {
