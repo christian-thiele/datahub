@@ -92,7 +92,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   late final int port;
 
   @override
-  FutureOr<void> initialize() async {
+  Future<void> initialize() async {
     await super.initialize();
     telemetry = find(service.telemetry);
     _concurrentRequestLimit = read(service.concurrentRequestLimit);
@@ -321,7 +321,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   }
 
   @override
-  FutureOr<void> dispose() async {
+  Future<void> dispose() async {
     _disposing = true;
     await _server.stopAccepting();
 

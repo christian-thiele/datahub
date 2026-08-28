@@ -77,7 +77,7 @@ mixin PostgresqlRevisableRepository<
   );
 
   @override
-  FutureOr<void> initialize() async {
+  Future<void> initialize() async {
     await super.initialize();
     final effectiveSchemaName = read(schemaName);
 

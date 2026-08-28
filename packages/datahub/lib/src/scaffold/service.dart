@@ -11,10 +11,10 @@ abstract class ServiceInstance<TService extends Service> {
   late final Context context;
 
   @mustCallSuper
-  FutureOr<void> initialize() async {}
+  Future<void> initialize() async {}
 
   @mustCallSuper
-  FutureOr<void> dispose() async {}
+  Future<void> dispose() async {}
 
   T find<T>(Find<T> finder) => context.find<T>(finder);
 

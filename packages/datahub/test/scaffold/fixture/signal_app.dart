@@ -13,13 +13,13 @@ class MarkerService implements Service {
 
 class MarkerServiceInstance extends ServiceInstance<MarkerService> {
   @override
-  FutureOr<void> initialize() async {
+  Future<void> initialize() async {
     await super.initialize();
     print('MARKER_INITIALIZED');
   }
 
   @override
-  FutureOr<void> dispose() async {
+  Future<void> dispose() async {
     print('MARKER_DISPOSED');
     await super.dispose();
   }
