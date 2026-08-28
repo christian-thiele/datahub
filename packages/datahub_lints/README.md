@@ -75,6 +75,7 @@ separate command to run. The rules show up in your IDE and in `dart analyze`.
 | Rule | Reports | Fix |
 |------|---------|-----|
 | `enum_config_requires_values` 🛑 | `Config<SomeEnum>('path')` without `values:` | add `values: SomeEnum.values` |
+| `config_requires_default` ⚠️ | a `Config` with no `defaultValue:` whose path is missing from the package's `resources/defaults.yaml` | — |
 
 #### Data classes
 

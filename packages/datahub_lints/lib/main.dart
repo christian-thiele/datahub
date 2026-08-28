@@ -12,6 +12,7 @@ import 'src/fixes/move_lifecycle_super.dart';
 import 'src/fixes/use_instance_accessor.dart';
 import 'src/fixes/use_instance_context.dart';
 import 'src/rules/aperture/relation_requires_relation_id.dart';
+import 'src/rules/config/config_requires_default.dart';
 import 'src/rules/config/enum_config_requires_values.dart';
 import 'src/rules/data/data_class_rules.dart';
 import 'src/rules/scaffold/avoid_injection_in_initializer.dart';
@@ -90,6 +91,9 @@ class DatahubLintsPlugin extends Plugin {
   }
 
   void _registerConfigRules(PluginRegistry registry) {
+    // No quick fix: the value to default to is the author's to choose.
+    registry.registerWarningRule(ConfigRequiresDefaultRule());
+
     registry.registerWarningRule(EnumConfigRequiresValuesRule());
     registry.registerFixForRule(
       EnumConfigRequiresValuesRule.code,

@@ -31,6 +31,11 @@ $content
 """);
   }
 
+  /// Writes the package's `resources/defaults.yaml` for this test.
+  void writeDefaults(String content) {
+    newFile('$testPackageRootPath/resources/defaults.yaml', content);
+  }
+
   /// Expects a diagnostic at the first occurrence of [snippet].
   ///
   /// [length] narrows the reported range when the rule anchors to only part of

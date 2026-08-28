@@ -1,3 +1,9 @@
+## 0.18.0-dev.2
+
+- FEAT(lints): Analysis rule requiring configuration without an in-code default
+  to be listed in the package's `resources/defaults.yaml`
+  (`config_requires_default`). Packages without that file opt out.
+
 ## 0.18.0-dev.1
 
 - FEAT(lints): Initial release.

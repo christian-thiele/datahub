@@ -1,6 +1,6 @@
 name: datahub_lints
 description: Analyzer plugin providing DataHub specific analysis rules, quick fixes and assists.
-version: 0.18.0-dev.1
+version: 0.18.0-dev.2
 homepage: https://datahubproject.net
 repository: https://github.com/christian-thiele/datahub
 
@@ -12,6 +12,7 @@ dependencies:
   analyzer: '>=10.0.0 <15.0.0'
   analyzer_plugin: '>=0.14.1 <0.15.0'
   path: ^1.9.0
+  yaml: ^3.1.0
 
 dev_dependencies:
   analyzer_testing: any
