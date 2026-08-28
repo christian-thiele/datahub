@@ -1,11 +1,10 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/data.dart';
 import 'package:datahub/utils.dart';
+import 'package:datahub_postgres/data.dart';
 import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/services.dart';
 import 'package:datahub_postgres/sql.dart';
-import 'package:datahub_postgres/data.dart';
-
 import 'package:postgres/postgres.dart' as pg;
 
 sealed class PostgresqlDataRelation<DataType extends DataObject> {

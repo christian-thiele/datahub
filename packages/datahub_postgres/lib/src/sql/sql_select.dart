@@ -1,8 +1,8 @@
 import 'package:boost/boost.dart';
 import 'package:datahub_postgres/types.dart';
 
-import 'sql_attribute.dart';
 import 'sql.dart';
+import 'sql_attribute.dart';
 
 abstract class SqlSelectTarget with SqlBuilder {
   const SqlSelectTarget();

@@ -147,6 +147,7 @@ void main() {
     [],
     () {
       expect(
+        // ignore: datahub_lints/enum_config_requires_values
         () => Config<TestEnumConfig>('enumValue').read(),
         throwsA(isA<ConfigDeclarationException>()),
       );
@@ -161,6 +162,7 @@ void main() {
       // This used to return TestEnumConfig.a, hiding the broken declaration
       // until someone actually configured the value.
       expect(
+        // ignore: datahub_lints/enum_config_requires_values
         () => Config<TestEnumConfig>(
           'enumValue',
           defaultValue: TestEnumConfig.a,
@@ -176,6 +178,7 @@ void main() {
     [],
     () {
       expect(
+        // ignore: datahub_lints/enum_config_requires_values
         () => Config<TestEnumConfig>('enumValue', values: const []).read(),
         throwsA(isA<ConfigDeclarationException>()),
       );
@@ -185,6 +188,7 @@ void main() {
 
   declareTest('Enum: nullable enum config without values: throws', [], () {
     expect(
+      // ignore: datahub_lints/enum_config_requires_values
       () => Config<TestEnumConfig?>('enumValue').read(),
       throwsA(isA<ConfigDeclarationException>()),
     );

@@ -59,7 +59,7 @@ mixin DatabaseConnectionManager<
   @override
   Future<void> initialize() async {
     if (read(enableMetrics)) {
-      final instrumentation = Context.ofZone().find(Find<Telemetry>());
+      final instrumentation = find(Find<Telemetry>());
       final prefix = read(metricPrefix);
       _poolTargetMetric = instrumentation.gauge('${prefix}_pool_size_target');
       _poolTotalMetric = instrumentation.gauge('${prefix}_pool_size_total');
@@ -73,7 +73,7 @@ mixin DatabaseConnectionManager<
     }
 
     await _pool.fill();
-    super.initialize();
+    await super.initialize();
   }
 
   @override

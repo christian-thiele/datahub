@@ -1,6 +1,6 @@
 import 'package:datahub/data.dart';
-import 'package:datahub_postgres/types.dart';
 import 'package:datahub_postgres/sql.dart';
+import 'package:datahub_postgres/types.dart';
 
 class PostgresqlRawExpression extends Expression {
   final Sql sql;

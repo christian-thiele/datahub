@@ -1,5 +1,5 @@
-import 'package:datahub/data.dart';
 import 'package:boost/boost.dart';
+import 'package:datahub/data.dart';
 import 'package:meta/meta_meta.dart';
 
 /// Annotation for DataObjects declaring a related resource

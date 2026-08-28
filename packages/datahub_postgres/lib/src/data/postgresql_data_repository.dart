@@ -24,8 +24,8 @@ mixin PostgresqlDataRepository<
 
   @override
   @mustCallSuper
-  FutureOr<void> initialize() async {
-    super.initialize();
+  Future<void> initialize() async {
+    await super.initialize();
 
     dataRelation = PostgresqlDataTable(
       bean: bean,

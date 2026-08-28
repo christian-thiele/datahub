@@ -1,9 +1,9 @@
-import 'package:datahub/datahub.dart';
-
 import 'dart:async';
+
+import 'package:datahub/datahub.dart';
 import 'package:datahub_postgres/schema.dart';
-import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/services.dart';
+import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/types.dart';
 import 'package:meta/meta.dart';
 import 'package:postgres/postgres.dart' as pg;

@@ -32,3 +32,5 @@
 build/
 
 pubspec_overrides.yaml
+pubspec.lock
+packages/datahub_lints/pubspec.lock

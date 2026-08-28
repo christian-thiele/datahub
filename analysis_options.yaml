@@ -5,3 +5,7 @@ analyzer:
 linter:
   rules:
     directives_ordering: true
+
+plugins:
+  datahub_lints:
+    path: packages/datahub_lints

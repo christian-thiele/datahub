@@ -2,8 +2,8 @@ import 'dart:typed_data';
 
 import 'package:datahub/data.dart';
 import 'package:datahub/datahub.dart';
-import 'package:postgres/postgres.dart' as pg;
 import 'package:datahub_postgres/sql.dart';
+import 'package:postgres/postgres.dart' as pg;
 
 import 'postgresql_data_type.dart';
 import 'type_decode_exception.dart';

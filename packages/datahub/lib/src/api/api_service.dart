@@ -228,6 +228,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
           'http.status_code': '500',
         },
       );
+      // ignore: datahub_lints/avoid_zone_context_in_service
       if (Context.ofZone().environment == Environment.dev) {
         return DebugResponse(
           e,
