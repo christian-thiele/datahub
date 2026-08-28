@@ -33,7 +33,7 @@ Add a top-level `plugins` section to your `analysis_options.yaml`:
 
 ```yaml
 plugins:
-  datahub_lints: ^0.1.0
+  datahub_lints: ^0.18.0-dev.1
 ```
 
 That is all — the plugin is not a dependency of your package, and there is no
