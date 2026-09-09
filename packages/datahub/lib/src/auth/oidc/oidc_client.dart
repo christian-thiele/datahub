@@ -57,11 +57,11 @@ class OidcClient {
         'redirect_uri': redirectUrl,
         'client_id': clientId.toString(),
         'response_type': 'code',
-        if (scope case final scope?) 'scope': scope,
+        'scope': ?scope,
         'state': state,
         'code_challenge_method': 'S256',
         'code_challenge': challenge,
-        if (audience case final audience?) 'audience': audience,
+        'audience': ?audience,
         if (scopes case final scopes? when scopes.isNotEmpty)
           'scope': scopes.join('+'),
       },
@@ -86,13 +86,12 @@ class OidcClient {
             tokenEndpoint.path,
             HttpFormData({
               'grant_type': 'authorization_code',
-              if (clientId case final clientId?) 'client_id': clientId,
-              if (clientSecret case final clientSecret?)
-                'client_secret': clientSecret,
+              'client_id': ?clientId,
+              'client_secret': ?clientSecret,
               'code': code,
               'code_verifier': verifier,
               'redirect_uri': redirectUrl,
-              if (audience case final audience?) 'audience': audience,
+              'audience': ?audience,
               if (scopes case final scopes? when scopes.isNotEmpty)
                 'scope': scopes.join('+'),
             }),
@@ -118,9 +117,8 @@ class OidcClient {
             HttpFormData({
               'grant_type': 'refresh_token',
               'refresh_token': refreshToken,
-              if (clientId case final clientId?) 'client_id': clientId,
-              if (clientSecret case final clientSecret?)
-                'client_secret': clientSecret,
+              'client_id': ?clientId,
+              'client_secret': ?clientSecret,
             }),
           )
           .thenGetData($OidcResponse.bean);

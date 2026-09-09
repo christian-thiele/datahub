@@ -258,11 +258,7 @@ class RoutePattern implements RouteMatcher {
   @override
   Map<String, String> getRouteParams(ApiRequest request) {
     if (tryMatch(request.uri.path) case final match?) {
-      return {
-        ...match.routeParams,
-        '#pattern': pattern,
-        if (match.wildcard case final wildcard?) '*': wildcard,
-      };
+      return {...match.routeParams, '#pattern': pattern, '*': ?match.wildcard};
     } else {
       return {};
     }

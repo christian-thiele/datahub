@@ -95,10 +95,7 @@ class GeoFeatureLayer extends StatelessWidget {
       return const [];
     }
 
-    final points = [
-      ...draft.vertices.map((e) => e.position),
-      if (state.cursor case final cursor?) cursor,
-    ];
+    final points = [...draft.vertices.map((e) => e.position), ?state.cursor];
 
     if (points.length < 2) {
       return const [];

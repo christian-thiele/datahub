@@ -165,14 +165,10 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
     );
 
     final result = await context.execute(
-      SqlInsert(
-        SqlQualifiedRelation(relation.schemaName, relation.name),
-        {
-          for (final attribute in insertAttributes)
-            SqlTypedAttribute.of(attribute): attribute.field.valueOf(candidate),
-        },
-        returning: attributes.map(SqlTypedAttribute.of).toList(),
-      ),
+      SqlInsert(SqlQualifiedRelation(relation.schemaName, relation.name), {
+        for (final attribute in insertAttributes)
+          SqlTypedAttribute.of(attribute): attribute.field.valueOf(candidate),
+      }, returning: attributes.map(SqlTypedAttribute.of).toList()),
     );
 
     return mapResultRow(result.first);

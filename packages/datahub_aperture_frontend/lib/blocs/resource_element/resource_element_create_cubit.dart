@@ -82,9 +82,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
       try {
         final validation = <ResourceField, String>{
           for (final field in state.description.fields)
-            if (validateFieldValue(field, state.changes[field])
-                case final error?)
-              field: error,
+            field: ?validateFieldValue(field, state.changes[field]),
         };
 
         if (validation.isNotEmpty) {

@@ -53,7 +53,7 @@ class WebsocketSession implements StreamSink<WebsocketFrame> {
     int maxFrameSize = WebsocketFrameDecoder.defaultMaxFrameSize,
   }) {
     _span = _tracer?.startSpan('WS', {
-      if (protocol case final protocol?) 'protocol': protocol,
+      'protocol': ?protocol,
     }, type: SpanType.internal);
 
     _inTraceZone(() async {

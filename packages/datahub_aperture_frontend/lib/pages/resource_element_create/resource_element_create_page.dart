@@ -37,7 +37,7 @@ class ResourceElementCreatePage extends StatelessWidget {
                   Uri(
                     path:
                         '/resources/${Uri.encodeComponent(resourceId)}/view/${Uri.encodeComponent(id)}',
-                    queryParameters: {if (version != null) 'version': version},
+                    queryParameters: {'version': ?version},
                   ).toString(),
                 );
               default:

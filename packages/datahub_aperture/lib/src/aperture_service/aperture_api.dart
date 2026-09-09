@@ -314,7 +314,7 @@ class ApertureApi extends ApiNode {
               final parameters = await request.getJsonBody();
 
               final taskId = await action.handle(elementId, parameters);
-              return {if (taskId != null) 'taskId': taskId};
+              return {'taskId': ?taskId};
             },
           ),
           ResourceEndpoint(
@@ -339,7 +339,7 @@ class ApertureApi extends ApiNode {
 
               final parameters = await request.getJsonBody();
               final taskId = await action.handle(null, parameters);
-              return {if (taskId != null) 'taskId': taskId};
+              return {'taskId': ?taskId};
             },
           ),
           ResourceEndpoint(

@@ -201,28 +201,23 @@ void main() {
     );
   }, config: const {});
 
-  declareTest(
-    'Enum: an unknown value reports the accepted values',
-    [],
-    () {
-      expect(
-        () => Config<TestEnumConfig>(
-          'enumValue',
-          values: TestEnumConfig.values,
-        ).read(),
-        throwsA(
-          isA<ConfigValueException>()
-              .having((e) => e.value, 'value', 'optionZ')
-              .having(
-                (e) => e.allowedValues,
-                'allowedValues',
-                orderedEquals(['optionA', 'optionB', 'optionC']),
-              ),
-        ),
-      );
-    },
-    config: const {'enumValue': 'optionZ'},
-  );
+  declareTest('Enum: an unknown value reports the accepted values', [], () {
+    expect(
+      () => Config<TestEnumConfig>(
+        'enumValue',
+        values: TestEnumConfig.values,
+      ).read(),
+      throwsA(
+        isA<ConfigValueException>()
+            .having((e) => e.value, 'value', 'optionZ')
+            .having(
+              (e) => e.allowedValues,
+              'allowedValues',
+              orderedEquals(['optionA', 'optionB', 'optionC']),
+            ),
+      ),
+    );
+  }, config: const {'enumValue': 'optionZ'});
 
   // -------------------------------------------------------------------------
   // Accepted values on non-enum configs
@@ -238,26 +233,21 @@ void main() {
     );
   }, config: const {'mode': 'fast'});
 
-  declareTest(
-    'Values: a value outside values: is rejected',
-    [],
-    () {
-      expect(
-        () => Config<String>('mode', values: const ['fast', 'slow']).read(),
-        throwsA(
-          isA<ConfigValueException>()
-              .having((e) => e.path, 'path', 'mode')
-              .having((e) => e.value, 'value', 'turbo')
-              .having(
-                (e) => e.allowedValues,
-                'allowedValues',
-                orderedEquals(['fast', 'slow']),
-              ),
-        ),
-      );
-    },
-    config: const {'mode': 'turbo'},
-  );
+  declareTest('Values: a value outside values: is rejected', [], () {
+    expect(
+      () => Config<String>('mode', values: const ['fast', 'slow']).read(),
+      throwsA(
+        isA<ConfigValueException>()
+            .having((e) => e.path, 'path', 'mode')
+            .having((e) => e.value, 'value', 'turbo')
+            .having(
+              (e) => e.allowedValues,
+              'allowedValues',
+              orderedEquals(['fast', 'slow']),
+            ),
+      ),
+    );
+  }, config: const {'mode': 'turbo'});
 
   declareTest('Values: works for non-String types', [], () {
     expect(Config<int>('retries', values: const [1, 3, 5]).read(), 3);
