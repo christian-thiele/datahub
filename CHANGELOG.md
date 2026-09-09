@@ -3,6 +3,45 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-09
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`datahub` - `v0.18.0-dev.26`](#datahub---v0180-dev26)
+ - [`datahub_postgres` - `v0.18.0-dev.23`](#datahub_postgres---v0180-dev23)
+
+Packages with other changes:
+
+ - [`datahub_aperture` - `v0.1.0-dev.18`](#datahub_aperture---v010-dev18)
+ - [`datahub_codegen` - `v0.18.0-dev.16`](#datahub_codegen---v0180-dev16)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_aperture` - `v0.1.0-dev.18`
+ - `datahub_codegen` - `v0.18.0-dev.16`
+
+---
+
+#### `datahub` - `v0.18.0-dev.26`
+
+ - **FIX**: "or" filter reduce now works correctly.
+ - **FIX**(datahub): fixed gauge metric async handling.
+ - **FEAT**(lints): Analysis rules for lifecycle super call position.
+ - **BREAKING** **FEAT**: changed FutureOr to Future on ServiceInstances initialize and dispose methods.
+
+#### `datahub_postgres` - `v0.18.0-dev.23`
+
+ - **FIX**: "or" filter reduce now works correctly.
+ - **FEAT**(lints): Analysis rules for lifecycle super call position.
+ - **BREAKING** **FEAT**: changed FutureOr to Future on ServiceInstances initialize and dispose methods.
+
+
 ## 2026-08-19
 
 ### Changes

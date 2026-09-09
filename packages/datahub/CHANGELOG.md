@@ -1,3 +1,12 @@
+## 0.18.0-dev.26
+
+> Note: This release has breaking changes.
+
+ - **FIX**: "or" filter reduce now works correctly.
+ - **FIX**(datahub): fixed gauge metric async handling.
+ - **FEAT**(lints): Analysis rules for lifecycle super call position.
+ - **BREAKING** **FEAT**: changed FutureOr to Future on ServiceInstances initialize and dispose methods.
+
 ## 0.18.0-dev.25
 
  - **PERF**(api): optimized route pattern matching using regex cache.

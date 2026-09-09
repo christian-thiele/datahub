@@ -1,3 +1,7 @@
+## 0.18.0-dev.16
+
+ - Update a dependency to the latest release.
+
 ## 0.18.0-dev.15
 
  - **FIX**: fixed repository / website in pubpsec files for all packages.

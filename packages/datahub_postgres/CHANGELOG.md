@@ -1,3 +1,11 @@
+## 0.18.0-dev.23
+
+> Note: This release has breaking changes.
+
+ - **FIX**: "or" filter reduce now works correctly.
+ - **FEAT**(lints): Analysis rules for lifecycle super call position.
+ - **BREAKING** **FEAT**: changed FutureOr to Future on ServiceInstances initialize and dispose methods.
+
 ## 0.18.0-dev.22
 
  - **FEAT**(datahub): added first and any methods to DataRepository.
