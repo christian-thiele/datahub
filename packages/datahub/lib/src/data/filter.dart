@@ -24,7 +24,12 @@ sealed class Filter {
 
   Filter or(Filter other) => Filter.orGroup([this, other]);
 
-  /// Tries to simplify the Filter structure to avoid redundancy.
+  /// Returns the smallest representation of this filter.
+  ///
+  /// The result contains no empty operands, no [FilterGroup] nested directly
+  /// inside another group of the same polarity, and no [FilterGroup] with
+  /// fewer than two operands. Reducing is semantics preserving: for any
+  /// object, `reduce().matches(object) == matches(object)`.
   Filter reduce();
 
   /// Returns the smallest representation of the "And" group of [filters].
@@ -34,6 +39,11 @@ sealed class Filter {
       _optimizedGroup(filters, true);
 
   /// Returns the smallest representation of the "Or" group of [filters].
+  ///
+  /// [Filter.empty] means "unconstrained", so a disjunction containing an
+  /// empty operand is itself unconstrained and reduces to [Filter.empty].
+  /// A disjunction of no operands at all is likewise unconstrained, rather
+  /// than matching nothing.
   ///
   /// See implementation of [_optimizedGroup] for details;
   static Filter orGroup(Iterable<Filter> filters) =>
@@ -84,37 +94,40 @@ final class FilterGroup extends Filter {
   @override
   bool matches(DataObject object) => isConjunction
       ? filters.every((f) => f.matches(object))
-      : filters.any((f) => f.matches(object));
+      // A group without operands is unconstrained, consistent with [isEmpty].
+      : filters.isEmpty || filters.any((f) => f.matches(object));
 
   @override
   bool get isEmpty => filters.every((element) => element.isEmpty);
 
   @override
   Filter reduce() {
-    final reduced = filters
-        .map((f) => f.reduce())
+    final reduced = filters.map((f) => f.reduce()).toList(growable: false);
+
+    // An unconstrained operand absorbs a disjunction: `a || true == true`.
+    if (!isConjunction && reduced.any((element) => element.isEmpty)) {
+      return Filter.empty;
+    }
+
+    // An unconstrained operand is neutral in a conjunction: `a && true == a`.
+    // Operands of the same polarity are inlined into this group.
+    final flattened = reduced
         .where((element) => !element.isEmpty)
+        .expand(
+          (element) => switch (element) {
+            FilterGroup(filters: final inner, isConjunction: final polarity)
+                when polarity == isConjunction =>
+              inner,
+            _ => [element],
+          },
+        )
         .toList(growable: false);
 
-    if (reduced.isEmpty) {
-      return Filter.empty;
-    } else if (reduced.length == 1) {
-      return reduced.single;
-    } else if (isConjunction) {
-      final aggregatedConjunctions = reduced
-          .map((e) {
-            if (e case FilterGroup(:final filters, isConjunction: true)) {
-              return filters;
-            } else {
-              return [e];
-            }
-          })
-          .expand((e) => e)
-          .toList();
-      return FilterGroup(aggregatedConjunctions, true);
-    } else {
-      return FilterGroup(reduced, isConjunction);
-    }
+    return switch (flattened.length) {
+      0 => Filter.empty,
+      1 => flattened.single,
+      _ => FilterGroup(flattened, isConjunction),
+    };
   }
 }
 
@@ -163,7 +176,7 @@ final class EmptyFilter extends Filter {
   bool matches(DataObject object) => true;
 
   @override
-  final bool isEmpty = true;
+  bool get isEmpty => true;
 
   @override
   Filter reduce() => this;

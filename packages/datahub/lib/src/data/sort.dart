@@ -6,7 +6,7 @@ sealed class Sort {
 
   const Sort();
 
-  static const Sort empty = _EmptySort();
+  static const Sort empty = EmptySort();
 
   /// Convenience method for creating an ascending [ExpressionSort].
   static Sort asc(dynamic expression) =>
@@ -16,20 +16,15 @@ sealed class Sort {
   static Sort desc(dynamic expression) =>
       ExpressionSort(Expression.dynamic(expression), false);
 
-  static Sort followedBy(Iterable<Sort> sorts) {
-    final notEmpty = sorts
-        .map((e) => e.reduce())
-        .where((element) => !element.isEmpty);
-    if (notEmpty.isEmpty) {
-      return Sort.empty;
-    } else if (notEmpty.length == 1) {
-      return notEmpty.single;
-    } else {
-      return SortGroup(notEmpty.toList(growable: false));
-    }
-  }
+  /// Returns the smallest representation of [sorts] applied in order.
+  static Sort followedBy(Iterable<Sort> sorts) =>
+      SortGroup(sorts.toList(growable: false)).reduce();
 
-  /// Tries to simplify the Sort structure to avoid redundancy.
+  /// Returns the smallest representation of this sort that orders by the
+  /// same keys, in the same order.
+  ///
+  /// The result contains no empty operands, no [SortGroup] nested inside
+  /// another [SortGroup], and no [SortGroup] with fewer than two operands.
   Sort reduce();
 
   /// Returns a flat list of [ExpressionSort].
@@ -59,31 +54,33 @@ final class SortGroup extends Sort {
 
   @override
   Sort reduce() {
-    final reducedSorts = sorts
+    // Sort keys are order sensitive, so flattening must preserve their order.
+    final reduced = sorts
         .map((e) => e.reduce())
         .where((element) => !element.isEmpty)
+        .expand((element) => element is SortGroup ? element.sorts : [element])
         .toList(growable: false);
 
-    if (reducedSorts.isEmpty) {
-      return Sort.empty;
-    }
-
-    return SortGroup(reducedSorts);
+    return switch (reduced.length) {
+      0 => Sort.empty,
+      1 => reduced.single,
+      _ => SortGroup(reduced),
+    };
   }
 
   @override
-  bool get isEmpty => sorts.isEmpty;
+  bool get isEmpty => sorts.every((element) => element.isEmpty);
 
   @override
   List<ExpressionSort> expand() =>
       sorts.expand((element) => element.expand()).toList();
 }
 
-final class _EmptySort implements Sort {
-  const _EmptySort();
+final class EmptySort extends Sort {
+  const EmptySort();
 
   @override
-  final bool isEmpty = true;
+  bool get isEmpty => true;
 
   @override
   Sort reduce() => this;

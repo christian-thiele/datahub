@@ -282,4 +282,270 @@ void main() {
       expect(filter.matches(bob), isFalse);
     });
   });
+
+  group('FilterGroup.reduce', () {
+    // Leaves that always / never match [alice]. Each call returns a distinct
+    // instance, so reduced trees can be compared by leaf identity.
+    Filter hit() => Person.$age.greaterThan(20);
+    Filter miss() => Person.$age.greaterThan(100);
+
+    /// Unreduced trees covering every branch of [FilterGroup.reduce], built
+    /// with the [FilterGroup] constructor directly because [Filter.andGroup]
+    /// and [Filter.orGroup] already reduce.
+    List<Filter> cases() {
+      final t = hit();
+      final f = miss();
+      const e = Filter.empty;
+
+      return [
+        e,
+        t,
+        f,
+        const FilterGroup([], true),
+        const FilterGroup([], false),
+        const FilterGroup([e], true),
+        const FilterGroup([e], false),
+        FilterGroup([e, t], true),
+        FilterGroup([e, f], true),
+        FilterGroup([e, t], false),
+        FilterGroup([e, f], false),
+        FilterGroup([t, f], true),
+        FilterGroup([t, f], false),
+        FilterGroup([
+          FilterGroup([t, f], false),
+          f,
+        ], true),
+        FilterGroup([
+          FilterGroup([t, f], true),
+          t,
+        ], false),
+        FilterGroup([
+          FilterGroup([e, f], false),
+          t,
+        ], true),
+        FilterGroup([
+          FilterGroup([
+            FilterGroup([t, t], true),
+            f,
+          ], true),
+          t,
+        ], true),
+      ];
+    }
+
+    test('collapses an operand-less group', () {
+      expect(_describe(Filter.andGroup([])), _empty);
+      expect(_describe(Filter.orGroup([])), _empty);
+      expect(_describe(const FilterGroup([], true).reduce()), _empty);
+      expect(_describe(const FilterGroup([], false).reduce()), _empty);
+    });
+
+    test('collapses a single operand', () {
+      final a = hit();
+      expect(_describe(Filter.andGroup([a])), same(a));
+      expect(_describe(Filter.orGroup([a])), same(a));
+
+      // A group left with one operand after empties are dropped.
+      expect(
+        _describe(Filter.andGroup([Filter.empty, a, Filter.empty])),
+        same(a),
+      );
+    });
+
+    test('drops empty operands from a conjunction', () {
+      final a = hit();
+      final b = hit();
+
+      // `a && true == a`, so empty operands are neutral here.
+      expect(_describe(Filter.andGroup([Filter.empty, a, b])), ['and', a, b]);
+      expect(_describe(a.and(Filter.empty)), same(a));
+    });
+
+    // Regression: an empty operand used to be dropped from a disjunction too,
+    // which narrowed the result set instead of leaving it unconstrained.
+    test('absorbs empty operands into a disjunction', () {
+      final a = hit();
+      final b = hit();
+
+      // `a || true == true`, so the whole disjunction is unconstrained.
+      expect(_describe(Filter.orGroup([Filter.empty, a])), _empty);
+      expect(_describe(Filter.orGroup([a, b, Filter.empty])), _empty);
+      expect(_describe(a.or(Filter.empty)), _empty);
+
+      // Including when an operand only becomes empty through reduction.
+      expect(
+        _describe(
+          Filter.orGroup([
+            a,
+            FilterGroup([Filter.empty, b], false),
+          ]),
+        ),
+        _empty,
+      );
+    });
+
+    test('flattens nested conjunctions', () {
+      final a = hit();
+      final b = hit();
+      final c = hit();
+
+      expect(
+        _describe(
+          Filter.andGroup([
+            Filter.andGroup([a, b]),
+            c,
+          ]),
+        ),
+        ['and', a, b, c],
+      );
+      expect(
+        _describe(
+          Filter.andGroup([
+            a,
+            Filter.andGroup([b, c]),
+          ]),
+        ),
+        ['and', a, b, c],
+      );
+    });
+
+    // Regression: only conjunctions used to be flattened, so a disjunction of
+    // disjunctions stayed nested forever.
+    test('flattens nested disjunctions', () {
+      final a = hit();
+      final b = hit();
+      final c = hit();
+
+      expect(
+        _describe(
+          Filter.orGroup([
+            Filter.orGroup([a, b]),
+            c,
+          ]),
+        ),
+        ['or', a, b, c],
+      );
+      expect(
+        _describe(
+          Filter.orGroup([
+            a,
+            Filter.orGroup([b, c]),
+          ]),
+        ),
+        ['or', a, b, c],
+      );
+    });
+
+    test('keeps groups of mixed polarity nested', () {
+      final a = hit();
+      final b = hit();
+      final c = hit();
+
+      expect(
+        _describe(
+          Filter.andGroup([
+            Filter.orGroup([a, b]),
+            c,
+          ]),
+        ),
+        [
+          'and',
+          ['or', a, b],
+          c,
+        ],
+      );
+      expect(
+        _describe(
+          Filter.orGroup([
+            Filter.andGroup([a, b]),
+            c,
+          ]),
+        ),
+        [
+          'or',
+          ['and', a, b],
+          c,
+        ],
+      );
+    });
+
+    test('flattens at every depth', () {
+      final a = hit();
+      final b = hit();
+      final c = hit();
+      final d = hit();
+
+      final nested = FilterGroup([
+        FilterGroup([
+          FilterGroup([a, b], true),
+          c,
+        ], true),
+        d,
+      ], true);
+
+      expect(_describe(nested.reduce()), ['and', a, b, c, d]);
+    });
+
+    test('is idempotent', () {
+      for (final filter in cases()) {
+        final once = filter.reduce();
+        expect(
+          _describe(once.reduce()),
+          _describe(once),
+          reason: _describe(filter).toString(),
+        );
+      }
+    });
+
+    test('preserves the set of matched objects', () {
+      for (final filter in cases()) {
+        for (final person in [alice, bob, charlie]) {
+          expect(
+            filter.reduce().matches(person),
+            filter.matches(person),
+            reason: '${person.name}: ${_describe(filter)}',
+          );
+        }
+      }
+    });
+
+    // The shape built by `TaskManager._updateTimeoutTasks`.
+    test('reduces the task manager timeout filter', () {
+      final state = hit();
+      final noHeartbeat = hit();
+      final startedBefore = hit();
+      final heartbeatBefore = hit();
+
+      final filter = Filter.andGroup([
+        state,
+        Filter.orGroup([
+          Filter.andGroup([noHeartbeat, startedBefore]),
+          heartbeatBefore,
+        ]),
+      ]);
+
+      expect(_describe(filter), [
+        'and',
+        state,
+        [
+          'or',
+          ['and', noHeartbeat, startedBefore],
+          heartbeatBefore,
+        ],
+      ]);
+    });
+  });
 }
+
+const _empty = 'empty';
+
+/// Renders the structure of [filter] so trees can be compared without value
+/// equality on the node types. Leaves compare by identity.
+Object _describe(Filter filter) => switch (filter) {
+  EmptyFilter() => _empty,
+  CompareFilter() => filter,
+  FilterGroup(:final filters, :final isConjunction) => [
+    isConjunction ? 'and' : 'or',
+    ...filters.map(_describe),
+  ],
+};

@@ -109,12 +109,15 @@ Sql? buildFilterSql(
 ) {
   return switch (filter) {
     EmptyFilter() => null,
-    FilterGroup() => Sql.joinWrap(
-      filter.filters
-          .map((e) => buildFilterSql(e, attributes))
-          .nonNulls
-          .separatedBy(filter.isConjunction ? Sql.and : Sql.or),
-    ),
+    FilterGroup() => switch (filter.filters
+        .map((e) => buildFilterSql(e, attributes))
+        .nonNulls
+        .toList(growable: false)) {
+      [] => null,
+      final segments => Sql.joinWrap(
+        segments.separatedBy(filter.isConjunction ? Sql.and : Sql.or),
+      ),
+    },
     CompareFilter(:final left, :final type, :final right) => _compareSql(
       attributes,
       left,
