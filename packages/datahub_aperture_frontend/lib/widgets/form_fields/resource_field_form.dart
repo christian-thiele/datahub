@@ -11,7 +11,7 @@ class ResourceFieldForm extends StatelessWidget {
   final List<ResourceField> fields;
   final ResourceData data;
   final Map<ResourceField, dynamic> changes;
-  final Map<ResourceField, String> validations;
+  final Map<String, String> validations;
   final void Function(ResourceField field, dynamic value) onFieldValueChanged;
   final void Function(DateTime? from)? onSavePressed;
   final bool revisable;
@@ -51,10 +51,11 @@ class ResourceFieldForm extends StatelessWidget {
                 },
                 child: ResourceFormField(
                   field: field,
+                  path: field.id,
+                  errors: validations,
                   value: changes.containsKey(field)
                       ? changes[field]
                       : data.fieldData[field.id],
-                  error: validations[field],
                   isChanged: changes.containsKey(field),
                   onChanged: (field.readOnly || readOnly)
                       ? null

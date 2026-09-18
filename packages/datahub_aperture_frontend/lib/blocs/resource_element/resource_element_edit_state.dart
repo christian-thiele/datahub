@@ -15,7 +15,7 @@ final class ResourceElementEditValue extends ResourceElementEditState {
   final ResourceDescription resource;
   final ResourceData data;
   final Map<ResourceField, dynamic> changes;
-  final Map<ResourceField, String> validations;
+  final Map<String, String> validations;
   final List<FilteredResource> relations;
 
   const ResourceElementEditValue({

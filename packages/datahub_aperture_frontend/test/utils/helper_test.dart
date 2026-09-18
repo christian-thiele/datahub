@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:datahub/data.dart';
+import 'package:datahub/utils.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
@@ -252,6 +253,102 @@ void main() {
           isA<CodecException>().having((e) => e.name, 'name', 'dates[1]'),
         ),
       );
+    });
+  });
+
+  group('value paths', () {
+    test('name values like the backend does', () {
+      expect(elementPath('periods', 0), 'periods[0]');
+      expect(memberPath('periods[0]', 'start'), 'periods[0].start');
+      expect(fieldIdOf('periods[0].start'), 'periods');
+      expect(fieldIdOf('period.start'), 'period');
+      expect(fieldIdOf('name'), 'name');
+    });
+
+    test('tell the values nested in a value', () {
+      expect(isPathWithin('numbers', 'numbers'), isTrue);
+      expect(isPathWithin('numbers[1]', 'numbers'), isTrue);
+      expect(isPathWithin('period.start', 'period'), isTrue);
+      expect(isPathWithin('numbersOld[1]', 'numbers'), isFalse);
+      expect(hasNestedErrors({'numbers': 'Wrong.'}, 'numbers'), isFalse);
+      expect(hasNestedErrors({'numbers[1]': 'Wrong.'}, 'numbers'), isTrue);
+    });
+  });
+
+  group('editableFieldErrors', () {
+    const fields = [
+      ResourceField(
+        id: 'id',
+        name: 'Id',
+        type: ResourceFieldType.int,
+        readOnly: true,
+      ),
+      ResourceField(
+        id: 'intListProperty',
+        name: 'Int List Property',
+        type: ResourceFieldType.list,
+      ),
+    ];
+
+    ApiRequestException failure(Map<String, dynamic> fields) =>
+        ApiRequestException.fromResponse(400, {
+          'statusCode': 400,
+          'fields': fields,
+        });
+
+    test('keeps the errors of nested values by their path', () {
+      const message =
+          'Mismatching types for property "intListProperty[0]": Expected int '
+          'but received Null.';
+
+      expect(
+        editableFieldErrors(
+          failure({
+            'intListProperty[0]': [message],
+          }),
+          fields,
+        ),
+        {'intListProperty[0]': message},
+      );
+    });
+
+    test('keeps the first message of a value', () {
+      expect(
+        editableFieldErrors(
+          failure({
+            'intListProperty': ['Too long.', 'Too short.'],
+          }),
+          fields,
+        ),
+        {'intListProperty': 'Too long.'},
+      );
+    });
+
+    test('rejects errors that can not be shown at a field', () {
+      expect(
+        editableFieldErrors(
+          failure({
+            'id': ['Already taken.'],
+          }),
+          fields,
+        ),
+        isNull,
+      );
+      expect(
+        editableFieldErrors(
+          failure({
+            'unknown[0]': ['Wrong.'],
+          }),
+          fields,
+        ),
+        isNull,
+      );
+      expect(editableFieldErrors(failure({}), fields), isNull);
+      expect(
+        editableFieldErrors(ApiRequestException.internalError(), fields),
+        isNull,
+      );
+      expect(editableFieldErrors(Exception('Offline.'), fields), isNull);
     });
   });
 }

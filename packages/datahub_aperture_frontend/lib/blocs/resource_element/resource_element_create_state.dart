@@ -23,7 +23,7 @@ abstract class ResourceElementCreateValue extends ResourceElementCreateState {
 }
 
 final class ResourceElementCreateEditing extends ResourceElementCreateValue {
-  final Map<ResourceField, String> validation;
+  final Map<String, String> validation;
 
   bool get isValid => validation.isEmpty;
 

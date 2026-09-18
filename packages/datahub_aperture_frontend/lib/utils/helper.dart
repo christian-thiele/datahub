@@ -1,5 +1,6 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/data.dart';
+import 'package:datahub/utils.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/models/view_models/filter_model.dart';
@@ -145,6 +146,66 @@ bool fieldValueEquals(dynamic a, dynamic b) => switch ((a, b)) {
   _ => a == b,
 };
 
+/// The path of element [index] of the list at [path].
+///
+/// Paths name values like the backend names them in its errors: a field of a
+/// resource by its id, and values nested in it with [elementPath] and
+/// [memberPath], like `periods[0].start`.
+String elementPath(String path, int index) => DataCodec.indexName(path, index)!;
+
+/// The path of [member] of the object at [path], see [elementPath].
+String memberPath(String path, String member) =>
+    DataCodec.childName(path, member)!;
+
+/// The id of the field the value at [path] belongs to, see [elementPath].
+String fieldIdOf(String path) => path.split(_pathSeparator).first;
+
+final _pathSeparator = RegExp(r'[.\[]');
+
+/// Whether [path] is [parent] or the path of a value nested in it.
+bool isPathWithin(String path, String parent) =>
+    path == parent ||
+    path.startsWith('$parent.') ||
+    path.startsWith('$parent[');
+
+/// Whether [errors] (by path) hold errors of values nested in the value at
+/// [path].
+bool hasNestedErrors(Map<String, String> errors, String path) =>
+    errors.keys.any((e) => e != path && isPathWithin(e, path));
+
+/// The field errors a request failed with, by the path of the value they
+/// belong to (see [elementPath]).
+///
+/// Returns `null` if [error] is no such failure, or if it is about a value
+/// that is not part of the editable [fields], as it can not be shown at a
+/// field then.
+Map<String, String>? editableFieldErrors(
+  Object error,
+  Iterable<ResourceField> fields,
+) {
+  if (error case ApiRequestException(
+    data: {'fields': final Map<String, dynamic> errors},
+  ) when errors.isNotEmpty) {
+    final messages = <String, String>{};
+    for (final (path, pathMessages) in errors.tuples) {
+      final id = fieldIdOf(path);
+      if (fields.where((e) => e.id == id).firstOrNull case ResourceField(
+        readOnly: false,
+      )) {
+        messages[path] = switch (pathMessages) {
+          [final message, ...] => message.toString(),
+          _ => pathMessages.toString(),
+        };
+      } else {
+        return null;
+      }
+    }
+    return messages;
+  }
+
+  return null;
+}
+
 // dirty little hack
 void decodeFieldData(ResourceDescription resource, ResourceData data) {
   final decoded = {
@@ -219,7 +280,7 @@ extension ResourceDescriptionExtension on ResourceDescription {
   }
 
   ResourceField getField(String id) => fields.firstWhere(
-    (e) => e.id == id.split('.').first,
+    (e) => e.id == fieldIdOf(id),
     orElse: () =>
         throw Exception('Could not find field $id on resource ${this.id}.'),
   );

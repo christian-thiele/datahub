@@ -1,5 +1,6 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
+import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:datahub_aperture_frontend/widgets/utils/immutable_list_utils.dart';
 import 'package:flutter/material.dart';
 
@@ -10,7 +11,8 @@ class ResourceListFormField extends StatelessWidget {
   final ResourceField field;
   final InputDecoration decoration;
   final List<dynamic>? value;
-  final String? error;
+  final String path;
+  final Map<String, String> errors;
   final bool isChanged;
   final ValueChanged<List<dynamic>?>? onChanged;
 
@@ -19,7 +21,8 @@ class ResourceListFormField extends StatelessWidget {
     required this.field,
     required this.decoration,
     this.value,
-    this.error,
+    required this.path,
+    this.errors = const {},
     required this.isChanged,
     this.onChanged,
   });
@@ -34,6 +37,7 @@ class ResourceListFormField extends StatelessWidget {
 
     return GroupDecoration(
       decoration: decoration,
+      hasNestedErrors: hasNestedErrors(errors, path),
       onAddPressed: () => onChanged?.call(entries.copyWithAdded(null)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -50,6 +54,8 @@ class ResourceListFormField extends StatelessWidget {
                 Expanded(
                   child: ResourceFormField(
                     field: elementField,
+                    path: elementPath(path, index),
+                    errors: errors,
                     isChanged: false,
                     value: entry,
                     onChanged: onChanged != null

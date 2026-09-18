@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 class ResourceElementCreateView extends StatelessWidget {
   final List<ResourceField> fields;
-  final Map<ResourceField, String> validations;
+  final Map<String, String> validations;
   final ResourceData data;
   final Map<ResourceField, dynamic> changes;
   final void Function(ResourceField field, dynamic value) onFieldValueChanged;

@@ -1,6 +1,4 @@
 import 'package:bloc/bloc.dart';
-import 'package:boost/boost.dart';
-import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/models/filtered_resource.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
@@ -108,15 +106,15 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
       }
 
       final fieldValidation = validateFieldValue(field, value);
-      final validation = <ResourceField, String>{
+      // The errors of the previous value, also of values nested in it, which
+      // may have moved (like list elements) or be gone, do not apply anymore.
+      final validation = <String, String>{
         if (state case ResourceElementEditValue(:final validations))
           ...validations,
-      };
+      }..removeWhere((path, _) => isPathWithin(path, field.id));
 
-      if (fieldValidation == null) {
-        validation.remove(field);
-      } else {
-        validation[field] = fieldValidation;
+      if (fieldValidation != null) {
+        validation[field.id] = fieldValidation;
       }
 
       if (fieldValueEquals(data.fieldData[fieldId], value)) {
@@ -149,9 +147,9 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
     if (state case final ResourceElementEditValue state
         when state is! ResourceElementEditSaving && state.changes.isNotEmpty) {
       try {
-        final validation = <ResourceField, String>{
+        final validation = <String, String>{
           for (final field in state.resource.fields)
-            field: ?validateFieldValue(
+            field.id: ?validateFieldValue(
               field,
               state.changes[field] ?? state.data.fieldData[field.id],
             ),
@@ -181,15 +179,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
         decodeFieldData(state.resource, updated);
         emit(savingState.saved(updated));
       } catch (e) {
-        if (e case ApiRequestException(
-          data: {'fields': final Map<String, dynamic> fieldErrors},
-        )) {
-          if (fieldErrors.keys.any(
-            (e) => state.resource.getField(e).readOnly,
-          )) {
-            return emit(ResourceElementEditError(message: e.toString()));
-          }
-
+        if (editableFieldErrors(e, state.resource.fields) case final errors?) {
           emit(
             ResourceElementEditValue(
               title: state.title,
@@ -197,11 +187,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
               data: state.data,
               relations: state.relations,
               changes: state.changes,
-              validations: {
-                for (final (field, errors) in fieldErrors.tuples)
-                  state.resource.fields.firstWhere((e) => e.id == field):
-                      errors.first,
-              },
+              validations: errors,
             ),
           );
         } else {

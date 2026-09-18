@@ -18,7 +18,7 @@ class ResourceElementEditView extends StatelessWidget {
   final ResourceData data;
   final List<ResourceField> fields;
   final Map<ResourceField, dynamic> changes;
-  final Map<ResourceField, String> validations;
+  final Map<String, String> validations;
   final void Function(ResourceField field, dynamic value) onFieldValueChanged;
 
   final List<FilteredResource> relations;

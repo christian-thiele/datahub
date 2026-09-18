@@ -17,7 +17,8 @@ import 'resource_timestamp_form_field.dart';
 
 class ResourceFormField extends StatelessWidget {
   final ResourceField field;
-  final String? error;
+  final String path;
+  final Map<String, String> errors;
   final dynamic value;
   final bool isChanged;
   final ValueChanged? onChanged;
@@ -25,11 +26,14 @@ class ResourceFormField extends StatelessWidget {
   const ResourceFormField({
     super.key,
     required this.field,
+    required this.path,
+    this.errors = const {},
     this.value,
-    this.error,
     this.isChanged = false,
     this.onChanged,
   });
+
+  String? get error => errors[path];
 
   InputDecoration decoration(BuildContext context) {
     final Widget? label;
@@ -131,17 +135,19 @@ class ResourceFormField extends StatelessWidget {
         field: field,
         decoration: fieldDecoration,
         value: value,
+        path: path,
+        errors: errors,
         isChanged: isChanged,
         onChanged: onChanged,
-        error: error,
       ),
       ResourceFieldType.list => ResourceListFormField(
         field: field,
         decoration: fieldDecoration,
         value: value,
+        path: path,
+        errors: errors,
         isChanged: isChanged,
         onChanged: onChanged,
-        error: error,
       ),
       ResourceFieldType.bytes => ResourceFileFormField(
         decoration: fieldDecoration,
