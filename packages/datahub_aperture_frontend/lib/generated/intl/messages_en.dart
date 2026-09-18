@@ -27,9 +27,12 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m2(elementName) =>
       "Are you sure you want to delete element \"${elementName}\"?";
 
-  static String m3(length) => "Value too long. (> ${length})";
+  static String m3(line, column) =>
+      "Invalid JSON (line ${line}, column ${column}).";
 
-  static String m4(expression) => "Value must match the pattern: ${expression}";
+  static String m4(length) => "Value too long. (> ${length})";
+
+  static String m5(expression) => "Value must match the pattern: ${expression}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -46,6 +49,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "error": MessageLookupByLibrary.simpleMessage("Error"),
     "fileSelected": MessageLookupByLibrary.simpleMessage("File selected"),
     "filter": MessageLookupByLibrary.simpleMessage("Filter"),
+    "formatJson": MessageLookupByLibrary.simpleMessage(
+      "Format JSON (Shift+Alt+F)",
+    ),
     "liveFrom": MessageLookupByLibrary.simpleMessage("Live from"),
     "liveSince": MessageLookupByLibrary.simpleMessage("Live since"),
     "login": MessageLookupByLibrary.simpleMessage("Login"),
@@ -76,8 +82,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "time": MessageLookupByLibrary.simpleMessage("Time"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Timestamp"),
     "username": MessageLookupByLibrary.simpleMessage("Username"),
-    "validationMaxLength": m3,
-    "validationPattern": m4,
+    "validationJson": MessageLookupByLibrary.simpleMessage("Invalid JSON."),
+    "validationJsonArray": MessageLookupByLibrary.simpleMessage(
+      "Value must be a JSON array.",
+    ),
+    "validationJsonObject": MessageLookupByLibrary.simpleMessage(
+      "Value must be a JSON object.",
+    ),
+    "validationJsonSyntax": m3,
+    "validationMaxLength": m4,
+    "validationPattern": m5,
     "validationRequired": MessageLookupByLibrary.simpleMessage(
       "Value is required.",
     ),

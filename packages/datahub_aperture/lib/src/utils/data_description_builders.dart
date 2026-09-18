@@ -99,6 +99,7 @@ ResourceField fieldDescription(
     lookup = null;
   }
 
+  final type = _fieldType(field);
   return ResourceField(
     id: field.name,
     name: meta?.name ?? niceName(field.name),
@@ -106,9 +107,9 @@ ResourceField fieldDescription(
     readOnly: isAuto || (apertureMeta?.readOnly ?? false),
     validation: validation?.expression,
     length: length?.length,
-    type: _fieldType(field),
+    type: type,
     nullable: field.type.isNullable,
-    objectDescription: _objectDescription(field, relatedBeans),
+    objectDescription: _objectDescription(field, type, relatedBeans),
     enumValues: field
         .constraintOfType<EnumConstraint>()
         ?.values
@@ -120,9 +121,10 @@ ResourceField fieldDescription(
 
 List<ResourceField>? _objectDescription(
   DataField field,
+  ResourceFieldType type,
   Iterable<DataBean> relatedBeans,
 ) {
-  if (field case DataField<dynamic, List?>()) {
+  if (type == ResourceFieldType.list) {
     return [
       ResourceField(
         id: 'element',
@@ -162,6 +164,11 @@ ResourceFieldType _fieldType(DataField<dynamic, dynamic> field) {
     DataField<dynamic, Uint8List?>() => ResourceFieldType.bytes,
     DataField<dynamic, Geometry?>() => ResourceFieldType.geometry,
     DataField<dynamic, DataObject?>() => ResourceFieldType.object,
+    DataField<dynamic, Map<String, dynamic>?>()
+        when field.type.isSupertypeOf<Map<String, dynamic>>() =>
+      ResourceFieldType.jsonMap,
+    DataField<dynamic, List?>() when field.type.isSupertypeOf<List>() =>
+      ResourceFieldType.jsonList,
     DataField<dynamic, List>() => ResourceFieldType.list,
     _ => throw ApiError(
       'Field ${field.name} of type ${field.type.name} is not supported by Aperture.',

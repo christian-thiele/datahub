@@ -39,5 +39,10 @@
   "search": "Suche",
   "cancel": "Abbrechen",
   "caution": "Achtung",
-  "reallyDeleteElement": "Sind Sie sicher, dass Sie Element \"{elementName}\" löschen möchten?"
+  "reallyDeleteElement": "Sind Sie sicher, dass Sie Element \"{elementName}\" löschen möchten?",
+  "formatJson": "JSON formatieren (Umschalt+Alt+F)",
+  "validationJson": "Ungültiges JSON.",
+  "validationJsonSyntax": "Ungültiges JSON (Zeile {line}, Spalte {column}).",
+  "validationJsonObject": "Wert muss ein JSON-Objekt sein.",
+  "validationJsonArray": "Wert muss ein JSON-Array sein."
 }

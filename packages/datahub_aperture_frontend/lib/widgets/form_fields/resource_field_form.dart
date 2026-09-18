@@ -42,9 +42,13 @@ class ResourceFieldForm extends StatelessWidget {
           children: [
             for (final field in fields)
               LayoutItem(
-                preferSide:
-                    field.type == ResourceFieldType.geometry ||
-                    field.type == ResourceFieldType.list,
+                preferSide: switch (field.type) {
+                  ResourceFieldType.geometry ||
+                  ResourceFieldType.list ||
+                  ResourceFieldType.jsonMap ||
+                  ResourceFieldType.jsonList => true,
+                  _ => false,
+                },
                 child: ResourceFormField(
                   field: field,
                   value: changes.containsKey(field)

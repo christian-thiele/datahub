@@ -6,6 +6,7 @@ part 'person.g.dart';
 
 @Data()
 @Meta(icon: Icons.person)
+@ApertureRelation<Person>()
 class Person extends $Person {
   @Id(auto: true)
   final int id;
@@ -21,6 +22,9 @@ class Person extends $Person {
   final String address;
   final Geometry homeLocation;
 
+  @RelationId<Person>()
+  final int? parentId;
+
   const Person({
     this.id = 0,
     required this.firstName,
@@ -28,5 +32,6 @@ class Person extends $Person {
     required this.nicknames,
     required this.address,
     required this.homeLocation,
+    this.parentId,
   });
 }

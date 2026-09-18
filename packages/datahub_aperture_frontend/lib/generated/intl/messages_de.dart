@@ -27,9 +27,12 @@ class MessageLookup extends MessageLookupByLibrary {
   static String m2(elementName) =>
       "Sind Sie sicher, dass Sie Element \"${elementName}\" löschen möchten?";
 
-  static String m3(length) => "Wert zu lang. (> ${length})";
+  static String m3(line, column) =>
+      "Ungültiges JSON (Zeile ${line}, Spalte ${column}).";
 
-  static String m4(expression) =>
+  static String m4(length) => "Wert zu lang. (> ${length})";
+
+  static String m5(expression) =>
       "Wert muss dem Muster entsprechen: ${expression}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -47,6 +50,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "error": MessageLookupByLibrary.simpleMessage("Fehler"),
     "fileSelected": MessageLookupByLibrary.simpleMessage("Datei ausgewählt"),
     "filter": MessageLookupByLibrary.simpleMessage("Filter"),
+    "formatJson": MessageLookupByLibrary.simpleMessage(
+      "JSON formatieren (Umschalt+Alt+F)",
+    ),
     "liveFrom": MessageLookupByLibrary.simpleMessage("Live ab"),
     "liveSince": MessageLookupByLibrary.simpleMessage("Live seit"),
     "login": MessageLookupByLibrary.simpleMessage("Anmelden"),
@@ -79,8 +85,16 @@ class MessageLookup extends MessageLookupByLibrary {
     "time": MessageLookupByLibrary.simpleMessage("Uhrzeit"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Zeitstempel"),
     "username": MessageLookupByLibrary.simpleMessage("Benutzername"),
-    "validationMaxLength": m3,
-    "validationPattern": m4,
+    "validationJson": MessageLookupByLibrary.simpleMessage("Ungültiges JSON."),
+    "validationJsonArray": MessageLookupByLibrary.simpleMessage(
+      "Wert muss ein JSON-Array sein.",
+    ),
+    "validationJsonObject": MessageLookupByLibrary.simpleMessage(
+      "Wert muss ein JSON-Objekt sein.",
+    ),
+    "validationJsonSyntax": m3,
+    "validationMaxLength": m4,
+    "validationPattern": m5,
     "validationRequired": MessageLookupByLibrary.simpleMessage(
       "Wert ist erforderlich.",
     ),

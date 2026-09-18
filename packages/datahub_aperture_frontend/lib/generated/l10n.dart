@@ -338,6 +338,56 @@ class S {
       args: [elementName],
     );
   }
+
+  /// `Format JSON (Shift+Alt+F)`
+  String get formatJson {
+    return Intl.message(
+      'Format JSON (Shift+Alt+F)',
+      name: 'formatJson',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid JSON.`
+  String get validationJson {
+    return Intl.message(
+      'Invalid JSON.',
+      name: 'validationJson',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Invalid JSON (line {line}, column {column}).`
+  String validationJsonSyntax(Object line, Object column) {
+    return Intl.message(
+      'Invalid JSON (line $line, column $column).',
+      name: 'validationJsonSyntax',
+      desc: '',
+      args: [line, column],
+    );
+  }
+
+  /// `Value must be a JSON object.`
+  String get validationJsonObject {
+    return Intl.message(
+      'Value must be a JSON object.',
+      name: 'validationJsonObject',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Value must be a JSON array.`
+  String get validationJsonArray {
+    return Intl.message(
+      'Value must be a JSON array.',
+      name: 'validationJsonArray',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

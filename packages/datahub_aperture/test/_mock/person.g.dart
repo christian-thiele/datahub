@@ -72,6 +72,15 @@ abstract interface class $Person with DataObject<Person> {
     toJson: (value) => $$codec.encodeGeometry(value),
   );
 
+  static final $parentId = DataField<Person, int?>(
+    name: 'parentId',
+    valueOf: (p) => p.parentId,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeInt, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeInt),
+    meta: [const RelationId<Person>()],
+  );
+
   static final DataBean<Person> bean = DataBean<Person>(
     name: 'Person',
     fields: List<DataField<Person, dynamic>>.unmodifiable([
@@ -81,10 +90,11 @@ abstract interface class $Person with DataObject<Person> {
       $nicknames,
       $address,
       $homeLocation,
+      $parentId,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
-    meta: [const Meta(icon: 58513)],
+    meta: [const Meta(icon: 58513), const ApertureRelation<Person>()],
   );
 
   @override
@@ -98,6 +108,8 @@ abstract interface class $Person with DataObject<Person> {
     List<String>? nicknames,
     String? address,
     Geometry? homeLocation,
+    int? parentId,
+    bool nullParentId = false,
   }) {
     final $data = this as Person;
     return Person(
@@ -107,6 +119,7 @@ abstract interface class $Person with DataObject<Person> {
       nicknames: nicknames ?? $data.nicknames,
       address: address ?? $data.address,
       homeLocation: homeLocation ?? $data.homeLocation,
+      parentId: nullParentId ? null : (parentId ?? $data.parentId),
     );
   }
 
@@ -118,6 +131,7 @@ abstract interface class $Person with DataObject<Person> {
       nicknames: data['nicknames']?.cast<String>().toList(growable: false),
       address: data['address'],
       homeLocation: data['homeLocation'],
+      parentId: data['parentId'],
     );
   }
 
@@ -147,6 +161,10 @@ abstract interface class $Person with DataObject<Person> {
         data['homeLocation'],
         name: DataCodec.childName(name, 'homeLocation'),
       ),
+      parentId: $parentId.fromJson(
+        data['parentId'],
+        name: DataCodec.childName(name, 'parentId'),
+      ),
     );
   }
 
@@ -160,6 +178,7 @@ abstract interface class $Person with DataObject<Person> {
       'nicknames': $nicknames.toJson($$data.nicknames),
       'address': $address.toJson($$data.address),
       'homeLocation': $homeLocation.toJson($$data.homeLocation),
+      'parentId': $parentId.toJson($$data.parentId),
     }..removeWhere((k, v) => v == null);
   }
 }

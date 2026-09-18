@@ -3,6 +3,7 @@ import 'package:datahub/data.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/models/view_models/filter_model.dart';
+import 'package:datahub_aperture_frontend/widgets/json_editor/model/json_value.dart';
 
 String filterDescription(FilterModel model) {
   final buffer = StringBuffer();
@@ -93,6 +94,11 @@ String? validateFieldValue(ResourceField field, dynamic value) {
     }
   }
 
+  if (describeJsonError(S.current, value, root: field.jsonRoot)
+      case final error?) {
+    return error;
+  }
+
   if (field.length case final length?) {
     if (value.toString().length > length) {
       return S.current.validationMaxLength(length);
@@ -108,13 +114,43 @@ String? validateFieldValue(ResourceField field, dynamic value) {
   return null;
 }
 
+/// Explains why [value] can not be saved from a JSON editor that has to hold
+/// a [root] value, `null` if it can.
+///
+/// [value] may also be a map or list with JSON editor values in it, where the
+/// editors are part of an object or list field.
+String? describeJsonError(S s, dynamic value, {JsonRootType? root}) {
+  if (findInvalidJson(value) case final invalid?) {
+    if (invalid.error case final error?) {
+      final (line, column) = error.positionIn(invalid.text);
+      return s.validationJsonSyntax(line, column);
+    }
+    return s.validationJson;
+  }
+
+  if (root != null && value != null && !root.accepts(value)) {
+    return switch (root) {
+      JsonRootType.object => s.validationJsonObject,
+      JsonRootType.array => s.validationJsonArray,
+    };
+  }
+
+  return null;
+}
+
+/// Whether two field values are equal, comparing maps and lists by content.
+bool fieldValueEquals(dynamic a, dynamic b) => switch ((a, b)) {
+  (final Map a, final Map b) => a.equalsDeep(b),
+  (final List a, final List b) => a.equalsDeep(b),
+  _ => a == b,
+};
+
 // dirty little hack
 void decodeFieldData(ResourceDescription resource, ResourceData data) {
   final decoded = {
     for (final (key, value) in data.fieldData.tuples)
       key: _decodeField(
         resource.fields.where((e) => e.id == key).firstOrNull,
-        null,
         value,
         name: key,
       ),
@@ -122,18 +158,16 @@ void decodeFieldData(ResourceDescription resource, ResourceData data) {
   data.fieldData.addAll(decoded);
 }
 
-dynamic _decodeField(
-  ResourceField? field,
-  ResourceFieldType? type,
-  dynamic raw, {
-  String? name,
-}) {
-  final codec = const JsonDataCodec();
-  final elementField = field?.objectDescription
-      ?.where((e) => e.id == '\$element')
-      .firstOrNull;
+dynamic _decodeField(ResourceField? field, dynamic raw, {String? name}) {
+  if (raw == null) {
+    return null;
+  }
 
-  return switch (type ?? field?.type) {
+  final codec = const JsonDataCodec();
+  ResourceField? child(String id) =>
+      field?.objectDescription?.where((e) => e.id == id).firstOrNull;
+
+  return switch (field?.type) {
     ResourceFieldType.string => codec.decodeString(raw, name: name),
     ResourceFieldType.stringEnum => codec.decodeString(raw, name: name),
     ResourceFieldType.int => codec.decodeInt(raw, name: name),
@@ -142,15 +176,24 @@ dynamic _decodeField(
     ResourceFieldType.timestamp => codec.decodeDateTime(raw, name: name),
     ResourceFieldType.bytes => codec.decodeUint8List(raw, name: name),
     ResourceFieldType.geometry => codec.decodeGeometry(raw, name: name),
-    ResourceFieldType.object => codec.decodeDynamic(raw, name: name),
-    ResourceFieldType.list =>
-      elementField != null
-          ? codec.decodeList(
-              raw,
-              (e, {String? name}) =>
-                  _decodeField(field, elementField.type, e, name: name),
-            )
-          : codec.decodeDynamic(raw, name: name),
+    ResourceFieldType.object when raw is Map<String, dynamic> => {
+      for (final (key, value) in raw.tuples)
+        key: _decodeField(
+          child(key),
+          value,
+          name: DataCodec.childName(name, key),
+        ),
+    },
+    // Not decodeList, which returns a List<dynamic> as it is, without
+    // decoding its elements.
+    ResourceFieldType.list when raw is List => [
+      for (final (index, element) in raw.indexed)
+        _decodeField(
+          child('element'),
+          element,
+          name: DataCodec.indexName(name, index),
+        ),
+    ],
     _ => codec.decodeDynamic(raw, name: name),
   };
 }
@@ -180,4 +223,13 @@ extension ResourceDescriptionExtension on ResourceDescription {
     orElse: () =>
         throw Exception('Could not find field $id on resource ${this.id}.'),
   );
+}
+
+extension ResourceFieldExtension on ResourceField {
+  /// The kind of value a JSON field holds, `null` for other fields.
+  JsonRootType? get jsonRoot => switch (type) {
+    ResourceFieldType.jsonMap => JsonRootType.object,
+    ResourceFieldType.jsonList => JsonRootType.array,
+    _ => null,
+  };
 }

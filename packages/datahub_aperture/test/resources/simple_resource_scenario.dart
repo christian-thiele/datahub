@@ -5,12 +5,14 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 
+import '../_mock/large.dart';
 import '../_mock/person.dart';
 import '../_utils/test_auth_provider.dart';
 
 void main(List<String> args) => runApp([
   KeyService(),
   MemoryRepositoryService(bean: $Person.bean),
+  MemoryRepositoryService(bean: $Large.bean),
   TestAuthProvider(),
   ApiService(
     routes: [
@@ -19,6 +21,7 @@ void main(List<String> args) => runApp([
         oidcClientId: Config.value('aperture'),
         resources: [
           ApertureResource(repository: Find<DataRepository<Person>>()),
+          ApertureResource(repository: Find<DataRepository<Large>>()),
         ],
       ),
     ],
@@ -322,6 +325,7 @@ void main(List<String> args) => runApp([
             nicknames: ['Test'],
             address: '${streets.random} ${number()}, ${cities.random}',
             homeLocation: Point(wgs84, 13.406856, 52.519623),
+            parentId: i > 99 ? math.Random().nextInt(99) : null,
           ),
         );
       }

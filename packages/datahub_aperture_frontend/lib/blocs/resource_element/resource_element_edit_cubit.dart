@@ -48,10 +48,14 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
           elementId,
           version: revertFromVersion,
         );
+        decodeFieldData(resource, revisionData);
 
         for (final field in resource.fields) {
           if (!field.readOnly &&
-              data.fieldData[field.id] != revisionData.fieldData[field.id]) {
+              !fieldValueEquals(
+                data.fieldData[field.id],
+                revisionData.fieldData[field.id],
+              )) {
             initialChanges[field] = revisionData.fieldData[field.id];
           }
         }
@@ -115,7 +119,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
         validation[field] = fieldValidation;
       }
 
-      if (data.fieldData[fieldId] == value) {
+      if (fieldValueEquals(data.fieldData[fieldId], value)) {
         emit(
           ResourceElementEditValue(
             resource: resource,

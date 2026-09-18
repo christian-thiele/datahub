@@ -9,4 +9,6 @@ enum ResourceFieldType {
   geometry,
   object,
   list,
+  jsonMap,
+  jsonList,
 }

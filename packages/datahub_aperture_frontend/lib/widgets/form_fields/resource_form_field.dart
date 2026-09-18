@@ -9,6 +9,7 @@ import 'resource_enum_form_field.dart';
 import 'resource_file_form_field.dart';
 import 'resource_geometry_form_field.dart';
 import 'resource_int_form_field.dart';
+import 'resource_json_form_field.dart';
 import 'resource_list_form_field.dart';
 import 'resource_object_form_field.dart';
 import 'resource_text_form_field.dart';
@@ -143,6 +144,15 @@ class ResourceFormField extends StatelessWidget {
         error: error,
       ),
       ResourceFieldType.bytes => ResourceFileFormField(
+        decoration: fieldDecoration,
+        value: value,
+        isChanged: isChanged,
+        onChanged: onChanged,
+        error: error,
+      ),
+      ResourceFieldType.jsonMap ||
+      ResourceFieldType.jsonList => ResourceJsonFormField(
+        field: field,
         decoration: fieldDecoration,
         value: value,
         isChanged: isChanged,
