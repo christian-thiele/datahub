@@ -3,6 +3,35 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-18
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub_aperture` - `v0.1.0-dev.19`](#datahub_aperture---v010-dev19)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.15`](#datahub_aperture_frontend---v010-dev15)
+
+---
+
+#### `datahub_aperture` - `v0.1.0-dev.19`
+
+ - **FIX**(aperture): fixed translations.
+ - **FEAT**(aperture): added json field support.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.15`
+
+ - **FIX**(aperture): fixed translations.
+ - **FEAT**(aperture): added nice local auth success page.
+ - **FEAT**(aperture): added json field support.
+
+
 ## 2026-09-09
 
 ### Changes

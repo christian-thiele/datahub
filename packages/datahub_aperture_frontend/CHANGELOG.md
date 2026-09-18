@@ -1,3 +1,9 @@
+## 0.1.0-dev.15
+
+ - **FIX**(aperture): fixed translations.
+ - **FEAT**(aperture): added nice local auth success page.
+ - **FEAT**(aperture): added json field support.
+
 ## 0.1.0-dev.14
 
  - **FIX**: fixed repository / website in pubpsec files for all packages.
