@@ -15,7 +15,7 @@ abstract interface class $Large with DataObject<Large> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
-    meta: [const Id()],
+    meta: [const Id(auto: true)],
   );
 
   static final $intProperty = DataField<Large, int>(

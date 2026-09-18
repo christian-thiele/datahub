@@ -20,25 +20,39 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'en';
 
-  static String m0(userName) => "by ${userName}";
+  static String m0(appTitle) =>
+      "There was an error trying to sign you in. Please return to ${appTitle} and try again.";
 
-  static String m1(resourceName) => "New ${resourceName}";
+  static String m1(appTitle) =>
+      "You can close this page now and return to ${appTitle}.";
 
-  static String m2(elementName) =>
+  static String m2(userName) => "by ${userName}";
+
+  static String m3(resourceName) => "New ${resourceName}";
+
+  static String m4(elementName) =>
       "Are you sure you want to delete element \"${elementName}\"?";
 
-  static String m3(line, column) =>
+  static String m5(line, column) =>
       "Invalid JSON (line ${line}, column ${column}).";
 
-  static String m4(length) => "Value too long. (> ${length})";
+  static String m6(length) => "Value too long. (> ${length})";
 
-  static String m5(expression) => "Value must match the pattern: ${expression}";
+  static String m7(expression) => "Value must match the pattern: ${expression}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "actions": MessageLookupByLibrary.simpleMessage("Actions"),
+    "authCallbackErrorMessage": m0,
+    "authCallbackErrorTitle": MessageLookupByLibrary.simpleMessage(
+      "Sign-in failed",
+    ),
+    "authCallbackSuccessMessage": m1,
+    "authCallbackSuccessTitle": MessageLookupByLibrary.simpleMessage(
+      "Signed in successfully",
+    ),
     "author": MessageLookupByLibrary.simpleMessage("Author"),
-    "byUsername": m0,
+    "byUsername": m2,
     "cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
     "caution": MessageLookupByLibrary.simpleMessage("Warning"),
     "date": MessageLookupByLibrary.simpleMessage("Date"),
@@ -56,11 +70,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "liveSince": MessageLookupByLibrary.simpleMessage("Live since"),
     "login": MessageLookupByLibrary.simpleMessage("Login"),
     "loginAuthcode": MessageLookupByLibrary.simpleMessage("Login via IDP"),
-    "newResource": m1,
+    "newResource": m3,
     "noElements": MessageLookupByLibrary.simpleMessage("No Elements"),
     "ok": MessageLookupByLibrary.simpleMessage("OK"),
     "password": MessageLookupByLibrary.simpleMessage("Password"),
-    "reallyDeleteElement": m2,
+    "reallyDeleteElement": m4,
     "refresh": MessageLookupByLibrary.simpleMessage("Refresh"),
     "resourceDeleted": MessageLookupByLibrary.simpleMessage(
       "Resource Deleted.",
@@ -89,9 +103,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "validationJsonObject": MessageLookupByLibrary.simpleMessage(
       "Value must be a JSON object.",
     ),
-    "validationJsonSyntax": m3,
-    "validationMaxLength": m4,
-    "validationPattern": m5,
+    "validationJsonSyntax": m5,
+    "validationMaxLength": m6,
+    "validationPattern": m7,
     "validationRequired": MessageLookupByLibrary.simpleMessage(
       "Value is required.",
     ),

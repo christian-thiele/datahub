@@ -44,7 +44,7 @@
   "validationJson": "Invalid JSON.",
   "validationJsonSyntax": "Invalid JSON (line {line}, column {column}).",
   "validationJsonObject": "Value must be a JSON object.",
-  "validationJsonArray": "Value must be a JSON array."
+  "validationJsonArray": "Value must be a JSON array.",
   "authCallbackSuccessTitle": "Signed in successfully",
   "authCallbackSuccessMessage": "You can close this page now and return to {appTitle}.",
   "authCallbackErrorTitle": "Sign-in failed",

@@ -339,46 +339,6 @@ class S {
     );
   }
 
-  /// `Signed in successfully`
-  String get authCallbackSuccessTitle {
-    return Intl.message(
-      'Signed in successfully',
-      name: 'authCallbackSuccessTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `You can close this page now and return to {appTitle}.`
-  String authCallbackSuccessMessage(Object appTitle) {
-    return Intl.message(
-      'You can close this page now and return to $appTitle.',
-      name: 'authCallbackSuccessMessage',
-      desc: '',
-      args: [appTitle],
-    );
-  }
-
-  /// `Sign-in failed`
-  String get authCallbackErrorTitle {
-    return Intl.message(
-      'Sign-in failed',
-      name: 'authCallbackErrorTitle',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `There was an error trying to sign you in. Please return to {appTitle} and try again.`
-  String authCallbackErrorMessage(Object appTitle) {
-    return Intl.message(
-      'There was an error trying to sign you in. Please return to $appTitle and try again.',
-      name: 'authCallbackErrorMessage',
-      desc: '',
-      args: [appTitle],
-    );
-  }
-
   /// `Format JSON (Shift+Alt+F)`
   String get formatJson {
     return Intl.message(
@@ -426,6 +386,46 @@ class S {
       name: 'validationJsonArray',
       desc: '',
       args: [],
+    );
+  }
+
+  /// `Signed in successfully`
+  String get authCallbackSuccessTitle {
+    return Intl.message(
+      'Signed in successfully',
+      name: 'authCallbackSuccessTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `You can close this page now and return to {appTitle}.`
+  String authCallbackSuccessMessage(Object appTitle) {
+    return Intl.message(
+      'You can close this page now and return to $appTitle.',
+      name: 'authCallbackSuccessMessage',
+      desc: '',
+      args: [appTitle],
+    );
+  }
+
+  /// `Sign-in failed`
+  String get authCallbackErrorTitle {
+    return Intl.message(
+      'Sign-in failed',
+      name: 'authCallbackErrorTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `There was an error trying to sign you in. Please return to {appTitle} and try again.`
+  String authCallbackErrorMessage(Object appTitle) {
+    return Intl.message(
+      'There was an error trying to sign you in. Please return to $appTitle and try again.',
+      name: 'authCallbackErrorMessage',
+      desc: '',
+      args: [appTitle],
     );
   }
 }

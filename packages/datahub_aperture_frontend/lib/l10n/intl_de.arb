@@ -44,7 +44,7 @@
   "validationJson": "Ungültiges JSON.",
   "validationJsonSyntax": "Ungültiges JSON (Zeile {line}, Spalte {column}).",
   "validationJsonObject": "Wert muss ein JSON-Objekt sein.",
-  "validationJsonArray": "Wert muss ein JSON-Array sein."
+  "validationJsonArray": "Wert muss ein JSON-Array sein.",
   "authCallbackSuccessTitle": "Anmeldung erfolgreich",
   "authCallbackSuccessMessage": "Sie können diese Seite jetzt schließen und zu {appTitle} zurückkehren.",
   "authCallbackErrorTitle": "Anmeldung fehlgeschlagen",

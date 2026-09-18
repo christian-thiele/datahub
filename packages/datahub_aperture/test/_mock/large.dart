@@ -22,7 +22,7 @@ class Large extends $Large {
     required this.jsonListProperty,
   });
 
-  @Id()
+  @Id(auto: true)
   final int id;
 
   final int intProperty;
