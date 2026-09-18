@@ -7,12 +7,14 @@ final class ApertureField extends MetaData {
   final bool isDisplayField;
   final bool readOnly;
   final bool allowFilter;
+  final bool allowSearch;
   final bool allowSort;
 
   const ApertureField({
     this.isDisplayField = false,
     this.readOnly = false,
     this.allowFilter = true,
+    this.allowSearch = true,
     this.allowSort = true,
   });
 }

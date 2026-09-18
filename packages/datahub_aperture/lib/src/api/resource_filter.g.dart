@@ -76,6 +76,14 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
+  static final $search = DataField<ResourceFilter, String?>(
+    name: 'search',
+    valueOf: (p) => p.search,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
+  );
+
   static final DataBean<ResourceFilter> bean = DataBean<ResourceFilter>(
     name: 'ResourceFilter',
     fields: List<DataField<ResourceFilter, dynamic>>.unmodifiable([
@@ -84,6 +92,7 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
       $fieldId,
       $type,
       $value,
+      $search,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
@@ -104,6 +113,8 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
     bool nullType = false,
     String? value,
     bool nullValue = false,
+    String? search,
+    bool nullSearch = false,
   }) {
     final $data = this as ResourceFilter;
     return ResourceFilter(
@@ -112,6 +123,7 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
       fieldId: nullFieldId ? null : (fieldId ?? $data.fieldId),
       type: nullType ? null : (type ?? $data.type),
       value: nullValue ? null : (value ?? $data.value),
+      search: nullSearch ? null : (search ?? $data.search),
     );
   }
 
@@ -126,6 +138,7 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
       fieldId: data['fieldId'],
       type: data['type'],
       value: data['value'],
+      search: data['search'],
     );
   }
 
@@ -148,6 +161,10 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
         data['value'],
         name: DataCodec.childName(name, 'value'),
       ),
+      search: $search.fromJson(
+        data['search'],
+        name: DataCodec.childName(name, 'search'),
+      ),
     );
   }
 
@@ -160,6 +177,7 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
       'fieldId': $fieldId.toJson($$data.fieldId),
       'type': $type.toJson($$data.type),
       'value': $value.toJson($$data.value),
+      'search': $search.toJson($$data.search),
     }..removeWhere((k, v) => v == null);
   }
 }

@@ -11,6 +11,7 @@ class ResourceFilter extends $ResourceFilter {
   final String? fieldId;
   final ResourceFilterType? type;
   final String? value;
+  final String? search;
 
   const ResourceFilter({
     this.or = const [],
@@ -18,5 +19,6 @@ class ResourceFilter extends $ResourceFilter {
     this.fieldId,
     this.type,
     this.value,
+    this.search,
   });
 }

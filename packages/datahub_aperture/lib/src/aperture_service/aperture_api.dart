@@ -5,6 +5,7 @@ import 'dart:math' as math;
 
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
+import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/services.dart';
 import 'package:datahub_aperture/src/utils/data_description_builders.dart';
 
@@ -399,19 +400,26 @@ class ApertureApi extends ApiNode {
       }
 
       final Filter elementFilter;
-      if (filter case ResourceFilter(
+      if (filter case ResourceFilter(:final search?)) {
+        elementFilter = _buildSearchFilter(repo, search);
+      } else if (filter case ResourceFilter(
         :final type?,
         :final fieldId?,
         :final value,
       )) {
-        final field = bean.fields.firstWhere((e) => e.name == fieldId);
-        elementFilter = CompareFilter(field, switch (type) {
-          ResourceFilterType.equals => CompareType.equals,
-          ResourceFilterType.notEquals => CompareType.notEquals,
-          ResourceFilterType.greaterThan => CompareType.greaterThan,
-          ResourceFilterType.lessThan => CompareType.lessThan,
-          ResourceFilterType.contains => CompareType.contains,
-        }, ValueExpression(_alignFieldValue(field, value)));
+        elementFilter =
+            _tryBuildFilter(
+              bean.fields.firstWhere((e) => e.name == fieldId),
+              switch (type) {
+                ResourceFilterType.equals => CompareType.equals,
+                ResourceFilterType.notEquals => CompareType.notEquals,
+                ResourceFilterType.greaterThan => CompareType.greaterThan,
+                ResourceFilterType.lessThan => CompareType.lessThan,
+                ResourceFilterType.contains => CompareType.contains,
+              },
+              value,
+            ) ??
+            Filter.empty;
       } else {
         elementFilter = Filter.empty;
       }
@@ -431,12 +439,62 @@ class ApertureApi extends ApiNode {
     }
   }
 
+  static Filter _buildSearchFilter(DataRepository repo, String search) {
+    final words = search.split(RegExp('\\W+'));
+
+    final searchFields = <DataField>[];
+    for (final field in repo.bean.fields) {
+      final apertureField = field.metaOfType<ApertureField>();
+      if (apertureField?.allowSearch == false) {
+        continue;
+      }
+
+      bool isSearchField = switch (field) {
+        DataField<dynamic, String?>() => true,
+        DataField<dynamic, Enum?>() => true,
+        DataField<dynamic, int?>() => true,
+        DataField<dynamic, double?>() => true,
+        DataField<dynamic, List<String?>?>() => true,
+        _ => false,
+      };
+
+      if (isSearchField) {
+        searchFields.add(field);
+      }
+    }
+
+    return Filter.andGroup([
+      for (final word in words)
+        Filter.orGroup([
+          for (final field in searchFields)
+            ?_tryBuildFilter(field, CompareType.contains, word),
+        ]),
+    ]);
+  }
+
   static Sort _buildSort(DataRepository repo, String? fieldId, bool ascending) {
     if (fieldId == null) {
       return Sort.empty;
     }
     final field = repo.bean.fields.firstWhere((e) => e.name == fieldId);
     return field.sort(ascending);
+  }
+
+  static Filter? _tryBuildFilter(
+    DataField<dynamic, dynamic> field,
+    CompareType type,
+    String? value,
+  ) {
+    try {
+      return CompareFilter(
+        field,
+        type,
+        ValueExpression(_alignFieldValue(field, value)),
+      );
+    } on CodecException catch (e) {
+      log.warn('Filter error. Discarding filter element.', error: e);
+      return null;
+    }
   }
 
   // TODO find a way not to need this?

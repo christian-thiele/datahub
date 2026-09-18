@@ -47,24 +47,6 @@ class ResourceCubit extends Cubit<ResourceState> {
       return null;
     }
 
-    final searchFilter = (userFilter?.search.isNotEmpty ?? false)
-        ? ResourceFilter(
-            and: [
-              for (final word in userFilter!.search.split(RegExp('\\W+')))
-                ResourceFilter(
-                  or: [
-                    for (final field in _getFilterFields(resource))
-                      ResourceFilter(
-                        fieldId: field.id,
-                        type: ResourceFilterType.contains,
-                        value: word,
-                      ),
-                  ],
-                ),
-            ],
-          )
-        : null;
-
     return ResourceFilter(
       and: [
         ?defaultFilter,
@@ -75,8 +57,8 @@ class ResourceCubit extends Cubit<ResourceState> {
             value: e.value?.toString(),
           ),
         ),
-        ?searchFilter,
       ],
+      search: userFilter?.search.isNotEmpty == true ? userFilter?.search : null,
     );
   }
 
