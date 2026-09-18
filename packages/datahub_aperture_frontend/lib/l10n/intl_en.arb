@@ -39,5 +39,9 @@
   "search": "Search",
   "cancel": "Cancel",
   "caution": "Warning",
-  "reallyDeleteElement": "Are you sure you want to delete element \"{elementName}\"?"
+  "reallyDeleteElement": "Are you sure you want to delete element \"{elementName}\"?",
+  "authCallbackSuccessTitle": "Signed in successfully",
+  "authCallbackSuccessMessage": "You can close this page now and return to {appTitle}.",
+  "authCallbackErrorTitle": "Sign-in failed",
+  "authCallbackErrorMessage": "There was an error trying to sign you in. Please return to {appTitle} and try again."
 }

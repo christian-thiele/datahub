@@ -20,23 +20,37 @@ typedef String MessageIfAbsent(String messageStr, List<dynamic> args);
 class MessageLookup extends MessageLookupByLibrary {
   String get localeName => 'de';
 
-  static String m0(userName) => "von ${userName}";
+  static String m0(appTitle) =>
+      "Bei der Anmeldung ist ein Fehler aufgetreten. Bitte kehren Sie zu ${appTitle} zurück und versuchen Sie es erneut.";
 
-  static String m1(resourceName) => "${resourceName} hinzufügen";
+  static String m1(appTitle) =>
+      "Sie können diese Seite jetzt schließen und zu ${appTitle} zurückkehren.";
 
-  static String m2(elementName) =>
+  static String m2(userName) => "von ${userName}";
+
+  static String m3(resourceName) => "${resourceName} hinzufügen";
+
+  static String m4(elementName) =>
       "Sind Sie sicher, dass Sie Element \"${elementName}\" löschen möchten?";
 
-  static String m3(length) => "Wert zu lang. (> ${length})";
+  static String m5(length) => "Wert zu lang. (> ${length})";
 
-  static String m4(expression) =>
+  static String m6(expression) =>
       "Wert muss dem Muster entsprechen: ${expression}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
     "actions": MessageLookupByLibrary.simpleMessage("Aktionen"),
+    "authCallbackErrorMessage": m0,
+    "authCallbackErrorTitle": MessageLookupByLibrary.simpleMessage(
+      "Anmeldung fehlgeschlagen",
+    ),
+    "authCallbackSuccessMessage": m1,
+    "authCallbackSuccessTitle": MessageLookupByLibrary.simpleMessage(
+      "Anmeldung erfolgreich",
+    ),
     "author": MessageLookupByLibrary.simpleMessage("Autor"),
-    "byUsername": m0,
+    "byUsername": m2,
     "cancel": MessageLookupByLibrary.simpleMessage("Abbrechen"),
     "caution": MessageLookupByLibrary.simpleMessage("Achtung"),
     "date": MessageLookupByLibrary.simpleMessage("Datum"),
@@ -51,11 +65,11 @@ class MessageLookup extends MessageLookupByLibrary {
     "liveSince": MessageLookupByLibrary.simpleMessage("Live seit"),
     "login": MessageLookupByLibrary.simpleMessage("Anmelden"),
     "loginAuthcode": MessageLookupByLibrary.simpleMessage("Anmelden via IDP"),
-    "newResource": m1,
+    "newResource": m3,
     "noElements": MessageLookupByLibrary.simpleMessage("Keine Elemente"),
     "ok": MessageLookupByLibrary.simpleMessage("OK"),
     "password": MessageLookupByLibrary.simpleMessage("Passwort"),
-    "reallyDeleteElement": m2,
+    "reallyDeleteElement": m4,
     "refresh": MessageLookupByLibrary.simpleMessage("Aktualisieren"),
     "resourceDeleted": MessageLookupByLibrary.simpleMessage(
       "Ressource gelöscht.",
@@ -79,8 +93,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "time": MessageLookupByLibrary.simpleMessage("Uhrzeit"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Zeitstempel"),
     "username": MessageLookupByLibrary.simpleMessage("Benutzername"),
-    "validationMaxLength": m3,
-    "validationPattern": m4,
+    "validationMaxLength": m5,
+    "validationPattern": m6,
     "validationRequired": MessageLookupByLibrary.simpleMessage(
       "Wert ist erforderlich.",
     ),

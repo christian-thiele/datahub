@@ -39,5 +39,9 @@
   "search": "Suche",
   "cancel": "Abbrechen",
   "caution": "Achtung",
-  "reallyDeleteElement": "Sind Sie sicher, dass Sie Element \"{elementName}\" löschen möchten?"
+  "reallyDeleteElement": "Sind Sie sicher, dass Sie Element \"{elementName}\" löschen möchten?",
+  "authCallbackSuccessTitle": "Anmeldung erfolgreich",
+  "authCallbackSuccessMessage": "Sie können diese Seite jetzt schließen und zu {appTitle} zurückkehren.",
+  "authCallbackErrorTitle": "Anmeldung fehlgeschlagen",
+  "authCallbackErrorMessage": "Bei der Anmeldung ist ein Fehler aufgetreten. Bitte kehren Sie zu {appTitle} zurück und versuchen Sie es erneut."
 }

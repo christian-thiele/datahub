@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'dart:math' as math;
+import 'dart:typed_data';
 
 import 'package:flutter/widgets.dart';
 import 'package:intl/intl.dart';
@@ -96,4 +98,11 @@ String formatCoarseDuration(Duration d) {
   }
 
   return '${math.min(1, d.inMinutes)}min';
+}
+
+bool looksLikeSvg(Uint8List bytes) {
+  // Peek at the first ~512 bytes and look for "<svg"
+  final head = bytes.sublist(0, bytes.length.clamp(0, 512));
+  final s = utf8.decode(head, allowMalformed: true).toLowerCase().trimLeft();
+  return s.startsWith('<svg') || (s.startsWith('<?xml') && s.contains('<svg'));
 }

@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:datahub/api.dart';
+import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/services/auth_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -7,6 +8,8 @@ import 'auth_cubit.dart';
 
 mixin AuthStrategyMixin on Cubit<AuthState> {
   AuthService get authService;
+
+  ApertureBootstrap get bootstrap;
 
   Future<void> receiveAuthorizationCode(String state, String code);
 
