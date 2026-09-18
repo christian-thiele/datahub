@@ -428,6 +428,16 @@ class S {
       args: [appTitle],
     );
   }
+
+  /// `Linked element not found`
+  String get linkedElementNotFound {
+    return Intl.message(
+      'Linked element not found',
+      name: 'linkedElementNotFound',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -62,23 +62,27 @@ class _ResourceTextFormFieldState extends State<ResourceTextFormField> {
 
   @override
   Widget build(BuildContext context) {
-    final field = TextFormField(
-      focusNode: _focusNode,
-      controller: _controller,
-      decoration: widget.decoration,
-      readOnly: widget.onChanged == null,
-      enabled: widget.onChanged != null,
-    );
+    Widget field(InputDecoration decoration, [TextStyle? style]) =>
+        TextFormField(
+          focusNode: _focusNode,
+          controller: _controller,
+          decoration: decoration,
+          style: style,
+          readOnly: widget.onChanged == null,
+          enabled: widget.onChanged != null,
+        );
 
     if (widget.lookup case final lookup?) {
       return LookupMenu(
         controller: _controller,
         lookup: lookup,
         focusNode: _focusNode,
-        child: field,
+        value: widget.value,
+        decoration: widget.decoration,
+        fieldBuilder: field,
       );
     } else {
-      return field;
+      return field(widget.decoration);
     }
   }
 }

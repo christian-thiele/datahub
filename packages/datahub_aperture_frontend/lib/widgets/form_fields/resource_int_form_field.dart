@@ -68,25 +68,29 @@ class _ResourceIntFormFieldState extends State<ResourceIntFormField> {
 
   @override
   Widget build(BuildContext context) {
-    final field = TextFormField(
-      decoration: widget.decoration,
-      focusNode: _focusNode,
-      controller: _controller,
-      inputFormatters: widget.lookup == null
-          ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))]
-          : null,
-      readOnly: widget.onChanged == null,
-    );
+    Widget field(InputDecoration decoration, [TextStyle? style]) =>
+        TextFormField(
+          decoration: decoration,
+          style: style,
+          focusNode: _focusNode,
+          controller: _controller,
+          inputFormatters: widget.lookup == null
+              ? [FilteringTextInputFormatter.allow(RegExp(r'[0-9]'))]
+              : null,
+          readOnly: widget.onChanged == null,
+        );
 
     if (widget.lookup case final lookup?) {
       return LookupMenu(
         controller: _controller,
         lookup: lookup,
         focusNode: _focusNode,
-        child: field,
+        value: widget.value,
+        decoration: widget.decoration,
+        fieldBuilder: field,
       );
     } else {
-      return field;
+      return field(widget.decoration);
     }
   }
 }

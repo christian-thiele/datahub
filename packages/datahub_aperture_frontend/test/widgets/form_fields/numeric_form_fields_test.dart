@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import '../../_utils/lookup_repository.dart';
+
 /// Holds the value of a field like the form does, and records the values the
 /// field emits.
 class _Host extends StatefulWidget {
@@ -68,55 +70,6 @@ List<String> _texts(WidgetTester tester) => [
   for (final field in tester.widgetList<TextField>(find.byType(TextField)))
     field.controller!.text,
 ];
-
-/// Serves a single person to look up.
-class _People implements ResourcesRepository {
-  final searches = <ResourceFilter?>[];
-
-  @override
-  Future<ResourceDescription> getDescription(String id) async =>
-      const ResourceDescription(
-        id: 'Person',
-        name: 'Person',
-        icon: 0xe491,
-        fields: [
-          ResourceField(id: 'id', name: 'Id', type: ResourceFieldType.int),
-          ResourceField(
-            id: 'name',
-            name: 'Name',
-            type: ResourceFieldType.string,
-          ),
-        ],
-        relations: [],
-        idField: 'id',
-        displayField: 'name',
-        readOnly: false,
-        revisable: false,
-        actions: [],
-      );
-
-  @override
-  Future<ResourceElementsResponse> getResourceElements(
-    String resourceId, {
-    ResourceFilter? filter,
-    String? sortFieldId,
-    bool sortAscending = true,
-    int offset = 0,
-    int limit = 25,
-  }) async {
-    searches.add(filter);
-    return ResourceElementsResponse(
-      total: 1,
-      hasNextPage: false,
-      data: [
-        ResourceData(id: '42', fieldData: {'id': 42, 'name': 'Ada'}),
-      ],
-    );
-  }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
-}
 
 void main() {
   for (final (type, zero, value, text) in [
@@ -230,7 +183,9 @@ void main() {
   testWidgets('looks up relations for an empty value without a search', (
     tester,
   ) async {
-    final people = _People();
+    final repository = LookupRepository(people, [
+      {'id': 42, 'name': 'Ada'},
+    ]);
     final emitted = await _pump(
       tester,
       const ResourceField(
@@ -244,12 +199,13 @@ void main() {
           filter: ResourceRelationFilter(),
         ),
       ),
-      repository: people,
+      repository: repository,
     );
 
     await tester.tap(find.byType(TextField));
     await tester.pumpAndSettle();
-    expect(people.searches.single?.and, isEmpty);
+    expect(repository.filters.single?.search, isNull);
+    expect(repository.filters.single?.and, isEmpty);
 
     await tester.tap(find.text('Ada'));
     await tester.pumpAndSettle();

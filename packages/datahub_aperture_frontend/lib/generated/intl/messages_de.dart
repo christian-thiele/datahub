@@ -67,6 +67,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "formatJson": MessageLookupByLibrary.simpleMessage(
       "JSON formatieren (Umschalt+Alt+F)",
     ),
+    "linkedElementNotFound": MessageLookupByLibrary.simpleMessage(
+      "Verknüpftes Element nicht gefunden",
+    ),
     "liveFrom": MessageLookupByLibrary.simpleMessage("Live ab"),
     "liveSince": MessageLookupByLibrary.simpleMessage("Live seit"),
     "login": MessageLookupByLibrary.simpleMessage("Anmelden"),
