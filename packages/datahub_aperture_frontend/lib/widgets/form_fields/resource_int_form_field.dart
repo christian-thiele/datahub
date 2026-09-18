@@ -9,7 +9,7 @@ class ResourceIntFormField extends StatefulWidget {
   final int? value;
   final String? error;
   final bool isChanged;
-  final ValueChanged<int>? onChanged;
+  final ValueChanged<int?>? onChanged;
 
   const ResourceIntFormField({
     super.key,
@@ -29,20 +29,23 @@ class _ResourceIntFormFieldState extends State<ResourceIntFormField> {
   late final FocusNode _focusNode;
   late final TextEditingController _controller;
 
+  late int? _value = widget.value;
+
   String _valueToText(int? value) {
-    return (value ?? 0).toString();
+    return value?.toString() ?? '';
   }
 
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
-    _controller = TextEditingController(text: _valueToText(widget.value));
+    _controller = TextEditingController(text: _valueToText(_value));
     _controller.addListener(() {
-      if (_controller.text != _valueToText(widget.value)) {
-        if (int.tryParse(_controller.text) case final value?) {
-          widget.onChanged?.call(value);
-        }
+      final text = _controller.text;
+      final value = int.tryParse(text);
+      if ((value != null || text.isEmpty) && value != _value) {
+        _value = value;
+        widget.onChanged?.call(value);
       }
     });
   }
@@ -50,7 +53,8 @@ class _ResourceIntFormFieldState extends State<ResourceIntFormField> {
   @override
   void didUpdateWidget(covariant ResourceIntFormField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (_controller.text != _valueToText(widget.value)) {
+    if (widget.value != _value) {
+      _value = widget.value;
       _controller.text = _valueToText(widget.value);
     }
   }

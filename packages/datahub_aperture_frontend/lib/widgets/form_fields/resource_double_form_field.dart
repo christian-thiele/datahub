@@ -6,7 +6,7 @@ class ResourceDoubleFormField extends StatefulWidget {
   final double? value;
   final String? error;
   final bool isChanged;
-  final ValueChanged<double>? onChanged;
+  final ValueChanged<double?>? onChanged;
 
   const ResourceDoubleFormField({
     super.key,
@@ -26,7 +26,7 @@ class _ResourceDoubleFormFieldState extends State<ResourceDoubleFormField> {
   late final TextEditingController _controller;
 
   String _valueToText(double? value) {
-    return (value ?? 0).toString();
+    return value?.toString() ?? '';
   }
 
   double? _textToValue(String text) {
@@ -60,11 +60,11 @@ class _ResourceDoubleFormFieldState extends State<ResourceDoubleFormField> {
       decoration: widget.decoration,
       readOnly: widget.onChanged == null,
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9.]'))],
-      onChanged: (_) {
-        if (_textToValue(_controller.text) != widget.value) {
-          if (double.tryParse(_controller.text) case final value?) {
-            widget.onChanged?.call(value);
-          }
+      onChanged: (text) {
+        final value = _textToValue(text);
+        // Unfinished text like "." does not change the value yet.
+        if ((value != null || text.isEmpty) && value != widget.value) {
+          widget.onChanged?.call(value);
         }
       },
     );
