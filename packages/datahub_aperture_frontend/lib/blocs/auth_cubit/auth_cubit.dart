@@ -14,13 +14,16 @@ class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
   @override
   final AuthService authService;
 
-  AuthCubit({required ApertureBootstrap bootstrap, AuthService? authService})
+  @override
+  final ApertureBootstrap bootstrap;
+
+  AuthCubit({required this.bootstrap, AuthService? authService})
     : authService = authService ?? AuthService.instance,
       super(AuthStateLoading()) {
-    _init(bootstrap);
+    _init();
   }
 
-  Future<void> _init(ApertureBootstrap bootstrap) async {
+  Future<void> _init() async {
     authService.stream.listen(_onAuthServiceUpdated);
     try {
       await authService.initialize(

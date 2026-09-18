@@ -4,12 +4,15 @@ import 'dart:io';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
+import 'package:datahub_aperture/api.dart';
+import 'package:datahub_aperture_frontend/utils/auth_callback_page.dart';
 import 'package:flutter/cupertino.dart';
 
 typedef AuthCallbackResult = ({String code, String state});
 
 Future<AuthCallbackResult> listenForAuthCallback(
-  Uri redirectUri, [
+  Uri redirectUri,
+  ApertureBootstrap bootstrap, [
   CancellationToken? cancel,
 ]) async {
   if (redirectUri.host != 'localhost' && redirectUri.host != '127.0.0.1') {
@@ -29,40 +32,29 @@ Future<AuthCallbackResult> listenForAuthCallback(
         );
       }
 
-      if (request.queryParams.containsKey('code') &&
-          request.queryParams.containsKey('state')) {
+      final success =
+          request.queryParams.containsKey('code') &&
+          request.queryParams.containsKey('state');
+      if (success) {
         completer.complete((
           code: request.queryParams['code']!.first,
           state: request.queryParams['state']!.first,
         ));
-        // TODO nice html
-        return HttpResponse(
-          request.requestUri,
-          200,
-          {
-            'content-type': ['text/html'],
-          },
-          Stream.value(
-            utf8.encode(
-              '<!DOCTYPE><html><head><title>Aperture</title></head><body><p>You can close this page now.</p></body></html>',
-            ),
-          ),
-        );
       } else {
         completer.completeError(
           ApiException('Invalid response from identity provider.'),
         );
-        return HttpResponse(
-          request.requestUri,
-          400,
-          {},
-          Stream.value(
-            utf8.encode(
-              '<!DOCTYPE><html><head><title>Aperture</title></head><body><p>There was an error trying to sign you in.</p></body></html>',
-            ),
-          ),
-        );
       }
+
+      final page = await renderAuthCallbackPage(bootstrap, success: success);
+      return HttpResponse(
+        request.requestUri,
+        success ? HttpStatus.ok : HttpStatus.badRequest,
+        {
+          'content-type': ['text/html; charset=utf-8'],
+        },
+        Stream.value(utf8.encode(page)),
+      );
     },
     (error, stack) => completer.completeError(error, stack),
     (error, stack) => completer.completeError(error, stack),
