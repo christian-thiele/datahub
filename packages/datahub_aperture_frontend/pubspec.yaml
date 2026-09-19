@@ -6,7 +6,7 @@ resolution: workspace
 
 publish_to: 'none'
 
-version: 0.1.0-dev.15
+version: 0.1.0-dev.16
 
 environment:
   sdk: ^3.9.0
@@ -45,7 +45,7 @@ dependencies:
   latlong2: ^0.9.1
 
   datahub: ^0.18.0-dev.26
-  datahub_aperture: ^0.1.0-dev.19
+  datahub_aperture: ^0.1.0-dev.20
   url_launcher: ^6.3.2
   pointycastle: ^4.0.0
   web: ^1.1.1

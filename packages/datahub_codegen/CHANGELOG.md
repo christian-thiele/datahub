@@ -1,3 +1,7 @@
+## 0.18.0-dev.17
+
+ - **FIX**(codegen): fixed auto generated enum list constraint.
+
 ## 0.18.0-dev.16
 
  - Update a dependency to the latest release.

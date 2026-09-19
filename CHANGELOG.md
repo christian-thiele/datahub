@@ -3,6 +3,42 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub_aperture` - `v0.1.0-dev.20`](#datahub_aperture---v010-dev20)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.16`](#datahub_aperture_frontend---v010-dev16)
+ - [`datahub_codegen` - `v0.18.0-dev.17`](#datahub_codegen---v0180-dev17)
+
+---
+
+#### `datahub_aperture` - `v0.1.0-dev.20`
+
+ - **FIX**(aperture): moved search logic to backend.
+ - **FEAT**(aperture): added titleTemplate, multiple display fields.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.16`
+
+ - **FIX**(aperture): moved search logic to backend.
+ - **FIX**(aperture): fixed number field empty state.
+ - **FIX**(aperture): fixed nested error messages.
+ - **FEAT**(aperture): added titleTemplate, multiple display fields.
+ - **FEAT**(aperture): added lookup field preview.
+
+#### `datahub_codegen` - `v0.18.0-dev.17`
+
+ - **FIX**(codegen): fixed auto generated enum list constraint.
+
+
 ## 2026-09-18
 
 ### Changes

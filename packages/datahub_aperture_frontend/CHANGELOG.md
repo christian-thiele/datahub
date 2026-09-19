@@ -1,3 +1,11 @@
+## 0.1.0-dev.16
+
+ - **FIX**(aperture): moved search logic to backend.
+ - **FIX**(aperture): fixed number field empty state.
+ - **FIX**(aperture): fixed nested error messages.
+ - **FEAT**(aperture): added titleTemplate, multiple display fields.
+ - **FEAT**(aperture): added lookup field preview.
+
 ## 0.1.0-dev.15
 
  - **FIX**(aperture): fixed translations.

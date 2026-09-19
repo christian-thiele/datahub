@@ -1,3 +1,8 @@
+## 0.1.0-dev.20
+
+ - **FIX**(aperture): moved search logic to backend.
+ - **FEAT**(aperture): added titleTemplate, multiple display fields.
+
 ## 0.1.0-dev.19
 
  - **FIX**(aperture): fixed translations.
