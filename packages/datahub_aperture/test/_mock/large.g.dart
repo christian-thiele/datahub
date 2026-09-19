@@ -100,7 +100,9 @@ abstract interface class $Large with DataObject<Large> {
     ),
     toJson: (value) =>
         $$codec.encodeList<EnumExample>(value, $$codec.encodeEnum),
-    constraints: [EnumConstraint(values: EnumExample.values)],
+    constraints: [
+      ElementConstraint(constraint: EnumConstraint(values: EnumExample.values)),
+    ],
   );
 
   static final $jsonProperty = DataField<Large, Map<String, dynamic>>(

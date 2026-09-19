@@ -5,6 +5,7 @@ import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/icons.dart';
 import 'package:datahub_aperture/services.dart';
+import 'package:datahub_aperture/src/data/meta/aperture_meta.dart';
 import 'package:datahub_aperture/utils.dart';
 
 ResourceDescription buildResourceDescription(
@@ -41,6 +42,7 @@ ResourceDescription buildResourceDescription(
   }).toList();
 
   final meta = bean.metaOfType<Meta>();
+  final apertureMeta = bean.metaOfType<ApertureMeta>();
 
   final isReadOnly = false;
   return ResourceDescription(
@@ -64,11 +66,11 @@ ResourceDescription buildResourceDescription(
           orElse: () => throw MissingIdFieldError(bean),
         )
         .name,
-    // TODO allow multiple display fields
-    displayField: bean.fields
+    displayFields: bean.fields
         .where((e) => e.hasMetaOfType<ApertureField>((e) => e.isDisplayField))
-        .firstOrNull
-        ?.name,
+        .map((e) => e.name)
+        .toList(),
+    titleTemplate: apertureMeta?.titleTemplate,
   );
 }
 
@@ -125,6 +127,9 @@ List<ResourceField>? _objectDescription(
   Iterable<DataBean> relatedBeans,
 ) {
   if (type == ResourceFieldType.list) {
+    final constraints = field.constraints.whereType<ElementConstraint>().map(
+      (e) => e.constraint,
+    );
     return [
       ResourceField(
         id: 'element',
@@ -137,8 +142,9 @@ List<ResourceField>? _objectDescription(
             for (final field in bean.fields)
               fieldDescription(bean, field, relatedBeans),
         ],
-        enumValues: field
-            .constraintOfType<EnumConstraint>()
+        enumValues: constraints
+            .whereType<EnumConstraint>()
+            .firstOrNull
             ?.values
             .map((e) => e.name)
             .toList(),

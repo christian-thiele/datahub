@@ -77,9 +77,20 @@ abstract interface class $ResourceDescription
     toJson: (value) => $$codec.encodeString(value),
   );
 
-  static final $displayField = DataField<ResourceDescription, String?>(
-    name: 'displayField',
-    valueOf: (p) => p.displayField,
+  static final $displayFields = DataField<ResourceDescription, List<String>>(
+    name: 'displayFields',
+    valueOf: (p) => p.displayFields,
+    fromJson: (value, {String? name}) => $$codec.decodeList<String>(
+      (value ?? const []),
+      $$codec.decodeString,
+      name: name,
+    ),
+    toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+  );
+
+  static final $titleTemplate = DataField<ResourceDescription, String?>(
+    name: 'titleTemplate',
+    valueOf: (p) => p.titleTemplate,
     fromJson: (value, {String? name}) =>
         $$codec.decodeNullable(value, $$codec.decodeString, name: name),
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
@@ -123,7 +134,8 @@ abstract interface class $ResourceDescription
           $fields,
           $relations,
           $idField,
-          $displayField,
+          $displayFields,
+          $titleTemplate,
           $readOnly,
           $revisable,
           $actions,
@@ -145,8 +157,9 @@ abstract interface class $ResourceDescription
     List<ResourceField>? fields,
     List<ResourceRelation>? relations,
     String? idField,
-    String? displayField,
-    bool nullDisplayField = false,
+    List<String>? displayFields,
+    String? titleTemplate,
+    bool nullTitleTemplate = false,
     bool? readOnly,
     bool? revisable,
     List<ResourceAction>? actions,
@@ -160,9 +173,10 @@ abstract interface class $ResourceDescription
       fields: fields ?? $data.fields,
       relations: relations ?? $data.relations,
       idField: idField ?? $data.idField,
-      displayField: nullDisplayField
+      displayFields: displayFields ?? $data.displayFields,
+      titleTemplate: nullTitleTemplate
           ? null
-          : (displayField ?? $data.displayField),
+          : (titleTemplate ?? $data.titleTemplate),
       readOnly: readOnly ?? $data.readOnly,
       revisable: revisable ?? $data.revisable,
       actions: actions ?? $data.actions,
@@ -180,7 +194,10 @@ abstract interface class $ResourceDescription
         growable: false,
       ),
       idField: data['idField'],
-      displayField: data['displayField'],
+      displayFields:
+          data['displayFields']?.cast<String>().toList(growable: false) ??
+          const [],
+      titleTemplate: data['titleTemplate'],
       readOnly: data['readOnly'],
       revisable: data['revisable'],
       actions: data['actions']?.cast<ResourceAction>().toList(growable: false),
@@ -221,9 +238,13 @@ abstract interface class $ResourceDescription
         data['idField'],
         name: DataCodec.childName(name, 'idField'),
       ),
-      displayField: $displayField.fromJson(
-        data['displayField'],
-        name: DataCodec.childName(name, 'displayField'),
+      displayFields: $displayFields.fromJson(
+        data['displayFields'],
+        name: DataCodec.childName(name, 'displayFields'),
+      ),
+      titleTemplate: $titleTemplate.fromJson(
+        data['titleTemplate'],
+        name: DataCodec.childName(name, 'titleTemplate'),
       ),
       readOnly: $readOnly.fromJson(
         data['readOnly'],
@@ -251,7 +272,8 @@ abstract interface class $ResourceDescription
       'fields': $fields.toJson($$data.fields),
       'relations': $relations.toJson($$data.relations),
       'idField': $idField.toJson($$data.idField),
-      'displayField': $displayField.toJson($$data.displayField),
+      'displayFields': $displayFields.toJson($$data.displayFields),
+      'titleTemplate': $titleTemplate.toJson($$data.titleTemplate),
       'readOnly': $readOnly.toJson($$data.readOnly),
       'revisable': $revisable.toJson($$data.revisable),
       'actions': $actions.toJson($$data.actions),

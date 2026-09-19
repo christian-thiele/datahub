@@ -68,15 +68,10 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
           ),
       ];
 
-      final displayName =
-          data.fieldData[resource.displayField ?? resource.idField]
-              ?.toString() ??
-          resource.name;
-
       if (!isClosed) {
         emit(
           ResourceElementEditValue(
-            title: displayName,
+            title: getElementTitle(resource, data),
             resource: resource,
             data: data,
             relations: relations,

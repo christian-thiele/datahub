@@ -4,7 +4,7 @@ import 'package:datahub_aperture_frontend/widgets/data/empty_list_view.dart';
 import 'package:flutter/material.dart';
 
 class EntityListView extends StatelessWidget {
-  final EntityListEntry Function(BuildContext context, int index) entryBuilder;
+  final Widget Function(BuildContext context, int index) entryBuilder;
   final int itemCount;
   final bool shrinkWrap;
   final Widget empty;

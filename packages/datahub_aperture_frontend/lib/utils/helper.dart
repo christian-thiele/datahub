@@ -4,6 +4,7 @@ import 'package:datahub/utils.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/models/view_models/filter_model.dart';
+import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/json_editor/model/json_value.dart';
 
 String filterDescription(FilterModel model) {
@@ -39,49 +40,6 @@ ResourceFilter buildFilter(
   );
 }
 
-bool filterMatches(ResourceData e, ResourceFilter? filter) {
-  if (filter == null) {
-    return true;
-  }
-
-  if (filter case ResourceFilter(:final type?, :final fieldId?, :final value)) {
-    final fieldValue = e.fieldData[fieldId];
-    switch (type) {
-      case ResourceFilterType.equals:
-        if (fieldValue.toString() != value.toString()) {
-          return false;
-        }
-      case ResourceFilterType.notEquals:
-        if (fieldValue.toString() == value.toString()) {
-          return false;
-        }
-      case ResourceFilterType.greaterThan:
-        throw UnimplementedError();
-      case ResourceFilterType.lessThan:
-        throw UnimplementedError();
-      case ResourceFilterType.contains:
-        if (value == null) {
-          return false;
-        }
-        if (!fieldValue.toString().contains(value)) {
-          return false;
-        }
-    }
-  }
-
-  if ((filter.and?.isNotEmpty ?? false) &&
-      filter.and!.any((f) => !filterMatches(e, f))) {
-    return false;
-  }
-
-  if ((filter.or?.isNotEmpty ?? false) &&
-      filter.or!.every((f) => !filterMatches(e, f))) {
-    return false;
-  }
-
-  return true;
-}
-
 String? validateFieldValue(ResourceField field, dynamic value) {
   if (field.readOnly) {
     return null;
@@ -113,6 +71,52 @@ String? validateFieldValue(ResourceField field, dynamic value) {
   }
 
   return null;
+}
+
+String getElementTitle(ResourceDescription resource, ResourceData element) {
+  if (resource.titleTemplate case final template?) {
+    return renderTemplate(resource, element, template);
+  }
+
+  if (resource.displayFields.firstOrNull case final field?) {
+    return fieldValueToDisplayText(
+      resource.fields.singleWhere((e) => e.id == field),
+      element.fieldData[field],
+    );
+  }
+
+  return element.id;
+}
+
+String renderTemplate(
+  ResourceDescription resource,
+  ResourceData element,
+  String template,
+) {
+  return template.replaceAllMapped(RegExp('{{\\W*([a-zA-Z_]+)\\W*}}'), (match) {
+    if (resource.fields.where((e) => e.id == match.group(1)!).singleOrNull
+        case final field?) {
+      return fieldValueToDisplayText(field, element.fieldData[field.id]);
+    }
+
+    return '???';
+  });
+}
+
+String fieldValueToDisplayText(ResourceField field, dynamic data) {
+  return switch (field) {
+    ResourceField(type: ResourceFieldType.timestamp) when data is DateTime =>
+      data.formatDateTime(),
+    ResourceField(type: ResourceFieldType.bytes) when data is List<int> =>
+      formatFileSize(data.length),
+    ResourceField(
+      type: ResourceFieldType.list,
+      objectDescription: [final elementField],
+    )
+        when data is List =>
+      data.map((e) => fieldValueToDisplayText(elementField, e)).join(', '),
+    _ => data.toString(),
+  };
 }
 
 /// Explains why [value] can not be saved from a JSON editor that has to hold

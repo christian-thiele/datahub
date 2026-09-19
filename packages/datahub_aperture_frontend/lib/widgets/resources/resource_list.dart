@@ -1,5 +1,6 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/models/view_models/paging.dart';
+import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/data/entity_list_view.dart';
 import 'package:flutter/material.dart';
@@ -35,18 +36,15 @@ class ResourceList extends StatelessWidget {
       shrinkWrap: shrinkWrap,
       entryBuilder: (context, index) {
         final item = entries[index];
-        return EntityListEntry(
+        return ResourceListEntry(
           onPressed: switch (onResourceClicked) {
             final callback? => () => callback(item),
             _ => () => context.go(
               '/resources/${Uri.encodeComponent(resource.id)}/view/${Uri.encodeComponent(item.id)}',
             ),
           },
-          icon: Icon(getIcon(resource.icon)),
-          label: resource.displayField != null
-              ? item.fieldData[resource.displayField].toString()
-              : item.id,
-          subLabel: resource.displayField != null ? item.id : null,
+          resource: resource,
+          element: item,
         );
       },
       itemCount: entries.length,
@@ -80,6 +78,89 @@ class ResourceList extends StatelessWidget {
               ),
             ],
           ),
+      ],
+    );
+  }
+}
+
+class ResourceListEntry extends StatelessWidget {
+  final VoidCallback onPressed;
+  final ResourceDescription resource;
+  final ResourceData element;
+
+  const ResourceListEntry({
+    super.key,
+    required this.onPressed,
+    required this.resource,
+    required this.element,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final fields = resource.displayFields
+        .map((id) => resource.fields.singleWhere((e) => e.id == id))
+        .toList();
+
+    return InkWell(
+      onTap: onPressed,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12.0),
+            child: IconTheme.merge(
+              child: Icon(getIcon(resource.icon)),
+              data: IconThemeData(size: 16),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(
+                    getElementTitle(resource, element),
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  Wrap(
+                    spacing: 16,
+                    runSpacing: 4,
+                    children: [
+                      for (final field in fields)
+                        _FieldValue(
+                          fieldName: field.name,
+                          value: fieldValueToDisplayText(
+                            field,
+                            element.fieldData[field.id],
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FieldValue extends StatelessWidget {
+  final String fieldName;
+  final String value;
+
+  const _FieldValue({required this.fieldName, required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text('$fieldName: ', style: Theme.of(context).textTheme.labelMedium),
+        Text(value, style: Theme.of(context).textTheme.bodyMedium),
       ],
     );
   }

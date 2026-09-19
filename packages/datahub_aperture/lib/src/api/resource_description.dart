@@ -15,7 +15,8 @@ class ResourceDescription extends $ResourceDescription {
   final List<ResourceField> fields;
   final List<ResourceRelation> relations;
   final String idField;
-  final String? displayField;
+  final List<String> displayFields;
+  final String? titleTemplate;
   final bool readOnly;
   final bool revisable;
   final List<ResourceAction> actions;
@@ -28,7 +29,8 @@ class ResourceDescription extends $ResourceDescription {
     required this.fields,
     required this.relations,
     required this.idField,
-    this.displayField,
+    this.displayFields = const [],
+    this.titleTemplate,
     required this.readOnly,
     required this.revisable,
     required this.actions,

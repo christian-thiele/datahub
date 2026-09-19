@@ -2,6 +2,7 @@ import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
+import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
 import 'package:datahub_aperture_frontend/widgets/resources/resource_list.dart';
@@ -84,7 +85,7 @@ class _LookupMenuState extends State<LookupMenu> {
       _pickPending = true;
       _linkedValue = value;
       _found = true;
-      _title = element.fieldData[resource.displayField]?.toString();
+      _title = getElementTitle(resource, element);
       _linkedId = element.id;
     });
     widget.controller.text = value;
@@ -125,7 +126,7 @@ class _LookupMenuState extends State<LookupMenu> {
       if (mounted && value == _linkedValue) {
         setState(() {
           _found = element != null;
-          _title = element?.fieldData[resource.displayField]?.toString();
+          _title = element != null ? getElementTitle(resource, element) : null;
           _linkedId = element?.id;
         });
       }

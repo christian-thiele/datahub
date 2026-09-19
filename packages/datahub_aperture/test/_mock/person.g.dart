@@ -24,6 +24,7 @@ abstract interface class $Person with DataObject<Person> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString(value, name: name),
     toJson: (value) => $$codec.encodeString(value),
+    meta: [const ApertureField(isDisplayField: true)],
     constraints: [
       const MinLengthConstraint<String?>(length: 3),
       const MaxLengthConstraint<String?>(length: 30),
@@ -46,6 +47,7 @@ abstract interface class $Person with DataObject<Person> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeList<String>(value, $$codec.decodeString, name: name),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    meta: [const ApertureField(isDisplayField: true)],
     constraints: [
       const ElementConstraint<String?, List<String?>>(
         constraint: const RegExpConstraint<String?>(expression: '^[^\\s]*\$'),
@@ -94,7 +96,11 @@ abstract interface class $Person with DataObject<Person> {
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
-    meta: [const Meta(icon: 58513), const ApertureRelation<Person>()],
+    meta: [
+      const Meta(icon: 58513),
+      const ApertureRelation<Person>(),
+      const ApertureMeta(titleTemplate: '{{ firstName }} {{ lastName }}'),
+    ],
   );
 
   @override

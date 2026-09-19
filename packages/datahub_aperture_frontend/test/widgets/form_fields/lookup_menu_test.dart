@@ -107,7 +107,9 @@ bool _isValueHidden(WidgetTester tester) =>
 
 IconData? _linkIcon(WidgetTester tester) =>
     switch (_field(tester).decoration?.suffixIcon) {
-      Icon(:final icon) || Tooltip(child: Icon(:final icon)) => icon,
+      Icon(:final icon) ||
+      Tooltip(child: Icon(:final icon)) ||
+      InkWell(child: Icon(:final icon)) => icon,
       _ => null,
     };
 
@@ -260,7 +262,7 @@ void main() {
           ],
           relations: [],
           idField: 'id',
-          displayField: 'name',
+          displayFields: ['name'],
           readOnly: false,
           revisable: false,
           actions: [],

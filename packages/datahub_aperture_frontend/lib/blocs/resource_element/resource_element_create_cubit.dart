@@ -20,14 +20,19 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
     emit(ResourceElementCreateLoading());
     try {
       final resource = await _resourceRepository.getDescription(resourceId);
-
       final fields = resource.fields.where((f) => !f.readOnly).toList();
+      final changes = <ResourceField, dynamic>{};
+      for (final field in fields.where(
+        (e) => e.type == ResourceFieldType.list,
+      )) {
+        changes[field] = [];
+      }
 
       if (!isClosed) {
         emit(
           ResourceElementCreateEditing(
             fields: fields,
-            changes: {},
+            changes: changes,
             validation: {},
             description: resource,
           ),
