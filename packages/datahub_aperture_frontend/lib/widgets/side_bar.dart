@@ -63,7 +63,7 @@ class SideBar extends StatelessWidget {
                     child: InkWell(
                       borderRadius: BorderRadius.circular(8),
                       onTap: () => context.go('/'),
-                      child: BrandLogo(height: 32, markOnly: compact),
+                      child: BrandLogo(height: 32, compact: compact),
                     ),
                   ),
                   if (!compact && environment != Environment.prod)

@@ -33,9 +33,6 @@ class DynamicMemoryImage extends StatelessWidget {
         width: width,
         height: height,
         fit: BoxFit.contain,
-        colorFilter: color != null
-            ? ColorFilter.mode(color!, BlendMode.color)
-            : null,
       );
     }
 
@@ -44,7 +41,6 @@ class DynamicMemoryImage extends StatelessWidget {
       errorBuilder: (context, _, _) => fallback,
       width: width,
       height: height,
-      color: color,
     );
   }
 }

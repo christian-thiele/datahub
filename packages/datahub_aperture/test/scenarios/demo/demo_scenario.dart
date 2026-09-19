@@ -19,6 +19,7 @@ import 'data/support_ticket.dart';
 import 'data/ticket_status.dart';
 import 'data/time_entry.dart';
 import 'demo_auth_service.dart';
+import 'demo_logo.dart';
 import 'demo_seed.dart';
 
 /// A realistic backoffice for "Brightline Digital", a fictional software
@@ -39,7 +40,7 @@ void main(List<String> args) => runApp([
     routes: [
       ApertureApi(
         title: const Config.value('Brightline Backoffice'),
-        theme: const ApertureTheme(color: 0xff0f766e),
+        theme: ApertureTheme(color: 0xff0f766e, logo: brightlineLogo),
         oidcIssuer: const Config.value(
           'http://localhost:8081/realms/local-oidc',
         ),
