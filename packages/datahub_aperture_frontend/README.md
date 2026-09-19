@@ -29,7 +29,7 @@ connects to the Aperture REST API and provides a browser-based admin UI for mana
 - Column filtering on resource list views
 - Task Manager module — lists task invocations, streams live logs, shows progress and duration
 - OIDC authorization code flow with PKCE (automatic token refresh via shared preferences)
-- Configurable seed color theming at runtime
+- Configurable seed color theming at runtime, with light and dark mode following the system setting
 - Localized in English and German
 
 ---

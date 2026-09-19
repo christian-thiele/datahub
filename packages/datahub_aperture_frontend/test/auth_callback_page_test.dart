@@ -42,6 +42,6 @@ void main() {
     expect(page, contains('<body class="error">'));
     expect(page, contains('Sign-in failed'));
     expect(page, contains('data:image/svg+xml;base64,${base64Encode(logo)}'));
-    expect(page, contains('--logo-width: 128px;'));
+    expect(page, contains('--logo-width: 160px;'));
   });
 }

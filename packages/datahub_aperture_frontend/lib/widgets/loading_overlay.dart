@@ -1,3 +1,4 @@
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
 import 'package:flutter/material.dart';
 
@@ -27,7 +28,7 @@ class LoadingOverlay extends StatelessWidget {
             bottom: 0,
             child: ModalBarrier(
               dismissible: false,
-              color: Theme.of(context).dialogTheme.barrierColor,
+              color: ApertureColors.of(context).canvas.withAlpha(180),
             ),
           ),
         if (loading) Center(child: LoadingView(message: message)),

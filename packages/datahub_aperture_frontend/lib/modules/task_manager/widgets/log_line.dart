@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -52,8 +53,9 @@ class _LogLineState extends State<LogLine> {
         setState(() => _isExpanded = !_isExpanded);
         FocusScope.of(context).unfocus();
       },
+      borderRadius: BorderRadius.circular(ApertureThemeData.radiusSmall),
       child: DefaultTextStyle.merge(
-        style: GoogleFonts.jetBrainsMono(),
+        style: GoogleFonts.jetBrainsMono(fontSize: 12, height: 1.6),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -62,19 +64,33 @@ class _LogLineState extends State<LogLine> {
               spacing: 4,
               children: [
                 if (timestamp != null)
-                  Text.rich(TextSpan(text: '${timestamp.formatDateTime()} ')),
+                  Text.rich(
+                    TextSpan(
+                      text: '${timestamp.formatDateTime()} ',
+                      style: TextStyle(
+                        color: ApertureColors.of(context).textMuted,
+                      ),
+                    ),
+                  ),
                 if (severityLevel != null)
                   Text.rich(
                     TextSpan(
                       text: severityLevel.name.padRight(8, ' ').toUpperCase(),
                       style: TextStyle(
+                        fontWeight: FontWeight.w600,
                         color: switch (severityLevel) {
                           SeverityLevel.error || SeverityLevel.fatal =>
-                            Theme.of(context).colorScheme.error,
-                          SeverityLevel.warning => Colors.orange,
-                          SeverityLevel.info => Colors.blue,
-                          SeverityLevel.trace => Colors.green,
-                          SeverityLevel.debug => Colors.green,
+                            ApertureColors.of(context).danger,
+                          SeverityLevel.warning => ApertureColors.of(
+                            context,
+                          ).warning,
+                          SeverityLevel.info => ApertureColors.of(context).link,
+                          SeverityLevel.trace => ApertureColors.of(
+                            context,
+                          ).textMuted,
+                          SeverityLevel.debug => ApertureColors.of(
+                            context,
+                          ).success,
                         },
                       ),
                     ),

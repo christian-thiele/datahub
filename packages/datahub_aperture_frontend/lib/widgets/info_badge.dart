@@ -1,10 +1,18 @@
 import 'package:flutter/material.dart';
 
+/// A small rounded label with an icon, tinted in [color].
 class InfoBadge extends StatelessWidget {
   final Widget icon;
   final Widget label;
+
+  /// The accent colour, defaults to the primary colour.
   final Color? color;
+
+  /// Colour of text and icon, defaults to [color].
   final Color? foregroundColor;
+
+  /// Background colour, defaults to a tint of [color].
+  final Color? backgroundColor;
   final double minWidth;
 
   const InfoBadge({
@@ -13,30 +21,44 @@ class InfoBadge extends StatelessWidget {
     required this.label,
     this.color,
     this.foregroundColor,
+    this.backgroundColor,
     this.minWidth = 0.0,
   });
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = color ?? Theme.of(context).colorScheme.primary;
-    final effectiveForegroundColor =
-        foregroundColor ?? Theme.of(context).colorScheme.onPrimary;
+    final scheme = Theme.of(context).colorScheme;
+    final effectiveColor = color ?? scheme.primary;
+    final effectiveForegroundColor = foregroundColor ?? effectiveColor;
+    final effectiveBackgroundColor =
+        backgroundColor ??
+        Color.alphaBlend(
+          effectiveColor.withAlpha(
+            scheme.brightness == Brightness.dark ? 46 : 26,
+          ),
+          scheme.surface,
+        );
     return Container(
       decoration: BoxDecoration(
-        color: effectiveColor,
-        borderRadius: BorderRadius.circular(8.0),
+        color: effectiveBackgroundColor,
+        borderRadius: BorderRadius.circular(999),
       ),
-      padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       child: ConstrainedBox(
         constraints: BoxConstraints(minWidth: minWidth),
         child: DefaultTextStyle.merge(
-          style: TextStyle(color: effectiveForegroundColor),
+          style: Theme.of(context).textTheme.labelMedium?.copyWith(
+            color: effectiveForegroundColor,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.3,
+          ),
           child: IconTheme.merge(
-            data: IconThemeData(color: effectiveForegroundColor, size: 16),
+            data: IconThemeData(color: effectiveForegroundColor, size: 14),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
-              spacing: 8,
+              spacing: 6,
               children: [icon, label],
             ),
           ),
@@ -44,6 +66,30 @@ class InfoBadge extends StatelessWidget {
       ),
     );
   }
+}
+
+/// An [InfoBadge] with an icon and a text label.
+class StatusPill extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final Color? background;
+
+  const StatusPill({
+    super.key,
+    required this.label,
+    required this.icon,
+    required this.color,
+    this.background,
+  });
+
+  @override
+  Widget build(BuildContext context) => InfoBadge(
+    icon: Icon(icon),
+    label: Text(label),
+    color: color,
+    backgroundColor: background,
+  );
 }
 
 class ProgressInfoBadge extends StatelessWidget {
@@ -60,18 +106,17 @@ class ProgressInfoBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     return Stack(
       fit: StackFit.passthrough,
       children: [
         InfoBadge(
-          color: Theme.of(context).colorScheme.onPrimary,
-          foregroundColor: Theme.of(context).colorScheme.primary,
           icon: SizedBox(
             width: 12,
             height: 12,
             child: CircularProgressIndicator(
-              color: Theme.of(context).colorScheme.primary,
-              strokeWidth: 1,
+              color: scheme.primary,
+              strokeWidth: 1.5,
             ),
           ),
           label: Text('${(progress * 100).round()}%'),
@@ -81,14 +126,14 @@ class ProgressInfoBadge extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           clipper: _ProgressClipper(progress),
           child: InfoBadge(
-            color: Theme.of(context).colorScheme.primary,
-            foregroundColor: Theme.of(context).colorScheme.onPrimary,
+            backgroundColor: scheme.primary,
+            foregroundColor: scheme.onPrimary,
             icon: SizedBox(
               width: 12,
               height: 12,
               child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.onPrimary,
-                strokeWidth: 1,
+                color: scheme.onPrimary,
+                strokeWidth: 1.5,
               ),
             ),
             label: Text('${(progress * 100).round()}%'),

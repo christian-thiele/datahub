@@ -23,7 +23,6 @@ import 'utils/bootstrap.dart';
 import 'utils/theme.dart';
 import 'widgets/error_view.dart';
 import 'widgets/side_bar_page.dart';
-import 'widgets/web_app_bar.dart';
 
 class ApertureApp extends StatefulWidget {
   const ApertureApp({super.key});
@@ -148,8 +147,7 @@ class _ApertureAppState extends State<ApertureApp>
             ],
           ),
         ],
-        builder: (context, state, page) =>
-            Scaffold(appBar: WebAppBar(), body: page),
+        builder: (context, state, page) => Scaffold(body: page),
       ),
     ],
   );
@@ -170,6 +168,10 @@ class _ApertureAppState extends State<ApertureApp>
           },
           theme: ApertureThemeData.buildWithSeedColor(
             Color(Bootstrap.of(context).theme.color),
+          ),
+          darkTheme: ApertureThemeData.buildWithSeedColor(
+            Color(Bootstrap.of(context).theme.color),
+            brightness: Brightness.dark,
           ),
           localizationsDelegates: [
             S.delegate,

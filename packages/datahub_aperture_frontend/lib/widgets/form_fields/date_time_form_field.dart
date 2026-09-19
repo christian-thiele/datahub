@@ -137,8 +137,8 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
               border: Border(
                 left: BorderSide(
                   color: widget.onChanged != null
-                      ? Theme.of(context).colorScheme.onSurface
-                      : Theme.of(context).disabledColor,
+                      ? Theme.of(context).colorScheme.outline
+                      : Theme.of(context).colorScheme.outlineVariant,
                 ),
               ),
             ),

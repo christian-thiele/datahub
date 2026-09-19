@@ -7,6 +7,7 @@ class EntityListView extends StatelessWidget {
   final Widget Function(BuildContext context, int index) entryBuilder;
   final int itemCount;
   final bool shrinkWrap;
+  final bool dividers;
   final Widget empty;
 
   const EntityListView({
@@ -15,6 +16,7 @@ class EntityListView extends StatelessWidget {
     required this.itemCount,
     this.empty = const EmptyListView(),
     this.shrinkWrap = false,
+    this.dividers = true,
   });
 
   @override
@@ -28,7 +30,8 @@ class EntityListView extends StatelessWidget {
         return empty;
       },
       itemCount: max(1, itemCount),
-      separatorBuilder: (context, _) => Divider(height: 0),
+      separatorBuilder: (context, _) =>
+          dividers ? const Divider() : const SizedBox(height: 2),
       shrinkWrap: shrinkWrap,
       clipBehavior: Clip.antiAlias,
     );
@@ -54,22 +57,22 @@ class EntityListEntry extends StatelessWidget {
     return InkWell(
       onTap: onPressed,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
-          spacing: 16,
+          spacing: 12,
           children: [
             IconTheme.merge(child: icon, data: IconThemeData(size: 16)),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  Text(label, style: Theme.of(context).textTheme.labelLarge),
                   if (subLabel case final subLabel?)
                     Text(
                       subLabel,
                       style: Theme.of(context).textTheme.labelMedium,
                     ),
-                  Text(label),
                 ],
               ),
             ),

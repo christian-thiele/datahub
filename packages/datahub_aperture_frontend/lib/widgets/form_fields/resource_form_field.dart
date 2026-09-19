@@ -1,4 +1,5 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/widgets/geo_editor/model/geo_type_restriction.dart';
 import 'package:datahub_aperture_frontend/widgets/icon_text.dart';
 import 'package:flutter/material.dart';
@@ -59,15 +60,20 @@ class ResourceFormField extends StatelessWidget {
       labelStyle: TextStyle(fontWeight: isChanged ? FontWeight.bold : null),
       enabledBorder: switch ((field.readOnly, isChanged)) {
         (true, _) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(ApertureThemeData.radius),
           borderSide: BorderSide(
             color: Theme.of(context).colorScheme.outlineVariant,
           ),
         ),
         (false, true) => OutlineInputBorder(
+          borderRadius: BorderRadius.circular(ApertureThemeData.radius),
           borderSide: BorderSide(color: Theme.of(context).colorScheme.primary),
         ),
         _ => null,
       },
+      fillColor: field.readOnly
+          ? Theme.of(context).colorScheme.surfaceContainerLow
+          : null,
     );
   }
 

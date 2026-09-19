@@ -1,9 +1,9 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/models/view_models/filter_model.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/widgets/filter/search_field.dart';
 import 'package:datahub_aperture_frontend/widgets/filter/text_filter_section.dart';
-import 'package:datahub_aperture_frontend/widgets/icon_text.dart';
 import 'package:flutter/material.dart';
 
 import 'bool_filter_section.dart';
@@ -40,8 +40,10 @@ class FilterView extends StatelessWidget {
   Widget build(BuildContext context) {
     final filterButton = MenuAnchor(
       alignmentOffset: Offset(0, 8),
-      builder: (context, controller, _) => ActionChip(
-        label: IconText(Icons.filter_alt_outlined, 'Add Filter', iconSize: 16),
+      builder: (context, controller, _) => OutlinedButton.icon(
+        style: _toolbarButtonStyle,
+        icon: Icon(Icons.filter_list, size: 18),
+        label: Text('Add Filter'),
         onPressed: () {
           controller.isOpen ? controller.close() : controller.open();
         },
@@ -97,19 +99,13 @@ class FilterView extends StatelessWidget {
 
     final sortButton = MenuAnchor(
       alignmentOffset: Offset(0, 8),
-      builder: (context, controller, _) => ActionChip(
-        label: Row(
-          mainAxisSize: MainAxisSize.min,
-          spacing: 4,
-          children: [
-            Icon(Icons.sort, size: 16),
-            Text('Sort by ${sortField?.name}'),
-            Icon(
-              sortAscending ? Icons.arrow_drop_up : Icons.arrow_drop_down,
-              size: 16,
-            ),
-          ],
+      builder: (context, controller, _) => OutlinedButton.icon(
+        style: _toolbarButtonStyle,
+        icon: Icon(
+          sortAscending ? Icons.arrow_upward : Icons.arrow_downward,
+          size: 16,
         ),
+        label: Text('Sort by ${sortField?.name}'),
         onPressed: () {
           controller.isOpen ? controller.close() : controller.open();
         },
@@ -123,9 +119,10 @@ class FilterView extends StatelessWidget {
                 trailingIcon: isSelected
                     ? Icon(
                         sortAscending
-                            ? Icons.arrow_drop_up
-                            : Icons.arrow_drop_down,
+                            ? Icons.arrow_upward
+                            : Icons.arrow_downward,
                         size: 16,
+                        color: ApertureColors.of(context).link,
                       )
                     : null,
                 child: Text(field.name),
@@ -140,37 +137,70 @@ class FilterView extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      spacing: 8,
+      spacing: 12,
       children: [
-        if (onSearchSubmit case final onSearchSubmit?)
-          Row(
-            mainAxisSize: MainAxisSize.max,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            spacing: 8,
-            children: [
-              Expanded(
-                child: SearchField(value: search, onSubmit: onSearchSubmit),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final buttons = [
+              filterButton,
+              if (sortFields.isNotEmpty) sortButton,
+            ];
+            final searchField = switch (onSearchSubmit) {
+              final onSearchSubmit? => SearchField(
+                value: search,
+                onSubmit: onSearchSubmit,
               ),
+              null => null,
+            };
+
+            if (constraints.maxWidth < 560) {
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 8,
+                children: [
+                  ?searchField,
+                  Wrap(spacing: 8, runSpacing: 8, children: buttons),
+                ],
+              );
+            }
+
+            return Row(
+              mainAxisSize: MainAxisSize.max,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              spacing: 8,
+              children: [
+                if (searchField != null)
+                  Expanded(child: searchField)
+                else
+                  Spacer(),
+                ...buttons,
+              ],
+            );
+          },
+        ),
+        if (filters.isNotEmpty)
+          Wrap(
+            runSpacing: 8,
+            spacing: 8,
+            direction: Axis.horizontal,
+            alignment: WrapAlignment.start,
+            runAlignment: WrapAlignment.start,
+            children: [
+              for (final (idx, filter) in filters.indexed)
+                RawChip(
+                  avatar: Icon(Icons.filter_alt_outlined),
+                  label: Text(filterDescription(filter)),
+                  onDeleted: () => onRemove(idx),
+                  deleteIcon: Icon(Icons.close, size: 16),
+                ),
             ],
           ),
-        Wrap(
-          runSpacing: 8,
-          spacing: 8,
-          direction: Axis.horizontal,
-          alignment: WrapAlignment.start,
-          runAlignment: WrapAlignment.start,
-          children: [
-            filterButton,
-            if (sortFields.isNotEmpty) sortButton,
-
-            for (final (idx, filter) in filters.indexed)
-              RawChip(
-                label: Text(filterDescription(filter)),
-                onDeleted: () => onRemove(idx),
-              ),
-          ],
-        ),
       ],
     );
   }
+
+  static final _toolbarButtonStyle = OutlinedButton.styleFrom(
+    minimumSize: Size(0, 40),
+    padding: EdgeInsets.symmetric(horizontal: 14),
+  );
 }

@@ -4,6 +4,7 @@ import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:flutter/material.dart';
 
 import '../models/task_model.dart';
+import 'invocation_overview.dart';
 
 class DurationCard extends StatefulWidget {
   final TaskModel task;
@@ -32,20 +33,10 @@ class _DurationCardState extends State<DurationCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Card.outlined(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Duration', style: Theme.of(context).textTheme.labelMedium),
-            Text(
-              taskDuration(widget.task),
-              style: Theme.of(context).textTheme.bodyLarge,
-            ),
-          ],
-        ),
-      ),
+    return StatCard(
+      icon: Icons.timer_outlined,
+      label: 'Duration',
+      value: taskDuration(widget.task),
     );
   }
 

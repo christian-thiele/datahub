@@ -2,6 +2,8 @@ import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/widgets/form_fields/date_time_form_field.dart';
 import 'package:flutter/material.dart';
 
+import 'aperture_dialog.dart';
+
 class ScheduleDialog extends StatefulWidget {
   final String title;
 
@@ -32,36 +34,27 @@ class _ScheduleDialogState extends State<ScheduleDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-        child: SizedBox(
-          width: 256 + 128,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            spacing: 16,
-            children: [
-              Text(widget.title, style: Theme.of(context).textTheme.titleLarge),
-              DateTimeFormField(
-                decoration: InputDecoration(icon: Icon(Icons.calendar_month)),
-                value: value,
-                onChanged: (value) {
-                  setState(() {
-                    this.value = value;
-                  });
-                },
-              ),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: FilledButton(
-                  onPressed: () => Navigator.pop(context, value),
-                  child: Text(S.of(context).saveAndSchedule),
-                ),
-              ),
-            ],
-          ),
+    return ApertureDialog(
+      title: widget.title,
+      icon: Icons.schedule,
+      actions: [
+        OutlinedButton(
+          onPressed: () => Navigator.pop(context),
+          child: Text(S.of(context).cancel),
         ),
+        FilledButton(
+          onPressed: () => Navigator.pop(context, value),
+          child: Text(S.of(context).saveAndSchedule),
+        ),
+      ],
+      child: DateTimeFormField(
+        decoration: InputDecoration(prefixIcon: Icon(Icons.calendar_month)),
+        value: value,
+        onChanged: (value) {
+          setState(() {
+            this.value = value;
+          });
+        },
       ),
     );
   }

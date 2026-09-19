@@ -11,9 +11,13 @@ class ValueView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
+      spacing: 2,
       children: [
         Text(label, style: Theme.of(context).textTheme.labelMedium),
-        value,
+        DefaultTextStyle.merge(
+          style: Theme.of(context).textTheme.labelLarge,
+          child: value,
+        ),
       ],
     );
   }

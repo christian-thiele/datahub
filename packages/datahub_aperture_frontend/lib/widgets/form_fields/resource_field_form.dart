@@ -33,11 +33,11 @@ class ResourceFieldForm extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      spacing: 12,
+      spacing: 20,
       children: [
         BreakpointLayout(
-          breakPoint: 1024,
-          spacing: 12,
+          breakPoint: 960,
+          spacing: 16,
           layoutSpacing: 24,
           children: [
             for (final field in fields)
@@ -83,10 +83,8 @@ class ResourceFieldForm extends StatelessWidget {
                   onPressed: () => onSavePressed?.call(null),
                 ),*/
                   MenuItemButton(
-                    child: IconText(
-                      Icons.schedule,
-                      S.of(context).saveAndSchedule,
-                    ),
+                    leadingIcon: Icon(Icons.schedule),
+                    child: Text(S.of(context).saveAndSchedule),
                     onPressed: () {
                       showDialog(
                         context: context,
@@ -102,7 +100,7 @@ class ResourceFieldForm extends StatelessWidget {
                   ),
                 ],
               ],
-              child: IconText(Icons.save, S.of(context).save),
+              child: IconText(Icons.check, S.of(context).save),
             ),
           ),
       ],

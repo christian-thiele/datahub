@@ -1,3 +1,4 @@
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:flutter/material.dart';
 
 class BasePage extends StatelessWidget {
@@ -7,8 +8,15 @@ class BasePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 720;
     return Material(
-      child: Padding(padding: EdgeInsets.all(16), child: child),
+      color: ApertureColors.of(context).canvas,
+      child: Padding(
+        padding: compact
+            ? const EdgeInsets.all(16)
+            : const EdgeInsets.fromLTRB(32, 28, 32, 24),
+        child: child,
+      ),
     );
   }
 }

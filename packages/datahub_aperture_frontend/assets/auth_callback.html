@@ -13,45 +13,81 @@
 
     :root {
       --primary: {{primary}};
+      --success: {{success}};
       --error: {{error}};
+      --canvas: {{canvas}};
       --surface: {{surface}};
+      --border: {{border}};
       --on-surface: {{onSurface}};
+      --text-strong: {{textStrong}};
+      --text-muted: {{textMuted}};
+      --success-subtle: {{successSubtle}};
+      --error-subtle: {{errorSubtle}};
       --shadow: {{shadow}};
       --logo-color: {{logoColor}};
       --logo-width: {{logoWidth}};
     }
 
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --primary: {{primaryDark}};
+        --success: {{successDark}};
+        --error: {{errorDark}};
+        --canvas: {{canvasDark}};
+        --surface: {{surfaceDark}};
+        --border: {{borderDark}};
+        --on-surface: {{onSurfaceDark}};
+        --text-strong: {{textStrongDark}};
+        --text-muted: {{textMutedDark}};
+        --success-subtle: {{successSubtleDark}};
+        --error-subtle: {{errorSubtleDark}};
+        --shadow: {{shadowDark}};
+        --logo-color: {{logoColorDark}};
+      }
+    }
+
     body {
       display: flex;
-      flex-direction: column;
+      align-items: center;
+      justify-content: center;
       min-height: 100vh;
       margin: 0;
-      background: var(--surface);
+      padding: 16px;
+      box-sizing: border-box;
+      background: radial-gradient(circle at 5% -5%, color-mix(in srgb, var(--primary) 11%, transparent), transparent 70%) var(--canvas);
       color: var(--on-surface);
       font: 14px / 1.5 Poppins, sans-serif;
-      letter-spacing: 0.5px;
     }
 
     .success {
-      --accent: var(--primary);
+      --accent: var(--success);
+      --accent-subtle: var(--success-subtle);
     }
 
     .error {
       --accent: var(--error);
+      --accent-subtle: var(--error-subtle);
     }
 
-    header {
+    main {
       display: flex;
-      align-items: center;
-      height: 84px;
-      padding: 0 24px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      width: 100%;
+      max-width: 400px;
+      box-sizing: border-box;
+      padding: 36px 32px 32px;
       background: var(--surface);
-      box-shadow: 0 0 2px var(--shadow);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 12px 32px -8px var(--shadow);
     }
 
     .logo {
       width: var(--logo-width);
-      height: 48px;
+      height: 40px;
+      margin-bottom: 24px;
       object-fit: scale-down;
       filter: url(#tint);
     }
@@ -60,20 +96,20 @@
       flood-color: var(--logo-color);
     }
 
-    main {
+    .icon {
       display: flex;
-      flex: 1;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      padding: 16px;
-      text-align: center;
+      width: 44px;
+      height: 44px;
+      margin-bottom: 8px;
+      border-radius: 50%;
+      background: var(--accent-subtle);
     }
 
-    .icon {
-      width: 48px;
-      height: 48px;
+    .icon svg {
+      width: 24px;
+      height: 24px;
       fill: var(--accent);
     }
 
@@ -84,16 +120,16 @@
 
     h1 {
       margin: 0;
-      color: var(--accent);
-      font-size: 22px;
-      font-weight: 400;
+      color: var(--text-strong);
+      font-size: 20px;
+      font-weight: 700;
       line-height: 28px;
-      letter-spacing: 0;
+      letter-spacing: -0.2px;
     }
 
     p {
-      max-width: 512px;
       margin: 0;
+      color: var(--text-muted);
     }
   </style>
 </head>
@@ -104,16 +140,16 @@
     <feComposite in2="SourceAlpha" operator="in"/>
   </filter>
 </svg>
-<header>
-  <img class="logo" src="{{logo}}" alt="{{title}}">
-</header>
 <main>
-  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-    <path class="icon-success"
-          d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
-    <path class="icon-error"
-          d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
-  </svg>
+  <img class="logo" src="{{logo}}" alt="{{title}}">
+  <div class="icon">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path class="icon-success"
+            d="M16.59 7.58 10 14.17l-3.59-3.58L5 12l5 5 8-8zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+      <path class="icon-error"
+            d="M11 15h2v2h-2zm0-8h2v6h-2zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
+    </svg>
+  </div>
   <h1>{{headline}}</h1>
   <p>{{message}}</p>
 </main>

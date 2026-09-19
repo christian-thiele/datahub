@@ -438,6 +438,146 @@ class S {
       args: [],
     );
   }
+
+  /// `Sign out`
+  String get logout {
+    return Intl.message('Sign out', name: 'logout', desc: '', args: []);
+  }
+
+  /// `Resources`
+  String get resources {
+    return Intl.message('Resources', name: 'resources', desc: '', args: []);
+  }
+
+  /// `Modules`
+  String get modules {
+    return Intl.message('Modules', name: 'modules', desc: '', args: []);
+  }
+
+  /// `Reload configuration`
+  String get reloadConfiguration {
+    return Intl.message(
+      'Reload configuration',
+      name: 'reloadConfiguration',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Welcome back`
+  String get signInTitle {
+    return Intl.message(
+      'Welcome back',
+      name: 'signInTitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sign in with your organization account to continue.`
+  String get signInSubtitle {
+    return Intl.message(
+      'Sign in with your organization account to continue.',
+      name: 'signInSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Welcome to {appTitle}`
+  String dashboardTitle(Object appTitle) {
+    return Intl.message(
+      'Welcome to $appTitle',
+      name: 'dashboardTitle',
+      desc: '',
+      args: [appTitle],
+    );
+  }
+
+  /// `Pick a resource or module to get started.`
+  String get dashboardSubtitle {
+    return Intl.message(
+      'Pick a resource or module to get started.',
+      name: 'dashboardSubtitle',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `New element`
+  String get newElement {
+    return Intl.message('New element', name: 'newElement', desc: '', args: []);
+  }
+
+  /// `{from}–{to} of {total}`
+  String pageOf(Object from, Object to, Object total) {
+    return Intl.message(
+      '$from–$to of $total',
+      name: 'pageOf',
+      desc: '',
+      args: [from, to, total],
+    );
+  }
+
+  /// `{from}–{to}`
+  String pageFrom(Object from, Object to) {
+    return Intl.message(
+      '$from–$to',
+      name: 'pageFrom',
+      desc: '',
+      args: [from, to],
+    );
+  }
+
+  /// `Status`
+  String get status {
+    return Intl.message('Status', name: 'status', desc: '', args: []);
+  }
+
+  /// `Live`
+  String get live {
+    return Intl.message('Live', name: 'live', desc: '', args: []);
+  }
+
+  /// `Scheduled`
+  String get scheduled {
+    return Intl.message('Scheduled', name: 'scheduled', desc: '', args: []);
+  }
+
+  /// `Outdated`
+  String get outdated {
+    return Intl.message('Outdated', name: 'outdated', desc: '', args: []);
+  }
+
+  /// `Try again`
+  String get tryAgain {
+    return Intl.message('Try again', name: 'tryAgain', desc: '', args: []);
+  }
+
+  /// `Something went wrong.`
+  String get errorOccurred {
+    return Intl.message(
+      'Something went wrong.',
+      name: 'errorOccurred',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `{count} fields`
+  String fieldCount(Object count) {
+    return Intl.message(
+      '$count fields',
+      name: 'fieldCount',
+      desc: '',
+      args: [count],
+    );
+  }
+
+  /// `Module`
+  String get module {
+    return Intl.message('Module', name: 'module', desc: '', args: []);
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

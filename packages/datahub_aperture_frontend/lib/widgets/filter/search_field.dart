@@ -1,4 +1,5 @@
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:flutter/material.dart';
 
 class SearchField extends StatefulWidget {
@@ -43,8 +44,14 @@ class _SearchFieldState extends State<SearchField> {
           controller: _controller,
           decoration: InputDecoration(
             prefixIcon: Icon(Icons.search),
+            prefixIconConstraints: BoxConstraints(minWidth: 40, minHeight: 40),
+            suffixIconConstraints: BoxConstraints(minWidth: 40, minHeight: 40),
+            contentPadding: EdgeInsets.symmetric(vertical: 10),
             enabledBorder: (_controller.text.isNotEmpty)
                 ? OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(
+                      ApertureThemeData.radius,
+                    ),
                     borderSide: BorderSide(
                       color: Theme.of(context).colorScheme.primary,
                     ),

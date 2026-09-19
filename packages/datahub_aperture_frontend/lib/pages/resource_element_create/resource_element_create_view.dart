@@ -22,15 +22,17 @@ class ResourceElementCreateView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: ResourceFieldForm(
-        fields: fields,
-        data: data,
-        changes: changes,
-        validations: validations,
-        onFieldValueChanged: onFieldValueChanged,
-        onSavePressed: onSavePressed,
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(20),
+        child: ResourceFieldForm(
+          fields: fields,
+          data: data,
+          changes: changes,
+          validations: validations,
+          onFieldValueChanged: onFieldValueChanged,
+          onSavePressed: onSavePressed,
+        ),
       ),
     );
   }

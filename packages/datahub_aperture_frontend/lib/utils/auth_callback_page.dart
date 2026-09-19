@@ -4,32 +4,59 @@ import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 /// Renders the page the browser shows when the identity provider redirects
 /// back to the app after signing in.
 ///
-/// The page mirrors the app bar and uses the provisioned logo and colors of
-/// the [ApertureBootstrap.theme].
+/// The page mirrors the sign-in card and uses the provisioned logo and colors
+/// of the [ApertureBootstrap.theme], in light and dark.
 Future<String> renderAuthCallbackPage(
   ApertureBootstrap bootstrap, {
   required bool success,
 }) async {
-  final colors = ApertureThemeData.buildWithSeedColor(
+  final light = ApertureThemeData.buildWithSeedColor(
     Color(bootstrap.theme.color),
-  ).colorScheme;
+  );
+  final dark = ApertureThemeData.buildWithSeedColor(
+    Color(bootstrap.theme.color),
+    brightness: Brightness.dark,
+  );
 
-  // Same as the app bar: the provisioned logo fits into 128x48 and is tinted
-  // with the primary color, the fallback Aperture logo keeps its width.
-  final (logo, logoWidth, logoColor) = switch (bootstrap.theme.logo) {
-    final bytes? => (_imageUri(bytes), '128px', colors.primary),
+  // Same as the sign-in card: the provisioned logo fits into 160x40 and is
+  // tinted with the primary color, the fallback Aperture logo keeps its width.
+  final hasLogo = bootstrap.theme.logo != null;
+  final (logo, logoWidth) = switch (bootstrap.theme.logo) {
+    final bytes? => (_imageUri(bytes), '160px'),
     null => (
       _dataUri('image/svg+xml', await _loadAsset('assets/aperture_logo.svg')),
       'auto',
-      colors.onSurface,
     ),
   };
+
+  Map<String, String> colorValues(ThemeData theme, String suffix) {
+    final colors = theme.colorScheme;
+    final extra = theme.extension<ApertureColors>()!;
+    return {
+      'logoColor$suffix': _cssColor(
+        hasLogo ? colors.primary : extra.textStrong,
+      ),
+      'primary$suffix': _cssColor(colors.primary),
+      'success$suffix': _cssColor(extra.success),
+      'error$suffix': _cssColor(extra.danger),
+      'canvas$suffix': _cssColor(extra.canvas),
+      'surface$suffix': _cssColor(colors.surface),
+      'border$suffix': _cssColor(extra.border),
+      'onSurface$suffix': _cssColor(colors.onSurface),
+      'textStrong$suffix': _cssColor(extra.textStrong),
+      'textMuted$suffix': _cssColor(extra.textMuted),
+      'successSubtle$suffix': _cssColor(extra.successSubtle),
+      'errorSubtle$suffix': _cssColor(extra.dangerSubtle),
+      'shadow$suffix': _cssColor(colors.shadow),
+    };
+  }
 
   const escape = HtmlEscape();
   final values = {
@@ -52,12 +79,8 @@ Future<String> renderAuthCallbackPage(
     ),
     'logo': logo,
     'logoWidth': logoWidth,
-    'logoColor': _cssColor(logoColor),
-    'primary': _cssColor(colors.primary),
-    'error': _cssColor(colors.error),
-    'surface': _cssColor(colors.surface),
-    'onSurface': _cssColor(colors.onSurface),
-    'shadow': _cssColor(colors.shadow),
+    ...colorValues(light, ''),
+    ...colorValues(dark, 'Dark'),
   };
 
   final template = await rootBundle.loadString('assets/auth_callback.html');

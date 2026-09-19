@@ -10,6 +10,7 @@ import 'package:datahub_aperture_frontend/widgets/dialogs/confirmation_dialog.da
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_overlay.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
+import 'package:datahub_aperture_frontend/widgets/page_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -71,6 +72,12 @@ class ResourceElementEditPage extends StatelessWidget {
                   message: 'Saving...',
                   child: ResourceElementEditView(
                     title: title,
+                    breadcrumbs: [
+                      Breadcrumb(
+                        resource.namePlural ?? resource.name,
+                        '/resources/${Uri.encodeComponent(resourceId)}',
+                      ),
+                    ],
                     fields: resource.fields,
                     relations: relations,
                     data: data,
@@ -113,6 +120,7 @@ class ResourceElementEditPage extends StatelessWidget {
                         title: S.of(context).caution,
                         child: Text(S.of(context).reallyDeleteElement(title)),
                         confirmText: S.of(context).delete,
+                        destructive: true,
                         onConfirmPressed: () => cubit.delete(from: from),
                       );
                     },

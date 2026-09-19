@@ -1,4 +1,5 @@
 import 'package:datahub_aperture_frontend/blocs/configuration_cubit.dart';
+import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/aperture_animation.dart';
@@ -29,24 +30,34 @@ class NavBarPage extends StatelessWidget {
               mainAxisSize: MainAxisSize.max,
               children: [
                 SideBar(
-                  entries: [
-                    for (final resource in resources)
-                      SideBarEntry(
-                        icon: Icon(getIcon(resource.icon)),
-                        label: resource.namePlural ?? resource.name,
-                        path: '/resources/${Uri.encodeComponent(resource.id)}',
-                      ),
-                    for (final module in modules)
-                      SideBarEntry(
-                        icon: Icon(getIcon(module.icon)),
-                        label: module.displayName,
-                        path: '/modules/${Uri.encodeComponent(module.id)}',
-                      ),
+                  sections: [
+                    SideBarSection(
+                      title: S.of(context).resources,
+                      entries: [
+                        for (final resource in resources)
+                          SideBarEntry(
+                            icon: getIcon(resource.icon),
+                            label: resource.namePlural ?? resource.name,
+                            path:
+                                '/resources/${Uri.encodeComponent(resource.id)}',
+                          ),
+                      ],
+                    ),
+                    SideBarSection(
+                      title: S.of(context).modules,
+                      entries: [
+                        for (final module in modules)
+                          SideBarEntry(
+                            icon: getIcon(module.icon),
+                            label: module.displayName,
+                            path: '/modules/${Uri.encodeComponent(module.id)}',
+                          ),
+                      ],
+                    ),
                   ],
                   refreshPressed: () =>
                       context.read<ConfigurationCubit>().update(),
                 ),
-
                 Expanded(child: child),
               ],
             ),

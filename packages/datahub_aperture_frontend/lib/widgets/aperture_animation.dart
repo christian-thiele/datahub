@@ -139,11 +139,15 @@ class ApertureLogo extends StatelessWidget {
   final Color? color;
   final double size;
 
+  /// Paints the mark with this gradient instead of [color].
+  final Gradient? markGradient;
+
   const ApertureLogo({
     super.key,
     this.color,
     this.withText = true,
     this.size = 48,
+    this.markGradient,
   });
 
   @override
@@ -156,13 +160,17 @@ class ApertureLogo extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 8,
         children: [
-          SizedBox(
-            width: size,
-            height: size,
-            child: CustomPaint(
-              foregroundPainter: _LogoPainter(color: effectiveColor),
-              isComplex: false,
-              willChange: false,
+          _mark(
+            SizedBox(
+              width: size,
+              height: size,
+              child: CustomPaint(
+                foregroundPainter: _LogoPainter(
+                  color: markGradient != null ? Colors.white : effectiveColor,
+                ),
+                isComplex: false,
+                willChange: false,
+              ),
             ),
           ),
           if (withText)
@@ -181,6 +189,17 @@ class ApertureLogo extends StatelessWidget {
       ),
     );
   }
+}
+
+extension on ApertureLogo {
+  Widget _mark(Widget child) => switch (markGradient) {
+    final gradient? => ShaderMask(
+      shaderCallback: gradient.createShader,
+      blendMode: BlendMode.srcIn,
+      child: child,
+    ),
+    null => child,
+  };
 }
 
 class _LogoPainter extends CustomPainter {

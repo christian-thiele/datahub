@@ -2,6 +2,7 @@ import 'package:datahub_aperture_frontend/blocs/error_state.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
+import 'package:datahub_aperture_frontend/widgets/page_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -26,25 +27,26 @@ class TaskManagerLogPage extends StatelessWidget {
         ),
         child: Column(
           mainAxisSize: MainAxisSize.max,
-          spacing: 16,
+          spacing: 20,
           children: [
             BlocBuilder<TaskManagerLogCubit, TaskManagerLogState>(
               builder: (context, state) {
-                return Row(
-                  mainAxisSize: MainAxisSize.max,
-                  children: [
-                    Text(switch (state) {
-                      TaskManagerLogLoading() => '',
-                      TaskManagerLogError() => '',
-                      TaskManagerLogLoaded(:var taskModel) => taskModel.name,
-                    }, style: Theme.of(context).textTheme.headlineMedium),
-                    Spacer(),
-                    switch (state) {
-                      TaskManagerLogLoaded(:var taskModel) => InvocationBadge(
-                        task: taskModel,
-                      ),
-                      _ => SizedBox.shrink(),
-                    },
+                return PageHeader(
+                  title: switch (state) {
+                    TaskManagerLogLoaded(:var taskModel) => taskModel.name,
+                    _ => '',
+                  },
+                  breadcrumbs: [
+                    Breadcrumb('Task Manager', '/modules/task-manager'),
+                    Breadcrumb(switch (state) {
+                      TaskManagerLogLoaded(:var taskModel) =>
+                        taskModel.invocationId,
+                      _ => invocationId,
+                    }),
+                  ],
+                  actions: [
+                    if (state case TaskManagerLogLoaded(:var taskModel))
+                      InvocationBadge(task: taskModel),
                   ],
                 );
               },

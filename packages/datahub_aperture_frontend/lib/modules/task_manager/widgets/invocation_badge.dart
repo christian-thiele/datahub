@@ -1,5 +1,6 @@
 import 'package:datahub/tasks.dart';
 import 'package:datahub_aperture_frontend/modules/task_manager/models/task_model.dart';
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/widgets/info_badge.dart';
 import 'package:flutter/material.dart';
 
@@ -22,25 +23,25 @@ class InvocationBadge extends StatelessWidget {
         progress: task.progress,
       ),
       TaskState.finished => InfoBadge(
-        color: Colors.green,
+        color: ApertureColors.of(context).success,
         icon: Icon(Icons.check),
         label: Text('SUCCESS'),
         minWidth: 96,
       ),
       TaskState.failed => InfoBadge(
-        color: Theme.of(context).colorScheme.error,
+        color: ApertureColors.of(context).danger,
         icon: Icon(Icons.error_outline),
         label: Text('FAILED'),
         minWidth: 96,
       ),
       TaskState.timeout => InfoBadge(
-        color: Theme.of(context).colorScheme.error,
+        color: ApertureColors.of(context).danger,
         icon: Icon(Icons.error_outline),
         label: Text('TIMEOUT'),
         minWidth: 96,
       ),
       TaskState.canceled => InfoBadge(
-        color: Theme.of(context).colorScheme.onSurfaceVariant,
+        color: ApertureColors.of(context).textMuted,
         icon: Icon(Icons.error_outline),
         label: Text('FAILED'),
         minWidth: 96,

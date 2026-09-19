@@ -28,17 +28,25 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m2(userName) => "von ${userName}";
 
-  static String m3(resourceName) => "${resourceName} hinzufügen";
+  static String m3(appTitle) => "Willkommen bei ${appTitle}";
 
-  static String m4(elementName) =>
+  static String m4(count) => "${count} Felder";
+
+  static String m5(resourceName) => "${resourceName} hinzufügen";
+
+  static String m6(from, to) => "${from}–${to}";
+
+  static String m7(from, to, total) => "${from}–${to} von ${total}";
+
+  static String m8(elementName) =>
       "Sind Sie sicher, dass Sie Element \"${elementName}\" löschen möchten?";
 
-  static String m5(line, column) =>
+  static String m9(line, column) =>
       "Ungültiges JSON (Zeile ${line}, Spalte ${column}).";
 
-  static String m6(length) => "Wert zu lang. (> ${length})";
+  static String m10(length) => "Wert zu lang. (> ${length})";
 
-  static String m7(expression) =>
+  static String m11(expression) =>
       "Wert muss dem Muster entsprechen: ${expression}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
@@ -56,12 +64,20 @@ class MessageLookup extends MessageLookupByLibrary {
     "byUsername": m2,
     "cancel": MessageLookupByLibrary.simpleMessage("Abbrechen"),
     "caution": MessageLookupByLibrary.simpleMessage("Achtung"),
+    "dashboardSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Wählen Sie eine Ressource oder ein Modul, um loszulegen.",
+    ),
+    "dashboardTitle": m3,
     "date": MessageLookupByLibrary.simpleMessage("Datum"),
     "delete": MessageLookupByLibrary.simpleMessage("Löschen"),
     "deleteScheduled": MessageLookupByLibrary.simpleMessage("Löschen planen"),
     "draft": MessageLookupByLibrary.simpleMessage("Entwurf"),
     "emptyFile": MessageLookupByLibrary.simpleMessage("Keine Datei ausgewählt"),
     "error": MessageLookupByLibrary.simpleMessage("Fehler"),
+    "errorOccurred": MessageLookupByLibrary.simpleMessage(
+      "Etwas ist schiefgelaufen.",
+    ),
+    "fieldCount": m4,
     "fileSelected": MessageLookupByLibrary.simpleMessage("Datei ausgewählt"),
     "filter": MessageLookupByLibrary.simpleMessage("Filter"),
     "formatJson": MessageLookupByLibrary.simpleMessage(
@@ -70,20 +86,32 @@ class MessageLookup extends MessageLookupByLibrary {
     "linkedElementNotFound": MessageLookupByLibrary.simpleMessage(
       "Verknüpftes Element nicht gefunden",
     ),
+    "live": MessageLookupByLibrary.simpleMessage("Live"),
     "liveFrom": MessageLookupByLibrary.simpleMessage("Live ab"),
     "liveSince": MessageLookupByLibrary.simpleMessage("Live seit"),
     "login": MessageLookupByLibrary.simpleMessage("Anmelden"),
     "loginAuthcode": MessageLookupByLibrary.simpleMessage("Anmelden via IDP"),
-    "newResource": m3,
+    "logout": MessageLookupByLibrary.simpleMessage("Abmelden"),
+    "module": MessageLookupByLibrary.simpleMessage("Modul"),
+    "modules": MessageLookupByLibrary.simpleMessage("Module"),
+    "newElement": MessageLookupByLibrary.simpleMessage("Neues Element"),
+    "newResource": m5,
     "noElements": MessageLookupByLibrary.simpleMessage("Keine Elemente"),
     "ok": MessageLookupByLibrary.simpleMessage("OK"),
+    "outdated": MessageLookupByLibrary.simpleMessage("Veraltet"),
+    "pageFrom": m6,
+    "pageOf": m7,
     "password": MessageLookupByLibrary.simpleMessage("Passwort"),
-    "reallyDeleteElement": m4,
+    "reallyDeleteElement": m8,
     "refresh": MessageLookupByLibrary.simpleMessage("Aktualisieren"),
+    "reloadConfiguration": MessageLookupByLibrary.simpleMessage(
+      "Konfiguration neu laden",
+    ),
     "resourceDeleted": MessageLookupByLibrary.simpleMessage(
       "Ressource gelöscht.",
     ),
     "resourceSaved": MessageLookupByLibrary.simpleMessage("Gespeichert!"),
+    "resources": MessageLookupByLibrary.simpleMessage("Ressourcen"),
     "revert": MessageLookupByLibrary.simpleMessage("Zurücksetzen"),
     "revisionHistory": MessageLookupByLibrary.simpleMessage("Revisionsverlauf"),
     "revisionInfo": MessageLookupByLibrary.simpleMessage(
@@ -98,9 +126,16 @@ class MessageLookup extends MessageLookupByLibrary {
       "Als Entwurf Speichern",
     ),
     "scheduleRevision": MessageLookupByLibrary.simpleMessage("Revision planen"),
+    "scheduled": MessageLookupByLibrary.simpleMessage("Geplant"),
     "search": MessageLookupByLibrary.simpleMessage("Suche"),
+    "signInSubtitle": MessageLookupByLibrary.simpleMessage(
+      "Melden Sie sich mit Ihrem Organisationskonto an, um fortzufahren.",
+    ),
+    "signInTitle": MessageLookupByLibrary.simpleMessage("Willkommen zurück"),
+    "status": MessageLookupByLibrary.simpleMessage("Status"),
     "time": MessageLookupByLibrary.simpleMessage("Uhrzeit"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Zeitstempel"),
+    "tryAgain": MessageLookupByLibrary.simpleMessage("Erneut versuchen"),
     "username": MessageLookupByLibrary.simpleMessage("Benutzername"),
     "validationJson": MessageLookupByLibrary.simpleMessage("Ungültiges JSON."),
     "validationJsonArray": MessageLookupByLibrary.simpleMessage(
@@ -109,9 +144,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "validationJsonObject": MessageLookupByLibrary.simpleMessage(
       "Wert muss ein JSON-Objekt sein.",
     ),
-    "validationJsonSyntax": m5,
-    "validationMaxLength": m6,
-    "validationPattern": m7,
+    "validationJsonSyntax": m9,
+    "validationMaxLength": m10,
+    "validationPattern": m11,
     "validationRequired": MessageLookupByLibrary.simpleMessage(
       "Wert ist erforderlich.",
     ),

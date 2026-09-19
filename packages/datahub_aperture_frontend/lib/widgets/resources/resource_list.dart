@@ -1,8 +1,11 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/models/view_models/paging.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/data/entity_list_view.dart';
+import 'package:datahub_aperture_frontend/widgets/page_header.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -50,35 +53,82 @@ class ResourceList extends StatelessWidget {
       itemCount: entries.length,
     );
 
-    return Column(
-      mainAxisSize: shrinkWrap ? MainAxisSize.min : MainAxisSize.max,
-      children: [
-        if (shrinkWrap) listView else Expanded(child: listView),
-        if (paging case final paging?)
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              IconButton(
-                onPressed: paging.offset > 0 ? onFirstPressed : null,
-                icon: Icon(Icons.skip_previous),
-              ),
-              IconButton(
-                onPressed: paging.offset > 0 ? onPreviousPressed : null,
-                icon: Icon(Icons.chevron_left),
-              ),
-              Text(paging.toString()),
-              IconButton(
-                onPressed: paging.hasMore ? onNextPressed : null,
-                icon: Icon(Icons.chevron_right),
-              ),
-              IconButton(
-                onPressed: paging.hasMore ? onLastPressed : null,
-                icon: Icon(Icons.skip_next),
-              ),
-            ],
+    return Card(
+      child: Column(
+        mainAxisSize: shrinkWrap ? MainAxisSize.min : MainAxisSize.max,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          if (shrinkWrap) listView else Expanded(child: listView),
+          if (paging case final paging?) ...[
+            const Divider(),
+            PagingBar(
+              paging: paging,
+              onFirstPressed: onFirstPressed,
+              onPreviousPressed: onPreviousPressed,
+              onNextPressed: onNextPressed,
+              onLastPressed: onLastPressed,
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class PagingBar extends StatelessWidget {
+  final Paging paging;
+  final VoidCallback? onFirstPressed;
+  final VoidCallback? onPreviousPressed;
+  final VoidCallback? onNextPressed;
+  final VoidCallback? onLastPressed;
+
+  const PagingBar({
+    super.key,
+    required this.paging,
+    this.onFirstPressed,
+    this.onPreviousPressed,
+    this.onNextPressed,
+    this.onLastPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final from = paging.length > 0 ? paging.offset + 1 : paging.offset;
+    final to = paging.offset + paging.length;
+    final label = switch (paging.total) {
+      final total? => S.of(context).pageOf(from, to, total),
+      null => S.of(context).pageFrom(from, to),
+    };
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      child: Row(
+        mainAxisSize: MainAxisSize.max,
+        spacing: 2,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4),
+            child: Text(label, style: Theme.of(context).textTheme.labelMedium),
           ),
-      ],
+          Spacer(),
+          IconButton(
+            onPressed: paging.offset > 0 ? onFirstPressed : null,
+            icon: Icon(Icons.first_page),
+          ),
+          IconButton(
+            onPressed: paging.offset > 0 ? onPreviousPressed : null,
+            icon: Icon(Icons.chevron_left),
+          ),
+          IconButton(
+            onPressed: paging.hasMore ? onNextPressed : null,
+            icon: Icon(Icons.chevron_right),
+          ),
+          IconButton(
+            onPressed: paging.hasMore ? onLastPressed : null,
+            icon: Icon(Icons.last_page),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -103,45 +153,49 @@ class ResourceListEntry extends StatelessWidget {
 
     return InkWell(
       onTap: onPressed,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12.0),
-            child: IconTheme.merge(
-              child: Icon(getIcon(resource.icon)),
-              data: IconThemeData(size: 16),
-            ),
-          ),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          spacing: 14,
+          children: [
+            IconTile(getIcon(resource.icon), size: 34),
+            Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
+                spacing: 2,
                 children: [
                   Text(
                     getElementTitle(resource, element),
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: Theme.of(context).textTheme.titleSmall,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
-                  Wrap(
-                    spacing: 16,
-                    runSpacing: 4,
-                    children: [
-                      for (final field in fields)
-                        _FieldValue(
-                          fieldName: field.name,
-                          value: fieldValueToDisplayText(
-                            field,
-                            element.fieldData[field.id],
+                  if (fields.isNotEmpty)
+                    Wrap(
+                      spacing: 16,
+                      runSpacing: 2,
+                      children: [
+                        for (final field in fields)
+                          _FieldValue(
+                            fieldName: field.name,
+                            value: fieldValueToDisplayText(
+                              field,
+                              element.fieldData[field.id],
+                            ),
                           ),
-                        ),
-                    ],
-                  ),
+                      ],
+                    ),
                 ],
               ),
             ),
-          ),
-        ],
+            Icon(
+              Icons.chevron_right,
+              size: 18,
+              color: ApertureColors.of(context).textMuted,
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -155,13 +209,22 @@ class _FieldValue extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Text('$fieldName: ', style: Theme.of(context).textTheme.labelMedium),
-        Text(value, style: Theme.of(context).textTheme.bodyMedium),
-      ],
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: '$fieldName ',
+            style: Theme.of(context).textTheme.labelMedium,
+          ),
+          TextSpan(
+            text: value,
+            style: Theme.of(context).textTheme.labelMedium?.copyWith(
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

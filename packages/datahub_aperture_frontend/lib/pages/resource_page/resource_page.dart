@@ -2,10 +2,12 @@ import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/utils/route_helper.dart';
+import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/filter/filter_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
+import 'package:datahub_aperture_frontend/widgets/page_header.dart';
 import 'package:datahub_aperture_frontend/widgets/resources/resource_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -38,33 +40,25 @@ class ResourcePage extends StatelessWidget {
                 RouteHelper(
                   didPopNext: () => context.read<ResourceCubit>().update(),
                   child: Column(
-                    spacing: 16,
+                    spacing: 20,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.max,
-                        children: [
-                          Text(
-                            resource.namePlural ?? resource.name,
-                            style: Theme.of(context).textTheme.headlineMedium,
+                      PageHeader(
+                        title: resource.namePlural ?? resource.name,
+                        leading: IconTile(getIcon(resource.icon), size: 40),
+                        actions: [
+                          IconButton.outlined(
+                            onPressed: () =>
+                                context.read<ResourceCubit>().update(),
+                            icon: Icon(Icons.refresh),
+                            tooltip: S.of(context).refresh,
                           ),
-                          Spacer(),
                           FilledButton.icon(
                             onPressed: () => context.go('./create'),
                             label: Text(
                               S.of(context).newResource(resource.name),
                             ),
-                            icon: Icon(Icons.add_outlined),
-                          ),
-                          SizedBox(width: 8),
-                          IconButton.filled(
-                            onPressed: () =>
-                                context.read<ResourceCubit>().update(),
-                            icon: Icon(
-                              Icons.refresh,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                            tooltip: S.of(context).refresh,
+                            icon: Icon(Icons.add),
                           ),
                         ],
                       ),

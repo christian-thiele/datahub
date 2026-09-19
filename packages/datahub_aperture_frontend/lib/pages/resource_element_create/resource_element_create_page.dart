@@ -6,6 +6,7 @@ import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_overlay.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
+import 'package:datahub_aperture_frontend/widgets/page_header.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -50,26 +51,48 @@ class ResourceElementCreatePage extends StatelessWidget {
               ResourceElementCreateError(:final message) => ErrorView(
                 message: message,
               ),
-              ResourceElementCreateValue(:final fields, :final changes) =>
+              ResourceElementCreateValue(
+                :final description,
+                :final fields,
+                :final changes,
+              ) =>
                 LoadingOverlay(
                   loading: state is ResourceElementCreateSaving,
-                  child: SingleChildScrollView(
-                    child: ResourceElementCreateView(
-                      fields: fields,
-                      data: ResourceData(id: '', fieldData: {}),
-                      changes: changes,
-                      validations: switch (state) {
-                        ResourceElementCreateEditing(:final validation) =>
-                          validation,
-                        _ => {},
-                      },
-                      onFieldValueChanged: (field, value) => context
-                          .read<ResourceElementCreateCubit>()
-                          .setFieldValue(field.id, value),
-                      onSavePressed: (live) => context
-                          .read<ResourceElementCreateCubit>()
-                          .saveChanges(from: live),
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    spacing: 20,
+                    children: [
+                      PageHeader(
+                        title: S.of(context).newResource(description.name),
+                        breadcrumbs: [
+                          Breadcrumb(
+                            description.namePlural ?? description.name,
+                            '/resources/${Uri.encodeComponent(resourceId)}',
+                          ),
+                          Breadcrumb(S.of(context).newElement),
+                        ],
+                      ),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          child: ResourceElementCreateView(
+                            fields: fields,
+                            data: ResourceData(id: '', fieldData: {}),
+                            changes: changes,
+                            validations: switch (state) {
+                              ResourceElementCreateEditing(:final validation) =>
+                                validation,
+                              _ => {},
+                            },
+                            onFieldValueChanged: (field, value) => context
+                                .read<ResourceElementCreateCubit>()
+                                .setFieldValue(field.id, value),
+                            onSavePressed: (live) => context
+                                .read<ResourceElementCreateCubit>()
+                                .saveChanges(from: live),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
             };

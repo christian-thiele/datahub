@@ -18,7 +18,13 @@ class LoadingView extends StatelessWidget {
           children: [
             ApertureSpinner(color: color),
             if (message != null)
-              Text(message!, style: Theme.of(context).textTheme.titleMedium),
+              Padding(
+                padding: const EdgeInsets.only(top: 8),
+                child: Text(
+                  message!,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
           ],
         ),
       ),

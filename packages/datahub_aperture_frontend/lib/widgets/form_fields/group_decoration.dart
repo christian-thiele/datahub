@@ -1,3 +1,4 @@
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:flutter/material.dart';
 
 class GroupDecoration extends StatelessWidget {
@@ -26,7 +27,9 @@ class GroupDecoration extends StatelessWidget {
       children: [
         if (decoration.label != null || onAddPressed != null)
           DefaultTextStyle.merge(
-            style: TextStyle(color: isError ? colors.error : null),
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              color: isError ? colors.error : null,
+            ),
             child: Row(
               children: [
                 ?decoration.label,
@@ -38,14 +41,13 @@ class GroupDecoration extends StatelessWidget {
           ),
         DecoratedBox(
           decoration: BoxDecoration(
-            border: Border(
-              left: BorderSide(color: isError ? colors.error : colors.outline),
+            color: colors.surfaceContainerLow,
+            borderRadius: BorderRadius.circular(ApertureThemeData.radius),
+            border: Border.all(
+              color: isError ? colors.error : colors.outlineVariant,
             ),
           ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(8, 8, 0, 8),
-            child: child,
-          ),
+          child: Padding(padding: const EdgeInsets.all(12), child: child),
         ),
         if (errorText != null)
           Text(

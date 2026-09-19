@@ -80,7 +80,10 @@ class _SingleWidgetApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return WidgetsApp(
       builder: (context, _) => Theme(
-        data: ApertureThemeData.defaultTheme,
+        data: ApertureThemeData.buildWithSeedColor(
+          ApertureThemeData.defaultSeedColor,
+          brightness: MediaQuery.platformBrightnessOf(context),
+        ),
         child: Material(child: Scaffold(body: child)),
       ),
       color: ApertureThemeData.defaultTheme.colorScheme.primary,

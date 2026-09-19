@@ -1,8 +1,10 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
+import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/widgets/data/entity_list_view.dart';
 import 'package:datahub_aperture_frontend/widgets/data/user_entity_view.dart';
 import 'package:datahub_aperture_frontend/widgets/data/value_view.dart';
+import 'package:datahub_aperture_frontend/widgets/info_badge.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -38,18 +40,29 @@ class RevisionView extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (revision != null) ...[
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 8.0),
-            child: _RevisionStatusCard(
-              revision: revision,
-              isCurrentLive: revision.version == liveRevisionVersion,
-            ),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  S.of(context).revisionInfo,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              _RevisionStatusBadge(
+                revision: revision,
+                isCurrentLive: revision.version == liveRevisionVersion,
+              ),
+            ],
           ),
+          const SizedBox(height: 16),
           _RevisionDetails(
             revision: revision,
             isLatest: revision.version == latestVersion,
           ),
-          const Divider(height: 32),
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Divider(),
+          ),
         ],
         Padding(
           padding: const EdgeInsets.only(bottom: 8.0),
@@ -68,31 +81,38 @@ class RevisionView extends StatelessWidget {
               final isItemScheduled =
                   item.live?.isAfter(DateTime.now()) ?? false;
 
+              final colors = ApertureColors.of(context);
               final IconData icon;
               final Color? iconColor;
 
               if (isCurrent) {
                 icon = Icons.radio_button_checked;
-                iconColor = Theme.of(context).colorScheme.primary;
+                iconColor = colors.link;
               } else if (isItemLive) {
                 icon = Icons.check_circle_outline;
-                iconColor = Theme.of(context).colorScheme.primary;
+                iconColor = colors.success;
               } else if (isItemScheduled) {
                 icon = Icons.schedule;
-                iconColor = Theme.of(context).colorScheme.tertiary;
+                iconColor = colors.warning;
               } else {
                 icon = Icons.history;
                 iconColor = null;
               }
 
-              return EntityListEntry(
-                onPressed: () => context.go('./?version=${item.version}'),
-                icon: Icon(icon, color: iconColor),
-                label: DateFormat.yMMMd().add_Hm().format(item.timestamp),
-                subLabel: S.of(context).byUsername(item.userName),
+              return Material(
+                color: isCurrent ? colors.accentSubtle : Colors.transparent,
+                borderRadius: BorderRadius.circular(ApertureThemeData.radius),
+                clipBehavior: Clip.antiAlias,
+                child: EntityListEntry(
+                  onPressed: () => context.go('./?version=${item.version}'),
+                  icon: Icon(icon, color: iconColor),
+                  label: DateFormat.yMMMd().add_Hm().format(item.timestamp),
+                  subLabel: S.of(context).byUsername(item.userName),
+                ),
               );
             },
             itemCount: revisions.length,
+            dividers: false,
           ),
         ),
       ],
@@ -100,11 +120,11 @@ class RevisionView extends StatelessWidget {
   }
 }
 
-class _RevisionStatusCard extends StatelessWidget {
+class _RevisionStatusBadge extends StatelessWidget {
   final ResourceRevisionInfo revision;
   final bool isCurrentLive;
 
-  const _RevisionStatusCard({
+  const _RevisionStatusBadge({
     required this.revision,
     required this.isCurrentLive,
   });
@@ -115,50 +135,40 @@ class _RevisionStatusCard extends StatelessWidget {
     final isScheduled = revision.live?.isAfter(DateTime.now()) ?? false;
     final isOutdated = !isDraft && !isScheduled && !isCurrentLive;
 
-    final colorScheme = Theme.of(context).colorScheme;
+    final colors = ApertureColors.of(context);
 
-    final String label;
-    final IconData icon;
-    final Color color;
-
-    if (isDraft) {
-      label = S.of(context).draft;
-      icon = Icons.edit_note;
-      color = colorScheme.secondary;
-    } else if (isScheduled) {
-      label = 'Scheduled';
-      icon = Icons.schedule;
-      color = colorScheme.tertiary;
-    } else if (isOutdated) {
-      label = 'Outdated';
-      icon = Icons.history;
-      color = colorScheme.outline;
-    } else {
-      label = 'Live';
-      icon = Icons.check_circle_outline;
-      color = colorScheme.primary;
-    }
-
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.5)),
+    final (label, icon, color, background) = switch (null) {
+      _ when isDraft => (
+        S.of(context).draft,
+        Icons.edit_note,
+        colors.link,
+        colors.accentSubtle,
       ),
-      child: Row(
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(width: 12),
-          Text(
-            label,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
+      _ when isScheduled => (
+        S.of(context).scheduled,
+        Icons.schedule,
+        colors.warning,
+        colors.warningSubtle,
       ),
+      _ when isOutdated => (
+        S.of(context).outdated,
+        Icons.history,
+        colors.textMuted,
+        Theme.of(context).colorScheme.surfaceContainerHigh,
+      ),
+      _ => (
+        S.of(context).live,
+        Icons.check_circle_outline,
+        colors.success,
+        colors.successSubtle,
+      ),
+    };
+
+    return StatusPill(
+      label: label,
+      icon: icon,
+      color: color,
+      background: background,
     );
   }
 }
