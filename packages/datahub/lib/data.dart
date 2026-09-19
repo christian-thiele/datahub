@@ -1,5 +1,6 @@
 library;
 
+export 'src/data/aggregate.dart';
 export 'src/data/codec_exception.dart';
 export 'src/data/data.dart';
 export 'src/data/data_bean.dart';
