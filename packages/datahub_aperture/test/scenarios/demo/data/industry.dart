@@ -1,0 +1,16 @@
+enum Industry {
+  software,
+  manufacturing,
+  retail,
+  healthcare,
+  finance,
+  insurance,
+  logistics,
+  energy,
+  automotive,
+  publicSector,
+  education,
+  media,
+  hospitality,
+  realEstate,
+}
