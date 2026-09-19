@@ -166,8 +166,7 @@ class Jwt extends TokenAuth {
     if (parts.length != 3) {
       throw ApiRequestException.unauthorized('Invalid Jwt.');
     }
-    return _jsonBase64.decode(addBase64Padding(parts.first))
-        as Map<String, dynamic>;
+    return _decodeJsonPart(parts.first);
   }
 
   static Map<String, dynamic> _readPayload(String token) {
@@ -175,8 +174,7 @@ class Jwt extends TokenAuth {
     if (parts.length != 3) {
       throw ApiRequestException.unauthorized('Invalid Jwt.');
     }
-    return _jsonBase64.decode(addBase64Padding(parts[1]))
-        as Map<String, dynamic>;
+    return _decodeJsonPart(parts[1]);
   }
 
   static Uint8List _readSignature(String token) {
@@ -184,6 +182,22 @@ class Jwt extends TokenAuth {
     if (parts.length != 3) {
       throw ApiRequestException.unauthorized('Invalid Jwt.');
     }
-    return base64Decode(addBase64Padding(token.split('.')[2]));
+    try {
+      return base64Decode(addBase64Padding(parts[2]));
+    } on FormatException {
+      throw ApiRequestException.unauthorized('Invalid Jwt.');
+    }
+  }
+
+  static Map<String, dynamic> _decodeJsonPart(String part) {
+    try {
+      final value = _jsonBase64.decode(addBase64Padding(part));
+      if (value is Map<String, dynamic>) {
+        return value;
+      }
+    } on FormatException {
+      // handled below
+    }
+    throw ApiRequestException.unauthorized('Invalid Jwt.');
   }
 }
