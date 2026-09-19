@@ -1,6 +1,6 @@
 // Hand-written reference data for the demo scenario.
 //
-// The fictional company "Brightline Digital" is a software & design agency
+// The fictional company "ACME Digital" is a software & design agency
 // based in Berlin, working for clients all over Europe.
 
 import 'data/billing_type.dart';
@@ -12,7 +12,7 @@ import 'data/priority.dart';
 import 'data/product_category.dart';
 import 'data/ticket_channel.dart';
 
-const agencyDomain = 'brightline.dev';
+const agencyDomain = 'example.com';
 
 typedef EmployeeFixture = ({
   String firstName,
@@ -1588,7 +1588,7 @@ final projectTemplates = <ProjectTemplate>[
   _project(
     'Managed Platform Operations',
     'Ongoing operation, monitoring and patch management of all production '
-        'systems built by Brightline.',
+        'systems built by ACME.',
     ['Kubernetes', 'Prometheus', 'Grafana', 'Loki'],
     billing: [_retainer],
     minHours: 300,

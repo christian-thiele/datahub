@@ -550,13 +550,13 @@ class _DemoSeeder {
           technologies: p.template.technologies,
           links: {
             'board':
-                'https://brightline.atlassian.net/jira/software/projects/$key',
+                'https://jira.example.com/jira/software/projects/$key',
             if (p.status != ProjectStatus.planned) ...{
               'repository':
                   'https://git.$agencyDomain/$clientSlug/$projectSlug',
               if (p.template.focus == 'design')
                 'figma':
-                    'https://www.figma.com/files/team/brightline/$projectSlug'
+                    'https://www.figma.com/files/team/example/$projectSlug'
               else
                 'staging': 'https://$projectSlug.staging.$agencyDomain',
             },

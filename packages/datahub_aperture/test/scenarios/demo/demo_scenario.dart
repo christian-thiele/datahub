@@ -19,10 +19,9 @@ import 'data/support_ticket.dart';
 import 'data/ticket_status.dart';
 import 'data/time_entry.dart';
 import 'demo_auth_service.dart';
-import 'demo_logo.dart';
 import 'demo_seed.dart';
 
-/// A realistic backoffice for "Brightline Digital", a fictional software
+/// A realistic backoffice for "ACME Digital", a fictional software
 /// agency: clients, contacts, projects, timesheets, invoices, support tickets.
 void main(List<String> args) => runApp([
   KeyService(),
@@ -39,8 +38,8 @@ void main(List<String> args) => runApp([
   ApiService(
     routes: [
       ApertureApi(
-        title: const Config.value('Brightline Backoffice'),
-        theme: ApertureTheme(color: 0xff0f766e, logo: brightlineLogo),
+        title: const Config.value('ACME Backoffice'),
+        theme: ApertureTheme(color: 0xff0f766e),
         oidcIssuer: const Config.value(
           'http://localhost:8081/realms/local-oidc',
         ),
