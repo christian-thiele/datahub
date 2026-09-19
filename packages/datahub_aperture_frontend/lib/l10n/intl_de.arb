@@ -67,6 +67,12 @@
   "outdated": "Veraltet",
   "tryAgain": "Erneut versuchen",
   "errorOccurred": "Etwas ist schiefgelaufen.",
-  "fieldCount": "{count} Felder",
-  "module": "Modul"
+  "runAction": "Ausführen",
+  "done": "Fertig",
+  "reset": "Zurücksetzen",
+  "viewAll": "Alle anzeigen",
+  "viewAllCount": "Alle {count} anzeigen",
+  "runActionTitle": "„{action}“ ausführen?",
+  "sortedBy": "Sortiert nach {sort}",
+  "total": "Gesamt"
 }

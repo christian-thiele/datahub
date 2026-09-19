@@ -45,5 +45,6 @@ abstract interface class ResourcesRepository {
     String resourceId,
     String elementId,
     String actionId,
+    Map<String, dynamic> parameters,
   );
 }

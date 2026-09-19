@@ -67,6 +67,12 @@
   "outdated": "Outdated",
   "tryAgain": "Try again",
   "errorOccurred": "Something went wrong.",
-  "fieldCount": "{count} fields",
-  "module": "Module"
+  "runAction": "Run",
+  "done": "Done",
+  "reset": "Reset",
+  "viewAll": "View all",
+  "viewAllCount": "View all {count}",
+  "runActionTitle": "Run \"{action}\"?",
+  "sortedBy": "Sorted by {sort}",
+  "total": "Total"
 }

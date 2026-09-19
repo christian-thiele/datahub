@@ -104,12 +104,11 @@ class ResourceElementEditPage extends StatelessWidget {
                       showDialog(
                         context: context,
                         builder: (context) => ElementActionDialog(
-                          title: resource.actions
-                              .firstWhere((a) => a.id == actionId)
-                              .displayName,
                           resourceId: resourceId,
                           elementId: elementId,
-                          actionId: actionId,
+                          action: resource.actions.firstWhere(
+                            (a) => a.id == actionId,
+                          ),
                         ),
                       );
                     },

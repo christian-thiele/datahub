@@ -312,8 +312,10 @@ class ApertureApi extends ApiNode {
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
-              final parameters = await request.getJsonBody();
-
+              final parameters = _decodeActionParameters(
+                action,
+                await request.getJsonBody(),
+              );
               final taskId = await action.handle(elementId, parameters);
               return {'taskId': ?taskId};
             },
@@ -338,7 +340,10 @@ class ApertureApi extends ApiNode {
                 orElse: () => throw ApiRequestException.notFound(),
               );
 
-              final parameters = await request.getJsonBody();
+              final parameters = _decodeActionParameters(
+                action,
+                await request.getJsonBody(),
+              );
               final taskId = await action.handle(null, parameters);
               return {'taskId': ?taskId};
             },
@@ -511,6 +516,17 @@ class ApertureApi extends ApiNode {
     }
 
     return const JsonDataCodec().decodeType(field.type, value);
+  }
+
+  static DataObject _decodeActionParameters(
+    ApertureAction action,
+    dynamic json,
+  ) {
+    try {
+      return action.decodeParameters(json);
+    } on CodecException catch (e) {
+      _throwCodecApiException(e);
+    }
   }
 
   static Never _throwCodecApiException(CodecException e) {

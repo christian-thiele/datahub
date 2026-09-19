@@ -137,12 +137,14 @@ class ApiResourcesRepository extends ApiRepository
     String resourceId,
     String elementId,
     String actionId,
+    Map<String, dynamic> parameters,
   ) async {
+    const codec = JsonDataCodec();
     final client = await getClient();
     return client
         .post(
           '/api/resources/{resourceId}/elements/{elementId}/actions/{actionId}',
-          {},
+          codec.encodeMap(parameters, codec.encodeDynamic),
           urlParams: {
             'resourceId': resourceId,
             'elementId': elementId,

@@ -14,10 +14,13 @@ class ApertureAction<TParameters extends DataObject> {
   ResourceAction buildDescription(Iterable<DataBean> beans) =>
       buildResourceActionDescription(this, beans);
 
-  Future<String?> handle(
-    dynamic elementId,
-    Map<String, dynamic> parameters,
-  ) async {
-    return await handler(elementId, bean.fromJson(parameters));
+  TParameters decodeParameters(dynamic json) {
+    final parameters = bean.fromJson(json);
+    bean.validateConstraints(parameters);
+    return parameters;
+  }
+
+  Future<String?> handle(dynamic elementId, TParameters parameters) async {
+    return await handler(elementId, parameters);
   }
 }

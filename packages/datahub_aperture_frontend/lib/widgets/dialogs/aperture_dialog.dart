@@ -58,9 +58,12 @@ class ApertureDialog extends StatelessWidget {
                   ),
                 ],
               ),
-              DefaultTextStyle.merge(
-                style: Theme.of(context).textTheme.bodyLarge,
-                child: child,
+              // Lets content that scrolls shrink to fit the screen.
+              Flexible(
+                child: DefaultTextStyle.merge(
+                  style: Theme.of(context).textTheme.bodyLarge,
+                  child: child,
+                ),
               ),
               if (actions.isNotEmpty)
                 Row(
