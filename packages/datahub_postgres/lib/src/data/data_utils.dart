@@ -160,24 +160,48 @@ Sql? buildSortSql(
 
 Sql buildExpressionSql(
   Expression expression,
-  Iterable<(PostgresqlDataAttribute, PostgresqlRelation?)> attributes,
-) {
+  Iterable<(PostgresqlDataAttribute, PostgresqlRelation?)> attributes, {
+  bool includeAlias = false,
+}) {
   return switch (expression) {
     ValueExpression(:final value) => PostgresqlDataType.findForDynamic(
       value,
     ).sqlParam(value),
+    AggregateExpression(:final type, :final value) => Sql.cast(
+      Sql.function(
+        switch (type) {
+          AggregateType.count => 'COUNT',
+          AggregateType.sum => 'SUM',
+          AggregateType.max => 'MAX',
+          AggregateType.min => 'MIN',
+          AggregateType.avg => 'AVG',
+        },
+        [buildExpressionSql(value, attributes, includeAlias: false)],
+      ),
+      switch (type) {
+        AggregateType.count => const PostgresqlInt(),
+        AggregateType.avg => const PostgresqlDouble(),
+        _ => typeOf(expression, attributes),
+      },
+    ),
     final DataField field => _findDataAttribute(
       attributes,
       field,
     ).apply((e) => SqlTypedColumnAttribute.of(e.$1, relation: e.$2?.name)),
     PostgresqlFunctionExpression(:final name, :final arguments) => Sql.function(
       name,
-      arguments.map((e) => buildExpressionSql(e, attributes)).toList(),
+      arguments
+          .map((e) => buildExpressionSql(e, attributes, includeAlias: false))
+          .toList(),
     ),
-    PostgresqlCastExpression(:final expression, :final type) => Sql.function(
-      'CAST',
-      [buildExpressionSql(expression, attributes) + RawSql(' AS ${type.name}')],
+    PostgresqlCastExpression(:final expression, :final type) => Sql.cast(
+      buildExpressionSql(expression, attributes, includeAlias: false),
+      type,
     ),
+    PostgresqlAliasExpression(:final expression, :final name) =>
+      includeAlias
+          ? Sql.alias(buildExpressionSql(expression, attributes), name)
+          : buildExpressionSql(expression, attributes),
     PostgresqlRawExpression(:final sql) => sql,
     _ => throw UnsupportedExpressionError(
       expression,
@@ -191,9 +215,20 @@ PostgresqlDataType? typeOf(
   Iterable<(PostgresqlDataAttribute, PostgresqlRelation?)> attributes,
 ) => switch (expression) {
   ValueExpression(:final value) => PostgresqlDataType.findForDynamic(value),
+  AggregateExpression(:final type, :final value) => switch (type) {
+    AggregateType.count => const PostgresqlInt(),
+    AggregateType.avg => const PostgresqlDouble(),
+    AggregateType.sum ||
+    AggregateType.max ||
+    AggregateType.min => typeOf(value, attributes),
+  },
   final DataField field => _findDataAttribute(attributes, field).$1.type,
   PostgresqlFunctionExpression(:final returnType) => returnType,
   PostgresqlCastExpression(:final type) => type,
+  PostgresqlAliasExpression(:final expression) => typeOf(
+    expression,
+    attributes,
+  ),
   _ => null,
 };
 
@@ -206,8 +241,8 @@ Sql _compareSql(
   final leftType = typeOf(left, attributes);
   final rightType = typeOf(right, attributes);
 
-  final leftSql = buildExpressionSql(left, attributes);
-  final rightSql = buildExpressionSql(right, attributes);
+  final leftSql = buildExpressionSql(left, attributes, includeAlias: false);
+  final rightSql = buildExpressionSql(right, attributes, includeAlias: false);
 
   return switch ((leftType, type, rightType)) {
     (_, CompareType.equals, PostgresqlNull()) => leftSql + RawSql(' IS NULL'),

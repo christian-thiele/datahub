@@ -11,7 +11,6 @@ import 'package:postgres/postgres.dart' as pg;
 import 'data_utils.dart';
 import 'postgresql_data_attribute.dart';
 import 'postgresql_data_relation.dart';
-import 'postgresql_function_expression.dart';
 
 @optionalTypeArgs
 mixin PostgresqlRevisableRepository<
@@ -391,11 +390,10 @@ mixin PostgresqlRevisableRepository<
   @override
   Future<int> count({Filter filter = Filter.empty}) async {
     return await find(postgresql).runTransaction((context) async {
-      // TODO aggregates should be abstract
       final result = await dataView.select(context, [
-        PostgresqlRawExpression(RawSql('COUNT(*) as "count"')),
+        AggregateExpression.count(),
       ], filter: filter);
-      return result.firstOrNull?['count'] ?? 0;
+      return result.firstOrNull?.values.firstOrNull ?? 0;
     });
   }
 

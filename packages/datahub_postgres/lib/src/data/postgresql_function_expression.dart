@@ -15,6 +15,13 @@ class PostgresqlCastExpression extends Expression {
   const PostgresqlCastExpression(this.expression, this.type);
 }
 
+class PostgresqlAliasExpression extends Expression {
+  final String name;
+  final Expression expression;
+
+  const PostgresqlAliasExpression(this.name, this.expression);
+}
+
 class PostgresqlFunctionExpression extends Expression {
   final String name;
   final PostgresqlDataType? returnType;

@@ -36,6 +36,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
               buildExpressionSql(
                 expression,
                 attributes.map((e) => (e, relation)),
+                includeAlias: true,
               ),
             ),
         ],
@@ -47,6 +48,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
                       (e) => buildExpressionSql(
                         e,
                         attributes.map((e) => (e, relation)),
+
                       ),
                     )
                     .separatedBy(RawSql(', ')),

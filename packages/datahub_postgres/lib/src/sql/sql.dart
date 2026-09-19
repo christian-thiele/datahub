@@ -50,6 +50,12 @@ sealed class Sql {
   factory Sql.function(String name, Iterable<Sql> args) =>
       RawSql(name) + Sql.joinWrap(args.separatedBy(RawSql(', ')));
 
+  factory Sql.cast(Sql expression, PostgresqlDataType? type) =>
+      type != null ? expression.wrap() + RawSql('::${type.name}') : expression;
+
+  factory Sql.alias(Sql expression, String name) =>
+      expression.wrap() + RawSql(' AS ') + Sql.name(name);
+
   Sql operator +(Sql other) => CombinedSql(this, other);
 
   Iterable<dynamic> getParameters();
