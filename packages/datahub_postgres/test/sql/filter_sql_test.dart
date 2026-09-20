@@ -99,6 +99,28 @@ void main() {
     );
   });
 
+  test('Nothing Filter', () {
+    final contains = $ArraysData.$intArray.contains(5);
+    const containsSql = '''5 = ANY("arrays_data"."int_array")''';
+
+    expect(_fl($ArraysData.bean, Filter.empty), isNull);
+    expect(_fl($ArraysData.bean, Filter.nothing), 'false');
+
+    // unreduced groups render the nothing operand as a literal
+    expect(
+      _fl($ArraysData.bean, FilterGroup([contains, Filter.nothing], true)),
+      '($containsSql AND false)',
+    );
+    expect(
+      _fl($ArraysData.bean, FilterGroup([contains, Filter.nothing], false)),
+      '($containsSql OR false)',
+    );
+
+    // reduced groups never reach the database with a nothing operand
+    expect(_fl($ArraysData.bean, contains.and(Filter.nothing)), 'false');
+    expect(_fl($ArraysData.bean, contains.or(Filter.nothing)), containsSql);
+  });
+
   test('JSON Comparators: isIn', () {
     expect(
       _fl(

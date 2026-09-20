@@ -58,6 +58,10 @@ mixin PostgresqlDataRepository<
     int? offset,
     int? limit,
   }) async {
+    if (filter.isNothing) {
+      return [];
+    }
+
     return await find(postgresql).runTransaction((context) async {
       return await dataRelation.selectData(
         context,
@@ -71,6 +75,10 @@ mixin PostgresqlDataRepository<
 
   @override
   Future<int> count({Filter filter = Filter.empty}) async {
+    if (filter.isNothing) {
+      return 0;
+    }
+
     return await find(postgresql).runTransaction((context) async {
       final result = await dataRelation.select(context, [
         AggregateExpression.count(),
@@ -96,6 +104,10 @@ mixin PostgresqlDataRepository<
     required Filter filter,
     required Map<DataField<TData, dynamic>, dynamic> values,
   }) async {
+    if (filter.isNothing) {
+      return 0;
+    }
+
     return await find(postgresql).runTransaction((context) async {
       return await dataRelation.update(context, filter, values);
     });
@@ -109,6 +121,10 @@ mixin PostgresqlDataRepository<
 
   @override
   Future<int> deleteAll({required Filter filter}) async {
+    if (filter.isNothing) {
+      return 0;
+    }
+
     return await find(postgresql).runTransaction((context) async {
       return await dataRelation.delete(context, filter);
     });
@@ -116,6 +132,10 @@ mixin PostgresqlDataRepository<
 
   @override
   Future<bool> any({Filter filter = Filter.empty}) async {
+    if (filter.isNothing) {
+      return false;
+    }
+
     return await find(postgresql).runTransaction((context) async {
       final result = await dataRelation.select(
         context,

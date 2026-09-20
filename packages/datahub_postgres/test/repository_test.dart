@@ -108,4 +108,61 @@ void main() {
       });
     },
   );
+
+  declareTest(
+    'Postgresql Nothing Filter',
+    environment: ComposeEnvironment.fromFile(
+      'test/single-postgres.docker-compose.yml',
+    ),
+    [
+      PostgresqlService(
+        host: Config('test.services.postgres.host'),
+        port: Config('test.services.postgres.5432'),
+        database: Config.value('datahub_postgres'),
+        username: Config.value('postgres'),
+        password: Config.value('postgres'),
+        useSsl: Config.value(false),
+      ),
+      PostgresqlDataRepositoryService(bean: $Person.bean),
+    ],
+    () async {
+      final repo = Find<DataRepository<Person>>().find();
+
+      for (final firstName in ['Anna', 'Bert']) {
+        await repo.create(
+          Person(
+            firstName: firstName,
+            lastName: 'Example',
+            birthday: null,
+            isSpecial: true,
+          ),
+        );
+      }
+
+      // A nothing filter never matches, no matter how it is nested.
+      for (final filter in [
+        Filter.nothing,
+        $Person.$isSpecial.equals(true).and(Filter.nothing),
+        Filter.orGroup([Filter.nothing, Filter.nothing]),
+      ]) {
+        expect(await repo.readAll(filter: filter), isEmpty);
+        expect(await repo.count(filter: filter), 0);
+        expect(await repo.any(filter: filter), isFalse);
+        expect(await repo.first(filter: filter), isNull);
+        expect(
+          await repo.updateAll(
+            filter: filter,
+            values: {$Person.$lastName: 'Changed'},
+          ),
+          0,
+        );
+        expect(await repo.deleteAll(filter: filter), 0);
+      }
+
+      // None of the above touched the stored data.
+      final remaining = await repo.readAll(sort: $Person.$firstName.asc());
+      expect(remaining.map((e) => e.firstName), ['Anna', 'Bert']);
+      expect(remaining.map((e) => e.lastName), everyElement('Example'));
+    },
+  );
 }

@@ -109,6 +109,7 @@ Sql? buildFilterSql(
 ) {
   return switch (filter) {
     EmptyFilter() => null,
+    NothingFilter() => const RawSql('false'),
     FilterGroup() => switch (filter.filters
         .map((e) => buildFilterSql(e, attributes))
         .nonNulls

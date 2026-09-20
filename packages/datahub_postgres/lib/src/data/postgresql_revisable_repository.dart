@@ -358,6 +358,10 @@ mixin PostgresqlRevisableRepository<
     int? offset,
     int? limit,
   }) async {
+    if (filter.isNothing) {
+      return [];
+    }
+
     return await find(postgresql).runTransaction((context) async {
       final result = await context.execute(
         SqlSelect(
@@ -389,6 +393,10 @@ mixin PostgresqlRevisableRepository<
 
   @override
   Future<int> count({Filter filter = Filter.empty}) async {
+    if (filter.isNothing) {
+      return 0;
+    }
+
     return await find(postgresql).runTransaction((context) async {
       final result = await dataView.select(context, [
         AggregateExpression.count(),
@@ -414,6 +422,10 @@ mixin PostgresqlRevisableRepository<
 
   @override
   Future<bool> any({Filter filter = Filter.empty}) async {
+    if (filter.isNothing) {
+      return false;
+    }
+
     return await find(postgresql).runTransaction((context) async {
       final result = await dataView.select(
         context,
