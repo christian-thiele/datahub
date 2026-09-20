@@ -104,6 +104,86 @@ void main() {
     });
   });
 
+  group('NothingFilter', () {
+    test('matches nothing', () {
+      expect(Filter.nothing.matches(alice), isFalse);
+      expect(Filter.nothing.matches(bob), isFalse);
+    });
+
+    test('is not empty', () {
+      expect(Filter.nothing.isEmpty, isFalse);
+    });
+
+    test('reports isNothing through groups', () {
+      final a = Person.$name.equals('Alice');
+
+      expect(Filter.nothing.isNothing, isTrue);
+      expect(Filter.empty.isNothing, isFalse);
+      expect(a.isNothing, isFalse);
+
+      // An unsatisfiable operand absorbs a conjunction.
+      expect(FilterGroup([a, Filter.nothing], true).isNothing, isTrue);
+      expect(FilterGroup([a, Filter.empty], true).isNothing, isFalse);
+
+      // A disjunction is unsatisfiable only if every operand is.
+      expect(FilterGroup([a, Filter.nothing], false).isNothing, isFalse);
+      expect(
+        const FilterGroup([Filter.nothing, Filter.nothing], false).isNothing,
+        isTrue,
+      );
+
+      // An operand-less group is unconstrained, not unsatisfiable.
+      expect(const FilterGroup([], true).isNothing, isFalse);
+      expect(const FilterGroup([], false).isNothing, isFalse);
+
+      // Nesting is resolved at every depth.
+      expect(
+        FilterGroup([
+          FilterGroup([Filter.nothing, a], true),
+          FilterGroup([Filter.nothing, Filter.nothing], false),
+        ], false).isNothing,
+        isTrue,
+      );
+    });
+
+    test('agrees with matches and reduce for every case', () {
+      for (final filter in [
+        Filter.nothing,
+        Filter.empty,
+        Person.$name.equals('Alice'),
+        FilterGroup([Person.$name.equals('Alice'), Filter.nothing], true),
+        FilterGroup([Person.$name.equals('Alice'), Filter.nothing], false),
+        const FilterGroup([Filter.nothing, Filter.nothing], false),
+        const FilterGroup([], true),
+        const FilterGroup([], false),
+      ]) {
+        final describe = _describe(filter).toString();
+
+        // isNothing is exactly "matches no object" ...
+        if (filter.isNothing) {
+          for (final person in [alice, bob, charlie]) {
+            expect(filter.matches(person), isFalse, reason: describe);
+          }
+        }
+
+        // ... and the structural check agrees with reduction.
+        expect(
+          filter.isNothing,
+          filter.reduce() is NothingFilter,
+          reason: describe,
+        );
+      }
+    });
+
+    test('combines with and / or', () {
+      final byName = Person.$name.equals('Alice');
+
+      expect(byName.and(Filter.nothing).matches(alice), isFalse);
+      expect(byName.or(Filter.nothing).matches(alice), isTrue);
+      expect(byName.or(Filter.nothing).matches(bob), isFalse);
+    });
+  });
+
   group('CompareFilter equals', () {
     test('string equality', () {
       final filter = Person.$name.equals('Alice');
@@ -296,11 +376,33 @@ void main() {
       final t = hit();
       final f = miss();
       const e = Filter.empty;
+      const n = Filter.nothing;
 
       return [
         e,
         t,
         f,
+        n,
+        const FilterGroup([n], true),
+        const FilterGroup([n], false),
+        const FilterGroup([n, n], false),
+        const FilterGroup([e, n], true),
+        const FilterGroup([e, n], false),
+        FilterGroup([n, t], true),
+        FilterGroup([n, t], false),
+        FilterGroup([n, f], false),
+        FilterGroup([
+          FilterGroup([n, t], true),
+          t,
+        ], false),
+        FilterGroup([
+          FilterGroup([n, n], false),
+          t,
+        ], true),
+        FilterGroup([
+          FilterGroup([n, t], false),
+          FilterGroup([n, f], false),
+        ], false),
         const FilterGroup([], true),
         const FilterGroup([], false),
         const FilterGroup([e], true),
@@ -382,6 +484,67 @@ void main() {
         ),
         _empty,
       );
+    });
+
+    test('absorbs nothing operands into a conjunction', () {
+      final a = hit();
+      final b = hit();
+
+      // `a && false == false`, so the whole conjunction matches nothing.
+      expect(_describe(Filter.andGroup([Filter.nothing, a])), _nothing);
+      expect(_describe(Filter.andGroup([a, b, Filter.nothing])), _nothing);
+      expect(_describe(a.and(Filter.nothing)), _nothing);
+
+      // Nothing wins over empty in a conjunction: `true && false == false`.
+      expect(
+        _describe(Filter.andGroup([Filter.empty, Filter.nothing])),
+        _nothing,
+      );
+
+      // Including when an operand only becomes nothing through reduction.
+      expect(
+        _describe(
+          Filter.andGroup([
+            a,
+            FilterGroup([Filter.nothing, b], true),
+          ]),
+        ),
+        _nothing,
+      );
+    });
+
+    test('drops nothing operands from a disjunction', () {
+      final a = hit();
+      final b = hit();
+
+      // `a || false == a`, so nothing operands are neutral here.
+      expect(_describe(Filter.orGroup([Filter.nothing, a, b])), ['or', a, b]);
+      expect(_describe(a.or(Filter.nothing)), same(a));
+
+      // Empty wins over nothing in a disjunction: `true || false == true`.
+      expect(_describe(Filter.orGroup([Filter.empty, Filter.nothing])), _empty);
+    });
+
+    // Dropping every nothing operand must not leave an operand-less
+    // disjunction behind, which would be unconstrained instead of unsatisfiable.
+    test('keeps a disjunction of only nothing operands unsatisfiable', () {
+      expect(_describe(Filter.orGroup([Filter.nothing])), _nothing);
+      expect(
+        _describe(Filter.orGroup([Filter.nothing, Filter.nothing])),
+        _nothing,
+      );
+      expect(
+        _describe(
+          Filter.orGroup([
+            Filter.nothing,
+            Filter.andGroup([hit(), Filter.nothing]),
+          ]),
+        ),
+        _nothing,
+      );
+
+      // An operand-less disjunction stays unconstrained.
+      expect(_describe(Filter.orGroup([])), _empty);
     });
 
     test('flattens nested conjunctions', () {
@@ -497,6 +660,27 @@ void main() {
       }
     });
 
+    test('leaves no empty, nothing or redundant groups behind', () {
+      void check(Filter filter, Filter original) {
+        if (filter case FilterGroup(:final filters, :final isConjunction)) {
+          final reason = _describe(original).toString();
+          expect(filters.length, greaterThanOrEqualTo(2), reason: reason);
+          for (final operand in filters) {
+            expect(operand, isNot(isA<EmptyFilter>()), reason: reason);
+            expect(operand, isNot(isA<NothingFilter>()), reason: reason);
+            if (operand case FilterGroup(isConjunction: final inner)) {
+              expect(inner, isNot(isConjunction), reason: reason);
+            }
+            check(operand, original);
+          }
+        }
+      }
+
+      for (final filter in cases()) {
+        check(filter.reduce(), filter);
+      }
+    });
+
     test('preserves the set of matched objects', () {
       for (final filter in cases()) {
         for (final person in [alice, bob, charlie]) {
@@ -538,11 +722,13 @@ void main() {
 }
 
 const _empty = 'empty';
+const _nothing = 'nothing';
 
 /// Renders the structure of [filter] so trees can be compared without value
 /// equality on the node types. Leaves compare by identity.
 Object _describe(Filter filter) => switch (filter) {
   EmptyFilter() => _empty,
+  NothingFilter() => _nothing,
   CompareFilter() => filter,
   FilterGroup(:final filters, :final isConjunction) => [
     isConjunction ? 'and' : 'or',

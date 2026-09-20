@@ -5,11 +5,17 @@ import 'sort.dart';
 
 /// Representing filter arguments in a uniform, abstract way.
 sealed class Filter {
+  /// A filter that matches everything.
   static const Filter empty = EmptyFilter();
+
+  /// A filter that matches nothing.
+  static const Filter nothing = NothingFilter();
 
   const Filter();
 
   bool get isEmpty;
+
+  bool get isNothing;
 
   /// Evaluates this filter against [object] and returns whether it matches.
   ///
@@ -26,10 +32,10 @@ sealed class Filter {
 
   /// Returns the smallest representation of this filter.
   ///
-  /// The result contains no empty operands, no [FilterGroup] nested directly
-  /// inside another group of the same polarity, and no [FilterGroup] with
-  /// fewer than two operands. Reducing is semantics preserving: for any
-  /// object, `reduce().matches(object) == matches(object)`.
+  /// The result contains no empty or [NothingFilter] operands, no
+  /// [FilterGroup] nested directly inside another group of the same polarity,
+  /// and no [FilterGroup] with fewer than two operands. Reducing is semantics
+  /// preserving: for any object, `reduce().matches(object) == matches(object)`.
   Filter reduce();
 
   /// Returns the smallest representation of the "And" group of [filters].
@@ -101,6 +107,11 @@ final class FilterGroup extends Filter {
   bool get isEmpty => filters.every((element) => element.isEmpty);
 
   @override
+  bool get isNothing => isConjunction
+      ? filters.any((element) => element.isNothing)
+      : filters.isNotEmpty && filters.every((element) => element.isNothing);
+
+  @override
   Filter reduce() {
     final reduced = filters.map((f) => f.reduce()).toList(growable: false);
 
@@ -109,10 +120,19 @@ final class FilterGroup extends Filter {
       return Filter.empty;
     }
 
-    // An unconstrained operand is neutral in a conjunction: `a && true == a`.
+    // An unsatisfiable operand absorbs a conjunction: `a && false == false`.
+    if (isConjunction && reduced.any((element) => element is NothingFilter)) {
+      return Filter.nothing;
+    }
+
+    // An unconstrained operand is neutral in a conjunction: `a && true == a`,
+    // an unsatisfiable one in a disjunction: `a || false == a`.
     // Operands of the same polarity are inlined into this group.
     final flattened = reduced
-        .where((element) => !element.isEmpty)
+        .where(
+          (element) =>
+              isConjunction ? !element.isEmpty : element is! NothingFilter,
+        )
         .expand(
           (element) => switch (element) {
             FilterGroup(filters: final inner, isConjunction: final polarity)
@@ -124,6 +144,9 @@ final class FilterGroup extends Filter {
         .toList(growable: false);
 
     return switch (flattened.length) {
+      // Only neutral operands were dropped. A disjunction of nothing operands
+      // matches nothing, while an operand-less one stays unconstrained.
+      0 when !isConjunction && reduced.isNotEmpty => Filter.nothing,
       0 => Filter.empty,
       1 => flattened.single,
       _ => FilterGroup(flattened, isConjunction),
@@ -166,6 +189,9 @@ final class CompareFilter extends Filter {
   bool get isEmpty => false;
 
   @override
+  bool get isNothing => false;
+
+  @override
   Filter reduce() => this;
 }
 
@@ -177,6 +203,29 @@ final class EmptyFilter extends Filter {
 
   @override
   bool get isEmpty => true;
+
+  @override
+  bool get isNothing => false;
+
+  @override
+  Filter reduce() => this;
+}
+
+/// Filter that matches no object, the counterpart of [EmptyFilter].
+///
+/// Best practice: Use [Filter.nothing] instead of instantiating
+/// [NothingFilter] directly.
+final class NothingFilter extends Filter {
+  const NothingFilter();
+
+  @override
+  bool matches(DataObject object) => false;
+
+  @override
+  bool get isEmpty => false;
+
+  @override
+  bool get isNothing => true;
 
   @override
   Filter reduce() => this;
