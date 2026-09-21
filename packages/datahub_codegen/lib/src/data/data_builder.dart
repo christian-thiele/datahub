@@ -195,7 +195,9 @@ class DataBuilder extends Generator {
       final typeName =
           typeImportPrefix(type, field.library) +
           typeExpression(type, field.library);
-      constraintInvocations.add('ElementConstraint(constraint: EnumConstraint(values: $typeName.values))');
+      constraintInvocations.add(
+        'ElementConstraint(constraint: EnumConstraint(values: $typeName.values))',
+      );
     } else if (field.type case ParameterizedType(
       isDartCoreMap: true,
       typeArguments: [..., final DartType type],
