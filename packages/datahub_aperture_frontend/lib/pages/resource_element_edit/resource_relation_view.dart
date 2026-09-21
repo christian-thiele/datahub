@@ -31,6 +31,7 @@ class ResourceRelationView extends StatelessWidget {
                 context.read<ResourcesRepository>(),
                 resourceId: filteredResource.resourceId,
                 defaultFilter: filteredResource.filter,
+                defaultPageSize: 10,
               ),
               child: BlocBuilder<ResourceCubit, ResourceState>(
                 builder: (context, state) {

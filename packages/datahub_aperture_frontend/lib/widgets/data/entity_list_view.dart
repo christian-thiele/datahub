@@ -22,6 +22,7 @@ class EntityListView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView.separated(
+      physics: shrinkWrap ? NeverScrollableScrollPhysics() : null,
       itemBuilder: (context, index) {
         if (itemCount > 0) {
           return entryBuilder(context, index);

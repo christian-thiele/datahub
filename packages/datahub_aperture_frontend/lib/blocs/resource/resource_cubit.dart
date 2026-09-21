@@ -23,13 +23,14 @@ class ResourceCubit extends Cubit<ResourceState> {
     required this.resourceId,
     this.defaultFilter,
     String initialSearch = '',
+    int defaultPageSize = 25,
   }) : super(
          ResourceLoading(
            initial: true,
            paging: Paging(
              offset: 0,
              length: 0,
-             pageSize: 25,
+             pageSize: defaultPageSize,
              total: null,
              hasMore: false,
            ),
