@@ -35,8 +35,18 @@ const _resolve = ResourceAction(
 class _Repository implements ResourcesRepository {
   final Object? error;
   final started = <Map<String, dynamic>>[];
+  final startedGlobal = <(String, Map<String, dynamic>)>[];
 
   _Repository([this.error]);
+
+  @override
+  Future<Map<String, dynamic>> startAction(
+    String actionId,
+    Map<String, dynamic> parameters,
+  ) async {
+    startedGlobal.add((actionId, parameters));
+    return {};
+  }
 
   @override
   Future<Map<String, dynamic>> startElementAction(
@@ -84,6 +94,29 @@ void main() {
 
     await cubit.stream.firstWhere((state) => state is ResourceActionDone);
     expect(repository.started, [<String, dynamic>{}]);
+  });
+
+  test('starts global actions without an element', () async {
+    final repository = _Repository();
+    final cubit = ResourceActionCubit(
+      repository,
+      action: const ResourceAction(
+        id: 'RebuildIndex',
+        displayName: 'Rebuild index',
+        icon: 0,
+        parameterFields: [],
+      ),
+    );
+    addTearDown(cubit.close);
+
+    final state = await cubit.stream.firstWhere(
+      (state) => state is ResourceActionDone,
+    );
+    expect(state.resourceId, isNull);
+    expect(state.elementId, isNull);
+    expect(repository.started, isEmpty);
+    expect(repository.startedGlobal.single.$1, 'RebuildIndex');
+    expect(repository.startedGlobal.single.$2, isEmpty);
   });
 
   test('waits for the parameters to be filled in', () async {

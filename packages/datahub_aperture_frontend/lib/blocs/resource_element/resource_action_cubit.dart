@@ -20,9 +20,9 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
 
   ResourceActionCubit(
     this._resourcesRepository, {
-    required String resourceId,
     required this.action,
-    required String elementId,
+    String? resourceId,
+    String? elementId,
   }) : super(
          action.parameterFields.isEmpty
              ? ResourceActionLoading(
@@ -112,12 +112,16 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
       );*/
       final taskManagerEnabled = false;
 
-      final result = await _resourcesRepository.startElementAction(
-        state.resourceId,
-        state.elementId,
-        state.actionId,
-        parameters,
-      );
+      final resourceId = state.resourceId;
+      final elementId = state.elementId;
+      final result = resourceId != null && elementId != null
+          ? await _resourcesRepository.startElementAction(
+              resourceId,
+              elementId,
+              state.actionId,
+              parameters,
+            )
+          : await _resourcesRepository.startAction(state.actionId, parameters);
       /*
       if (taskManagerEnabled) {
         if (result['taskId'] case final taskId) {

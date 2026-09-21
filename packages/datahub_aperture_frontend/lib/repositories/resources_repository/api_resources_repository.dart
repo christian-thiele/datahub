@@ -27,6 +27,13 @@ class ApiResourcesRepository extends ApiRepository
   }
 
   @override
+  Future<List<ResourceAction>> getActions() async {
+    final client = await getClient();
+    final result = await client.get('/api/actions');
+    return await result.getList($ResourceAction.bean);
+  }
+
+  @override
   Future<ResourceDescription> getDescription(String id) async {
     final client = await getClient();
     final result = await client.get(
@@ -150,6 +157,22 @@ class ApiResourcesRepository extends ApiRepository
             'elementId': elementId,
             'actionId': actionId,
           },
+        )
+        .thenGetJsonBody();
+  }
+
+  @override
+  Future<Map<String, dynamic>> startAction(
+    String actionId,
+    Map<String, dynamic> parameters,
+  ) async {
+    const codec = JsonDataCodec();
+    final client = await getClient();
+    return client
+        .post(
+          '/api/actions/{actionId}',
+          codec.encodeMap(parameters, codec.encodeDynamic),
+          urlParams: {'actionId': actionId},
         )
         .thenGetJsonBody();
   }

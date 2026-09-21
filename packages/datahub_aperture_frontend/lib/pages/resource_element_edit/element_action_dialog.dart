@@ -13,14 +13,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 class ElementActionDialog extends StatelessWidget {
-  final String resourceId;
-  final String elementId;
+  final String? resourceId;
+  final String? elementId;
   final ResourceAction action;
 
   const ElementActionDialog({
     super.key,
-    required this.resourceId,
-    required this.elementId,
+    this.resourceId,
+    this.elementId,
     required this.action,
   });
 

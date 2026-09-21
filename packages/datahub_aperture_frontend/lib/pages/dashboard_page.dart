@@ -1,6 +1,7 @@
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/blocs/configuration_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
+import 'package:datahub_aperture_frontend/pages/resource_element_edit/element_action_dialog.dart';
 import 'package:datahub_aperture_frontend/utils/bootstrap.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
@@ -21,12 +22,18 @@ class DashboardPage extends StatelessWidget {
     return BasePage(
       child: BlocBuilder<ConfigurationCubit, ConfigurationState>(
         builder: (context, state) {
-          final (resources, modules) = switch (state) {
-            ConfigurationValue(:final resources, :final modules) => (
-              resources,
-              modules,
+          final (resources, modules, actions) = switch (state) {
+            ConfigurationValue(
+              :final resources,
+              :final modules,
+              :final actions,
+            ) =>
+              (resources, modules, actions),
+            _ => (
+              const <ResourceDescription>[],
+              const <ModuleDescription>[],
+              const <ResourceAction>[],
             ),
-            _ => (const <ResourceDescription>[], const <ModuleDescription>[]),
           };
 
           return ListView(
@@ -50,7 +57,9 @@ class DashboardPage extends StatelessWidget {
                       _ShortcutTile(
                         icon: getIcon(resource.icon),
                         title: resource.namePlural ?? resource.name,
-                        path: '/resources/${Uri.encodeComponent(resource.id)}',
+                        onTap: () => context.go(
+                          '/resources/${Uri.encodeComponent(resource.id)}',
+                        ),
                       ),
                   ],
                 ),
@@ -64,7 +73,28 @@ class DashboardPage extends StatelessWidget {
                       _ShortcutTile(
                         icon: getIcon(module.icon),
                         title: module.displayName,
-                        path: '/modules/${Uri.encodeComponent(module.id)}',
+                        onTap: () => context.go(
+                          '/modules/${Uri.encodeComponent(module.id)}',
+                        ),
+                      ),
+                  ],
+                ),
+              ],
+              if (actions.isNotEmpty) ...[
+                const SizedBox(height: 32),
+                _SectionTitle(S.of(context).actions),
+                _TileGrid(
+                  children: [
+                    for (final action in actions)
+                      _ShortcutTile(
+                        icon: getIcon(action.icon),
+                        title: action.displayName,
+                        trailingIcon: Icons.play_arrow_rounded,
+                        onTap: () => showDialog(
+                          context: context,
+                          builder: (context) =>
+                              ElementActionDialog(action: action),
+                        ),
                       ),
                   ],
                 ),
@@ -164,12 +194,14 @@ class _ShortcutTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
-  final String path;
+  final IconData trailingIcon;
+  final VoidCallback onTap;
 
   const _ShortcutTile({
     required this.icon,
     required this.title,
-    required this.path,
+    required this.onTap,
+    this.trailingIcon = Icons.arrow_forward,
   }) : subtitle = null;
 
   @override
@@ -177,7 +209,7 @@ class _ShortcutTile extends StatelessWidget {
     final colors = ApertureColors.of(context);
     return Card(
       child: InkWell(
-        onTap: () => context.go(path),
+        onTap: onTap,
         child: Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -203,7 +235,7 @@ class _ShortcutTile extends StatelessWidget {
                   ],
                 ),
               ),
-              Icon(Icons.arrow_forward, size: 16, color: colors.textMuted),
+              Icon(trailingIcon, size: 16, color: colors.textMuted),
             ],
           ),
         ),

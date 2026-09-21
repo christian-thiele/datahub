@@ -5,6 +5,8 @@ abstract interface class ResourcesRepository {
 
   Future<List<ModuleDescription>> getModules();
 
+  Future<List<ResourceAction>> getActions();
+
   Future<ResourceDescription> getDescription(String id);
 
   Future<ResourceElementsResponse> getResourceElements(
@@ -44,6 +46,11 @@ abstract interface class ResourcesRepository {
   Future<Map<String, dynamic>> startElementAction(
     String resourceId,
     String elementId,
+    String actionId,
+    Map<String, dynamic> parameters,
+  );
+
+  Future<Map<String, dynamic>> startAction(
     String actionId,
     Map<String, dynamic> parameters,
   );

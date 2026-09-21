@@ -1,9 +1,9 @@
 part of 'resource_action_cubit.dart';
 
 sealed class ResourceActionState {
-  final String resourceId;
+  final String? resourceId;
   final String actionId;
-  final String elementId;
+  final String? elementId;
 
   const ResourceActionState({
     required this.resourceId,
