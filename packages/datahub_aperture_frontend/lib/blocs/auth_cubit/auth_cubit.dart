@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:bloc/bloc.dart';
 import 'package:datahub/api.dart';
 import 'package:datahub/datahub.dart';
@@ -17,6 +19,8 @@ class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
   @override
   final ApertureBootstrap bootstrap;
 
+  late final StreamSubscription _subscription;
+
   AuthCubit({required this.bootstrap, AuthService? authService})
     : authService = authService ?? AuthService.instance,
       super(AuthStateLoading()) {
@@ -24,7 +28,7 @@ class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
   }
 
   Future<void> _init() async {
-    authService.stream.listen(_onAuthServiceUpdated);
+    _subscription = authService.stream.listen(_onAuthServiceUpdated);
     try {
       await authService.initialize(
         Uri.parse(bootstrap.oidcIssuer),
@@ -74,5 +78,11 @@ class AuthCubit extends Cubit<AuthState> with AuthStrategyMixin {
     } catch (e) {
       emit(AuthStateError(message: null));
     }
+  }
+
+  @override
+  Future<void> close() async {
+    await _subscription.cancel();
+    await super.close();
   }
 }

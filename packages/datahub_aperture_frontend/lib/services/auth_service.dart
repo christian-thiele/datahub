@@ -20,7 +20,7 @@ class AuthService {
 
   factory AuthService() => instance;
 
-  final _controller = StreamController<bool>();
+  final _controller = StreamController<bool>.broadcast();
 
   Stream<bool> get stream => _controller.stream;
   final _lock = Semaphore();

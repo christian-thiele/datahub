@@ -564,19 +564,59 @@ class S {
     );
   }
 
-  /// `{count} fields`
-  String fieldCount(Object count) {
+  /// `Run`
+  String get runAction {
+    return Intl.message('Run', name: 'runAction', desc: '', args: []);
+  }
+
+  /// `Done`
+  String get done {
+    return Intl.message('Done', name: 'done', desc: '', args: []);
+  }
+
+  /// `Reset`
+  String get reset {
+    return Intl.message('Reset', name: 'reset', desc: '', args: []);
+  }
+
+  /// `View all`
+  String get viewAll {
+    return Intl.message('View all', name: 'viewAll', desc: '', args: []);
+  }
+
+  /// `View all {count}`
+  String viewAllCount(Object count) {
     return Intl.message(
-      '$count fields',
-      name: 'fieldCount',
+      'View all $count',
+      name: 'viewAllCount',
       desc: '',
       args: [count],
     );
   }
 
-  /// `Module`
-  String get module {
-    return Intl.message('Module', name: 'module', desc: '', args: []);
+  /// `Run "{action}"?`
+  String runActionTitle(Object action) {
+    return Intl.message(
+      'Run "$action"?',
+      name: 'runActionTitle',
+      desc: '',
+      args: [action],
+    );
+  }
+
+  /// `Sorted by {sort}`
+  String sortedBy(Object sort) {
+    return Intl.message(
+      'Sorted by $sort',
+      name: 'sortedBy',
+      desc: '',
+      args: [sort],
+    );
+  }
+
+  /// `Total`
+  String get total {
+    return Intl.message('Total', name: 'total', desc: '', args: []);
   }
 }
 

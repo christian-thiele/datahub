@@ -1,3 +1,4 @@
+import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/blocs/configuration_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/utils/bootstrap.dart';
@@ -25,7 +26,7 @@ class DashboardPage extends StatelessWidget {
               resources,
               modules,
             ),
-            _ => (const [], const []),
+            _ => (const <ResourceDescription>[], const <ModuleDescription>[]),
           };
 
           return ListView(
@@ -49,9 +50,6 @@ class DashboardPage extends StatelessWidget {
                       _ShortcutTile(
                         icon: getIcon(resource.icon),
                         title: resource.namePlural ?? resource.name,
-                        subtitle: S
-                            .of(context)
-                            .fieldCount(resource.fields.length),
                         path: '/resources/${Uri.encodeComponent(resource.id)}',
                       ),
                   ],
@@ -66,7 +64,6 @@ class DashboardPage extends StatelessWidget {
                       _ShortcutTile(
                         icon: getIcon(module.icon),
                         title: module.displayName,
-                        subtitle: S.of(context).module,
                         path: '/modules/${Uri.encodeComponent(module.id)}',
                       ),
                   ],
@@ -166,15 +163,14 @@ class _TileGrid extends StatelessWidget {
 class _ShortcutTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final String subtitle;
+  final String? subtitle;
   final String path;
 
   const _ShortcutTile({
     required this.icon,
     required this.title,
-    required this.subtitle,
     required this.path,
-  });
+  }) : subtitle = null;
 
   @override
   Widget build(BuildContext context) {
@@ -197,10 +193,13 @@ class _ShortcutTile extends StatelessWidget {
                       style: Theme.of(context).textTheme.titleMedium,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      subtitle,
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
+                    /*
+                    if (subtitle case final subtitle?)
+                      Text(
+                        subtitle,
+                        style: Theme.of(context).textTheme.labelMedium,
+                      ),
+                    */
                   ],
                 ),
               ),
