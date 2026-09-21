@@ -1,6 +1,7 @@
 library;
 
 export 'src/api/aperture_bootstrap.dart';
+export 'src/api/aperture_map_tiles.dart';
 export 'src/api/aperture_theme.dart';
 export 'src/api/module_description.dart';
 export 'src/api/module_type.dart';

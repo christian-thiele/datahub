@@ -35,6 +35,18 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
     constraints: [EnumConstraint(values: Environment.values)],
   );
 
+  static final $mapTiles = DataField<ApertureBootstrap, ApertureMapTiles?>(
+    name: 'mapTiles',
+    valueOf: (p) => p.mapTiles,
+    dataBean: () => $ApertureMapTiles.bean,
+    fromJson: (value, {String? name}) => $$codec.decodeNullable(
+      value,
+      $ApertureMapTiles.bean.fromJson,
+      name: name,
+    ),
+    toJson: (value) => $$codec.encodeNullable(value, (v) => v.toJson()),
+  );
+
   static final $oidcIssuer = DataField<ApertureBootstrap, String>(
     name: 'oidcIssuer',
     valueOf: (p) => p.oidcIssuer,
@@ -73,6 +85,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
       $title,
       $theme,
       $environment,
+      $mapTiles,
       $oidcIssuer,
       $oidcScopes,
       $oidcClientId,
@@ -90,6 +103,8 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
     String? title,
     ApertureTheme? theme,
     Environment? environment,
+    ApertureMapTiles? mapTiles,
+    bool nullMapTiles = false,
     String? oidcIssuer,
     List<String>? oidcScopes,
     String? oidcClientId,
@@ -102,6 +117,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
       title: title ?? $data.title,
       theme: theme ?? $data.theme,
       environment: environment ?? $data.environment,
+      mapTiles: nullMapTiles ? null : (mapTiles ?? $data.mapTiles),
       oidcIssuer: oidcIssuer ?? $data.oidcIssuer,
       oidcScopes: oidcScopes ?? $data.oidcScopes,
       oidcClientId: nullOidcClientId
@@ -118,6 +134,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
       title: data['title'],
       theme: data['theme'],
       environment: data['environment'],
+      mapTiles: data['mapTiles'],
       oidcIssuer: data['oidcIssuer'],
       oidcScopes: data['oidcScopes']?.cast<String>().toList(growable: false),
       oidcClientId: data['oidcClientId'],
@@ -146,6 +163,10 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
         data['environment'],
         name: DataCodec.childName(name, 'environment'),
       ),
+      mapTiles: $mapTiles.fromJson(
+        data['mapTiles'],
+        name: DataCodec.childName(name, 'mapTiles'),
+      ),
       oidcIssuer: $oidcIssuer.fromJson(
         data['oidcIssuer'],
         name: DataCodec.childName(name, 'oidcIssuer'),
@@ -172,6 +193,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
       'title': $title.toJson($$data.title),
       'theme': $theme.toJson($$data.theme),
       'environment': $environment.toJson($$data.environment),
+      'mapTiles': $mapTiles.toJson($$data.mapTiles),
       'oidcIssuer': $oidcIssuer.toJson($$data.oidcIssuer),
       'oidcScopes': $oidcScopes.toJson($$data.oidcScopes),
       'oidcClientId': $oidcClientId.toJson($$data.oidcClientId),

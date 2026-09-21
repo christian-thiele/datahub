@@ -12,6 +12,7 @@ ApertureBootstrap _bootstrap({Uint8List? logo}) => ApertureBootstrap(
   title: 'Admin <Panel>',
   theme: ApertureTheme(logo: logo),
   environment: Environment.prod,
+  mapTiles: null,
   oidcIssuer: 'http://localhost',
   oidcScopes: [],
   oidcClientId: null,

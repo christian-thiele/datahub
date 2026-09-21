@@ -1,4 +1,5 @@
 import 'package:datahub/data.dart' as data;
+import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/widgets/geo_editor/geo_editor.dart';
 import 'package:datahub_aperture_frontend/widgets/geo_editor/model/geo_type_restriction.dart';
 import 'package:flutter/material.dart';
@@ -279,5 +280,34 @@ void main() {
 
     expect(find.byTooltip('Draw a point'), findsNothing);
     expect(find.byTooltip('Zoom to geometry'), findsOneWidget);
+  });
+
+  testWidgets('draws the tiles and attribution the server provides', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      _app(
+        const GeoEditor(
+          tiles: ApertureMapTiles(
+            urlTemplate: 'https://tiles.example.com/{z}/{x}/{y}.png',
+            maxZoom: 12,
+            attribution: 'Map data © Example',
+          ),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    final layer = tester.widget<TileLayer>(find.byType(TileLayer));
+    expect(layer.urlTemplate, 'https://tiles.example.com/{z}/{x}/{y}.png');
+    expect(layer.maxZoom, 12);
+    expect(find.text('Map data © Example'), findsOneWidget);
+  });
+
+  testWidgets('draws no tiles without a tile server', (tester) async {
+    await tester.pumpWidget(_app(const GeoEditor(tiles: null)));
+    await tester.pump();
+
+    expect(find.byType(TileLayer), findsNothing);
   });
 }

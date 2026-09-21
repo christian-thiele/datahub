@@ -1,4 +1,5 @@
 import 'package:datahub/data.dart' as data;
+import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/blocs/geo_editor/geo_editor_cubit.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
@@ -24,11 +25,13 @@ import 'model/geo_type_restriction.dart';
 /// `GeometryCollection` can hold a mix of everything.
 ///
 /// The editor is read-only when [onChanged] is `null`.
+///
+/// The map is drawn on [tiles], or on plain background if `null`.
 class GeoEditor extends StatefulWidget {
   final data.Geometry? value;
   final GeoTypeRestriction restriction;
   final ValueChanged<data.Geometry?>? onChanged;
-  final String tileUrlTemplate;
+  final ApertureMapTiles? tiles;
   final String userAgentPackageName;
 
   const GeoEditor({
@@ -36,7 +39,7 @@ class GeoEditor extends StatefulWidget {
     this.value,
     this.restriction = const GeoTypeRestriction.any(),
     this.onChanged,
-    this.tileUrlTemplate = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
+    this.tiles = ApertureMapTiles.openStreetMap,
     this.userAgentPackageName = 'net.datahubproject.aperture',
   });
 
@@ -93,7 +96,7 @@ class _GeoEditorState extends State<GeoEditor> {
       child: _GeoEditorMap(
         restriction: widget.restriction,
         readOnly: widget.onChanged == null,
-        tileUrlTemplate: widget.tileUrlTemplate,
+        tiles: widget.tiles,
         userAgentPackageName: widget.userAgentPackageName,
       ),
     ),
@@ -103,13 +106,13 @@ class _GeoEditorState extends State<GeoEditor> {
 class _GeoEditorMap extends StatefulWidget {
   final GeoTypeRestriction restriction;
   final bool readOnly;
-  final String tileUrlTemplate;
+  final ApertureMapTiles? tiles;
   final String userAgentPackageName;
 
   const _GeoEditorMap({
     required this.restriction,
     required this.readOnly,
-    required this.tileUrlTemplate,
+    required this.tiles,
     required this.userAgentPackageName,
   });
 
@@ -427,10 +430,12 @@ class _GeoEditorMapState extends State<_GeoEditorMap> {
           onLongPress: _onLongPress,
         ),
         children: [
-          TileLayer(
-            urlTemplate: widget.tileUrlTemplate,
-            userAgentPackageName: widget.userAgentPackageName,
-          ),
+          if (widget.tiles case final tiles?)
+            TileLayer(
+              urlTemplate: tiles.urlTemplate,
+              maxZoom: tiles.maxZoom?.toDouble() ?? 18,
+              userAgentPackageName: widget.userAgentPackageName,
+            ),
           Positioned.fill(
             child: GeoFeatureLayer(
               state: state,
@@ -456,6 +461,8 @@ class _GeoEditorMapState extends State<_GeoEditorMap> {
               onDeletePressed: _cubit.removeSelection,
             ),
           ),
+          if (widget.tiles?.attribution case final attribution?)
+            Positioned.fill(child: _GeoAttribution(text: attribution)),
           Positioned.fill(
             child: GeoEditorHint(
               state: state,
@@ -506,5 +513,40 @@ class _HandleDragRecognizer extends PanGestureRecognizer {
     // threshold than a pan recognizer reaches, and its long press claims the
     // pointer outright after half a second of holding still.
     resolve(GestureDisposition.accepted);
+  }
+}
+
+/// The attribution the tile provider requires, in the corner of the map.
+class _GeoAttribution extends StatelessWidget {
+  final String text;
+
+  const _GeoAttribution({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+
+    return IgnorePointer(
+      child: Align(
+        alignment: Alignment.bottomRight,
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: colors.surface.withValues(alpha: 0.7),
+            borderRadius: const BorderRadius.only(topLeft: Radius.circular(4)),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+            child: Text(
+              text,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: Theme.of(
+                context,
+              ).textTheme.labelSmall?.copyWith(color: colors.onSurface),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

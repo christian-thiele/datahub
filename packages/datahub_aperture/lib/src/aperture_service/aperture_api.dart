@@ -12,6 +12,7 @@ import 'package:datahub_aperture/src/utils/data_description_builders.dart';
 class ApertureApi extends ApiNode {
   final Config<String> title;
   final ApertureTheme theme;
+  final ApertureTileSource tileSource;
   final List<ApertureResource> resources;
   final List<ApertureAction> actions;
   final List<ApertureModule> modules;
@@ -27,6 +28,7 @@ class ApertureApi extends ApiNode {
   const ApertureApi({
     this.title = const Config('aperture.title', defaultValue: 'Aperture'),
     this.theme = const ApertureTheme(),
+    this.tileSource = const OpenStreetMapTileSource(),
     this.resources = const [],
     this.actions = const [],
     this.modules = const [],
@@ -57,10 +59,11 @@ class ApertureApi extends ApiNode {
         matcher: AllOfRouteMatcher(
           matchers: [RoutePattern('$base/api/bootstrap')],
         ),
-        get: (request) => ApertureBootstrap(
+        get: (request) async => ApertureBootstrap(
           title: title.read(),
           theme: theme,
           environment: Context.ofZone().environment,
+          mapTiles: await tileSource.resolve(),
           oidcIssuer: oidcIssuer.read(),
           oidcScopes: oidcScopes.read(),
           oidcClientId: oidcClientId.read(),

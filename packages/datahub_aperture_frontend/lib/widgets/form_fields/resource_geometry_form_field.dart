@@ -1,4 +1,5 @@
 import 'package:datahub/data.dart';
+import 'package:datahub_aperture_frontend/utils/bootstrap.dart';
 import 'package:datahub_aperture_frontend/widgets/geo_editor/geo_editor.dart';
 import 'package:datahub_aperture_frontend/widgets/geo_editor/model/geo_type_restriction.dart';
 import 'package:flutter/material.dart';
@@ -100,6 +101,7 @@ class ResourceGeometryFormField extends StatelessWidget {
                     child: GeoEditor(
                       value: value,
                       restriction: restriction,
+                      tiles: Bootstrap.of(context).mapTiles,
                       onChanged: onChanged,
                     ),
                   ),
