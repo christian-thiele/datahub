@@ -69,9 +69,11 @@ class ElementActionDialog extends StatelessWidget {
                       .read<ResourceActionCubit>()
                       .setParameterValue,
                 ),
-              ResourceActionLoading() => Center(child: ApertureSpinner()),
-              ResourceActionError(:final message) => ErrorView(
-                message: message,
+              ResourceActionLoading() => IntrinsicHeight(
+                child: Center(child: ApertureSpinner()),
+              ),
+              ResourceActionError(:final message) => IntrinsicHeight(
+                child: ErrorView(message: message),
               ),
               ResourceActionDone() => Row(
                 mainAxisSize: MainAxisSize.max,
