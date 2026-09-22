@@ -1,3 +1,13 @@
+## 0.18.0-dev.24
+
+ - **FIX**(postgres): fixed integer array return type.
+ - **FIX**(postgres): fixed SqlNestedSelect syntax.
+ - **FIX**(postgres): fixed selectJoin type.
+ - **FEAT**(postgres): rebuild of revisioned repositories.
+ - **FEAT**(postgres): added more functionality to SqlBuilder.
+ - **FEAT**(postgres): added nothing-filter support and fast return for nothing-filtered queries.
+ - **FEAT**(postgres): added aggregates support.
+
 ## 0.18.0-dev.23
 
 > Note: This release has breaking changes.

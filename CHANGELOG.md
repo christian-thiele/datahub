@@ -3,6 +3,69 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-22
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.27`](#datahub---v0180-dev27)
+ - [`datahub_aperture` - `v0.1.0-dev.21`](#datahub_aperture---v010-dev21)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.17`](#datahub_aperture_frontend---v010-dev17)
+ - [`datahub_postgres` - `v0.18.0-dev.24`](#datahub_postgres---v0180-dev24)
+ - [`datahub_codegen` - `v0.18.0-dev.18`](#datahub_codegen---v0180-dev18)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_codegen` - `v0.18.0-dev.18`
+
+---
+
+#### `datahub` - `v0.18.0-dev.27`
+
+ - **FIX**(postgres): fixed selectJoin type.
+ - **FIX**(datahub): fixed jwt parsing error.
+ - **FEAT**(datahub): added nothing filter.
+ - **FEAT**(datahub): added aggregates.
+
+#### `datahub_aperture` - `v0.1.0-dev.21`
+
+ - **FEAT**(aperture): added support for different tile servers (including google maps).
+ - **FEAT**(aperture): added action parameter support.
+ - **FEAT**(aperture): removed logo color filter.
+ - **FEAT**(aperture): added elaborate demo scenario.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.17`
+
+ - **FIX**(aperture): fixed dialog layout.
+ - **FIX**(aperture): fixed related list scrolling.
+ - **FIX**(aperture): fixed geo editor layout.
+ - **FIX**(aperture): fixed hot-reload issues.
+ - **FEAT**(aperture): added global actions.
+ - **FEAT**(aperture): added support for different tile servers (including google maps).
+ - **FEAT**(aperture): added action parameter support.
+ - **FEAT**(aperture): removed logo color filter.
+ - **FEAT**(aperture): major redesign.
+
+#### `datahub_postgres` - `v0.18.0-dev.24`
+
+ - **FIX**(postgres): fixed integer array return type.
+ - **FIX**(postgres): fixed SqlNestedSelect syntax.
+ - **FIX**(postgres): fixed selectJoin type.
+ - **FEAT**(postgres): rebuild of revisioned repositories.
+ - **FEAT**(postgres): added more functionality to SqlBuilder.
+ - **FEAT**(postgres): added nothing-filter support and fast return for nothing-filtered queries.
+ - **FEAT**(postgres): added aggregates support.
+
+
 ## 2026-09-19
 
 ### Changes

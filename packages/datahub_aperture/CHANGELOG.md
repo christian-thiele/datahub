@@ -1,3 +1,10 @@
+## 0.1.0-dev.21
+
+ - **FEAT**(aperture): added support for different tile servers (including google maps).
+ - **FEAT**(aperture): added action parameter support.
+ - **FEAT**(aperture): removed logo color filter.
+ - **FEAT**(aperture): added elaborate demo scenario.
+
 ## 0.1.0-dev.20
 
  - **FIX**(aperture): moved search logic to backend.

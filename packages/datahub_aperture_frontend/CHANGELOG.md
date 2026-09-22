@@ -1,3 +1,15 @@
+## 0.1.0-dev.17
+
+ - **FIX**(aperture): fixed dialog layout.
+ - **FIX**(aperture): fixed related list scrolling.
+ - **FIX**(aperture): fixed geo editor layout.
+ - **FIX**(aperture): fixed hot-reload issues.
+ - **FEAT**(aperture): added global actions.
+ - **FEAT**(aperture): added support for different tile servers (including google maps).
+ - **FEAT**(aperture): added action parameter support.
+ - **FEAT**(aperture): removed logo color filter.
+ - **FEAT**(aperture): major redesign.
+
 ## 0.1.0-dev.16
 
  - **FIX**(aperture): moved search logic to backend.

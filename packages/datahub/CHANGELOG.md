@@ -1,3 +1,10 @@
+## 0.18.0-dev.27
+
+ - **FIX**(postgres): fixed selectJoin type.
+ - **FIX**(datahub): fixed jwt parsing error.
+ - **FEAT**(datahub): added nothing filter.
+ - **FEAT**(datahub): added aggregates.
+
 ## 0.18.0-dev.26
 
 > Note: This release has breaking changes.
