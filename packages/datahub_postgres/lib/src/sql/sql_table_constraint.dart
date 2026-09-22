@@ -13,12 +13,20 @@ class SqlTableConstraint {
         Sql.join([
           RawSql('UNIQUE '),
           if (nullsNotDistinct) RawSql('NULLS NOT DISTINCT '),
-          RawSql('('),
-          ...attributes
-              .map((a) => RawSql(Sql.escapeName(a.name)))
-              .separatedBy(RawSql(',')),
-          RawSql(')'),
+          _attributeList(attributes),
         ]),
+      PrimaryKeyTableConstraint(:final attributes) => Sql.join([
+        RawSql('PRIMARY KEY '),
+        _attributeList(attributes),
+      ]),
     };
   }
+
+  Sql _attributeList(List<PostgresqlAttribute> attributes) => Sql.join([
+    RawSql('('),
+    ...attributes
+        .map((a) => RawSql(Sql.escapeName(a.name)))
+        .separatedBy(RawSql(',')),
+    RawSql(')'),
+  ]);
 }
