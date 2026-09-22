@@ -1,4 +1,3 @@
-import '../data_field.dart';
 import '../data_object.dart';
 import '../filter.dart';
 import '../sort.dart';
@@ -89,16 +88,6 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
   }
 
   @override
-  Future<int> updateAll({
-    required Filter filter,
-    required Map<DataField<T, dynamic>, dynamic> values,
-  }) async {
-    throw UnimplementedError(
-      'updateAll is not implemented for RevisableDataRepositoryMixin.',
-    );
-  }
-
-  @override
   Future<bool> deleteById(dynamic id, {DateTime? from}) async {
     return await atomic(() async {
       try {
@@ -113,12 +102,5 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
         return false;
       }
     });
-  }
-
-  @override
-  Future<int> deleteAll({required Filter filter}) async {
-    throw UnimplementedError(
-      'deleteAll is not implemented for RevisableDataRepositoryMixin.',
-    );
   }
 }

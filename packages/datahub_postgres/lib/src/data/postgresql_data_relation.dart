@@ -113,7 +113,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
             right.relation.schemaName,
             right.relation.name,
           ),
-          type: SqlJoinType.left,
+          type: type,
           on: buildFilterSql(on, allAttributes),
         ),
         allAttributes
