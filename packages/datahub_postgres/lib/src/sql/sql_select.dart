@@ -21,8 +21,7 @@ class SqlNestedSelect extends SqlSelectTarget {
   const SqlNestedSelect({required this.name, required this.select});
 
   @override
-  Sql toSql() =>
-      Sql.join([select.toSql()..wrap(), RawSql(' '), Sql.name(name)]);
+  Sql toSql() => Sql.join([select.toSql().wrap(), RawSql(' '), Sql.name(name)]);
 }
 
 class SqlSelect with SqlBuilder {
