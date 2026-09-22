@@ -88,6 +88,13 @@ mixin DatabaseConnectionManager<
     return await openConnection();
   }
 
+  /// Runs [body] in a zone that is not bound to a connection of this pool,
+  /// so that [useConnection] inside [body] takes a new connection even when
+  /// called while another connection is in use by the calling zone.
+  R runDetached<R>(R Function() body) {
+    return runZoned(body, zoneValues: {'$_adapterId/connection': null});
+  }
+
   /// Provides a connection from the connection pool.
   Future<TResult> useConnection<TResult>(
     Future<TResult> Function(TConnection) delegate, {

@@ -12,6 +12,8 @@ class PostgresqlRevisableRepositoryService<TData extends DataObject<TData>>
   final Find<Postgresql> postgresql;
   final Config<String> schemaName;
   final Config<String?> relationName;
+  final Config<Duration> schedulePollInterval;
+  final Config<int> promotionBatchSize;
   final DataBean<TData> bean;
 
   const PostgresqlRevisableRepositoryService({
@@ -19,6 +21,14 @@ class PostgresqlRevisableRepositoryService<TData extends DataObject<TData>>
     this.postgresql = const Find(),
     this.schemaName = const Config('schemaName', defaultValue: 'public'),
     this.relationName = const Config('relationName'),
+    this.schedulePollInterval = const Config(
+      'schedulePollInterval',
+      defaultValue: Duration(seconds: 30),
+    ),
+    this.promotionBatchSize = const Config(
+      'promotionBatchSize',
+      defaultValue: 500,
+    ),
   });
 
   @override
@@ -41,6 +51,15 @@ class _PostgresqlRevisableRepositoryServiceInstance<
 
   @override
   Config<String> get schemaName => service.schemaName;
+
+  @override
+  Config<String?> get relationName => service.relationName;
+
+  @override
+  Config<Duration> get schedulePollInterval => service.schedulePollInterval;
+
+  @override
+  Config<int> get promotionBatchSize => service.promotionBatchSize;
 
   @override
   DataBean<TData> get bean => service.bean;

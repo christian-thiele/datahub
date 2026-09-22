@@ -17,6 +17,8 @@ class TestSession implements Session {
 }
 
 void main() {
+  _regressionTests();
+
   declareTest(
     'Revisable: Simple CRUD',
     environment: ComposeEnvironment.fromFile(
@@ -372,6 +374,89 @@ void main() {
           expect(await dataRepo.count(), equals(1));
         });
       });
+    },
+  );
+}
+
+void _regressionTests() {
+  declareTest(
+    'Revisable: readAll returns metadata per row',
+    environment: ComposeEnvironment.fromFile(
+      'test/single-postgres.docker-compose.yml',
+    ),
+    [
+      PostgresqlService(
+        host: Config('test.services.postgres.host'),
+        port: Config('test.services.postgres.5432'),
+        database: Config.value('datahub_postgres'),
+        username: Config.value('postgres'),
+        password: Config.value('postgres'),
+        useSsl: Config.value(false),
+      ),
+      PostgresqlRevisableRepositoryService(bean: $Person.bean),
+    ],
+    () async {
+      final repo = Find<RevisableDataRepository<Person>>().find();
+      await Context.ofZone().withSession(TestSession('test-user'), () async {
+        final a = await repo.create(
+          Person(firstName: 'A', lastName: 'Lustig', birthday: null),
+        );
+        await repo.create(
+          Person(firstName: 'B', lastName: 'Lustig', birthday: null),
+        );
+        await repo.updateById(a.copyWith(isSpecial: true));
+
+        final all = await repo.revisableReadAll(sort: $Person.$firstName.asc());
+        expect(all.map((e) => (e.data.firstName, e.version, e.isDeleted)), [
+          ('A', 1, false),
+          ('B', 0, false),
+        ]);
+      });
+    },
+  );
+
+  declareTest(
+    'Revisable: relationName config',
+    environment: ComposeEnvironment.fromFile(
+      'test/single-postgres.docker-compose.yml',
+    ),
+    [
+      PostgresqlService(
+        host: Config('test.services.postgres.host'),
+        port: Config('test.services.postgres.5432'),
+        database: Config.value('datahub_postgres'),
+        username: Config.value('postgres'),
+        password: Config.value('postgres'),
+        useSsl: Config.value(false),
+      ),
+      PostgresqlRevisableRepositoryService(
+        bean: $Person.bean,
+        relationName: Config.value('people'),
+      ),
+    ],
+    () async {
+      final repo = Find<RevisableDataRepository<Person>>().find();
+      await Context.ofZone().withSession(TestSession('test-user'), () async {
+        await repo.create(
+          Person(firstName: 'A', lastName: 'Lustig', birthday: null),
+        );
+      });
+
+      final relations = await Find<Postgresql>().find().runTransaction(
+        (db) => db.execute(
+          RawSql(
+            "SELECT relname FROM pg_class WHERE relname LIKE 'people%' "
+            "AND relkind IN ('r', 'S') ORDER BY relname",
+          ),
+        ),
+      );
+      expect(relations.map((e) => e.first), [
+        'people',
+        'people_history',
+        'people_id_seq',
+        'people_schedule',
+      ]);
+      expect(await repo.count(), 1);
     },
   );
 }

@@ -87,10 +87,11 @@ Map<String, dynamic Function(dynamic)> _buildDecoderMapping(
 }
 
 Filter identityFilter(DataBean bean, dynamic id) {
-  return Filter.equals(bean.requireIdField, _typedId(bean, id));
+  return Filter.equals(bean.requireIdField, typedId(bean, id));
 }
 
-dynamic _typedId(DataBean bean, dynamic id) {
+/// Converts [id] to the type of the [DataBean.idField] of [bean].
+dynamic typedId(DataBean bean, dynamic id) {
   final idField = bean.requireIdField;
   return switch (idField.type) {
     final t when t.isExact<int>() => switch (id) {

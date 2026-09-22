@@ -13,3 +13,9 @@ final class UniqueTableConstraint extends PostgresqlTableConstraint {
     this.nullsNotDistinct = false,
   });
 }
+
+final class PrimaryKeyTableConstraint extends PostgresqlTableConstraint {
+  final List<PostgresqlAttribute> attributes;
+
+  const PrimaryKeyTableConstraint({required this.attributes});
+}

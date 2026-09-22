@@ -221,6 +221,17 @@ class PostgresqlDataTable<DataType extends DataObject>
   @override
   final DataBean<DataType> bean;
 
+  /// Uses an existing [table] definition.
+  ///
+  /// Only attributes of type [PostgresqlDataAttribute] are mapped to fields
+  /// of [bean], other attributes of [table] are ignored by data operations.
+  PostgresqlDataTable.fromTable({
+    required this.bean,
+    required PostgresqlTable table,
+  }) {
+    relation = table;
+  }
+
   PostgresqlDataTable({
     String? name,
     required String schemaName,

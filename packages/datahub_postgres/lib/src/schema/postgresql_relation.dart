@@ -6,6 +6,17 @@ import 'package:datahub_postgres/types.dart';
 import 'postgresql_attribute.dart';
 import 'postgresql_table_constraint.dart';
 
+enum PostgresqlRelationKind {
+  table,
+  partitionedTable,
+  view,
+  materializedView,
+  sequence,
+  other;
+
+  bool get isTable => this == table || this == partitionedTable;
+}
+
 sealed class PostgresqlRelation {
   final String schemaName;
   final String name;
@@ -18,6 +29,60 @@ sealed class PostgresqlRelation {
   });
 
   Future<void> ensureRelation(PostgresqlContext context);
+
+  /// Returns the kind of the relation [name] in [schemaName] or null, if no
+  /// such relation exists.
+  ///
+  /// Unlike `information_schema.tables` (which also lists views), this
+  /// distinguishes tables, views and sequences.
+  static Future<PostgresqlRelationKind?> findKind(
+    PostgresqlContext context,
+    String schemaName,
+    String name,
+  ) async {
+    final result = await context.execute(
+      Sql.join([
+        RawSql(
+          'SELECT c.relkind::text FROM pg_catalog.pg_class c '
+          'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace '
+          'WHERE n.nspname = ',
+        ),
+        ParameterSql<String>(schemaName, const PostgresqlString()),
+        RawSql(' AND c.relname = '),
+        ParameterSql<String>(name, const PostgresqlString()),
+      ]),
+    );
+
+    return switch (result.firstOrNull?.first) {
+      null => null,
+      'r' => PostgresqlRelationKind.table,
+      'p' => PostgresqlRelationKind.partitionedTable,
+      'v' => PostgresqlRelationKind.view,
+      'm' => PostgresqlRelationKind.materializedView,
+      'S' => PostgresqlRelationKind.sequence,
+      _ => PostgresqlRelationKind.other,
+    };
+  }
+
+  Future<bool> _ensureKind(
+    PostgresqlContext context,
+    bool Function(PostgresqlRelationKind kind) expected,
+    String expectedName,
+  ) async {
+    final kind = await findKind(context, schemaName, name);
+    if (kind == null) {
+      return false;
+    }
+
+    if (!expected(kind)) {
+      throw SqlException(
+        'Relation "$schemaName"."$name" already exists as ${kind.name}, '
+        'expected $expectedName.',
+      );
+    }
+
+    return true;
+  }
 }
 
 class PostgresqlTable extends PostgresqlRelation {
@@ -34,18 +99,7 @@ class PostgresqlTable extends PostgresqlRelation {
   Future<void> ensureRelation(PostgresqlContext context) async {
     await context.ensureSchema(schemaName);
 
-    final tableResults = await context.execute(
-      SqlSelect(
-        SqlQualifiedRelation('information_schema', 'tables'),
-        [SqlColumnAttribute('table_name')],
-        where: Sql.join([
-          RawSql('table_schema = '),
-          ParameterSql<String>(schemaName, const PostgresqlString()),
-        ]),
-      ),
-    );
-
-    if (!tableResults.map((e) => e.first.toString()).contains(name)) {
+    if (!await _ensureKind(context, (k) => k.isTable, 'table')) {
       log.warn(
         'Table "$schemaName"."$name" does not exist. Creating relation.',
       );
@@ -68,18 +122,11 @@ class PostgresqlView extends PostgresqlRelation {
   Future<void> ensureRelation(PostgresqlContext context) async {
     await context.ensureSchema(schemaName);
 
-    final viewResults = await context.execute(
-      SqlSelect(
-        SqlQualifiedRelation('information_schema', 'views'),
-        [SqlColumnAttribute('table_name')],
-        where: Sql.join([
-          RawSql('table_schema = '),
-          ParameterSql<String>(schemaName, const PostgresqlString()),
-        ]),
-      ),
-    );
-
-    if (!viewResults.map((e) => e.first.toString()).contains(name)) {
+    if (!await _ensureKind(
+      context,
+      (k) => k == PostgresqlRelationKind.view,
+      'view',
+    )) {
       log.warn('View "$schemaName"."$name" does not exist. Creating relation.');
       await context.executeLiteral(SqlCreateRelation(schemaName, this));
     }
@@ -94,18 +141,11 @@ class PostgresqlSequence extends PostgresqlRelation {
   Future<void> ensureRelation(PostgresqlContext context) async {
     await context.ensureSchema(schemaName);
 
-    final sequenceResults = await context.execute(
-      SqlSelect(
-        SqlQualifiedRelation('information_schema', 'sequences'),
-        [SqlColumnAttribute('sequence_name')],
-        where: Sql.join([
-          RawSql('sequence_schema = '),
-          ParameterSql<String>(schemaName, const PostgresqlString()),
-        ]),
-      ),
-    );
-
-    if (!sequenceResults.map((e) => e.first.toString()).contains(name)) {
+    if (!await _ensureKind(
+      context,
+      (k) => k == PostgresqlRelationKind.sequence,
+      'sequence',
+    )) {
       log.warn(
         'Sequence "$schemaName"."$name" does not exist. Creating relation.',
       );
