@@ -109,7 +109,7 @@ class PostgresqlStringArray extends PostgresqlDataType<List<String>>
 
 class PostgresqlIntArray extends PostgresqlDataType<List<int>>
     implements PostgresqlArray<int> {
-  const PostgresqlIntArray() : super('_int8', pg.Type.integerArray);
+  const PostgresqlIntArray() : super('_int8', pg.Type.bigIntegerArray);
 
   @override
   List<int>? decode(value) {
