@@ -91,6 +91,17 @@ separate command to run. The rules show up in your IDE and in `dart analyze`.
 |------|---------|-----|
 | `aperture_relation_requires_relation_id` ⚠️ | `@ApertureRelation<T>()` where `T` has no field annotated `@RelationId<Owner>()` | — |
 
+#### PostgreSQL
+
+Checked where a revisable repository is declared: the `bean:` of a
+`PostgresqlRevisableRepositoryService`, or a `PostgresqlRevisableRepository`
+mixin application. Both fail when the repository initializes.
+
+| Rule | Reports | Fix |
+|------|---------|-----|
+| `revisable_bean_requires_id` ⚠️ | a data class without an `@Id()` field of type `int` or `String` (non-nullable), which revisions are keyed by | — |
+| `revisable_reserved_column` ⚠️ | a data class field whose column is one the repository uses for revision metadata (`sys_version`, `sys_from`, `sys_to`, …) | — |
+
 ### Assists
 
 Available from the IDE at a class declaration (Alt+Enter in IntelliJ, Ctrl+. in

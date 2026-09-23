@@ -5,6 +5,7 @@ import 'package:analyzer/dart/element/type.dart';
 abstract final class DatahubPackages {
   static const datahub = 'datahub';
   static const aperture = 'datahub_aperture';
+  static const postgres = 'datahub_postgres';
 }
 
 /// Whether [element] is declared in [package].

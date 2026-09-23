@@ -15,6 +15,7 @@ import 'src/rules/aperture/relation_requires_relation_id.dart';
 import 'src/rules/config/config_requires_default.dart';
 import 'src/rules/config/enum_config_requires_values.dart';
 import 'src/rules/data/data_class_rules.dart';
+import 'src/rules/postgres/revisable_repository_rules.dart';
 import 'src/rules/scaffold/avoid_injection_in_initializer.dart';
 import 'src/rules/scaffold/avoid_zone_context_in_service.dart';
 import 'src/rules/scaffold/await_lifecycle_super.dart';
@@ -41,6 +42,7 @@ class DatahubLintsPlugin extends Plugin {
     _registerConfigRules(registry);
     _registerDataRules(registry);
     _registerApertureRules(registry);
+    _registerPostgresRules(registry);
     _registerAssists(registry);
   }
 
@@ -124,6 +126,13 @@ class DatahubLintsPlugin extends Plugin {
   void _registerApertureRules(PluginRegistry registry) {
     // No quick fix: which field carries the id is the author's choice.
     registry.registerWarningRule(RelationRequiresRelationIdRule());
+  }
+
+  void _registerPostgresRules(PluginRegistry registry) {
+    // No quick fixes: choosing the id field or a new field name is the
+    // author's decision.
+    registry.registerWarningRule(RevisableBeanRequiresIdRule());
+    registry.registerWarningRule(RevisableReservedColumnRule());
   }
 
   /// Boilerplate generators, offered at a syntax node rather than against a

@@ -95,6 +95,12 @@ final class DataBean<T> {
 final class RelationId<T> {
   const RelationId();
 }
+
+final class Id {
+  final bool auto;
+
+  const Id({this.auto = false});
+}
 ''';
 
 /// Adds the `package:datahub/datahub.dart` stub to the test workspace.
@@ -122,4 +128,30 @@ const apertureStub = r'''
 final class ApertureRelation<T> {
   const ApertureRelation();
 }
+''';
+
+/// Minimal stand-in for `package:datahub_postgres/datahub_postgres.dart`.
+const postgresStub = r'''
+import 'package:datahub/datahub.dart';
+
+class PostgresqlDataRepositoryService<T> implements Service {
+  final DataBean<T> bean;
+
+  const PostgresqlDataRepositoryService({required this.bean});
+
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+
+class PostgresqlRevisableRepositoryService<T> implements Service {
+  final DataBean<T> bean;
+
+  const PostgresqlRevisableRepositoryService({required this.bean});
+
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+
+mixin PostgresqlRevisableRepository<TService extends Service, TData>
+    on ServiceInstance<TService> {}
 ''';
