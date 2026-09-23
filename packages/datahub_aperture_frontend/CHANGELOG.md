@@ -1,3 +1,8 @@
+## 0.1.0-dev.18
+
+ - **FIX**(aperture): fixed disabled lookup field not clickable.
+ - **FEAT**(aperture): added back button for non-web.
+
 ## 0.1.0-dev.17
 
  - **FIX**(aperture): fixed dialog layout.

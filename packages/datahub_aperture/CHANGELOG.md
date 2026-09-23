@@ -1,3 +1,9 @@
+## 0.1.0-dev.22
+
+ - **FIX**(aperture): fixed nullable List<DataObject> field support.
+ - **FIX**(aperture): fixed missing export for ApertureMeta.
+ - **FEAT**(aperture): discarding filter element in trace, not warning log.
+
 ## 0.1.0-dev.21
 
  - **FEAT**(aperture): added support for different tile servers (including google maps).

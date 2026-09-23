@@ -1,3 +1,7 @@
+## 0.18.0-dev.25
+
+ - **FIX**(postgres): added reserved columns.
+
 ## 0.18.0-dev.24
 
  - **FIX**(postgres): fixed integer array return type.

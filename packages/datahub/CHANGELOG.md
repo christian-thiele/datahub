@@ -1,3 +1,9 @@
+## 0.18.0-dev.28
+
+ - **FIX**(datahub): fixed DataObject equality and hash.
+ - **FIX**(oidc): fixed KeyService key configuration cache.
+ - **FIX**(http): fixed http2 error handling.
+
 ## 0.18.0-dev.27
 
  - **FIX**(postgres): fixed selectJoin type.

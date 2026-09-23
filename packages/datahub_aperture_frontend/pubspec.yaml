@@ -6,7 +6,7 @@ resolution: workspace
 
 publish_to: 'none'
 
-version: 0.1.0-dev.17
+version: 0.1.0-dev.18
 
 environment:
   sdk: ^3.9.0
@@ -44,8 +44,8 @@ dependencies:
   flutter_map: ^8.3.0
   latlong2: ^0.9.1
 
-  datahub: ^0.18.0-dev.27
-  datahub_aperture: ^0.1.0-dev.21
+  datahub: ^0.18.0-dev.28
+  datahub_aperture: ^0.1.0-dev.22
   url_launcher: ^6.3.2
   pointycastle: ^4.0.0
   web: ^1.1.1
