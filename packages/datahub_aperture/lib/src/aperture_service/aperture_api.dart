@@ -500,7 +500,7 @@ class ApertureApi extends ApiNode {
         ValueExpression(_alignFieldValue(field, value)),
       );
     } on CodecException catch (e) {
-      log.warn('Filter error. Discarding filter element.', error: e);
+      log.trace('Filter error. Discarding filter element.', error: e);
       return null;
     }
   }
