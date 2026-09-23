@@ -14,6 +14,7 @@ executables:
 dependencies:
   args: ^2.5.0
   boost: ^2.0.1
+  collection: ^1.19.0
   http: ^1.0.0
   http2: ^2.0.0
   intl: ^0.20.0
