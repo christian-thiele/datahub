@@ -41,6 +41,7 @@ abstract interface class $Invoice with DataObject<Invoice> {
     meta: [
       const Meta(name: 'Client'),
       const RelationId<Client>(),
+      const ApertureField(readOnly: true),
     ],
   );
 

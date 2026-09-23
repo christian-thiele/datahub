@@ -47,6 +47,7 @@ class Invoice extends $Invoice {
 
   @Meta(name: 'Client')
   @RelationId<Client>()
+  @ApertureField(readOnly: true)
   final int clientId;
 
   @Meta(name: 'Project')
