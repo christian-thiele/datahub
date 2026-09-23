@@ -212,7 +212,7 @@ class _Http2Client extends HttpClient {
 
     httpRequest.bodyData.listen(
       stream.sendData,
-      onError: (e) => stream.terminate,
+      onError: (e) => stream.terminate(),
       onDone: () => stream.outgoingMessages.close(),
       cancelOnError: true,
     );
