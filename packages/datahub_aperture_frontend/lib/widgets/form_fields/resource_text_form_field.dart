@@ -69,7 +69,6 @@ class _ResourceTextFormFieldState extends State<ResourceTextFormField> {
           decoration: decoration,
           style: style,
           readOnly: widget.onChanged == null,
-          enabled: widget.onChanged != null,
         );
 
     if (widget.lookup case final lookup?) {
@@ -79,6 +78,7 @@ class _ResourceTextFormFieldState extends State<ResourceTextFormField> {
         focusNode: _focusNode,
         value: widget.value,
         decoration: widget.decoration,
+        readOnly: widget.onChanged == null,
         fieldBuilder: field,
       );
     } else {

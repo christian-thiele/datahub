@@ -87,6 +87,7 @@ class _ResourceIntFormFieldState extends State<ResourceIntFormField> {
         focusNode: _focusNode,
         value: widget.value,
         decoration: widget.decoration,
+        readOnly: widget.onChanged == null,
         fieldBuilder: field,
       );
     } else {

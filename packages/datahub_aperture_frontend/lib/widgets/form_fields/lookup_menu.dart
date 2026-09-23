@@ -16,6 +16,7 @@ class LookupMenu extends StatefulWidget {
   final FocusNode focusNode;
   final ResourceFieldLookup lookup;
   final Object? value;
+  final bool readOnly;
   final InputDecoration decoration;
   final Widget Function(InputDecoration decoration, TextStyle? style)
   fieldBuilder;
@@ -26,6 +27,7 @@ class LookupMenu extends StatefulWidget {
     required this.focusNode,
     required this.controller,
     required this.value,
+    required this.readOnly,
     required this.decoration,
     required this.fieldBuilder,
   });
@@ -150,17 +152,23 @@ class _LookupMenuState extends State<LookupMenu> {
                 style: TextStyle(color: colors.primary),
               )
             : null,
+        suffixIconConstraints: const BoxConstraints.tightFor(
+          width: 32,
+          height: 32,
+        ),
         suffixIcon: switch (isLinkKnown ? _found : null) {
-          true => InkWell(
-            onTap: _linkedId != null
-                ? () => context.push(
-                    Uri(
-                      path:
-                          '/resources/${Uri.encodeComponent(widget.lookup.resourceId)}/view/${Uri.encodeComponent(_linkedId!)}',
-                    ).toString(),
-                  )
-                : null,
-            child: Icon(Icons.link, color: colors.primary),
+          true => Material(
+            type: MaterialType.transparency,
+            child: Padding(
+              padding: const EdgeInsets.only(right: 4.0),
+              child: InkWell(
+                onTap: (_linkedId != null)
+                    ? () => _navigateTo(_linkedId!)
+                    : null,
+                customBorder: const CircleBorder(),
+                child: Icon(Icons.link, color: colors.primary),
+              ),
+            ),
           ),
           false => Tooltip(
             message: S.of(context).linkedElementNotFound,
@@ -239,7 +247,7 @@ class _LookupMenuState extends State<LookupMenu> {
         return ListenableListener(
           listenable: widget.focusNode,
           onEvent: () {
-            if (widget.focusNode.hasFocus) {
+            if (!widget.readOnly && widget.focusNode.hasFocus) {
               controller.open();
             }
             _onFocusChanged();
@@ -247,6 +255,15 @@ class _LookupMenuState extends State<LookupMenu> {
           child: _buildField(context),
         );
       },
+    );
+  }
+
+  void _navigateTo(String s) {
+    context.push(
+      Uri(
+        path:
+            '/resources/${Uri.encodeComponent(widget.lookup.resourceId)}/view/${Uri.encodeComponent(_linkedId!)}',
+      ).toString(),
     );
   }
 }
