@@ -1,4 +1,5 @@
 import 'package:datahub_aperture_frontend/utils/theme.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
@@ -44,6 +45,7 @@ class PageHeader extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 spacing: 12,
                 children: [
+                  if (!kIsWeb && context.canPop()) const _BackButton(),
                   ?leading,
                   Expanded(
                     child: Text(
@@ -79,6 +81,19 @@ class PageHeader extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+}
+
+class _BackButton extends StatelessWidget {
+  const _BackButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: () => context.pop(),
+      icon: const Icon(Icons.arrow_back),
+      tooltip: MaterialLocalizations.of(context).backButtonTooltip,
     );
   }
 }
