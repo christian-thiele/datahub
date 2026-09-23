@@ -80,6 +80,9 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
       }
 
       final jwksUri = Uri.parse(openIdConfig['jwks_uri']);
+      if (read(service.enable)) {
+        _openIdCache[issuer] = jwksUri;
+      }
       return await getJwksKey(jwksUri, alg, kid);
     } finally {
       await issuerClient.close();
