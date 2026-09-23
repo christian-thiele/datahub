@@ -64,6 +64,18 @@ void main() {
       ]);
     });
 
+    test('describes nullable typed lists as nullable list with element', () {
+      final field = _describe<List<String>?>('tags');
+
+      expect(field.type, ResourceFieldType.list);
+      expect(field.nullable, isTrue);
+      expect(field.objectDescription, [
+        isA<ResourceField>()
+            .having((e) => e.id, 'id', 'element')
+            .having((e) => e.type, 'type', ResourceFieldType.string),
+      ]);
+    });
+
     test('does not treat typed maps as JSON', () {
       expect(
         () => _describe<Map<String, String>>('labels'),

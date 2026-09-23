@@ -175,7 +175,7 @@ ResourceFieldType _fieldType(DataField<dynamic, dynamic> field) {
       ResourceFieldType.jsonMap,
     DataField<dynamic, List?>() when field.type.isSupertypeOf<List>() =>
       ResourceFieldType.jsonList,
-    DataField<dynamic, List>() => ResourceFieldType.list,
+    DataField<dynamic, List?>() => ResourceFieldType.list,
     _ => throw ApiError(
       'Field ${field.name} of type ${field.type.name} is not supported by Aperture.',
     ),
