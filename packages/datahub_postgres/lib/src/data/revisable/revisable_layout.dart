@@ -69,6 +69,18 @@ class RevisableLayout<TData extends DataObject<TData>> {
     type: PostgresqlText(),
   );
 
+  /// Column names used for revision metadata, which bean fields must not map
+  /// to. Mirrored by the `revisable_reserved_column` rule of datahub_lints.
+  static const reservedColumns = {
+    'sys_version',
+    'sys_creator',
+    'sys_created',
+    'sys_from',
+    'sys_to',
+    'sys_is_deleted',
+    'sys_head_version',
+  };
+
   static const _notNull = [NotNullConstraint()];
 
   final DataBean<TData> bean;
@@ -97,10 +109,10 @@ class RevisableLayout<TData extends DataObject<TData>> {
     final idType = PostgresqlDataType.findForDataField(idField);
 
     idIsAuto = idField.hasMetaOfType<Id>((id) => id.auto);
-    if (idIsAuto && idType is! PostgresqlInt && idType is! PostgresqlString) {
+    if (!idField.type.isExact<int>() && !idField.type.isExact<String>()) {
       throw ApiError(
-        'Auto ids of type ${idField.type.name} are not supported by '
-        'revisable repositories.',
+        'Id field "${idField.name}" of ${bean.name} is of type '
+        '${idField.type.name}, revisable repositories require int or String.',
       );
     }
 
@@ -137,6 +149,14 @@ class RevisableLayout<TData extends DataObject<TData>> {
     final historyData = [
       for (final field in bean.fields) attributeOf(field, history: true),
     ];
+    for (final attribute in historyData) {
+      if (reservedColumns.contains(attribute.name)) {
+        throw ApiError(
+          'Field "${attribute.field.name}" of ${bean.name} maps to column '
+          '"${attribute.name}", which is reserved for revision metadata.',
+        );
+      }
+    }
     historyId = historyData.firstWhere((e) => isId(e.field));
     historyTable = PostgresqlTable(
       schemaName: schemaName,
