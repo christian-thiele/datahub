@@ -1,3 +1,7 @@
+## 0.1.0-dev.23
+
+ - **FIX**: fixed constraints on List and Map types.
+
 ## 0.1.0-dev.22
 
  - **FIX**(aperture): fixed nullable List<DataObject> field support.

@@ -1,3 +1,7 @@
+## 0.18.0-dev.27
+
+ - **FIX**: fixed constraints on List and Map types.
+
 ## 0.18.0-dev.26
 
 > Note: This release has breaking changes.

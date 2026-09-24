@@ -11,6 +11,42 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.29`](#datahub---v0180-dev29)
+ - [`datahub_aperture` - `v0.1.0-dev.23`](#datahub_aperture---v010-dev23)
+ - [`datahub_codegen` - `v0.18.0-dev.20`](#datahub_codegen---v0180-dev20)
+ - [`datahub_postgres` - `v0.18.0-dev.27`](#datahub_postgres---v0180-dev27)
+
+---
+
+#### `datahub` - `v0.18.0-dev.29`
+
+ - **FIX**: fixed constraints on List and Map types.
+
+#### `datahub_aperture` - `v0.1.0-dev.23`
+
+ - **FIX**: fixed constraints on List and Map types.
+
+#### `datahub_codegen` - `v0.18.0-dev.20`
+
+ - **FIX**: fixed constraints on List and Map types.
+
+#### `datahub_postgres` - `v0.18.0-dev.27`
+
+ - **FIX**: fixed constraints on List and Map types.
+
+
+## 2026-09-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`datahub_postgres` - `v0.18.0-dev.26`](#datahub_postgres---v0180-dev26)
 
 Packages with other changes:

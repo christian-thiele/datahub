@@ -1,3 +1,7 @@
+## 0.18.0-dev.29
+
+ - **FIX**: fixed constraints on List and Map types.
+
 ## 0.18.0-dev.28
 
  - **FIX**(datahub): fixed DataObject equality and hash.
