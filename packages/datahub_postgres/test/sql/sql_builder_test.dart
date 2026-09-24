@@ -118,6 +118,45 @@ void main() {
     );
   });
 
+  test('Select without distinct on', () {
+    expect(
+      SqlSelect(_table, [SqlColumnAttribute('id')]).toString(),
+      'SELECT "id" FROM "public"."item"',
+    );
+  });
+
+  test('Select distinct on single attribute', () {
+    expect(
+      SqlSelect(
+        _table,
+        [SqlColumnAttribute('id'), SqlColumnAttribute('name')],
+        distinctOn: [SqlColumnAttribute('name')],
+        order: RawSql('"name", "id" DESC'),
+      ).toString(),
+      'SELECT DISTINCT ON ("name") "id", "name" FROM "public"."item" '
+      'ORDER BY "name", "id" DESC',
+    );
+  });
+
+  test('Select distinct on multiple attributes', () {
+    final sql = SqlSelect(
+      _table,
+      [SqlWildcard()],
+      distinctOn: [
+        SqlColumnAttribute('name'),
+        RawSqlAttribute(ParameterSql(1, const PostgresqlInt())),
+      ],
+      where: RawSql('"id" > ') + ParameterSql(0, const PostgresqlInt()),
+    );
+
+    expect(
+      sql.toString(),
+      'SELECT DISTINCT ON ("name", \$1::bigint) * FROM "public"."item" '
+      'WHERE "id" > \$2::bigint',
+    );
+    expect(sql.getParameters(), [1, 0]);
+  });
+
   test('Primary key table constraint', () {
     expect(
       SqlCreateRelation(

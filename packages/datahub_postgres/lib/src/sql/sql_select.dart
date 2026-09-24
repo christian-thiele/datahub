@@ -27,7 +27,7 @@ class SqlNestedSelect extends SqlSelectTarget {
 class SqlSelect with SqlBuilder {
   final Sql from;
   final List<SqlAttribute> attributes;
-  final SqlAttribute? distinctOn;
+  final List<SqlAttribute> distinctOn;
   final Sql? where;
   final Sql? group;
   final Sql? order;
@@ -37,7 +37,7 @@ class SqlSelect with SqlBuilder {
   const SqlSelect(
     this.from,
     this.attributes, {
-    this.distinctOn,
+    this.distinctOn = const <SqlAttribute>[],
     this.where,
     this.group,
     this.order,
@@ -49,8 +49,11 @@ class SqlSelect with SqlBuilder {
   Sql toSql() {
     return Sql.join([
       RawSql('SELECT '),
-      if (distinctOn case final distinctOn?)
-        RawSql('DISTINCT ON (') + distinctOn + RawSql(') '),
+      if (distinctOn.isNotEmpty) ...[
+        RawSql('DISTINCT ON ('),
+        ...distinctOn.cast<Sql>().separatedBy(RawSql(', ')),
+        RawSql(') '),
+      ],
       ...attributes.cast<Sql>().separatedBy(RawSql(', ')),
       RawSql(' FROM '),
       from,

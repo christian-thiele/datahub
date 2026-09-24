@@ -104,6 +104,19 @@ dynamic typedId(DataBean bean, dynamic id) {
   };
 }
 
+List<SqlAttribute> buildExpressionAttributes(
+  List<Expression> expressions,
+  Iterable<(PostgresqlDataAttribute, PostgresqlRelation)> attributes, {
+  bool includeAlias = false,
+}) {
+  return [
+    for (final expression in expressions)
+      RawSqlAttribute(
+        buildExpressionSql(expression, attributes, includeAlias: includeAlias),
+      ),
+  ];
+}
+
 Sql? buildFilterSql(
   Filter filter,
   Iterable<(PostgresqlDataAttribute, PostgresqlRelation)> attributes,

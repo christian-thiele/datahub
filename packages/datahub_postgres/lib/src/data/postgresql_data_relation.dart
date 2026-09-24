@@ -21,39 +21,32 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
   Future<List<Map<String, dynamic>>> select(
     PostgresqlContext context,
     List<Expression> select, {
+    List<Expression> distinctOn = const <Expression>[],
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     List<Expression> group = const <Expression>[],
     int offset = 0,
     int limit = -1,
   }) async {
+    final relationAttributes = attributes.map((e) => (e, relation));
     final result = await context.execute(
       SqlSelect(
         SqlQualifiedRelation(relation.schemaName, relation.name),
-        [
-          for (final expression in select)
-            RawSqlAttribute(
-              buildExpressionSql(
-                expression,
-                attributes.map((e) => (e, relation)),
-                includeAlias: true,
-              ),
-            ),
-        ],
-        where: buildFilterSql(filter, attributes.map((e) => (e, relation))),
+        buildExpressionAttributes(
+          select,
+          relationAttributes,
+          includeAlias: true,
+        ),
+        distinctOn: buildExpressionAttributes(distinctOn, relationAttributes),
+        where: buildFilterSql(filter, relationAttributes),
         group: group.isNotEmpty
             ? Sql.join(
                 group
-                    .map(
-                      (e) => buildExpressionSql(
-                        e,
-                        attributes.map((e) => (e, relation)),
-                      ),
-                    )
+                    .map((e) => buildExpressionSql(e, relationAttributes))
                     .separatedBy(RawSql(', ')),
               )
             : null,
-        order: buildSortSql(sort, attributes.map((e) => (e, relation))),
+        order: buildSortSql(sort, relationAttributes),
         offset: offset,
         limit: limit,
       ),
@@ -70,19 +63,22 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
 
   Future<List<DataType>> selectData(
     PostgresqlContext context, {
+    List<Expression> distinctOn = const <Expression>[],
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
   }) async {
+    final relationAttributes = attributes.map((e) => (e, relation));
     final result = await context.execute(
       SqlSelect(
         SqlQualifiedRelation(relation.schemaName, relation.name),
         attributes.map(SqlTypedAttribute.of).toList(),
+        distinctOn: buildExpressionAttributes(distinctOn, relationAttributes),
         offset: offset,
         limit: limit,
-        where: buildFilterSql(filter, attributes.map((e) => (e, relation))),
-        order: buildSortSql(sort, attributes.map((e) => (e, relation))),
+        where: buildFilterSql(filter, relationAttributes),
+        order: buildSortSql(sort, relationAttributes),
       ),
     );
 
@@ -95,6 +91,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
     PostgresqlDataRelation<TRight> right,
     SqlJoinType type,
     Filter on, {
+    List<Expression> distinctOn = const <Expression>[],
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
@@ -119,6 +116,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
         allAttributes
             .map((e) => SqlTypedAttribute.of(e.$1, relation: e.$2.name))
             .toList(),
+        distinctOn: buildExpressionAttributes(distinctOn, allAttributes),
         offset: offset,
         limit: limit,
         where: buildFilterSql(filter, allAttributes),

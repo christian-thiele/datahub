@@ -368,7 +368,7 @@ class RevisableStatements<TData extends DataObject<TData>> {
         SqlSelect(
           Sql.name('due'),
           [SqlColumnAttribute(id), SqlColumnAttribute(_sysVersion.name)],
-          distinctOn: SqlColumnAttribute(id),
+          distinctOn: [SqlColumnAttribute(id)],
           order: Sql.name(id) + RawSql(', "sys_version" DESC'),
         ),
       ),
