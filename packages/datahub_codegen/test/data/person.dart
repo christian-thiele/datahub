@@ -17,6 +17,7 @@ class Person extends $Person {
   final bool isBlocked;
   final Uint8List picture;
   final ext.ContactType? type;
+  final Map<String, ext.ContactType> contacts;
 
   const Person({
     this.id = 0,
@@ -28,5 +29,6 @@ class Person extends $Person {
     required this.isBlocked,
     required this.picture,
     required this.type,
+    this.contacts = const {},
   });
 }

@@ -127,9 +127,10 @@ List<ResourceField>? _objectDescription(
   Iterable<DataBean> relatedBeans,
 ) {
   if (type == ResourceFieldType.list) {
-    final constraints = field.constraints.whereType<ElementConstraint>().map(
-      (e) => e.constraint,
-    );
+    final constraints = field.constraints
+        .whereType<ElementConstraint>()
+        .map((e) => e.constraint)
+        .toList();
     return [
       ResourceField(
         id: 'element',
@@ -137,6 +138,14 @@ List<ResourceField>? _objectDescription(
         type: _fieldListElementType(field),
         readOnly: field.metaOfType<ApertureField>()?.readOnly ?? false,
         nullable: false,
+        validation: constraints
+            .whereType<RegExpConstraint>()
+            .firstOrNull
+            ?.expression,
+        length: constraints
+            .whereType<MaxLengthConstraint>()
+            .firstOrNull
+            ?.length,
         objectDescription: [
           if (field.dataBean case final bean?)
             for (final field in bean.fields)

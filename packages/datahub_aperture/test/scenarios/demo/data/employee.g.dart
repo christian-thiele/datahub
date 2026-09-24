@@ -142,7 +142,7 @@ abstract interface class $Employee with DataObject<Employee> {
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
     meta: [const Meta(description: 'Spoken languages (ISO 639-1).')],
     constraints: [
-      const ElementConstraint<String?, List<String?>>(
+      const ElementConstraint<String?>(
         constraint: const RegExpConstraint<String?>(expression: '^[a-z]{2}\$'),
       ),
     ],

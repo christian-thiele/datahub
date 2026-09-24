@@ -3,6 +3,7 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 import 'package:datahub/data.dart';
+import 'package:datahub/utils.dart';
 import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/src/types/postgis/postgis_geography.dart';
 import 'package:datahub_postgres/src/types/type_decode_exception.dart';
@@ -79,17 +80,20 @@ abstract class PostgresqlDataType<T> {
       final t when t.isSubtypeOf<List<String>?>() =>
         const PostgresqlStringArray(),
       final t when t.isSubtypeOf<List<Enum>?>() => PostgresqlEnumArray(
-        values: field.constraints.whereType<EnumConstraint>().first.values,
+        values: switch (field.constraintOfType<ElementConstraint>(
+          (e) => e.constraint is EnumConstraint,
+        )) {
+          ElementConstraint(constraint: EnumConstraint(:final values)) =>
+            values,
+          _ => throw ApiException(
+            'Missing ElementConstraint(constraint: EnumConstraint()) on field ${field.name}.',
+          ),
+        },
       ),
       final t when t.isSubtypeOf<List<int>?>() => const PostgresqlIntArray(),
       final t when t.isSubtypeOf<List<double>?>() =>
         const PostgresqlDoubleArray(),
       final t when t.isSubtypeOf<List<bool>?>() => const PostgresqlBoolArray(),
-
-      // TODO not complete
-      // map types
-      // TODO not complete
-      // json types
       final t when t.isSubtypeOf<List<DataObject>?>() => PostgresqlObjectList(
         field.toJson,
         field.fromJson,

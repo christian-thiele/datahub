@@ -184,7 +184,7 @@ abstract interface class $SupportTicket with DataObject<SupportTicket> {
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
     constraints: [
-      const ElementConstraint<String?, List<String?>>(
+      const ElementConstraint<String?>(
         constraint: const RegExpConstraint<String?>(
           expression: '^[a-z0-9-]+\$',
         ),

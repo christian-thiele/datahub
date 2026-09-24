@@ -104,7 +104,13 @@ class EnumConstraint<FieldType extends Enum?>
   const EnumConstraint({required this.values, super.name = 'default.enum'});
 
   @override
-  bool check(FieldType value) => values.contains(value);
+  bool check(FieldType value) {
+    if (value == null) {
+      return true;
+    }
+
+    return values.contains(value);
+  }
 }
 
 class GeometryTypeConstraint<FieldType extends Geometry?>
@@ -126,8 +132,8 @@ class GeometryTypeConstraint<FieldType extends Geometry?>
   }
 }
 
-class ElementConstraint<E, FieldType extends List<E>>
-    extends DataFieldConstraint<List<E>> {
+/// Applies [constraint] to every element of a list field.
+class ElementConstraint<E> extends DataFieldConstraint<List<E>?> {
   final DataFieldConstraint<E> constraint;
 
   const ElementConstraint({required this.constraint})
@@ -137,8 +143,38 @@ class ElementConstraint<E, FieldType extends List<E>>
   String get name => 'default.element.${constraint.name}';
 
   @override
-  bool check(List<E> value) {
+  bool check(List<E>? value) {
+    if (value == null) {
+      return true;
+    }
+
     for (final element in value) {
+      if (!constraint.check(element)) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+}
+
+/// Applies [constraint] to every value of a map field.
+class MapValueConstraint<V> extends DataFieldConstraint<Map<dynamic, V>?> {
+  final DataFieldConstraint<V> constraint;
+
+  const MapValueConstraint({required this.constraint})
+    : super(name: 'default.value');
+
+  @override
+  String get name => 'default.value.${constraint.name}';
+
+  @override
+  bool check(Map<dynamic, V>? value) {
+    if (value == null) {
+      return true;
+    }
+
+    for (final element in value.values) {
       if (!constraint.check(element)) {
         return false;
       }

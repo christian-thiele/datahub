@@ -10,16 +10,22 @@ final _bean = DataBean<DataObject>(
   fromJson: (_, {name}) => throw UnimplementedError(),
 );
 
-ResourceField _describe<T>(String name) => fieldDescription(
+ResourceField _describe<T>(
+  String name, {
+  List<DataFieldConstraint> constraints = const [],
+}) => fieldDescription(
   _bean,
   DataField<DataObject, T>(
     name: name,
     valueOf: (_) => throw UnimplementedError(),
     toJson: (value) => value,
     fromJson: (value, {name}) => value as T,
+    constraints: constraints,
   ),
   const [],
 );
+
+enum ExampleEnum { one, two }
 
 void main() {
   group('fieldDescription', () {
@@ -73,6 +79,57 @@ void main() {
         isA<ResourceField>()
             .having((e) => e.id, 'id', 'element')
             .having((e) => e.type, 'type', ResourceFieldType.string),
+      ]);
+    });
+
+    test('describes constraints of the field', () {
+      final field = _describe<String>(
+        'name',
+        constraints: const [
+          RegExpConstraint(expression: r'^\w+$'),
+          MaxLengthConstraint(length: 20),
+        ],
+      );
+
+      expect(field.validation, r'^\w+$');
+      expect(field.length, 20);
+    });
+
+    test('describes element constraints of a list on its element', () {
+      final field = _describe<List<String>>(
+        'tags',
+        constraints: const [
+          ElementConstraint(constraint: RegExpConstraint(expression: r'^\w+$')),
+          ElementConstraint(constraint: MaxLengthConstraint(length: 8)),
+        ],
+      );
+
+      // the constraints apply to the elements, not to the list itself
+      expect(field.validation, isNull);
+      expect(field.length, isNull);
+      expect(field.objectDescription, [
+        isA<ResourceField>()
+            .having((e) => e.id, 'id', 'element')
+            .having((e) => e.validation, 'validation', r'^\w+$')
+            .having((e) => e.length, 'length', 8),
+      ]);
+    });
+
+    test('describes enum element constraints of a list on its element', () {
+      final field = _describe<List<ExampleEnum>>(
+        'states',
+        constraints: const [
+          ElementConstraint(
+            constraint: EnumConstraint(values: ExampleEnum.values),
+          ),
+        ],
+      );
+
+      expect(field.enumValues, isNull);
+      expect(field.objectDescription, [
+        isA<ResourceField>()
+            .having((e) => e.type, 'type', ResourceFieldType.stringEnum)
+            .having((e) => e.enumValues, 'enumValues', ['one', 'two']),
       ]);
     });
 

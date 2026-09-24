@@ -49,7 +49,7 @@ abstract interface class $Person with DataObject<Person> {
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
     meta: [const ApertureField(isDisplayField: true)],
     constraints: [
-      const ElementConstraint<String?, List<String?>>(
+      const ElementConstraint<String?>(
         constraint: const RegExpConstraint<String?>(expression: '^[^\\s]*\$'),
       ),
     ],

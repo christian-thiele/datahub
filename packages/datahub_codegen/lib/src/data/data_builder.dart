@@ -205,7 +205,9 @@ class DataBuilder extends Generator {
       final typeName =
           typeImportPrefix(type, field.library) +
           typeExpression(type, field.library);
-      constraintInvocations.add('EnumConstraint(values: $typeName.values)');
+      constraintInvocations.add(
+        'MapValueConstraint(constraint: EnumConstraint(values: $typeName.values))',
+      );
     }
 
     if (constraintInvocations.isNotEmpty) {

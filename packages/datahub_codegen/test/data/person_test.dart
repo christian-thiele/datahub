@@ -16,6 +16,7 @@ void main() {
       isBlocked: false,
       picture: utf8.encode('fun with bytes'),
       type: ContactType.personal,
+      contacts: const {'work': ContactType.work},
     );
 
     final jsonMap = person.toJson();
@@ -33,10 +34,30 @@ void main() {
         'isBlocked': false,
         'picture': base64.encode(utf8.encode('fun with bytes')),
         'type': 'personal-contact',
+        'contacts': {'work': 'work-contact'},
       }),
     );
 
     final other = $Person.bean.fromJson(jsonDecode(jsonString));
     expect(person == other, isTrue);
+  });
+
+  test('Person constraints', () {
+    final person = Person(
+      firstName: 'Testmann',
+      lastName: 'Peter',
+      phone: const [],
+      email: const [],
+      birthday: null,
+      isBlocked: false,
+      picture: utf8.encode(''),
+      // nullable enum field without a value
+      type: null,
+      contacts: const {'work': ContactType.work},
+    );
+
+    expect($Person.$contacts.constraints, contains(isA<MapValueConstraint>()));
+    expect($Person.bean.checkConstraints(person), isEmpty);
+    expect(() => $Person.bean.validateConstraints(person), returnsNormally);
   });
 }

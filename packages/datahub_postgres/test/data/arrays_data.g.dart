@@ -64,7 +64,9 @@ abstract interface class $ArraysData with DataObject<ArraysData> {
     ),
     toJson: (value) =>
         $$codec.encodeList<ExampleEnum>(value, $$codec.encodeEnum),
-    constraints: [EnumConstraint(values: ExampleEnum.values)],
+    constraints: [
+      ElementConstraint(constraint: EnumConstraint(values: ExampleEnum.values)),
+    ],
   );
 
   static final $jsonList = DataField<ArraysData, List<dynamic>>(

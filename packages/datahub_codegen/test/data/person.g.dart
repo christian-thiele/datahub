@@ -85,6 +85,24 @@ abstract interface class $Person with DataObject<Person> {
     constraints: [EnumConstraint(values: ext.ContactType.values)],
   );
 
+  static final $contacts = DataField<Person, Map<String, ext.ContactType>>(
+    name: 'contacts',
+    valueOf: (p) => p.contacts,
+    fromJson: (value, {String? name}) => $$codec.decodeMap<ext.ContactType>(
+      (value ?? const {}),
+      (v, {String? name}) =>
+          $$codec.decodeEnum(v, ext.ContactType.values, name: name),
+      name: name,
+    ),
+    toJson: (value) =>
+        $$codec.encodeMap<ext.ContactType>(value, $$codec.encodeEnum),
+    constraints: [
+      MapValueConstraint(
+        constraint: EnumConstraint(values: ext.ContactType.values),
+      ),
+    ],
+  );
+
   static final DataBean<Person> bean = DataBean<Person>(
     name: 'Person',
     fields: List<DataField<Person, dynamic>>.unmodifiable([
@@ -97,6 +115,7 @@ abstract interface class $Person with DataObject<Person> {
       $isBlocked,
       $picture,
       $type,
+      $contacts,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
@@ -118,6 +137,7 @@ abstract interface class $Person with DataObject<Person> {
     Uint8List? picture,
     ext.ContactType? type,
     bool nullType = false,
+    Map<String, ext.ContactType>? contacts,
   }) {
     final $data = this as Person;
     return Person(
@@ -130,6 +150,7 @@ abstract interface class $Person with DataObject<Person> {
       isBlocked: isBlocked ?? $data.isBlocked,
       picture: picture ?? $data.picture,
       type: nullType ? null : (type ?? $data.type),
+      contacts: contacts ?? $data.contacts,
     );
   }
 
@@ -144,6 +165,7 @@ abstract interface class $Person with DataObject<Person> {
       isBlocked: data['isBlocked'],
       picture: data['picture'],
       type: data['type'],
+      contacts: data['contacts'] ?? const {},
     );
   }
 
@@ -185,6 +207,10 @@ abstract interface class $Person with DataObject<Person> {
         data['type'],
         name: DataCodec.childName(name, 'type'),
       ),
+      contacts: $contacts.fromJson(
+        data['contacts'],
+        name: DataCodec.childName(name, 'contacts'),
+      ),
     );
   }
 
@@ -201,6 +227,7 @@ abstract interface class $Person with DataObject<Person> {
       'isBlocked': $isBlocked.toJson($$data.isBlocked),
       'picture': $picture.toJson($$data.picture),
       'type': $type.toJson($$data.type),
+      'contacts': $contacts.toJson($$data.contacts),
     }..removeWhere((k, v) => v == null);
   }
 }
