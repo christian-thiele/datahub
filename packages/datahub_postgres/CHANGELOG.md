@@ -1,3 +1,9 @@
+## 0.18.0-dev.26
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **FEAT**(postgres): added distinctOn parameter to relation query methods, distinctOn accepts multiple expressions now.
+
 ## 0.18.0-dev.25
 
  - **FIX**(postgres): added reserved columns.

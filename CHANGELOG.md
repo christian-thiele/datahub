@@ -3,6 +3,27 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-09-24
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`datahub_postgres` - `v0.18.0-dev.26`](#datahub_postgres---v0180-dev26)
+
+Packages with other changes:
+
+ - There are no other changes in this release.
+
+---
+
+#### `datahub_postgres` - `v0.18.0-dev.26`
+
+ - **BREAKING** **FEAT**(postgres): added distinctOn parameter to relation query methods, distinctOn accepts multiple expressions now.
+
+
 ## 2026-09-23
 
 ### Changes
