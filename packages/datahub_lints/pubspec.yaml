@@ -18,5 +18,6 @@ dev_dependencies:
   analyzer_testing: any
   async: ^2.11.0
   lints: ^6.0.0
+  pub_semver: ^2.1.0
   test: ^1.26.2
   test_reflective_loader: ^0.4.0
