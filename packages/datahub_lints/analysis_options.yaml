@@ -6,5 +6,4 @@ linter:
 
 analyzer:
   errors:
-    # test_reflective_loader requires test methods to be named `test_...`.
     non_constant_identifier_names: ignore

@@ -1,0 +1,8 @@
+# Recommended DataHub analysis rules.
+plugins:
+  datahub_lints:
+    version: ^0.18.0-dev.2
+    diagnostics:
+      const_service_constructor: true
+      reducible_filter_group: true
+      reducible_sort_group: true

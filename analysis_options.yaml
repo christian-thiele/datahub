@@ -1,4 +1,7 @@
-include: package:lints/recommended.yaml
+include:
+  - package:lints/recommended.yaml
+  - package:datahub/recommended.yaml
+
 analyzer:
   exclude:
     - '**/*.g.dart'
@@ -7,5 +10,6 @@ linter:
     directives_ordering: true
 
 plugins:
-  datahub_lints:
-    path: packages/datahub_lints
+  dependency_overrides:
+    datahub_lints:
+      path: packages/datahub_lints

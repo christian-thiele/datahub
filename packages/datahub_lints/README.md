@@ -29,15 +29,36 @@ package reports them as you type, and offers a fix for most of them.
 
 ### Setup
 
-Add a top-level `plugins` section to your `analysis_options.yaml`:
+The quickest way in is the recommended set that ships with `datahub`, which
+switches on every rule including the opt-in lints. Include it from your
+`analysis_options.yaml`:
+
+```yaml
+include: package:datahub/recommended.yaml
+```
+
+Analysis options take a single `include`. If you already include another set,
+such as `package:lints/recommended.yaml`, list both:
+
+```yaml
+include:
+  - package:lints/recommended.yaml
+  - package:datahub/recommended.yaml
+```
+
+To pick rules yourself instead, declare the plugin in a top-level `plugins`
+section:
 
 ```yaml
 plugins:
-  datahub_lints: ^0.18.0-dev.1
+  datahub_lints: ^0.18.0-dev.2
 ```
 
-That is all — the plugin is not a dependency of your package, and there is no
-separate command to run. The rules show up in your IDE and in `dart analyze`.
+Then only warnings and errors are on; see [Configuration](#configuration) for
+switching on lints.
+
+Either way there is no separate command to run. The rules show up in your IDE
+and in `dart analyze`.
 
 > **Requires Dart 3.10 or newer.** On older SDKs the `plugins` section is
 > ignored, so nothing breaks — you just get no rules.
@@ -55,7 +76,7 @@ separate command to run. The rules show up in your IDE and in `dart analyze`.
 |---|---|---|
 | 🛑 | error | on — fails `dart analyze` |
 | ⚠️ | warning | on — fails `dart analyze` |
-| 💡 | lint | off, switch it on under `diagnostics` |
+| 💡 | lint | off, switch it on under `diagnostics`; on in the recommended set |
 
 #### Services and dependency injection
 
@@ -85,11 +106,20 @@ separate command to run. The rules show up in your IDE and in `dart analyze`.
 | `data_class_extends_generated` ⚠️ | a `@Data()` class that does not extend `$Name` | add the superclass |
 | `data_class_const_constructor` ⚠️ | a `@Data()` class without an unnamed const constructor, or one taking positional parameters | add `const` / write the constructor |
 
+#### Filters and sorts
+
+| Rule | Reports | Fix |
+|------|---------|-----|
+| `reducible_filter_group` 💡 | a `Filter.andGroup` / `orGroup` / `FilterGroup` / `a.and(b)` that is empty, holds a single filter, nests a group of the same kind, or contains an operand without effect (`Filter.empty` in an `and`, `Filter.nothing` in an `or`) | simplify the group |
+| `reducible_sort_group` 💡 | a `Sort.followedBy` / `SortGroup` that is empty, holds a single sort, nests another group, or contains `Sort.empty` | simplify the group |
+| `constant_filter_group` ⚠️ | `Filter.empty` in an `or` group or `Filter.nothing` in an `and` group, which decides the group whatever the other operands are | — |
+
 #### Aperture
 
 | Rule | Reports | Fix |
 |------|---------|-----|
 | `aperture_relation_requires_relation_id` ⚠️ | `@ApertureRelation<T>()` where `T` has no field annotated `@RelationId<Owner>()` | — |
+| `aperture_relation_requires_resource` ⚠️ | `@ApertureRelation<R>()` on a resource's class where `R` is not registered as an `ApertureResource` in the same `ApertureApi` | — |
 
 #### PostgreSQL
 
@@ -104,28 +134,35 @@ mixin application. Both fail when the repository initializes.
 
 ### Assists
 
-Available from the IDE at a class declaration (Alt+Enter in IntelliJ, Ctrl+. in
-VS Code). Generated names and types are editable placeholders you can tab
-through.
+Available from the IDE at the node listed below (Alt+Enter in IntelliJ, Ctrl+.
+in VS Code).
 
 | Assist | Offered on | Generates |
 |--------|-----------|-----------|
 | Generate ServiceInstance | a `Service` without `createInstance()` | the `createInstance()` override and the matching `ServiceInstance` class |
 | Convert to DataHub data class | a plain class | `@Data()`, the `$Name` superclass, the part directive and a const constructor over the fields |
 | Add Find injection field | a `Service` | a `final Find<T> name;` field and its constructor parameter |
+| Convert to 'Filter.andGroup' / 'Filter.orGroup' | an `a.and(b).and(c)` / `a.or(b)` chain | `Filter.andGroup([a, b, c])` |
 
 ### Configuration
 
-Switch any rule on or off under `diagnostics`, whatever its default severity:
+Switch any rule on or off under `diagnostics`:
 
 ```yaml
 plugins:
   datahub_lints:
+    version: ^0.18.0-dev.2
     diagnostics:
       const_service_constructor: true    # opt into a lint
       await_lifecycle_super: false       # opt out of a warning
       enum_config_requires_values: false # opt out of an error
 ```
+
+The analyzer does not merge this section with one from an included file: a
+`plugins: datahub_lints:` entry of your own replaces the recommended set
+entirely, and `analyzer: errors:` does not apply to plugin rules. To adjust the
+recommended set, drop the include and copy its `diagnostics` from
+[`package:datahub/recommended.yaml`](https://github.com/christian-thiele/datahub/blob/main/packages/datahub/lib/recommended.yaml) into your own entry.
 
 Suppress a single report with a comment, prefixing the rule with the plugin
 name:
