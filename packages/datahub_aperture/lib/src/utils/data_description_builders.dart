@@ -5,7 +5,6 @@ import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/icons.dart';
 import 'package:datahub_aperture/services.dart';
-import 'package:datahub_aperture/src/data/meta/aperture_meta.dart';
 import 'package:datahub_aperture/utils.dart';
 
 ResourceDescription buildResourceDescription(

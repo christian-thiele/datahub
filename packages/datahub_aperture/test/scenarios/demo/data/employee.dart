@@ -1,7 +1,6 @@
 import 'package:datahub/data.dart';
 import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/icons.dart';
-import 'package:datahub_aperture/src/data/meta/aperture_meta.dart';
 
 import 'client.dart';
 import 'department.dart';
