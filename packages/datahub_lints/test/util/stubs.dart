@@ -82,6 +82,60 @@ abstract class ApiNode {
   List<Object> buildRoutes();
 }
 
+sealed class Filter {
+  static const Filter empty = EmptyFilter();
+  static const Filter nothing = NothingFilter();
+
+  const Filter();
+
+  Filter and(Filter other) => throw '';
+
+  Filter or(Filter other) => throw '';
+
+  static Filter andGroup(Iterable<Filter> filters) => throw '';
+
+  static Filter orGroup(Iterable<Filter> filters) => throw '';
+
+  static Filter equals(dynamic left, dynamic right) => throw '';
+}
+
+final class FilterGroup extends Filter {
+  final List<Filter> filters;
+  final bool isConjunction;
+
+  const FilterGroup(this.filters, this.isConjunction);
+}
+
+final class EmptyFilter extends Filter {
+  const EmptyFilter();
+}
+
+final class NothingFilter extends Filter {
+  const NothingFilter();
+}
+
+sealed class Sort {
+  static const Sort empty = EmptySort();
+
+  const Sort();
+
+  static Sort asc(dynamic expression) => throw '';
+
+  static Sort desc(dynamic expression) => throw '';
+
+  static Sort followedBy(Iterable<Sort> sorts) => throw '';
+}
+
+final class SortGroup extends Sort {
+  final List<Sort> sorts;
+
+  const SortGroup(this.sorts);
+}
+
+final class EmptySort extends Sort {
+  const EmptySort();
+}
+
 final class Data {
   const Data();
 }
@@ -91,6 +145,8 @@ abstract mixin class DataObject<T> {}
 final class DataBean<T> {
   const DataBean();
 }
+
+abstract class DataRepository<T> {}
 
 final class RelationId<T> {
   const RelationId();
@@ -125,8 +181,22 @@ int offsetOf(String content, String snippet) {
 
 /// Minimal stand-in for `package:datahub_aperture/datahub_aperture.dart`.
 const apertureStub = r'''
+import 'package:datahub/datahub.dart';
+
 final class ApertureRelation<T> {
   const ApertureRelation();
+}
+
+class ApertureResource {
+  final Find<DataRepository> repository;
+
+  const ApertureResource({required this.repository});
+}
+
+class ApertureApi {
+  final List<ApertureResource> resources;
+
+  const ApertureApi({this.resources = const []});
 }
 ''';
 

@@ -10,12 +10,16 @@ import 'src/fixes/add_const_keyword.dart';
 import 'src/fixes/add_enum_values.dart';
 import 'src/fixes/data_class_fixes.dart';
 import 'src/fixes/move_lifecycle_super.dart';
+import 'src/fixes/simplify_query_group.dart';
 import 'src/fixes/use_instance_accessor.dart';
 import 'src/fixes/use_instance_context.dart';
 import 'src/rules/aperture/relation_requires_relation_id.dart';
+import 'src/rules/aperture/relation_requires_resource.dart';
 import 'src/rules/config/config_requires_default.dart';
 import 'src/rules/config/enum_config_requires_values.dart';
 import 'src/rules/data/data_class_rules.dart';
+import 'src/rules/data/reducible_filter_group.dart';
+import 'src/rules/data/reducible_sort_group.dart';
 import 'src/rules/postgres/revisable_repository_rules.dart';
 import 'src/rules/scaffold/avoid_injection_in_initializer.dart';
 import 'src/rules/scaffold/avoid_zone_context_in_service.dart';
@@ -122,11 +126,28 @@ class DatahubLintsPlugin extends Plugin {
       DataClassConstConstructorRule.code,
       AddDataClassConstructor.new,
     );
+
+    registry.registerLintRule(ReducibleFilterGroupRule());
+    registry.registerFixForRule(
+      ReducibleFilterGroupRule.code,
+      SimplifyQueryGroup.new,
+    );
+
+    registry.registerLintRule(ReducibleSortGroupRule());
+    registry.registerFixForRule(
+      ReducibleSortGroupRule.code,
+      SimplifyQueryGroup.new,
+    );
+
+    // No quick fix: either the constant or the other operands are a mistake,
+    // and only the author knows which.
+    registry.registerWarningRule(ConstantFilterGroupRule());
   }
 
   void _registerApertureRules(PluginRegistry registry) {
     // No quick fix: which field carries the id is the author's choice.
     registry.registerWarningRule(RelationRequiresRelationIdRule());
+    registry.registerWarningRule(RelationRequiresResourceRule());
   }
 
   void _registerPostgresRules(PluginRegistry registry) {

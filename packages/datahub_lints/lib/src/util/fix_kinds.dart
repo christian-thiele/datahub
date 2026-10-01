@@ -63,6 +63,12 @@ abstract final class DatahubFixKind {
     DartFixKindPriority.standard,
     'Move super.dispose() to the bottom',
   );
+
+  static const simplifyQueryGroup = FixKind(
+    'datahub.fix.simplifyQueryGroup',
+    DartFixKindPriority.standard,
+    'Simplify the group',
+  );
 }
 
 /// Assist kinds for the DataHub boilerplate generators.
@@ -83,5 +89,11 @@ abstract final class DatahubAssistKind {
     'datahub.assist.addFindInjection',
     30,
     'Add Find injection field',
+  );
+
+  static const convertToFilterGroup = AssistKind(
+    'datahub.assist.convertToFilterGroup',
+    30,
+    "Convert to 'Filter.{0}'",
   );
 }
