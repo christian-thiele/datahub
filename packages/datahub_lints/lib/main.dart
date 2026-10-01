@@ -3,6 +3,7 @@ import 'package:analysis_server_plugin/registry.dart';
 
 import 'src/assists/add_find_injection.dart';
 import 'src/assists/convert_to_data_class.dart';
+import 'src/assists/convert_to_filter_group.dart';
 import 'src/assists/generate_service_instance.dart';
 import 'src/fixes/add_await.dart';
 import 'src/fixes/add_const_keyword.dart';
@@ -141,5 +142,6 @@ class DatahubLintsPlugin extends Plugin {
     registry.registerAssist(GenerateServiceInstance.new);
     registry.registerAssist(ConvertToDataClass.new);
     registry.registerAssist(AddFindInjection.new);
+    registry.registerAssist(ConvertToFilterGroup.new);
   }
 }
