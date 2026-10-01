@@ -467,9 +467,7 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
   Future<DateTime?> _findNextInvocationTimestamp() async {
     try {
       final nextInvocation = await taskInvocationRepository.readAll(
-        filter: Filter.andGroup([
-          $TaskInvocation.$state.equals(TaskState.scheduled),
-        ]),
+        filter: $TaskInvocation.$state.equals(TaskState.scheduled),
         sort: $TaskInvocation.$scheduledFor.asc(),
       );
 

@@ -7,6 +7,8 @@ import 'package:datahub/datahub.dart';
 /// Prints marker lines so the test can observe the lifecycle of the host
 /// from outside the process.
 class MarkerService implements Service {
+  const MarkerService();
+
   @override
   ServiceInstance<MarkerService> createInstance() => MarkerServiceInstance();
 }

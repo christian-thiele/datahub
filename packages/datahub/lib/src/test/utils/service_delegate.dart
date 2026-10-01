@@ -5,7 +5,7 @@ class ServiceDelegate implements Service {
   final Future<void> Function()? dispose;
   final Future<void> Function()? postInitialize;
 
-  ServiceDelegate({this.initialize, this.dispose, this.postInitialize});
+  const ServiceDelegate({this.initialize, this.dispose, this.postInitialize});
 
   @override
   ServiceInstance<ServiceDelegate> createInstance() =>

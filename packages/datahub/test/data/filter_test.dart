@@ -1,3 +1,5 @@
+// ignore_for_file: datahub_lints/reducible_filter_group, datahub_lints/constant_filter_group
+
 import 'package:datahub/data.dart';
 import 'package:test/test.dart';
 

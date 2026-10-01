@@ -2,6 +2,8 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/services.dart';
 
 class TestAuthProvider implements Service {
+  const TestAuthProvider();
+
   @override
   ServiceInstance<Service> createInstance() => _TestAuthProviderInstance();
 }
