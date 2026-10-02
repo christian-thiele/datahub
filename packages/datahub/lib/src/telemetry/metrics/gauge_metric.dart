@@ -30,7 +30,7 @@ class GaugeMetric extends Metric {
   final _series = <GaugeSeries>[];
 
   GaugeMetric(super.name, {super.help, Map<String, List<String>>? labels})
-    : super(type: MetricType.counter) {
+    : super(type: MetricType.gauge) {
     if (labels != null) {
       final combinations = cartesianProduct(
         labels.entries.map(
