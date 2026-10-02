@@ -1,3 +1,4 @@
+import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub/src/test/matchers.dart';
 import 'package:datahub/src/test/test_host.dart';
@@ -230,4 +231,86 @@ void main() {
       ]),
     );
   });
+
+  declareTest('Test histogram metrics without labels', [], () async {
+    final instrumentation = Find<Telemetry>().find();
+    final histogram = instrumentation.linearHistogram(
+      'some_duration',
+      start: 1,
+      width: 4,
+      count: 4,
+    );
+    histogram.observe(0.5);
+    histogram.observe(2.5);
+
+    final samples = await _samplesOf(instrumentation, 'some_duration');
+    expect(
+      samples.where((s) => s.name == 'some_duration_count').single.value,
+      equals(2),
+    );
+    expect(
+      samples.where((s) => s.name == 'some_duration_sum').single.value,
+      equals(3),
+    );
+  });
+
+  declareTest('Test histogram metrics with labels', [], () async {
+    final instrumentation = Find<Telemetry>().find();
+    final histogram = instrumentation.exponentialHistogram(
+      'labeled_duration',
+      start: 1,
+      factor: 2,
+      count: 3,
+      labels: {
+        'kind': ['read', 'write'],
+      },
+    );
+
+    expect(() => histogram.observe(1), throwsApiError());
+    expect(() => histogram.observe(1, {'kind': 'other'}), throwsApiError());
+    histogram.observe(1.5, {'kind': 'read'});
+    histogram.observe(3, {'kind': 'read'});
+    histogram.observe(7, {'kind': 'write'});
+
+    final samples = await _samplesOf(instrumentation, 'labeled_duration');
+    num valueOf(String name, Map<String, String> labels) => samples
+        .singleWhere((s) => s.name == name && s.labels.entriesEqual(labels))
+        .value;
+
+    expect(valueOf('labeled_duration_count', {'kind': 'read'}), equals(2));
+    expect(valueOf('labeled_duration_sum', {'kind': 'read'}), equals(4.5));
+    expect(valueOf('labeled_duration_count', {'kind': 'write'}), equals(1));
+    expect(
+      valueOf('labeled_duration_bucket', {'kind': 'read', 'le': '2'}),
+      equals(1),
+    );
+    expect(
+      valueOf('labeled_duration_bucket', {'kind': 'read', 'le': '+Inf'}),
+      equals(2),
+    );
+    expect(
+      valueOf('labeled_duration_bucket', {'kind': 'write', 'le': '4'}),
+      equals(0),
+    );
+  });
+
+  declareTest('Test exception events carry the error message', [], () async {
+    final event = ExceptionEvent(
+      error: StateError('boom'),
+      timestamp: DateTime.timestamp(),
+    );
+    expect(event.attributes['exception.type'], equals('StateError'));
+    expect(
+      event.attributes['exception.message'],
+      equals('Bad state: boom'),
+    );
+  });
+}
+
+Future<List<MetricSample>> _samplesOf(Telemetry telemetry, String name) async {
+  final groups = await telemetry.scrapeMetrics();
+  return groups
+      .where((g) => g.metric.name == name)
+      .expand((g) => g.samples)
+      .toList();
 }

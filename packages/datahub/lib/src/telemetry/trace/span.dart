@@ -89,7 +89,7 @@ class LocalSpan extends Span {
     _addEvent(
       Event(
         name: name,
-        attributes: attributes,
+        attributes: arguments ?? const {},
         timestamp: DateTime.timestamp(),
       ),
     );

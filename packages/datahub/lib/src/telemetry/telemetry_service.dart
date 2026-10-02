@@ -464,7 +464,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     String name,
     FutureOr<R> Function(LocalSpan span) delegate, {
     SpanType type = SpanType.internal,
-    Map<String, dynamic> attributes = const <String, dynamic>{},
+    Map<String, dynamic>? attributes,
   }) async {
     return await defaultTracer.trace(name, attributes, type, delegate);
   }
