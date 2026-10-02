@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
+import 'package:boost/boost.dart';
+import 'package:datahub/utils.dart';
+
 import 'metric.dart';
 import 'metric_sample.dart';
 import 'sample_group.dart';
@@ -33,9 +36,8 @@ import 'sample_group.dart';
 /// [TelemetryService] either through the [ServiceResolver] by invoking
 /// the [register] method.
 class HistogramMetric extends Metric {
-  final _buckets = <_Bucket>[];
-  num _count = 0;
-  num _sum = 0;
+  final List<num> _boundaries;
+  final _series = <_HistogramSeries>[];
 
   HistogramMetric.linear(
     super.name, {
@@ -43,10 +45,10 @@ class HistogramMetric extends Metric {
     required num width,
     required int count,
     super.help,
-  }) : super(type: MetricType.histogram) {
-    _buckets.addAll(
-      Iterable.generate(count, (i) => _Bucket(start + (width / count) * i)),
-    );
+    Map<String, List<String>>? labels,
+  }) : _boundaries = List.generate(count, (i) => start + (width / count) * i),
+       super(type: MetricType.histogram) {
+    _createSeries(labels);
   }
 
   HistogramMetric.exponential(
@@ -55,54 +57,108 @@ class HistogramMetric extends Metric {
     required num factor,
     required int count,
     super.help,
-  }) : super(type: MetricType.histogram) {
-    _buckets.addAll(
-      Iterable.generate(count, (i) => _Bucket(start * pow(factor, i))),
+    Map<String, List<String>>? labels,
+  }) : _boundaries = List.generate(count, (i) => start * pow(factor, i)),
+       super(type: MetricType.histogram) {
+    _createSeries(labels);
+  }
+
+  void _createSeries(Map<String, List<String>>? labels) {
+    if (labels != null && labels.isNotEmpty) {
+      final combinations = cartesianProduct(
+        labels.entries.map(
+          (e) => e.value.map((value) => MapEntry(e.key, value)),
+        ),
+      );
+      for (final combination in combinations) {
+        _series.add(
+          _HistogramSeries(Map.fromEntries(combination), _boundaries),
+        );
+      }
+    } else {
+      _series.add(_HistogramSeries(const {}, _boundaries));
+    }
+  }
+
+  _HistogramSeries _findSeries(Map<String, String> labels) {
+    return _series.firstWhere(
+      (s) => s.labels.entriesEqual(labels),
+      orElse: () =>
+          throw ApiError('No metric series matches given label combination.'),
     );
   }
 
-  void observe(num value) {
-    _count++;
-    _sum += value;
-    for (final bucket in _buckets.reversed) {
-      if (value <= bucket.boundary) {
-        bucket.value++;
-      } else {
-        return;
-      }
-    }
-  }
+  /// Observes [value], optionally for the series identified by [labels].
+  ///
+  /// The [labels] must match one of the label combinations declared when
+  /// the metric was defined.
+  void observe(num value, [Map<String, String> labels = const {}]) =>
+      _findSeries(labels).observe(value);
 
   @override
   SampleGroup collect() {
     final now = DateTime.timestamp();
     return SampleGroup(this, [
-      ..._buckets.map(
-        (b) => MetricSample(
+      for (final series in _series) ...[
+        for (final b in series.buckets)
+          MetricSample(
+            '${name}_bucket',
+            {...series.labels, 'le': b.boundary.toString()},
+            b.value,
+            now,
+          ),
+        MetricSample(
           '${name}_bucket',
-          {'le': b.boundary.toString()},
-          b.value,
+          {...series.labels, 'le': '+Inf'},
+          series.count,
           now,
         ),
-      ),
-      MetricSample('${name}_bucket', {'le': '+Inf'}, _count, now),
-      MetricSample('${name}_sum', {}, _sum, now),
-      MetricSample('${name}_count', {}, _count, now),
+        MetricSample('${name}_sum', series.labels, series.sum, now),
+        MetricSample('${name}_count', series.labels, series.count, now),
+      ],
     ]);
   }
 
-  void observeDuration(Duration duration) {
-    observe(duration.inMicroseconds / 1000000);
+  void observeDuration(
+    Duration duration, [
+    Map<String, String> labels = const {},
+  ]) {
+    observe(duration.inMicroseconds / 1000000, labels);
   }
 
-  FutureOr<T> measureDuration<T>(FutureOr<T> Function() delegate) async {
+  FutureOr<T> measureDuration<T>(
+    FutureOr<T> Function() delegate, [
+    Map<String, String> labels = const {},
+  ]) async {
     final watch = Stopwatch();
     watch.start();
     try {
       return await delegate();
     } finally {
       watch.stop();
-      observeDuration(watch.elapsed);
+      observeDuration(watch.elapsed, labels);
+    }
+  }
+}
+
+class _HistogramSeries {
+  final Map<String, String> labels;
+  final List<_Bucket> buckets;
+  num count = 0;
+  num sum = 0;
+
+  _HistogramSeries(this.labels, List<num> boundaries)
+    : buckets = [for (final b in boundaries) _Bucket(b)];
+
+  void observe(num value) {
+    count++;
+    sum += value;
+    for (final bucket in buckets.reversed) {
+      if (value <= bucket.boundary) {
+        bucket.value++;
+      } else {
+        return;
+      }
     }
   }
 }

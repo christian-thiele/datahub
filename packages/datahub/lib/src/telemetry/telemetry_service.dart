@@ -111,6 +111,7 @@ abstract interface class Telemetry {
     required num start,
     required num width,
     required int count,
+    Map<String, List<String>>? labels,
     String? help,
   });
 
@@ -127,6 +128,7 @@ abstract interface class Telemetry {
     required num start,
     required num factor,
     required int count,
+    Map<String, List<String>>? labels,
     String? help,
   });
 
@@ -383,6 +385,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     required num start,
     required num width,
     required int count,
+    Map<String, List<String>>? labels,
     String? help,
   }) {
     return switch (_metrics[name]) {
@@ -392,6 +395,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
         start: start,
         width: width,
         count: count,
+        labels: labels,
         help: help,
       ),
       final existing => throw ApiError(
@@ -406,6 +410,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     required num start,
     required num factor,
     required int count,
+    Map<String, List<String>>? labels,
     String? help,
   }) {
     return switch (_metrics[name]) {
@@ -415,6 +420,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
         start: start,
         factor: factor,
         count: count,
+        labels: labels,
         help: help,
       ),
       final existing => throw ApiError(
