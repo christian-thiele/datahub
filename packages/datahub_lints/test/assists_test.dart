@@ -131,6 +131,89 @@ class Db implements Service {
 ''',
     );
   }
+
+  test_injectsIntoExistingInitialize() async {
+    await assertAssist(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  const Db();
+  @override
+  ServiceInstance<Db> createInstance() => DbInstance();
+}
+
+class DbInstance extends ServiceInstance<Db> {
+  @override
+  Future<void> initialize() async {
+    await super.initialize();
+  }
+}
+''',
+      at: 'Db implements',
+      assistKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  final Find<Dependency> dependency;
+  const Db({this.dependency = const Find()});
+  @override
+  ServiceInstance<Db> createInstance() => DbInstance();
+}
+
+class DbInstance extends ServiceInstance<Db> {
+  late final Dependency dependency;
+  @override
+  Future<void> initialize() async {
+    await super.initialize();
+    dependency = find(service.dependency);
+  }
+}
+''',
+    );
+  }
+
+  test_addsInitializeWhenMissing() async {
+    await assertAssist(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  const Db();
+  @override
+  ServiceInstance<Db> createInstance() => DbInstance();
+}
+
+class DbInstance extends ServiceInstance<Db> {
+  final int x = 0;
+}
+''',
+      at: 'Db implements',
+      assistKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  final Find<Dependency> dependency;
+  const Db({this.dependency = const Find()});
+  @override
+  ServiceInstance<Db> createInstance() => DbInstance();
+}
+
+class DbInstance extends ServiceInstance<Db> {
+  final int x = 0;
+  late final Dependency dependency;
+
+  @override
+  Future<void> initialize() async {
+    await super.initialize();
+    dependency = find(service.dependency);
+  }
+}
+''',
+    );
+  }
 }
 
 @reflectiveTest
