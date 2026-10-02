@@ -1,0 +1,3 @@
+redis:
+  host: "$test.services.redis.host"
+  port: "$test.services.redis.6379"

@@ -12,7 +12,12 @@ enum NamingConvention {
   camelCase,
 
   /// lower camel case => lowerCamelCase
-  lowerCamelCase,
+  lowerCamelCase;
+
+  const NamingConvention();
+
+  /// Convenience method for using [toNamingConvention].
+  String convert(String input) => toNamingConvention(input, this);
 }
 
 String toNamingConvention(String input, NamingConvention convention) {

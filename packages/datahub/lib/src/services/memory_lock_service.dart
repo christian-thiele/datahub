@@ -5,23 +5,24 @@ import 'package:datahub/abstract.dart';
 import 'package:datahub/scaffold.dart';
 
 /// Local in-memory, per-instance implementation of [LockProvider].
-class MemoryLockService implements Service {
+class MemoryLockService<T extends Object> implements Service {
   const MemoryLockService();
 
   @override
-  ServiceInstance<MemoryLockService> createInstance() =>
-      _MemoryLockServiceInstance();
+  ServiceInstance<MemoryLockService<T>> createInstance() =>
+      _MemoryLockServiceInstance<T>();
 }
 
-class _MemoryLockServiceInstance extends ServiceInstance<MemoryLockService>
-    implements LockProvider<Object> {
+class _MemoryLockServiceInstance<T extends Object>
+    extends ServiceInstance<MemoryLockService<T>>
+    implements LockProvider<T> {
   /// Locked keys and their waiters in FIFO order.
-  final _locks = <Object, Queue<Completer<void>>>{};
+  final _locks = <T, Queue<Completer<void>>>{};
   bool _isDisposed = false;
 
   @override
   Future<LockHandle> acquireLock(
-    Object key, {
+    T key, {
     Duration? timeout = Duration.zero,
   }) async {
     if (_isDisposed) {
