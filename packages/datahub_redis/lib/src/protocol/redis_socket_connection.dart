@@ -3,11 +3,14 @@ import 'dart:collection';
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:datahub/telemetry.dart' show SpanType;
+
 import '../abstract/redis_commands.dart';
 import '../abstract/redis_connection.dart';
 import '../abstract/redis_exception.dart';
 import '../abstract/redis_reply.dart';
 import '../abstract/redis_transaction.dart';
+import '../redis_telemetry.dart';
 import 'command_rules.dart';
 import 'queued_transaction.dart';
 import 'resp_encoder.dart';
@@ -33,6 +36,8 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
   /// Default timeout for commands, null means no timeout.
   final Duration? commandTimeout;
 
+  final RedisTelemetry _telemetry;
+
   final _parser = RespParser();
   final _pending = ListQueue<_PendingReply>();
   final _writeBuffer = BytesBuilder(copy: false);
@@ -56,14 +61,18 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
     this._socket, {
     required this.commandTimeout,
     required int database,
-  }) : _initialDatabase = database,
+    required RedisTelemetry telemetry,
+  }) : _telemetry = telemetry,
+       _initialDatabase = database,
        _database = database {
     _socket.listen(
       _onData,
       onError: (Object error) =>
           _fail(RedisConnectionException('Connection error.', error)),
-      onDone: () =>
-          _fail(const RedisConnectionException('Connection closed by server.')),
+      onDone: () => _fail(
+        const RedisConnectionException('Connection closed by server.'),
+        kind: 'server',
+      ),
       cancelOnError: true,
     );
     // write errors are only reported through done
@@ -92,6 +101,52 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
     String? password,
     int database = 0,
     String? clientName,
+    RedisTelemetry telemetry = RedisTelemetry.disabled,
+  }) => telemetry.traced(
+    'Redis Connect',
+    () async {
+      try {
+        return await _connect(
+          host: host,
+          port: port,
+          useTls: useTls,
+          securityContext: securityContext,
+          connectTimeout: connectTimeout,
+          commandTimeout: commandTimeout,
+          username: username,
+          password: password,
+          database: database,
+          clientName: clientName,
+          telemetry: telemetry,
+        );
+      } catch (e) {
+        telemetry.error(e);
+        rethrow;
+      }
+    },
+    type: SpanType.client,
+    attributes: {
+      'db.system.name': 'redis',
+      'db.namespace': database.toString(),
+      'server.address': host,
+      'server.port': port,
+      'network.transport': 'tcp',
+      if (useTls) 'tls.enabled': true,
+    },
+  );
+
+  static Future<RedisSocketConnection> _connect({
+    required String host,
+    required int port,
+    required bool useTls,
+    required SecurityContext? securityContext,
+    required Duration connectTimeout,
+    required Duration? commandTimeout,
+    required String? username,
+    required String? password,
+    required int database,
+    required String? clientName,
+    required RedisTelemetry telemetry,
   }) async {
     final watch = Stopwatch()..start();
     Duration remaining() {
@@ -135,6 +190,7 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
       socket,
       commandTimeout: commandTimeout,
       database: database,
+      telemetry: telemetry,
     );
 
     try {
@@ -155,6 +211,7 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
       rethrow;
     }
 
+    telemetry.connectionOpened();
     return connection;
   }
 
@@ -216,7 +273,31 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
   }) async {
     final name = commandName(command);
     checkSupportedCommand(name, command);
+    return _telemetry.command(
+      name,
+      _database,
+      () => _send(name, command, decode, timeout),
+    );
+  }
 
+  /// Like [sendCommand] for commands issued by the connection management
+  /// (health checks, state reset), which are not reported as commands.
+  Future<T> sendInternalCommand<T>(
+    List<Object> command,
+    T Function(RedisReply reply) decode, {
+    Duration? timeout,
+  }) async {
+    final name = commandName(command);
+    checkSupportedCommand(name, command);
+    return _send(name, command, decode, timeout);
+  }
+
+  Future<T> _send<T>(
+    String? name,
+    List<Object> command,
+    T Function(RedisReply reply) decode,
+    Duration? timeout,
+  ) async {
     final reply = await _request(
       RespEncoder.encode(command),
       timeout ?? commandTimeout,
@@ -253,9 +334,20 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
       _tainted = true;
     }
 
+    final queued = transaction.commands;
+    return _telemetry.transaction(
+      _database,
+      queued.length,
+      () => _runTransaction(transaction, queued),
+    );
+  }
+
+  Future<bool> _runTransaction(
+    QueuedTransaction transaction,
+    List<QueuedCommand> queued,
+  ) async {
     // MULTI, all commands and EXEC are written in one synchronous step, so
     // nothing else can be interleaved on this connection
-    final queued = transaction.commands;
     _inMulti = true;
     final List<RedisReply> replies;
     try {
@@ -333,12 +425,12 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
       return;
     }
     if (_inMulti) {
-      await sendCommand(['DISCARD'], (_) {});
+      await sendInternalCommand(['DISCARD'], (_) {});
     } else if (_watching) {
-      await sendCommand(['UNWATCH'], (_) {});
+      await sendInternalCommand(['UNWATCH'], (_) {});
     }
     if (_database != _initialDatabase) {
-      await sendCommand(['SELECT', _initialDatabase], (_) {});
+      await sendInternalCommand(['SELECT', _initialDatabase], (_) {});
     }
   }
 
@@ -362,7 +454,7 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
 
   /// Closes the connection and fails all pending commands.
   Future<void> close() async {
-    _fail(const RedisConnectionException('Connection closed.'));
+    _fail(const RedisConnectionException('Connection closed.'), kind: 'local');
   }
 
   Future<RedisReply> _request(Uint8List request, Duration? timeout) {
@@ -385,6 +477,7 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
           const RedisConnectionException(
             'Connection closed after a command timed out.',
           ),
+          kind: 'timeout',
           timedOut: pending,
           timeoutError: TimeoutException(
             'Redis command timed out after $timeout.',
@@ -447,6 +540,7 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
 
   void _fail(
     RedisConnectionException reason, {
+    String? kind,
     _PendingReply? timedOut,
     Object? timeoutError,
   }) {
@@ -454,6 +548,9 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
       return;
     }
     _closeReason = reason;
+    _telemetry.connectionClosed(
+      kind ?? (reason.cause is RespProtocolException ? 'protocol' : 'error'),
+    );
     _writeBuffer.clear();
     _socket.destroy();
 

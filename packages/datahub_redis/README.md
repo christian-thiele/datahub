@@ -117,8 +117,37 @@ await locks.runLocked('nightly-report', () async {
 | `lockPrefix`              | `datahub:lock:` | Key prefix for locks                                                  |
 | `lockLeaseDuration`       | `30000` (ms)    | Time after which a lock of a crashed holder expires                   |
 | `lockRetryInterval`       | `500` (ms)      | Polling interval of waiting lock acquirers (in addition to Pub/Sub)   |
-| `enableMetrics`           | `true`          | Publish pool metrics                                                  |
-| `metricPrefix`            | `redis`         | Prefix of the pool metrics                                            |
+| `enableMetrics`           | `true`          | Publish [metrics](#telemetry)                                         |
+| `metricPrefix`            | `redis`         | Prefix of the metrics                                                 |
+| `enableTracing`           | `false`         | Trace commands, transactions, pool checkouts and locks as spans       |
+
+### Telemetry
+
+Metrics are named `<metricPrefix>_<name>` (default prefix `redis`):
+
+| Metric                                             | Type      | Description                                                        |
+|----------------------------------------------------|-----------|--------------------------------------------------------------------|
+| `commands_total{command_class,status}`             | counter   | Commands by class (`read`, `write`, `script`, `other`) and result  |
+| `command_duration_seconds{command_class}`          | histogram | Time from sending a command until its reply was processed          |
+| `command_timeouts_total`                           | counter   | Commands that timed out (which closes their connection)            |
+| `errors_total{kind}`                               | counter   | Failures by `server`, `connection`, `protocol`, `timeout`, `other` |
+| `pool_size_target` / `_total` / `_available` / `_in_use` | gauge | State of the connection pool                                   |
+| `pool_wait_seconds`, `pool_rejected_total`         | histogram, counter | Wait for a pooled connection, rejections by `poolQueueLimit` |
+| `connections_opened_total`, `connections_closed_total{reason}` | counter | Connection churn                                   |
+| `health_check_failures_total`                      | counter   | Pooled connections that failed their `PING`                        |
+| `locks_acquired_total`, `locks_contended_total`    | counter   | Lock acquisitions and contention                                   |
+| `lock_wait_seconds`, `lock_hold_seconds`           | histogram | Time to acquire and to hold locks                                  |
+| `locks_held`                                       | gauge     | Locks currently held by this service                               |
+| `lock_renewal_failures_total`, `locks_lost_total`  | counter   | Lease renewal problems                                             |
+| `subscriber_connected`, `subscriptions`            | gauge     | State of the Pub/Sub connection                                    |
+| `subscriber_reconnects_total`, `pubsub_messages_received_total` | counter | Pub/Sub connection losses and received messages        |
+| `script_cache_misses_total`                        | counter   | `eval` calls that had to send the script (`NOSCRIPT`)              |
+
+With `enableTracing`, spans of kind `client` named `Redis <COMMAND>` are created for every command, with the
+attributes `db.system.name`, `db.operation.name`, `db.namespace`, `server.address` and `server.port`. Transactions,
+connection setup, pool checkouts, `useConnection`, and lock acquisitions get their own spans.
+
+Keys, channels, patterns and values are never used as labels, span names or attributes.
 
 ### Behaviour worth knowing
 

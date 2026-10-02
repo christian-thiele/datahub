@@ -11,6 +11,7 @@ import '../abstract/redis_reply.dart';
 import '../abstract/redis_transaction.dart';
 import '../protocol/redis_socket_connection.dart';
 import '../protocol/scan.dart';
+import '../redis_telemetry.dart';
 import 'redis_lock_handle.dart';
 import 'redis_subscriber.dart';
 
@@ -104,8 +105,16 @@ class RedisService implements Service {
   /// no release notification is received.
   final Config<Duration> lockRetryInterval;
 
+  /// Publish metrics about commands, the connection pool, locks and Pub/Sub.
   final Config<bool> enableMetrics;
   final Config<String> metricPrefix;
+
+  /// Trace every command, transaction, connection setup, pool checkout and
+  /// lock acquisition as span.
+  ///
+  /// Disabled by default, since the spans of busy services can displace
+  /// other spans in the exporter buffer.
+  final Config<bool> enableTracing;
 
   const RedisService({
     this.clientName = const Config('serviceName', defaultValue: 'DataHub'),
@@ -161,6 +170,10 @@ class RedisService implements Service {
       'metricPrefix',
       defaultValue: 'redis',
     ),
+    this.enableTracing = const Config<bool>(
+      'enableTracing',
+      defaultValue: false,
+    ),
   });
 
   @override
@@ -205,9 +218,12 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
   final _lockWaiters = <void Function()>{};
   var _disposed = false;
 
-  GaugeMetric? _poolTargetMetric;
-  GaugeMetric? _poolTotalMetric;
-  GaugeMetric? _poolAvailableMetric;
+  var _telemetry = RedisTelemetry.disabled;
+
+  Map<String, String> get _targetLabels => {
+    'redis.host': read(service.host),
+    'redis.port': read(service.port).toString(),
+  };
 
   @override
   Future<void> initialize() async {
@@ -217,20 +233,34 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
     _healthCheckInterval = read(service.healthCheckInterval);
     _timeout = read(service.timeout);
 
-    if (read(service.enableMetrics)) {
-      final telemetry = find(Find<Telemetry>());
-      final prefix = read(service.metricPrefix);
-      _poolTargetMetric = telemetry.gauge('${prefix}_pool_size_target');
-      _poolTotalMetric = telemetry.gauge('${prefix}_pool_size_total');
-      _poolAvailableMetric = telemetry.gauge('${prefix}_pool_size_available');
+    final enableMetrics = read(service.enableMetrics);
+    final enableTracing = read(service.enableTracing);
+    if (enableMetrics || enableTracing) {
+      _telemetry = RedisTelemetry(
+        telemetry: find(Find<Telemetry>()),
+        metricPrefix: read(service.metricPrefix),
+        enableMetrics: enableMetrics,
+        enableTracing: enableTracing,
+        host: read(service.host),
+        port: read(service.port),
+      );
     }
 
     await _pool.fill();
+    log.info(
+      'Redis service started.',
+      labels: {
+        ..._targetLabels,
+        'redis.database': read(service.database).toString(),
+        'redis.pool_size': _pool.total.toString(),
+      },
+    );
   }
 
   Future<RedisSocketConnection> _openConnection() {
-    log.debug('Opening Redis connection.');
+    log.debug('Opening Redis connection.', labels: _targetLabels);
     return RedisSocketConnection.connect(
+      telemetry: _telemetry,
       host: read(service.host),
       port: read(service.port),
       useTls: read(service.useTls),
@@ -251,15 +281,18 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
       return true;
     }
     return connection
-        .sendCommand(['PING'], (_) => true, timeout: _timeout)
-        .catchError((_) => false);
+        .sendInternalCommand(['PING'], (_) => true, timeout: _timeout)
+        .catchError((_) {
+          _telemetry.healthCheckFailed();
+          return false;
+        });
   }
 
-  void _updateMetrics() {
-    _poolTargetMetric?.set(_pool.targetSize);
-    _poolTotalMetric?.set(_pool.total);
-    _poolAvailableMetric?.set(_pool.available);
-  }
+  void _updateMetrics() => _telemetry.poolSize(
+    target: _pool.targetSize,
+    total: _pool.total,
+    available: _pool.available,
+  );
 
   /// The connection bound to the current zone by [useConnection], if its
   /// delegate is still running.
@@ -281,7 +314,15 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
       throw StateError('RedisService is disposed.');
     }
 
-    final connection = await _pool.take(timeout: timeout ?? _poolTimeout);
+    final RedisSocketConnection connection;
+    try {
+      connection = await _telemetry.poolWait(
+        () => _pool.take(timeout: timeout ?? _poolTimeout),
+      );
+    } on PoolQueueLimitException {
+      _telemetry.poolRejected();
+      rethrow;
+    }
     try {
       return await delegate(connection);
     } finally {
@@ -298,19 +339,22 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
       return await delegate(connection);
     }
 
-    return await _withPooledConnection((connection) async {
-      final binding = _ConnectionBinding(connection);
-      try {
-        return await runZoned(
-          () => delegate(connection),
-          zoneValues: {_bindingKey: binding},
-        );
-      } finally {
-        // callbacks that outlive the delegate must not use the connection
-        // after it was returned to the pool
-        binding.active = false;
-      }
-    }, timeout: timeout);
+    return await _telemetry.traced(
+      'Redis Use Connection',
+      () => _withPooledConnection((connection) async {
+        final binding = _ConnectionBinding(connection);
+        try {
+          return await runZoned(
+            () => delegate(connection),
+            zoneValues: {_bindingKey: binding},
+          );
+        } finally {
+          // callbacks that outlive the delegate must not use the connection
+          // after it was returned to the pool
+          binding.active = false;
+        }
+      }, timeout: timeout),
+    );
   }
 
   @override
@@ -349,6 +393,8 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
       _openConnection,
       healthCheckInterval: _healthCheckInterval,
       zone: _zone,
+      telemetry: _telemetry,
+      targetLabels: _targetLabels,
     );
   }
 
@@ -368,12 +414,34 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
       throw StateError('RedisService is disposed.');
     }
 
+    // contention is an expected outcome and not reported as span error
+    final handle = await _telemetry.traced<RedisLockHandle?>(
+      'Redis Lock Acquire',
+      () async {
+        try {
+          return await _acquireLock(key, timeout);
+        } on ResourceLockedException {
+          return null;
+        }
+      },
+      attributes: {
+        'db.system.name': 'redis',
+        'redis.lock.timeout_ms': ?timeout?.inMilliseconds,
+      },
+    );
+    return handle ?? (throw ResourceLockedException());
+  }
+
+  Future<RedisLockHandle> _acquireLock(String key, Duration? timeout) async {
     final lockKey = '${read(service.lockPrefix)}$key';
     final token = _newToken();
+    final waited = Stopwatch()..start();
 
-    if (await _tryLock(lockKey, token) case final handle?) {
+    if (await _tryLock(key, lockKey, token) case final handle?) {
+      _telemetry.lockAcquired(waited.elapsed);
       return handle;
     }
+    _telemetry.lockContended();
     if (timeout != null && timeout <= Duration.zero) {
       throw ResourceLockedException();
     }
@@ -414,7 +482,8 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
 
         // wakes from here on are kept for the next iteration
         signal = Completer<void>();
-        if (await _tryLock(lockKey, token) case final handle?) {
+        if (await _tryLock(key, lockKey, token) case final handle?) {
+          _telemetry.lockAcquired(waited.elapsed);
           return handle;
         }
       }
@@ -424,7 +493,11 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
     }
   }
 
-  Future<RedisLockHandle?> _tryLock(String lockKey, String token) async {
+  Future<RedisLockHandle?> _tryLock(
+    String key,
+    String lockKey,
+    String token,
+  ) async {
     final leaseDuration = read(service.lockLeaseDuration);
     final sentAt = _clock.elapsed;
     final acquired = await _unbound.set(
@@ -439,15 +512,21 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
 
     final handle = RedisLockHandle(
       key: lockKey,
+      name: key,
       token: token,
       leaseDuration: leaseDuration,
       validUntil: sentAt + leaseDuration,
       commands: _unbound,
       clock: _clock,
       zone: _zone,
-      onFinished: _locks.remove,
+      telemetry: _telemetry,
+      onFinished: (handle) {
+        _locks.remove(handle);
+        _telemetry.locksHeld(_locks.length);
+      },
     );
     _locks.add(handle);
+    _telemetry.locksHeld(_locks.length);
 
     if (_disposed) {
       await handle.abandon();
@@ -490,6 +569,7 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
     await Future.wait([for (final lock in _locks.toList()) lock.abandon()]);
     await _subscriber?.dispose();
     await _pool.dispose();
+    log.debug('Redis service stopped.', labels: _targetLabels);
     await super.dispose();
   }
 }

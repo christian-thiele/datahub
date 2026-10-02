@@ -3,9 +3,11 @@ import 'dart:convert';
 
 import 'package:datahub/telemetry.dart';
 
+import '../abstract/redis_exception.dart';
 import '../abstract/redis_message.dart';
 import '../abstract/redis_reply.dart';
 import '../protocol/redis_socket_connection.dart';
+import '../redis_telemetry.dart';
 
 /// Manages Pub/Sub subscriptions on a dedicated connection.
 ///
@@ -23,6 +25,11 @@ class RedisSubscriber {
   /// bound to the zone of whoever subscribed first.
   final Zone _zone;
 
+  final RedisTelemetry _telemetry;
+
+  /// Labels identifying the Redis server in logs.
+  final Map<String, String> _targetLabels;
+
   final _channels = <String, _Subscription>{};
   final _patterns = <String, _Subscription>{};
 
@@ -39,7 +46,11 @@ class RedisSubscriber {
     this._connect, {
     required this.healthCheckInterval,
     required Zone zone,
-  }) : _zone = zone;
+    RedisTelemetry telemetry = RedisTelemetry.disabled,
+    Map<String, String> targetLabels = const {},
+  }) : _zone = zone,
+       _telemetry = telemetry,
+       _targetLabels = targetLabels;
 
   Stream<RedisMessage> subscribe(String channel) => _stream(channel, false);
 
@@ -87,6 +98,7 @@ class RedisSubscriber {
     var subscription = subscriptions[name];
     if (subscription == null) {
       subscription = subscriptions[name] = _Subscription();
+      _telemetry.subscriptions(_subscriptionCount);
       if (_connection case final connection? when connection.isOpen) {
         connection.write([isPattern ? 'PSUBSCRIBE' : 'SUBSCRIBE', name]);
       } else {
@@ -118,12 +130,15 @@ class RedisSubscriber {
     }
 
     subscriptions.remove(name);
+    _telemetry.subscriptions(_subscriptionCount);
     if (_connection case final connection? when connection.isOpen) {
       connection.write([isPattern ? 'PUNSUBSCRIBE' : 'UNSUBSCRIBE', name]);
     }
   }
 
   bool get _hasSubscriptions => _channels.isNotEmpty || _patterns.isNotEmpty;
+
+  int get _subscriptionCount => _channels.length + _patterns.length;
 
   void _ensureConnected() {
     if (_disposed ||
@@ -140,6 +155,7 @@ class RedisSubscriber {
 
   Future<void> _connectLoop() async {
     var backoff = _initialBackoff;
+    var failures = 0;
     while (!_disposed && _hasSubscriptions) {
       try {
         final connection = await _connect();
@@ -148,13 +164,24 @@ class RedisSubscriber {
           return;
         }
         _attach(connection);
+        if (failures > 0) {
+          log.info(
+            'Redis subscriber connection re-established.',
+            labels: {..._targetLabels, 'redis.failed_attempts': '$failures'},
+          );
+        }
         return;
       } catch (e, stack) {
+        failures++;
+        _telemetry.error(e);
         log.warn(
-          'Could not open Redis subscriber connection, '
-          'retrying in ${backoff.inMilliseconds}ms.',
+          'Could not open Redis subscriber connection, retrying.',
           error: e,
           stack: stack,
+          labels: {
+            ..._targetLabels,
+            'redis.retry_delay_ms': backoff.inMilliseconds.toString(),
+          },
         );
         await _sleep(backoff);
         backoff = backoff * 2 > _maxBackoff ? _maxBackoff : backoff * 2;
@@ -174,6 +201,7 @@ class RedisSubscriber {
 
   void _attach(RedisSocketConnection connection) {
     _connection = connection;
+    _telemetry.subscriberConnected(true);
     _awaitingReply = false;
     connection.enterSubscriberMode(_onReply);
 
@@ -200,7 +228,10 @@ class RedisSubscriber {
       return;
     }
     if (_awaitingReply) {
-      log.warn('Redis subscriber connection did not respond to PING.');
+      log.warn(
+        'Redis subscriber connection did not respond to PING.',
+        labels: _targetLabels,
+      );
       unawaited(connection.close());
       return;
     }
@@ -214,6 +245,7 @@ class RedisSubscriber {
     }
 
     _connection = null;
+    _telemetry.subscriberConnected(false);
     _healthTimer?.cancel();
     _healthTimer = null;
     for (final subscription in [..._channels.values, ..._patterns.values]) {
@@ -223,7 +255,11 @@ class RedisSubscriber {
     }
 
     if (!_disposed) {
-      log.warn('Redis subscriber connection lost, reconnecting.');
+      _telemetry.subscriberReconnecting();
+      log.warn(
+        'Redis subscriber connection lost, reconnecting.',
+        labels: _targetLabels,
+      );
       _ensureConnected();
     }
   }
@@ -235,9 +271,11 @@ class RedisSubscriber {
         case RedisArray(items: [RedisBulkString(:final bytes), ...final args]):
           switch ((ascii.decode(bytes, allowInvalid: true), args)) {
             case ('message', [final channel, final data]):
+              _telemetry.messageReceived();
               final name = channel.asString!;
               _channels[name]?.dispatch(RedisMessage(name, data.asBytes!));
             case ('pmessage', [final pattern, final channel, final data]):
+              _telemetry.messageReceived();
               final patternName = pattern.asString!;
               _patterns[patternName]?.dispatch(
                 RedisMessage(
@@ -254,7 +292,11 @@ class RedisSubscriber {
             // unsubscribe confirmations and PING replies
           }
         case RedisErrorReply(:final message):
-          log.warn('Redis subscriber connection received error: $message');
+          _telemetry.error(RedisServerException(message));
+          log.warn(
+            'Redis subscriber connection received an error reply.',
+            labels: {..._targetLabels, 'redis.error': message},
+          );
         default:
         // PONG while no channel is subscribed
       }
@@ -263,6 +305,7 @@ class RedisSubscriber {
         'Could not process Redis Pub/Sub message.',
         error: e,
         stack: stack,
+        labels: _targetLabels,
       );
     }
   }
@@ -275,6 +318,7 @@ class RedisSubscriber {
 
   Future<void> dispose() async {
     _disposed = true;
+    _telemetry.subscriberConnected(false);
     _healthTimer?.cancel();
     if (_backoff case final backoff? when !backoff.isCompleted) {
       backoff.complete();
@@ -286,6 +330,7 @@ class RedisSubscriber {
     final subscriptions = [..._channels.values, ..._patterns.values];
     _channels.clear();
     _patterns.clear();
+    _telemetry.subscriptions(0);
     for (final subscription in subscriptions) {
       for (final listener in subscription.listeners.toList()) {
         listener.onDone?.call();

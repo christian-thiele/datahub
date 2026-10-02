@@ -61,3 +61,92 @@ void checkTransactionCommand(String? name, List<Object> command) {
 
 /// Whether [name] changes connection state when executed in a transaction.
 bool changesConnectionState(String? name) => _stateCommands.contains(name);
+
+/// Label values of [commandClass].
+const commandClasses = ['read', 'write', 'script', 'other'];
+
+const _readCommands = {
+  'GET',
+  'MGET',
+  'EXISTS',
+  'TTL',
+  'PTTL',
+  'TYPE',
+  'STRLEN',
+  'GETRANGE',
+  'HGET',
+  'HMGET',
+  'HGETALL',
+  'HEXISTS',
+  'HKEYS',
+  'HVALS',
+  'HLEN',
+  'LRANGE',
+  'LLEN',
+  'LINDEX',
+  'SMEMBERS',
+  'SISMEMBER',
+  'SCARD',
+  'SRANDMEMBER',
+  'ZRANGE',
+  'ZRANGEBYSCORE',
+  'ZREVRANGE',
+  'ZSCORE',
+  'ZCARD',
+  'ZRANK',
+  'ZCOUNT',
+  'KEYS',
+  'SCAN',
+  'HSCAN',
+  'SSCAN',
+  'ZSCAN',
+  'DBSIZE',
+  'PING',
+  'INFO',
+  'XRANGE',
+  'XREVRANGE',
+  'XLEN',
+  'XREAD',
+  'GETBIT',
+  'BITCOUNT',
+};
+
+const _scriptCommands = {'EVAL', 'EVALSHA', 'FCALL', 'FCALL_RO', 'SCRIPT'};
+
+const _otherCommands = {
+  'MULTI',
+  'EXEC',
+  'DISCARD',
+  'WATCH',
+  'UNWATCH',
+  'AUTH',
+  'SELECT',
+  'CLIENT',
+  'CONFIG',
+  'FLUSHDB',
+  'FLUSHALL',
+  'SAVE',
+  'BGSAVE',
+  'SWAPDB',
+  'WAIT',
+};
+
+/// A low cardinality classification of [name] for use as metric label.
+///
+/// Anything that is not known to read or script is treated as write, unless
+/// it is a known administrative command.
+String commandClass(String? name) {
+  if (name == null) {
+    return 'other';
+  }
+  if (_readCommands.contains(name)) {
+    return 'read';
+  }
+  if (_scriptCommands.contains(name)) {
+    return 'script';
+  }
+  if (_otherCommands.contains(name)) {
+    return 'other';
+  }
+  return 'write';
+}

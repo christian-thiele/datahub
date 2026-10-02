@@ -5,6 +5,7 @@ import 'package:datahub/telemetry.dart';
 
 import '../abstract/redis_commands.dart';
 import '../abstract/redis_script.dart';
+import '../redis_telemetry.dart';
 
 /// Deletes the lock only if it is still held by the given token and
 /// notifies waiters through a Pub/Sub message on the channel named like the
@@ -37,6 +38,9 @@ class RedisLockHandle implements LockHandle {
   /// The Redis key of the lock.
   final String key;
 
+  /// The key as requested by the caller, without prefix.
+  final String name;
+
   /// Random value identifying this holder.
   final String token;
 
@@ -51,7 +55,12 @@ class RedisLockHandle implements LockHandle {
   /// Zone for timers, independent of the zone of whoever acquired the lock.
   final Zone _zone;
 
+  final RedisTelemetry _telemetry;
+
   final void Function(RedisLockHandle handle) _onFinished;
+
+  /// Point in time (on [_clock]) the lock was acquired.
+  final Duration _acquiredAt;
 
   /// Point in time (on [_clock]) until the lease is known to be valid.
   Duration _validUntil;
@@ -64,17 +73,21 @@ class RedisLockHandle implements LockHandle {
 
   RedisLockHandle({
     required this.key,
+    required this.name,
     required this.token,
     required this.leaseDuration,
     required Duration validUntil,
     required RedisCommands commands,
     required Stopwatch clock,
     required Zone zone,
+    required RedisTelemetry telemetry,
     required void Function(RedisLockHandle handle) onFinished,
   }) : _validUntil = validUntil,
        _commands = commands,
        _clock = clock,
+       _acquiredAt = clock.elapsed,
        _zone = zone,
+       _telemetry = telemetry,
        _onFinished = onFinished {
     _schedule(leaseDuration ~/ 3);
   }
@@ -102,7 +115,7 @@ class RedisLockHandle implements LockHandle {
         'Could not release Redis lock, it expires after its lease.',
         error: e,
         stack: stack,
-        labels: {'lock.key': key},
+        labels: {'lock.key': name},
       );
     }
   }
@@ -125,7 +138,7 @@ class RedisLockHandle implements LockHandle {
           'Could not release Redis lock on shutdown.',
           error: e,
           stack: stack,
-          labels: {'lock.key': key},
+          labels: {'lock.key': name},
         );
       }
     }
@@ -164,7 +177,7 @@ class RedisLockHandle implements LockHandle {
       } else {
         log.warn(
           'Redis lock was lost, its lease ran out before it was renewed.',
-          labels: {'lock.key': key},
+          labels: {'lock.key': name},
         );
         _expire();
       }
@@ -172,11 +185,12 @@ class RedisLockHandle implements LockHandle {
       if (_isFinished) {
         return;
       }
+      _telemetry.lockRenewalFailed();
       log.warn(
         'Could not renew Redis lock, retrying.',
         error: e,
         stack: stack,
-        labels: {'lock.key': key},
+        labels: {'lock.key': name},
       );
       // retry until the lease runs out, the expiry timer stays in place
       _zone.run(() {
@@ -191,11 +205,13 @@ class RedisLockHandle implements LockHandle {
     if (_isFinished) {
       return;
     }
+    _telemetry.lockLost();
     _finish();
     _expired.complete();
   }
 
   void _finish() {
+    _telemetry.lockReleased(_clock.elapsed - _acquiredAt);
     _renewTimer?.cancel();
     _expiryTimer?.cancel();
     _onFinished(this);
