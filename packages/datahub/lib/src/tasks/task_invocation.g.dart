@@ -13,7 +13,7 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
     name: 'id',
     valueOf: (p) => p.id,
     fromJson: (value, {String? name}) =>
-        $$codec.decodeString(value, name: name),
+        $$codec.decodeString((value ?? ''), name: name),
     toJson: (value) => $$codec.encodeString(value),
     meta: [const Id(auto: true)],
   );
@@ -158,7 +158,7 @@ abstract interface class $TaskInvocation with DataObject<TaskInvocation> {
 
   static TaskInvocation fromValues(Map<String, dynamic> data) {
     return TaskInvocation(
-      id: data['id'],
+      id: data['id'] ?? '',
       taskId: data['taskId'],
       state: data['state'],
       parameters: data['parameters'],
