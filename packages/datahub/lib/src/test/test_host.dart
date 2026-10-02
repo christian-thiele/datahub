@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:datahub/config.dart';
 import 'package:datahub/scaffold.dart';
+import 'package:datahub/services.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:meta/meta.dart';
 import 'package:stack_trace/stack_trace.dart';

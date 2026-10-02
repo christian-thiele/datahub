@@ -6,35 +6,7 @@ import 'package:datahub/scaffold.dart';
 import 'package:datahub/utils.dart';
 import 'package:pointycastle/pointycastle.dart';
 
-import 'cache_key.dart';
-
-/// This service provides a centralized cache for public keys.
-///
-/// Keys for JWT validation are often fetched from JSON Web Key Sets (JWKS).
-/// Since key sets provide unique key-ids for every key, fetching the same key
-/// over and over is not necessary when validating keys from the same issuer.
-abstract interface class KeyCache {
-  /// Fetches the OAuth public key with id [kid] from [issuer].
-  ///
-  /// Keys are cached by default to avoid unnecessary requests.
-  /// You can disable the key cache by setting the `datahub.enableKeyCache`
-  /// configuration value to false.
-  Future<RSAPublicKey> getOAuthKey(
-    Uri issuer,
-    String alg,
-    String kid, {
-    bool forceFetch = false,
-  });
-
-  Future<RSAPublicKey> getJwksKey(
-    Uri jwksUri,
-    String alg,
-    String kid, {
-    bool forceFetch = false,
-  });
-
-  void clearCache();
-}
+import 'abstract/key_cache.dart';
 
 class KeyService implements Service {
   final Config<bool> enable;
@@ -49,7 +21,7 @@ class KeyService implements Service {
 
 class _KeyServiceInstance extends ServiceInstance<KeyService>
     implements KeyCache {
-  final _jwkCache = <CacheKey, RSAPublicKey>{};
+  final _jwkCache = <_CacheKey, RSAPublicKey>{};
   final _openIdCache = <Uri, Uri>{};
 
   @override
@@ -96,7 +68,7 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
     String kid, {
     bool forceFetch = false,
   }) async {
-    final cacheKey = CacheKey(jwksUri, alg, kid);
+    final cacheKey = _CacheKey(jwksUri, alg, kid);
     if (read(service.enable) &&
         !forceFetch &&
         _jwkCache.containsKey(cacheKey)) {
@@ -139,4 +111,27 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
     _jwkCache.clear();
     _openIdCache.clear();
   }
+}
+
+class _CacheKey {
+  final Uri jwks;
+  final String alg;
+  final String kid;
+
+  const _CacheKey(this.jwks, this.alg, this.kid);
+
+  @override
+  bool operator ==(Object other) {
+    if (other is _CacheKey) {
+      return jwks == other.jwks && alg == other.alg && kid == other.kid;
+    }
+
+    return false;
+  }
+
+  @override
+  int get hashCode => Object.hashAll([jwks, alg, kid]);
+
+  @override
+  String toString() => '$jwks : $kid ($alg)';
 }
