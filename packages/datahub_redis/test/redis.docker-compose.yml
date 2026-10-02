@@ -1,0 +1,10 @@
+services:
+  redis:
+    image: redis:latest
+    command: [ "redis-server", "--requirepass", "datahub", "--save", "", "--appendonly", "no" ]
+    ports:
+      - "6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "datahub", "--no-auth-warning", "ping" ]
+      interval: 1s
+      retries: 30
