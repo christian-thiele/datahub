@@ -132,6 +132,37 @@ mixin application. Both fail when the repository initializes.
 | `revisable_bean_requires_id` ⚠️ | a data class without an `@Id()` field of type `int` or `String` (non-nullable), which revisions are keyed by | — |
 | `revisable_reserved_column` ⚠️ | a data class field whose column is one the repository uses for revision metadata (`sys_version`, `sys_from`, `sys_to`, …) | — |
 
+#### Scheduler
+
+Mirror `Schedule.validate()` and `Scheduler.registerSchedule()`, which throw
+while the application starts. Only values known statically are checked.
+
+| Rule | Reports | Fix |
+|------|---------|-----|
+| `schedule_requires_name` ⚠️ | a `Schedule` with an empty name | — |
+| `schedule_requires_positive_interval` ⚠️ | a `Schedule.every` whose `interval` is zero or negative | — |
+| `schedule_time_out_of_range` ⚠️ | a `Schedule.daily` / `Schedule.monthly` with an `hour` outside 0–23, a `minute` outside 0–59 or a `day` outside 1–31 | — |
+| `duplicate_schedule_name` ⚠️ | two schedules with the same name in one list of components | — |
+
+#### Workflows
+
+Mirror `WorkflowService.validate()`, which throws when the workflow
+initializes. Step rules check `OnEnter` / `OnSignal` wherever they are
+declared; workflow rules check the `steps:` list literal of a
+`WorkflowService`.
+
+| Rule | Reports | Fix |
+|------|---------|-----|
+| `workflow_requires_steps` ⚠️ | a `WorkflowService` with an empty `steps` list | — |
+| `duplicate_workflow_step_name` ⚠️ | two steps of a workflow with the same name, including names derived from the state and delay of an `OnEnter` | — |
+| `duplicate_workflow_signal` ⚠️ | two `OnSignal` steps of a workflow for the same signal | — |
+| `workflow_step_negative_delay` ⚠️ | an `OnEnter` with a negative `after` | — |
+| `workflow_step_delay_and_time` ⚠️ | an `OnEnter` with both `after` and `at` | — |
+| `workflow_step_own_failure_state` ⚠️ | an `OnEnter` whose `failureState` is the state it runs in | — |
+| `workflow_signal_requires_accept` ⚠️ | an `OnSignal` with an empty `accept` list | — |
+| `workflow_signal_expires_immediately` ⚠️ | an `OnSignal` whose `expireAfter` is zero or negative | — |
+| `workflow_signal_not_for_element` ⚠️ | an `OnSignal` whose signal does not implement `WorkflowSignal<T>` for the element type of the workflow | — |
+
 ### Assists
 
 Available from the IDE at the node listed below (Alt+Enter in IntelliJ, Ctrl+.

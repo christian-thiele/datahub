@@ -355,6 +355,7 @@ void main() {
       expect(
         () => validate([
           OnSignal(
+            // ignore: datahub_lints/workflow_signal_not_for_element
             $ForeignSignal.bean,
             accept: [InvoiceWorkflowState.paymentRequested],
             target: (signal) => signal.note,
@@ -1549,6 +1550,7 @@ void main() {
             OnEnter(
               InvoiceWorkflowState.created,
               (step) async => step.element,
+              // ignore: datahub_lints/workflow_step_delay_and_time
               after: const Duration(seconds: 1),
               at: (invoice) => DateTime.timestamp(),
             ),

@@ -119,14 +119,17 @@ void main() {
 
     test('rejects invalid schedules', () {
       expect(
+        // ignore: datahub_lints/schedule_requires_positive_interval
         () => Schedule.every('a', noop, interval: Duration.zero).validate(),
         throwsA(isA<ApiError>()),
       );
       expect(
+        // ignore: datahub_lints/schedule_time_out_of_range
         () => Schedule.daily('a', noop, hour: 24).validate(),
         throwsA(isA<ApiError>()),
       );
       expect(
+        // ignore: datahub_lints/schedule_time_out_of_range
         () => Schedule.monthly('a', noop, day: 0).validate(),
         throwsA(isA<ApiError>()),
       );

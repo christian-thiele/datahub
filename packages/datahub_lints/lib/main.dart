@@ -27,6 +27,9 @@ import 'src/rules/scaffold/await_lifecycle_super.dart';
 import 'src/rules/scaffold/const_service_constructor.dart';
 import 'src/rules/scaffold/lifecycle_super_position.dart';
 import 'src/rules/scaffold/prefer_instance_accessor.dart';
+import 'src/rules/scheduler/schedule_rules.dart';
+import 'src/rules/workflows/workflow_rules.dart';
+import 'src/rules/workflows/workflow_step_rules.dart';
 
 /// The entry point read by the Dart Analysis Server.
 ///
@@ -48,6 +51,8 @@ class DatahubLintsPlugin extends Plugin {
     _registerDataRules(registry);
     _registerApertureRules(registry);
     _registerPostgresRules(registry);
+    _registerSchedulerRules(registry);
+    _registerWorkflowRules(registry);
     _registerAssists(registry);
   }
 
@@ -155,6 +160,28 @@ class DatahubLintsPlugin extends Plugin {
     // author's decision.
     registry.registerWarningRule(RevisableBeanRequiresIdRule());
     registry.registerWarningRule(RevisableReservedColumnRule());
+  }
+
+  /// Mirror the checks the scheduler and the workflow service run while the
+  /// application starts. No quick fixes: the right name, time or state is
+  /// the author's to choose.
+  void _registerSchedulerRules(PluginRegistry registry) {
+    registry.registerWarningRule(ScheduleRequiresNameRule());
+    registry.registerWarningRule(ScheduleRequiresPositiveIntervalRule());
+    registry.registerWarningRule(ScheduleTimeOutOfRangeRule());
+    registry.registerWarningRule(DuplicateScheduleNameRule());
+  }
+
+  void _registerWorkflowRules(PluginRegistry registry) {
+    registry.registerWarningRule(WorkflowRequiresStepsRule());
+    registry.registerWarningRule(DuplicateWorkflowStepNameRule());
+    registry.registerWarningRule(DuplicateWorkflowSignalRule());
+    registry.registerWarningRule(WorkflowStepNegativeDelayRule());
+    registry.registerWarningRule(WorkflowStepDelayAndTimeRule());
+    registry.registerWarningRule(WorkflowStepOwnFailureStateRule());
+    registry.registerWarningRule(WorkflowSignalRequiresAcceptRule());
+    registry.registerWarningRule(WorkflowSignalExpiresImmediatelyRule());
+    registry.registerWarningRule(WorkflowSignalNotForElementRule());
   }
 
   /// Boilerplate generators, offered at a syntax node rather than against a

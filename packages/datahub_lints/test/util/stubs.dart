@@ -157,6 +157,111 @@ final class Id {
 
   const Id({this.auto = false});
 }
+
+typedef ScheduleCallback = Future<void> Function(Object run);
+
+abstract class Schedule implements Service {
+  const Schedule._();
+
+  const factory Schedule.every(
+    String name,
+    ScheduleCallback run, {
+    required Duration interval,
+  }) = _Schedule.every;
+
+  const factory Schedule.daily(
+    String name,
+    ScheduleCallback run, {
+    int hour,
+    int minute,
+  }) = _Schedule.daily;
+
+  const factory Schedule.monthly(
+    String name,
+    ScheduleCallback run, {
+    int day,
+    int hour,
+    int minute,
+  }) = _Schedule.monthly;
+}
+
+final class _Schedule extends Schedule {
+  const _Schedule.every(
+    String name,
+    ScheduleCallback run, {
+    required Duration interval,
+  }) : super._();
+
+  const _Schedule.daily(
+    String name,
+    ScheduleCallback run, {
+    int hour = 0,
+    int minute = 0,
+  }) : super._();
+
+  const _Schedule.monthly(
+    String name,
+    ScheduleCallback run, {
+    int day = 1,
+    int hour = 0,
+    int minute = 0,
+  }) : super._();
+
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+
+abstract interface class WorkflowSignal<T> {}
+
+sealed class WorkflowStep<T, TState extends Enum> {
+  final TState? failureState;
+
+  const WorkflowStep({String? name, this.failureState});
+}
+
+final class OnEnter<T, TState extends Enum> extends WorkflowStep<T, TState> {
+  final TState state;
+  final Duration after;
+  final DateTime? Function(T element)? at;
+  final Future<T> Function(T element) handle;
+
+  const OnEnter(
+    this.state,
+    this.handle, {
+    super.name,
+    this.after = Duration.zero,
+    this.at,
+    super.failureState,
+  });
+}
+
+final class OnSignal<T, TState extends Enum, TSignal>
+    extends WorkflowStep<T, TState> {
+  final DataBean<TSignal> signalBean;
+  final List<TState> accept;
+  final Object Function(TSignal signal) target;
+  final Duration expireAfter;
+  final Future<T> Function(T element, TSignal signal) handle;
+
+  const OnSignal(
+    this.signalBean, {
+    required this.accept,
+    required this.target,
+    required this.handle,
+    super.name,
+    this.expireAfter = const Duration(days: 1),
+    super.failureState,
+  });
+}
+
+class WorkflowService<T, TState extends Enum> implements Service {
+  final List<WorkflowStep<T, TState>> steps;
+
+  const WorkflowService({required this.steps});
+
+  @override
+  ServiceInstance createInstance() => throw '';
+}
 ''';
 
 /// Adds the `package:datahub/datahub.dart` stub to the test workspace.
