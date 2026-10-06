@@ -77,7 +77,66 @@ void main() {
       expect({nested(instant), nested(instant.toLocal())}, hasLength(1));
     });
   });
+
+  group('DataBean.diff', () {
+    Map<String, dynamic> diff(_Item from, _Item to) => {
+      for (final MapEntry(:key, :value) in _itemBean.diff(from, to).entries)
+        key.name: value,
+    };
+
+    test('is empty for equal objects', () {
+      expect(diff(nested(instant), nested(instant)), isEmpty);
+      expect(diff(nested(instant), nested(instant.toLocal())), isEmpty);
+      expect(
+        diff(_Item(map: {'a': 1, 'b': 2}), _Item(map: {'b': 2, 'a': 1})),
+        isEmpty,
+      );
+    });
+
+    test('contains the changed fields with their new values', () {
+      final later = instant.add(const Duration(days: 1));
+      expect(
+        diff(_Item(name: 'a', date: instant), _Item(name: 'b', date: later)),
+        {'name': 'b', 'date': later},
+      );
+    });
+
+    test('detects changes deep inside collections', () {
+      final changed = diff(
+        nested(instant),
+        nested(instant.add(const Duration(days: 1))),
+      );
+      expect(changed.keys, unorderedEquals(['list', 'date']));
+    });
+
+    test('contains fields that were set to null', () {
+      expect(diff(_Item(list: [1]), _Item()), {'list': null});
+    });
+
+    test('agrees with equality', () {
+      final items = [
+        _Item(),
+        _Item(name: 'x'),
+        _Item(list: [instant]),
+        _Item(list: [instant.toLocal()]),
+        nested(instant),
+        nested(instant.toLocal()),
+      ];
+      for (final a in items) {
+        for (final b in items) {
+          expect(diff(a, b).isEmpty, a == b, reason: '$a / $b');
+        }
+      }
+    });
+  });
 }
+
+final _itemBean = DataBean<_Item>(
+  name: 'Item',
+  fields: _Item._fields,
+  fromValues: (_) => throw UnimplementedError(),
+  fromJson: (_, {String? name}) => throw UnimplementedError(),
+);
 
 void _expectEqual(Object a, Object b) {
   expect(a == b, isTrue);

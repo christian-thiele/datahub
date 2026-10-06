@@ -2,7 +2,12 @@ import 'package:collection/collection.dart';
 import 'package:datahub/data.dart';
 
 class DataObjectEquality implements Equality<Object?> {
-  static const _fieldEquality = DeepCollectionEquality(
+  /// Compares the values of data fields: collections deeply, [DateTime]s by
+  /// instant.
+  ///
+  /// Data objects are equal when all their fields are equal by this, and
+  /// [DataBean.diff] reports the fields that are not.
+  static const fieldEquality = DeepCollectionEquality(
     DateTimeInstantEquality(),
   );
 
@@ -16,7 +21,7 @@ class DataObjectEquality implements Equality<Object?> {
       }
 
       return e1.$$fields.every(
-        (f) => _fieldEquality.equals(f.valueOf(e1), f.valueOf(e2)),
+        (f) => fieldEquality.equals(f.valueOf(e1), f.valueOf(e2)),
       );
     }
 
@@ -27,7 +32,7 @@ class DataObjectEquality implements Equality<Object?> {
   int hash(Object? e) {
     if (e is DataObject) {
       return Object.hashAll(
-        e.$$fields.map((f) => _fieldEquality.hash(f.valueOf(e))),
+        e.$$fields.map((f) => fieldEquality.hash(f.valueOf(e))),
       );
     }
 

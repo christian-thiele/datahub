@@ -3,6 +3,7 @@ import 'package:boost/boost.dart';
 import 'data_codec.dart';
 import 'data_field.dart';
 import 'data_object.dart';
+import 'equality.dart';
 import 'meta/data_field_constraint.dart';
 import 'meta/id.dart';
 import 'meta/meta_data.dart';
@@ -26,6 +27,22 @@ final class DataBean<T extends DataObject> {
     required this.fromJson,
     this.meta = const [],
   });
+
+  /// Compares [DataObject]s by field value and returns the difference.
+  ///
+  /// Values are compared the way data objects compare them (see
+  /// [DataObjectEquality.fieldEquality]), so when [from] and [to] are equal,
+  /// the result empty.
+  ///
+  /// This can be used with `DataRepository.updateAll` to only write changes.
+  Map<DataField<T, dynamic>, dynamic> diff(T from, T to) => {
+    for (final field in fields)
+      if (!DataObjectEquality.fieldEquality.equals(
+        field.valueOf(from),
+        field.valueOf(to),
+      ))
+        field: field.valueOf(to),
+  };
 
   // TODO generate?
   DataField<T, dynamic>? get idField =>
