@@ -61,6 +61,23 @@ class WorkflowEvent extends $WorkflowEvent {
   /// The span (hex) of the code that created the event, see [traceId].
   final String? spanId;
 
+  /// When the current attempt started, null while the event waits.
+  ///
+  /// An event is being handled when this is set and [heartbeatAt] is recent
+  /// (it is renewed every `WorkflowService.heartbeatInterval`). If the worker
+  /// crashed, the event is simply handled again by another worker.
+  final DateTime? startedAt;
+
+  /// Last sign of life of the worker handling the event.
+  final DateTime? heartbeatAt;
+
+  /// The worker handling the event (`WorkflowService.workerId`).
+  final String? worker;
+
+  /// What the step logged so far in the current attempt, one JSON object per
+  /// line (see `LogMessage.toJsonLine`).
+  final List<String> messages;
+
   const WorkflowEvent({
     this.id = '',
     required this.workflow,
@@ -75,5 +92,9 @@ class WorkflowEvent extends $WorkflowEvent {
     this.lastError,
     this.traceId,
     this.spanId,
+    this.startedAt,
+    this.heartbeatAt,
+    this.worker,
+    this.messages = const [],
   });
 }

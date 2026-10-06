@@ -1,3 +1,6 @@
+// The TaskManager module stays usable until Aperture has a workflow module.
+// ignore_for_file: deprecated_member_use
+
 import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';

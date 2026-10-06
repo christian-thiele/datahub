@@ -1,6 +1,7 @@
 import 'package:datahub/data.dart';
 
 import 'retry_policy.dart';
+import 'workflow.dart';
 import 'workflow_signal.dart';
 import 'workflow_step_context.dart';
 
@@ -57,6 +58,15 @@ sealed class WorkflowStep<T extends DataObject, TState extends Enum> {
 ///     after: Duration(days: 14)),
 /// ```
 ///
+/// Instead of a fixed delay, [at] takes the time from the element, for
+/// deadlines that differ per element. Like a delayed step, it is cancelled when
+/// the element leaves [state] before:
+///
+/// ```dart
+/// OnEnter(InvoiceState.sent, sendReminder,
+///     at: (invoice) => invoice.dueDate),
+/// ```
+///
 /// Several steps can run for the same state, typically with different delays.
 /// Steps for the same state and delay need different names.
 ///
@@ -68,6 +78,11 @@ final class OnEnter<T extends DataObject, TState extends Enum>
 
   final Duration after;
 
+  /// The time the step runs at, taken from the element when it enters [state].
+  /// Changing the element afterwards does not move it. A time in the past (or
+  /// null) runs the step right away. Can not be combined with [after].
+  final DateTime? Function(T element)? at;
+
   final Future<T> Function(StepContext<T> context) handle;
 
   const OnEnter(
@@ -75,14 +90,22 @@ final class OnEnter<T extends DataObject, TState extends Enum>
     this.handle, {
     super.name,
     this.after = Duration.zero,
+    this.at,
     super.retry,
     super.failureState,
     super.timeout,
   });
 
   @override
-  String get _defaultName =>
-      after == Duration.zero ? state.name : '${state.name} after $after';
+  String get _defaultName => switch ((at, after)) {
+    (_?, _) => '${state.name} at',
+    (null, Duration.zero) => state.name,
+    _ => '${state.name} after $after',
+  };
+
+  /// When the step is due for [element], which entered [state] at [now].
+  DateTime dueAt(T element, DateTime now) =>
+      at?.call(element) ?? now.add(after);
 }
 
 /// Runs when a signal of type [TSignal] was sent for an element.
@@ -163,12 +186,14 @@ final class OnSignal<
     required int attempt,
     required String idempotencyKey,
     required Future<void> lockExpired,
+    required Workflow<T> workflow,
   }) => handle(
     SignalStepContext<T, TSignal>(
       element: element,
       attempt: attempt,
       idempotencyKey: idempotencyKey,
       lockExpired: lockExpired,
+      workflow: workflow,
       signal: signalBean.fromJson(payload),
     ),
   );

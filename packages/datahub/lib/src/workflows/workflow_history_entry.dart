@@ -22,8 +22,12 @@ enum WorkflowHistoryKind {
   /// state, the signal expired, or its step does not exist anymore.
   parked,
 
-  /// A pending step was cancelled because the element left its state.
+  /// A pending step was cancelled, because the element left its state or with
+  /// `Workflow.cancel`.
   cancelled,
+
+  /// A parked event was set back to pending with `Workflow.retry`.
+  retried,
 }
 
 /// Something that happened to an element of a workflow.

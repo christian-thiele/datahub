@@ -1,5 +1,6 @@
 export 'src/workflows/retry_policy.dart';
 export 'src/workflows/workflow.dart';
+export 'src/workflows/workflow_description.dart';
 export 'src/workflows/workflow_event.dart';
 export 'src/workflows/workflow_history_entry.dart';
 export 'src/workflows/workflow_service.dart';

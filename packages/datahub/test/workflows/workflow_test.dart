@@ -165,6 +165,8 @@ List<Component> _components(
   int instances = 1,
   List<bool>? workers,
   bool history = false,
+  Duration pollInterval = const Duration(milliseconds: 20),
+  Duration heartbeatInterval = const Duration(seconds: 10),
 }) => [
   MemoryRepositoryService(bean: $Invoice.bean),
   MemoryRepositoryService(bean: $WorkflowEvent.bean),
@@ -177,8 +179,10 @@ List<Component> _components(
       components: [
         WorkflowService<Invoice, InvoiceWorkflowState>(
           steps: steps,
-          pollInterval: Config.value(const Duration(milliseconds: 20)),
+          pollInterval: Config.value(pollInterval),
+          heartbeatInterval: Config.value(heartbeatInterval),
           worker: Config.value(worker),
+          workerId: Config.value('worker-$i'),
         ),
       ],
     ),
@@ -1416,5 +1420,305 @@ void main() {
         );
       },
     );
+  });
+
+  group('deadlines', () {
+    // `at` takes the time from the element; the tests compute it from a
+    // variable, since Invoice has no date field.
+    late DateTime deadline;
+    var cancelCalls = 0;
+    InvoiceStep cancelAtDeadline() => OnEnter(
+      InvoiceWorkflowState.paymentRequested,
+      (step) async {
+        cancelCalls++;
+        return step.element.copyWith(state: InvoiceWorkflowState.paymentFailed);
+      },
+      at: (invoice) => deadline,
+    );
+
+    declareTest(
+      'runs a step at the time taken from the element',
+      _components(_steps(extra: [cancelAtDeadline()])),
+      () async {
+        cancelCalls = 0;
+        deadline = DateTime.timestamp().add(const Duration(milliseconds: 500));
+        final invoice = await _start();
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentRequested,
+        );
+
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentFailed,
+        );
+        expect(
+          DateTime.timestamp().isBefore(deadline),
+          isFalse,
+          reason: 'not before the deadline',
+        );
+        expect(cancelCalls, 1);
+      },
+    );
+
+    declareTest(
+      'cancels a step with a time when the element leaves the state',
+      _components(_steps(extra: [cancelAtDeadline()]), history: true),
+      () async {
+        cancelCalls = 0;
+        deadline = DateTime.timestamp().add(const Duration(milliseconds: 500));
+        final invoice = await _start();
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentRequested,
+        );
+        await _workflow.send(
+          PaymentSuccessSignal(invoiceId: invoice.id, reference: 'ref'),
+        );
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentReceived,
+        );
+
+        await Future.delayed(const Duration(milliseconds: 700));
+        expect(cancelCalls, 0);
+        final history = await _workflow.history(invoice.id);
+        expect(
+          history
+              .where((e) => e.kind == WorkflowHistoryKind.cancelled)
+              .single
+              .step,
+          'paymentRequested at',
+        );
+      },
+    );
+
+    declareTest(
+      'wakes up for a delayed step before the next poll',
+      _components(
+        _steps(generateAfter: const Duration(milliseconds: 300)),
+        pollInterval: const Duration(seconds: 10),
+      ),
+      () async {
+        final invoice = await _start();
+        await _eventually(
+          () async => (await _read(invoice.id)).invoiceFile != null,
+          timeout: const Duration(seconds: 2),
+          reason: 'the delayed step to run long before the next poll',
+        );
+      },
+    );
+
+    // A step becomes due while a poll that makes no progress runs (a slow
+    // step fails and retries much later): the next poll has to start right
+    // away instead of after the poll interval.
+    declareTest(
+      'runs a step that became due during a poll without waiting for the next',
+      _components([
+        OnEnter(
+          InvoiceWorkflowState.created,
+          (step) async {
+            await Future.delayed(const Duration(milliseconds: 300));
+            throw ApiRequestException(503, 'Generator not available.');
+          },
+          name: 'slow',
+          retry: const RetryPolicy(initialDelay: Duration(minutes: 1)),
+        ),
+        OnEnter(
+          InvoiceWorkflowState.created,
+          (step) async => step.element.copyWith(invoiceFile: 'early.pdf'),
+          name: 'early',
+          after: const Duration(milliseconds: 150),
+        ),
+      ], pollInterval: const Duration(seconds: 10)),
+      () async {
+        final invoice = await _start();
+
+        await _eventually(
+          () async => (await _read(invoice.id)).invoiceFile == 'early.pdf',
+          timeout: const Duration(seconds: 3),
+          reason: 'the delayed step to run right after the slow poll',
+        );
+      },
+    );
+
+    test('rejects a step with both a delay and a time', () {
+      expect(
+        () => WorkflowService<Invoice, InvoiceWorkflowState>(
+          steps: [
+            OnEnter(
+              InvoiceWorkflowState.created,
+              (step) async => step.element,
+              after: const Duration(seconds: 1),
+              at: (invoice) => DateTime.timestamp(),
+            ),
+          ],
+        ).validate($Invoice.bean),
+        throwsA(isA<ApiError>()),
+      );
+    });
+  });
+
+  group('running steps', () {
+    final paymentStarted = Completer<void>();
+    final paymentMayFinish = Completer<void>();
+    declareTest(
+      'shows the worker, a heartbeat and the log of a running step',
+      _components(
+        _steps(
+          requestPayment: (step) async {
+            log.info('Calling the payment provider.');
+            paymentStarted.complete();
+            await paymentMayFinish.future;
+            return _requestPayment(step);
+          },
+        ),
+        heartbeatInterval: const Duration(milliseconds: 50),
+      ),
+      () async {
+        addTearDown(() {
+          if (!paymentMayFinish.isCompleted) {
+            paymentMayFinish.complete();
+          }
+        });
+
+        final invoice = await _start();
+        await paymentStarted.future;
+
+        await _eventually(() async {
+          final event = (await _workflow.events(elementId: invoice.id)).single;
+          return event.messages.any((m) => m.contains('Calling the payment'));
+        }, reason: 'the log line to be flushed');
+
+        final running = (await _workflow.events(elementId: invoice.id)).single;
+        expect(running.step, 'generated');
+        expect(running.worker, 'worker-0');
+        expect(running.startedAt, isNotNull);
+        final heartbeat = running.heartbeatAt!;
+        await _eventually(
+          () async => (await _workflow.events(
+            elementId: invoice.id,
+          )).single.heartbeatAt!.isAfter(heartbeat),
+          reason: 'the heartbeat to be renewed',
+        );
+
+        // A running event can not be cancelled.
+        await expectLater(
+          _workflow.cancel(running.id),
+          throwsA(
+            isA<ApiRequestException>().having((e) => e.statusCode, 'code', 409),
+          ),
+        );
+
+        paymentMayFinish.complete();
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentRequested,
+        );
+      },
+    );
+  });
+
+  group('administration', () {
+    declareTest('describes the workflow', _components(_steps()), () async {
+      final description = _workflow.describe();
+      expect(description.name, 'Invoice');
+      expect(description.steps.map((s) => (s.name, s.kind)), [
+        ('created', WorkflowStepKind.enter),
+        ('generated', WorkflowStepKind.enter),
+        ('PaymentSuccessSignal', WorkflowStepKind.signal),
+        ('PaymentFailedSignal', WorkflowStepKind.signal),
+      ]);
+      expect(description.steps[2].accept, ['paymentRequested']);
+      expect(description.steps[2].signalBean, $PaymentSuccessSignal.bean);
+      expect(
+        description.states,
+        unorderedEquals(['created', 'generated', 'paymentRequested']),
+      );
+    });
+
+    var attempts = 0;
+    declareTest(
+      'retries a parked event',
+      _components(
+        _steps(
+          retry: const RetryPolicy.none(),
+          requestPayment: (step) async {
+            if (++attempts == 1) {
+              throw ApiRequestException(503, 'Payment API not available.');
+            }
+            return _requestPayment(step);
+          },
+        ),
+        history: true,
+      ),
+      () async {
+        final invoice = await _start();
+        await _eventuallyEvent(WorkflowEventStatus.failed);
+
+        final parked = (await _workflow.events(
+          status: WorkflowEventStatus.failed,
+        )).single;
+        expect(parked.elementId, invoice.id);
+
+        await _workflow.retry(parked.id);
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentRequested,
+        );
+        expect(
+          (await _workflow.history(invoice.id)).map((e) => e.kind),
+          contains(WorkflowHistoryKind.retried),
+        );
+
+        // Only parked events can be retried.
+        await expectLater(
+          _workflow.retry('unknown'),
+          throwsA(isA<ApiRequestException>()),
+        );
+      },
+    );
+
+    declareTest(
+      'cancels a pending event',
+      _components(_steps(generateAfter: const Duration(seconds: 1))),
+      () async {
+        final invoice = await _start();
+        final pending = (await _workflow.events(elementId: invoice.id)).single;
+
+        await _workflow.cancel(pending.id);
+        expect(await _workflow.events(elementId: invoice.id), isEmpty);
+
+        await Future.delayed(const Duration(milliseconds: 1200));
+        expect((await _read(invoice.id)).state, InvoiceWorkflowState.created);
+      },
+    );
+
+    declareTest('sends a signal from JSON', _components(_steps()), () async {
+      final invoice = await _start(InvoiceWorkflowState.paymentRequested);
+
+      await _workflow.sendJson('PaymentSuccessSignal', {
+        'invoiceId': invoice.id,
+        'reference': 'from-json',
+      });
+      await _eventuallyInState(
+        invoice.id,
+        InvoiceWorkflowState.paymentReceived,
+      );
+      expect((await _read(invoice.id)).paymentReference, 'from-json');
+
+      await expectLater(
+        _workflow.sendJson('PaymentSuccessSignal', {'invoiceId': invoice.id}),
+        throwsA(
+          isA<ApiRequestException>().having((e) => e.statusCode, 'code', 400),
+        ),
+      );
+      await expectLater(
+        _workflow.sendJson('Unknown', {}),
+        throwsA(
+          isA<ApiRequestException>().having((e) => e.statusCode, 'code', 404),
+        ),
+      );
+    });
   });
 }

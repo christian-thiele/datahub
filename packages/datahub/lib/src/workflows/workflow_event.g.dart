@@ -125,6 +125,41 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
+  static final $startedAt = DataField<WorkflowEvent, DateTime?>(
+    name: 'startedAt',
+    valueOf: (p) => p.startedAt,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeDateTime, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeDateTime),
+  );
+
+  static final $heartbeatAt = DataField<WorkflowEvent, DateTime?>(
+    name: 'heartbeatAt',
+    valueOf: (p) => p.heartbeatAt,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeDateTime, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeDateTime),
+  );
+
+  static final $worker = DataField<WorkflowEvent, String?>(
+    name: 'worker',
+    valueOf: (p) => p.worker,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
+  );
+
+  static final $messages = DataField<WorkflowEvent, List<String>>(
+    name: 'messages',
+    valueOf: (p) => p.messages,
+    fromJson: (value, {String? name}) => $$codec.decodeList<String>(
+      (value ?? const []),
+      $$codec.decodeString,
+      name: name,
+    ),
+    toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+  );
+
   static final DataBean<WorkflowEvent> bean = DataBean<WorkflowEvent>(
     name: 'WorkflowEvent',
     fields: List<DataField<WorkflowEvent, dynamic>>.unmodifiable([
@@ -141,6 +176,10 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
       $lastError,
       $traceId,
       $spanId,
+      $startedAt,
+      $heartbeatAt,
+      $worker,
+      $messages,
     ]),
     fromValues: fromValues,
     fromJson: fromJson,
@@ -169,6 +208,13 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
     bool nullTraceId = false,
     String? spanId,
     bool nullSpanId = false,
+    DateTime? startedAt,
+    bool nullStartedAt = false,
+    DateTime? heartbeatAt,
+    bool nullHeartbeatAt = false,
+    String? worker,
+    bool nullWorker = false,
+    List<String>? messages,
   }) {
     final $data = this as WorkflowEvent;
     return WorkflowEvent(
@@ -185,6 +231,10 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
       lastError: nullLastError ? null : (lastError ?? $data.lastError),
       traceId: nullTraceId ? null : (traceId ?? $data.traceId),
       spanId: nullSpanId ? null : (spanId ?? $data.spanId),
+      startedAt: nullStartedAt ? null : (startedAt ?? $data.startedAt),
+      heartbeatAt: nullHeartbeatAt ? null : (heartbeatAt ?? $data.heartbeatAt),
+      worker: nullWorker ? null : (worker ?? $data.worker),
+      messages: messages ?? $data.messages,
     );
   }
 
@@ -203,6 +253,11 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
       lastError: data['lastError'],
       traceId: data['traceId'],
       spanId: data['spanId'],
+      startedAt: data['startedAt'],
+      heartbeatAt: data['heartbeatAt'],
+      worker: data['worker'],
+      messages:
+          data['messages']?.cast<String>().toList(growable: false) ?? const [],
     );
   }
 
@@ -260,6 +315,22 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
         data['spanId'],
         name: DataCodec.childName(name, 'spanId'),
       ),
+      startedAt: $startedAt.fromJson(
+        data['startedAt'],
+        name: DataCodec.childName(name, 'startedAt'),
+      ),
+      heartbeatAt: $heartbeatAt.fromJson(
+        data['heartbeatAt'],
+        name: DataCodec.childName(name, 'heartbeatAt'),
+      ),
+      worker: $worker.fromJson(
+        data['worker'],
+        name: DataCodec.childName(name, 'worker'),
+      ),
+      messages: $messages.fromJson(
+        data['messages'],
+        name: DataCodec.childName(name, 'messages'),
+      ),
     );
   }
 
@@ -280,6 +351,10 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
       'lastError': $lastError.toJson($$data.lastError),
       'traceId': $traceId.toJson($$data.traceId),
       'spanId': $spanId.toJson($$data.spanId),
+      'startedAt': $startedAt.toJson($$data.startedAt),
+      'heartbeatAt': $heartbeatAt.toJson($$data.heartbeatAt),
+      'worker': $worker.toJson($$data.worker),
+      'messages': $messages.toJson($$data.messages),
     }..removeWhere((k, v) => v == null);
   }
 }

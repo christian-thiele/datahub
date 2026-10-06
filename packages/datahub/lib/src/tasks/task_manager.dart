@@ -11,6 +11,7 @@ import 'package:datahub/utils.dart';
 
 import 'task_invocation.dart';
 
+@Deprecated('Replaced by workflows and schedules, see TaskManagerService.')
 interface class TaskProgress {
   final void Function(double progress) reportProgress;
   final void Function(dynamic error, [StackTrace? trace]) reportError;
@@ -33,6 +34,7 @@ interface class TaskProgress {
   }
 }
 
+@Deprecated('Replaced by workflows and schedules, see TaskManagerService.')
 interface class TaskHandle<T> {
   final Future<String> Function(T params, {DateTime? schedule})
   scheduleInvocation;
@@ -40,9 +42,11 @@ interface class TaskHandle<T> {
   TaskHandle._({required this.scheduleInvocation});
 }
 
+@Deprecated('Replaced by workflows and schedules, see TaskManagerService.')
 typedef TaskDelegate<T> =
     Future<void> Function(TaskProgress progress, T params);
 
+@Deprecated('Replaced by workflows and schedules, see TaskManagerService.')
 class TaskExecutor<T extends DataObject> {
   final String taskId;
   final String? displayName;
@@ -67,6 +71,7 @@ class TaskExecutor<T extends DataObject> {
   }
 }
 
+@Deprecated('Replaced by workflows and schedules, see TaskManagerService.')
 abstract interface class TaskManager {
   List<TaskExecutor> getRegisteredExecutors();
 
@@ -85,6 +90,25 @@ abstract interface class TaskManager {
   Future<void> cancelInvocation(String invocationId);
 }
 
+/// Runs tasks: deprecated, replaced by workflows and schedules.
+///
+/// Migration:
+///
+/// - **A task about something** (an invoice, an import): make it an element
+///   of a `WorkflowService` and do the work in an `OnEnter` step. Start it with
+///   `Workflow.start`; ids given by the caller make starting idempotent.
+///   Retries, failure states, history (including log lines) and telemetry come
+///   with the workflow.
+/// - **`scheduleInvocation(…, schedule: time)`**: `OnEnter(state, …, at:
+///   (element) => element.dueAt)`.
+/// - **Recurring tasks**: a `Schedule` (`Schedule.every`, `daily`, `monthly`)
+///   in the components, or `Scheduler.registerSchedule` instead of
+///   `registerExecutor`.
+/// - **`getInvocations`, `cancelInvocation`**: `Workflow.events`,
+///   `Workflow.history`, `Workflow.cancel`; `Scheduler.records`.
+/// - **`TaskProgress.reportProgress`**: no replacement; the log lines of a
+///   running step are visible on its event (`WorkflowEvent.messages`).
+@Deprecated('Replaced by workflows and schedules, see TaskManagerService.')
 class TaskManagerService implements Service {
   final Find<Telemetry> telemetry;
   final Find<DataRepository<TaskInvocation>> taskInvocationRepository;

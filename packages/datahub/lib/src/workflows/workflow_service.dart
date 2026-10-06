@@ -1,5 +1,5 @@
 import 'dart:async';
-import 'dart:convert';
+import 'dart:io';
 import 'dart:math' as math;
 
 import 'package:collection/collection.dart';
@@ -12,6 +12,7 @@ import 'package:datahub/utils.dart';
 
 import 'retry_policy.dart';
 import 'workflow.dart';
+import 'workflow_description.dart';
 import 'workflow_event.dart';
 import 'workflow_history_entry.dart';
 import 'workflow_signal.dart';
@@ -54,8 +55,6 @@ import 'workflow_step_context.dart';
 /// - **No lost updates.** Only the fields a step changed are written, and only
 ///   if the element is still in the state the step started in.
 ///
-/// Delays are as precise as the [pollInterval].
-///
 /// ## Required components
 ///
 /// - the [repository] of the elements
@@ -67,7 +66,9 @@ import 'workflow_step_context.dart';
 ///
 /// Every instance can start elements, send signals and read the history. Only
 /// instances with [worker] enabled run steps, so steps can be kept away from
-/// instances that serve requests, for example.
+/// instances that serve requests, for example. While a step runs, its event
+/// shows the worker, a heartbeat and what the step logged so far (see
+/// [Workflow.events]).
 ///
 /// Each step runs in a span that continues the trace of the code that caused
 /// it (the request that sent a signal, or the step before). Metrics are
@@ -110,6 +111,14 @@ class WorkflowService<T extends DataObject, TState extends Enum>
   /// store events (when starting elements or sending signals).
   final Config<bool> worker;
 
+  /// Identifies this instance in the events it handles. Defaults to
+  /// `<host name>:<process id>`.
+  final Config<String?> workerId;
+
+  /// Interval in which a worker renews the heartbeat and the messages of the
+  /// event it handles.
+  final Config<Duration> heartbeatInterval;
+
   final Find<Telemetry> telemetry;
   final Config<bool> enableMetrics;
   final Config<bool> enableTracing;
@@ -129,6 +138,11 @@ class WorkflowService<T extends DataObject, TState extends Enum>
     this.batchSize = const Config('workflows.batchSize', defaultValue: 100),
     this.concurrency = const Config('workflows.concurrency', defaultValue: 4),
     this.worker = const Config('workflows.worker', defaultValue: true),
+    this.workerId = const Config('workflows.workerId'),
+    this.heartbeatInterval = const Config(
+      'workflows.heartbeatInterval',
+      defaultValue: Duration(seconds: 10),
+    ),
     this.telemetry = const Find(),
     this.enableMetrics = const Config(
       'workflows.enableMetrics',
@@ -165,6 +179,9 @@ class WorkflowService<T extends DataObject, TState extends Enum>
       if (step is OnEnter<T, TState>) {
         if (step.after.isNegative) {
           throw ApiError('$described has a negative delay.');
+        }
+        if (step.at != null && step.after != Duration.zero) {
+          throw ApiError('$described has both a delay and a time (at).');
         }
         if (step.failureState == step.state) {
           throw ApiError('$described has its own state as failure state.');
@@ -220,6 +237,8 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
   late final int _batchSize;
   late final int _concurrency;
   late final bool _worker;
+  late final String _workerId;
+  late final Duration _heartbeatInterval;
   late final Telemetry _telemetry;
   late final bool _tracing;
   late final _WorkflowMetrics? _metrics;
@@ -259,6 +278,8 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     _batchSize = math.max(1, read(service.batchSize));
     _concurrency = math.max(1, read(service.concurrency));
     _worker = read(service.worker);
+    _workerId = read(service.workerId) ?? '${Platform.localHostname}:$pid';
+    _heartbeatInterval = read(service.heartbeatInterval);
 
     _telemetry = find(service.telemetry);
     _tracing = read(service.enableTracing);
@@ -305,17 +326,45 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
   @override
   Future<T> start(T element) async {
     _ensureNotDisposed();
-    final created = await _repository.create(element);
-    final startedAt = DateTime.timestamp();
-    await _enter(_idOf(created), _stateOf(created));
-    await _record(
-      WorkflowHistoryKind.started,
-      _idOf(created),
-      at: startedAt,
-      state: _stateOf(created),
-    );
-    _wake();
+    final id = _idField.valueOf(element);
+    if (await _repository.readById(id) case final stored?) {
+      return await _startAgain(stored, element);
+    }
+
+    final T created;
+    try {
+      created = await _repository.create(element);
+    } catch (_) {
+      // Another start of the same element may have been faster.
+      final stored = await _repository.readById(id);
+      if (stored == null) {
+        rethrow;
+      }
+      return await _startAgain(stored, element);
+    }
+
+    await _begin(created, WorkflowHistoryKind.started);
     return created;
+  }
+
+  /// Handles the start of an element that is stored already: it is only
+  /// started if its first start was interrupted, see [Workflow.start].
+  Future<T> _startAgain(T stored, T requested) async {
+    final state = _stateOf(stored);
+    if (state == _stateOf(requested) &&
+        (_enterSteps[state]?.isNotEmpty ?? false)) {
+      final events = await _events.readAll(
+        filter: Filter.andGroup([
+          $WorkflowEvent.$workflow.equals(_name),
+          $WorkflowEvent.$elementId.equals(_idOf(stored).toString()),
+        ]),
+        limit: 1,
+      );
+      if (events.isEmpty) {
+        await _begin(stored, WorkflowHistoryKind.started);
+      }
+    }
+    return stored;
   }
 
   @override
@@ -324,14 +373,14 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     final element =
         await _repository.readById(id) ??
         (throw ApiRequestException.notFound('Element $id does not exist.'));
-    final resumedAt = DateTime.timestamp();
-    await _enter(_idOf(element), _stateOf(element));
-    await _record(
-      WorkflowHistoryKind.resumed,
-      _idOf(element),
-      at: resumedAt,
-      state: _stateOf(element),
-    );
+    await _begin(element, WorkflowHistoryKind.resumed);
+  }
+
+  /// Lets [element] enter its current state.
+  Future<void> _begin(T element, WorkflowHistoryKind kind) async {
+    final at = DateTime.timestamp();
+    await _enter(element, _stateOf(element));
+    await _record(kind, _idOf(element), at: at, state: _stateOf(element));
     _wake();
   }
 
@@ -401,24 +450,158 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     );
   }
 
+  @override
+  WorkflowDescription describe() => WorkflowDescription(
+    name: _name,
+    steps: [
+      for (final step in service.steps)
+        if (step is OnEnter<T, TState>)
+          WorkflowStepDescription(
+            name: step.name,
+            kind: WorkflowStepKind.enter,
+            state: step.state.name,
+            after: step.after,
+            scheduled: step.at != null,
+            failureState: step.failureState?.name,
+          )
+        else if (step is OnSignal<T, TState, DataObject>)
+          WorkflowStepDescription(
+            name: step.name,
+            kind: WorkflowStepKind.signal,
+            accept: [for (final state in step.accept) state.name],
+            signalBean: step.signalBean,
+            failureState: step.failureState?.name,
+          ),
+    ],
+    states: {
+      for (final step in service.steps) ...[
+        if (step is OnEnter<T, TState>) step.state.name,
+        if (step is OnSignal<T, TState, DataObject>)
+          for (final state in step.accept) state.name,
+        if (step.failureState case final failureState?) failureState.name,
+      ],
+    }.toList(),
+  );
+
+  @override
+  Future<List<WorkflowEvent>> events({
+    Object? elementId,
+    WorkflowEventStatus? status,
+    int offset = 0,
+    int limit = 100,
+  }) async {
+    return await _events.readAll(
+      filter: Filter.andGroup([
+        $WorkflowEvent.$workflow.equals(_name),
+        if (elementId != null)
+          $WorkflowEvent.$elementId.equals(elementId.toString()),
+        if (status != null) $WorkflowEvent.$status.equals(status),
+      ]),
+      sort: $WorkflowEvent.$createdAt.asc(),
+      offset: offset,
+      limit: limit,
+    );
+  }
+
+  @override
+  Future<void> retry(String eventId) async {
+    _ensureNotDisposed();
+    final event = await _event(eventId);
+    if (event.status == WorkflowEventStatus.pending) {
+      throw ApiRequestException(409, 'The workflow event is not parked.');
+    }
+
+    final step = _steps[event.step];
+    final now = DateTime.timestamp();
+    await _events.updateById(
+      event.copyWith(
+        status: WorkflowEventStatus.pending,
+        attempts: 0,
+        dueAt: now,
+        expiresAt: step is OnSignal<T, TState, DataObject>
+            ? now.add(step.expireAfter)
+            : event.expiresAt,
+        nullLastError: true,
+        nullStartedAt: true,
+        nullHeartbeatAt: true,
+        nullWorker: true,
+        messages: const [],
+      ),
+    );
+    await _record(
+      WorkflowHistoryKind.retried,
+      event.elementId,
+      step: step,
+      event: event,
+    );
+    _wake();
+  }
+
+  @override
+  Future<void> cancel(String eventId) async {
+    _ensureNotDisposed();
+    final event = await _event(eventId);
+    if (_isRunning(event)) {
+      throw ApiRequestException(409, 'The workflow event is being handled.');
+    }
+
+    await _events.deleteById(event.id);
+    await _record(
+      WorkflowHistoryKind.cancelled,
+      event.elementId,
+      step: _steps[event.step],
+      event: event,
+    );
+  }
+
+  @override
+  Future<void> sendJson(String signal, Map<String, dynamic> payload) async {
+    final step =
+        _signalSteps.firstWhereOrNull(
+          (step) => step.signalBean.name == signal,
+        ) ??
+        (throw ApiRequestException.notFound(
+          'Workflow "$_name" has no step for signal "$signal".',
+        ));
+
+    final DataObject decoded;
+    try {
+      decoded = step.signalBean.fromJson(payload);
+    } on CodecException catch (error) {
+      throw ApiRequestException.badRequest('Invalid signal: $error');
+    }
+    step.signalBean.validateConstraints(decoded);
+    await send(decoded as WorkflowSignal<T>);
+  }
+
+  /// The event [id] of this workflow.
+  Future<WorkflowEvent> _event(String id) async {
+    final event = await _events.readById(id);
+    if (event == null || event.workflow != _name) {
+      throw ApiRequestException.notFound('Workflow event $id does not exist.');
+    }
+    return event;
+  }
+
   void _ensureNotDisposed() {
     if (_disposed) {
       throw ApiException('The workflow service is shut down.');
     }
   }
 
-  /// Stores the events of the steps that run when the element enters [state].
-  Future<List<WorkflowEvent>> _enter(Object id, TState state) async {
+  /// Stores the events of the steps that run when [element] enters [state].
+  Future<List<WorkflowEvent>> _enter(T element, TState state) async {
     final now = DateTime.timestamp();
+    final id = _idOf(element).toString();
     return [
       for (final step in _enterSteps[state] ?? <OnEnter<T, TState>>[])
         await _events.create(
           WorkflowEvent(
             workflow: _name,
-            elementId: id.toString(),
+            elementId: id,
             step: step.name,
             createdAt: now,
-            dueAt: now.add(step.after),
+            dueAt: step.dueAt(element, now),
             traceId: _currentSpan?.traceId.hexId,
             spanId: _currentSpan?.spanId.hexId,
           ),
@@ -450,6 +633,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
   }
 
   Future<void> _runTick() async {
+    final startedAt = DateTime.timestamp();
     var progressed = false;
     try {
       progressed = await _processEvents();
@@ -468,11 +652,48 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
 
     // A step that ran might have made other events due, so go on without
     // waiting as long as there is progress.
-    final immediately = progressed || _wakeRequested;
+    var delay = progressed || _wakeRequested
+        ? Duration.zero
+        : await _idleDelay(startedAt);
+    if (_wakeRequested) {
+      delay = Duration.zero;
+    }
     _wakeRequested = false;
-    _schedule(
-      immediately ? Duration.zero : _pollInterval.jitter(_pollInterval ~/ 10),
-    );
+    _schedule(delay);
+  }
+
+  /// The time until the next poll: the poll interval, or less if an event is
+  /// due earlier.
+  ///
+  /// Events that became due while the poll that [since] started ran were not
+  /// handled by it, so they count as well (and make the next poll start right
+  /// away). Events that were due before were handled or wait for something.
+  Future<Duration> _idleDelay(DateTime since) async {
+    final poll = _pollInterval.jitter(_pollInterval ~/ 10);
+    try {
+      final now = DateTime.timestamp();
+      final next = await _events.readAll(
+        filter: Filter.andGroup([
+          $WorkflowEvent.$workflow.equals(_name),
+          $WorkflowEvent.$status.equals(WorkflowEventStatus.pending),
+          $WorkflowEvent.$dueAt.greaterThan(since),
+        ]),
+        sort: $WorkflowEvent.$dueAt.asc(),
+        limit: 1,
+      );
+      if (next.firstOrNull?.dueAt.difference(now) case final untilDue?
+          when untilDue < poll) {
+        return untilDue.isNegative ? Duration.zero : untilDue;
+      }
+    } catch (error, stack) {
+      log.warn(
+        'Could not find the next due workflow event.',
+        error: error,
+        stack: stack,
+        labels: _labels(),
+      );
+    }
+    return poll;
   }
 
   /// Handles the due events. Returns true if at least one step ran.
@@ -693,22 +914,35 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     log.debug('Running workflow step.', labels: labels);
 
     final messages = <String>[];
+    final stopHeartbeat = await _markRunning(event, messages);
     final TState newState;
     final Map<DataField<T, dynamic>, dynamic> changes;
     try {
-      final result = await _captureLog(
-        messages,
-        () => _invoke(
-          step,
-          event,
+      try {
+        final result = await _captureLog(
+          messages,
+          () => _invoke(
+            step,
+            event,
+            element,
+            attempt,
+            handle,
+          ).timeout(step.timeout),
+        );
+        newState = _stateOf(result);
+        changes = _changes(element, result);
+        await _apply(
           element,
-          attempt,
+          state,
+          newState,
+          changes,
           handle,
-        ).timeout(step.timeout),
-      );
-      newState = _stateOf(result);
-      changes = _changes(element, result);
-      await _apply(element, state, newState, changes, handle, except: event.id);
+          except: event.id,
+          next: result,
+        );
+      } finally {
+        stopHeartbeat();
+      }
     } catch (error, stack) {
       span?.recordException(error, stack: stack);
       log.error(
@@ -754,6 +988,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
         attempt: attempt,
         idempotencyKey: event.id,
         lockExpired: handle.expired,
+        workflow: this,
       );
     } else if (step is OnEnter<T, TState>) {
       return step.handle(
@@ -762,6 +997,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
           attempt: attempt,
           idempotencyKey: event.id,
           lockExpired: handle.expired,
+          workflow: this,
         ),
       );
     }
@@ -815,6 +1051,10 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
             attempts: attempts,
             dueAt: nextAttemptAt,
             lastError: lastError,
+            nullStartedAt: true,
+            nullHeartbeatAt: true,
+            nullWorker: true,
+            messages: const [],
           ),
         );
         await record(nextAttemptAt: nextAttemptAt);
@@ -880,13 +1120,18 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     Map<DataField<T, dynamic>, dynamic> changes,
     LockHandle handle, {
     String? except,
+    T? next,
   }) async {
     if (!handle.isValid) {
       throw ApiException('The lock of the element expired, result discarded.');
     }
 
     final id = _idOf(element);
-    final ahead = to == from ? const <WorkflowEvent>[] : await _enter(id, to);
+    // The steps of the new state see the element as the step left it (for
+    // `OnEnter.at`), or as it was when it is moved to the failure state.
+    final ahead = to == from
+        ? const <WorkflowEvent>[]
+        : await _enter(next ?? element, to);
     try {
       if (changes.isNotEmpty) {
         final affected = await _repository.updateAll(
@@ -1003,6 +1248,9 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
           status: status,
           attempts: attempts ?? event.attempts,
           lastError: _truncate(reason),
+          nullStartedAt: true,
+          nullHeartbeatAt: true,
+          nullWorker: true,
         ),
       );
     } catch (error, stack) {
@@ -1084,28 +1332,80 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     }
   }
 
-  /// Runs [body] and adds what it logs to [messages], if the history is on.
+  /// Runs [body] and adds what it logs to [messages] (the last
+  /// [_maxMessages] lines).
   Future<R> _captureLog<R>(List<String> messages, Future<R> Function() body) {
-    if (_history == null) {
-      return body();
-    }
-
     return LogListener(
       onPublish: (message) {
         if (message.level.severityNumber > SeverityLevel.trace.severityNumber) {
-          messages.add(
-            jsonEncode({
-              ...message.labels,
-              'timestamp': message.timestamp.toIso8601String(),
-              'severity': const JsonDataCodec().encodeEnum(message.level),
-              'msg': message.line,
-              if (message.error != null) 'error': message.error.toString(),
-            }),
-          );
+          if (messages.length >= _maxMessages) {
+            messages.removeAt(0);
+          }
+          messages.add(message.toJsonLine());
         }
       },
     ).run(body);
   }
+
+  static const _maxMessages = 1000;
+
+  /// Marks [event] as being handled by this worker, and keeps its heartbeat and
+  /// [messages] up to date until the returned function is called.
+  Future<void Function()> _markRunning(
+    WorkflowEvent event,
+    List<String> messages,
+  ) async {
+    final startedAt = DateTime.timestamp();
+    await _updateEvent(event, {
+      $WorkflowEvent.$startedAt: startedAt,
+      $WorkflowEvent.$heartbeatAt: startedAt,
+      $WorkflowEvent.$worker: _workerId,
+      $WorkflowEvent.$messages: <String>[],
+    });
+
+    var writing = false;
+    final timer = _zone.createPeriodicTimer(_heartbeatInterval, (_) async {
+      if (writing) {
+        return;
+      }
+      writing = true;
+      try {
+        await _updateEvent(event, {
+          $WorkflowEvent.$heartbeatAt: DateTime.timestamp(),
+          $WorkflowEvent.$messages: List.of(messages),
+        });
+      } finally {
+        writing = false;
+      }
+    });
+    return timer.cancel;
+  }
+
+  /// Writes some fields of [event], without overwriting the others.
+  Future<void> _updateEvent(
+    WorkflowEvent event,
+    Map<DataField<WorkflowEvent, dynamic>, dynamic> values,
+  ) async {
+    try {
+      await _events.updateAll(
+        filter: $WorkflowEvent.$id.equals(event.id),
+        values: values,
+      );
+    } catch (error, stack) {
+      log.warn(
+        'Could not update a running workflow event.',
+        error: error,
+        stack: stack,
+        labels: _labels(id: event.elementId, event: event.id),
+      );
+    }
+  }
+
+  bool _isRunning(WorkflowEvent event) =>
+      event.startedAt != null &&
+      event.heartbeatAt != null &&
+      DateTime.timestamp().difference(event.heartbeatAt!) <
+          _heartbeatInterval * 3;
 
   Span? get _currentSpan =>
       _tracing ? _telemetry.getDefaultTracer().findParentSpan() : null;

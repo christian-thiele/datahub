@@ -1,5 +1,7 @@
 import 'package:datahub/data.dart';
 
+import 'workflow_description.dart';
+import 'workflow_event.dart';
 import 'workflow_history_entry.dart';
 import 'workflow_signal.dart';
 import 'workflow_step.dart';
@@ -55,4 +57,31 @@ abstract interface class Workflow<T extends DataObject> {
     int offset = 0,
     int limit = 100,
   });
+
+  /// The steps of the workflow.
+  WorkflowDescription describe();
+
+  /// The events of the workflow, optionally of one element and with one
+  /// status, oldest first.
+  ///
+  /// Events that are being handled have `startedAt` set and a recent
+  /// `heartbeatAt`, and their `messages` show what the step logged so far.
+  Future<List<WorkflowEvent>> events({
+    Object? elementId,
+    WorkflowEventStatus? status,
+    int offset = 0,
+    int limit = 100,
+  });
+
+  /// Sets a parked (failed or expired) event back to pending, with a new round
+  /// of attempts. A signal gets a new expiry.
+  Future<void> retry(String eventId);
+
+  /// Removes a pending or parked event, so it is not handled. Throws if the
+  /// event is being handled right now.
+  Future<void> cancel(String eventId);
+
+  /// Sends the signal of type [signal] (the name of its bean) restored from
+  /// [payload], see [send]. Throws if the payload is not a valid signal.
+  Future<void> sendJson(String signal, Map<String, dynamic> payload);
 }

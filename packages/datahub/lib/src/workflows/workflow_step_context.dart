@@ -1,5 +1,7 @@
 import 'package:datahub/data.dart';
 
+import 'workflow.dart';
+
 /// What a step handler knows about the execution it is part of.
 class StepContext<T extends DataObject> {
   /// The element as it was read while holding its lock.
@@ -22,11 +24,17 @@ class StepContext<T extends DataObject> {
   /// **SHOULD** stop their work when this completes.
   final Future<void> lockExpired;
 
+  /// The workflow the step belongs to, for example to start elements or send
+  /// signals from a step. (A workflow service can not `Find` itself, so its
+  /// steps can not look it up.)
+  final Workflow<T> workflow;
+
   const StepContext({
     required this.element,
     required this.attempt,
     required this.idempotencyKey,
     required this.lockExpired,
+    required this.workflow,
   });
 }
 
@@ -40,6 +48,7 @@ class SignalStepContext<T extends DataObject, TSignal extends DataObject>
     required super.attempt,
     required super.idempotencyKey,
     required super.lockExpired,
+    required super.workflow,
     required this.signal,
   });
 }

@@ -44,6 +44,7 @@ class TestHost extends ServiceHost {
               ),
             ),
             KeyService(),
+            SchedulerService(),
           ],
         ),
         Scope(name: 'application', components: components),

@@ -8,6 +8,7 @@ import 'package:datahub_aperture/utils.dart';
 
 import 'api/task_description.dart';
 
+@Deprecated('TaskManager is replaced by workflows and schedules.')
 class TaskManagerModule implements ApertureModule {
   final String id;
   final String displayName;
