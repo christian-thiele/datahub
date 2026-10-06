@@ -35,8 +35,16 @@ import 'sample_group.dart';
 /// Metrics can be instantiated anywhere and registered at the
 /// [TelemetryService] either through the [ServiceResolver] by invoking
 /// the [register] method.
+///
+/// Labels are either declared with all of their values ([labels]), which
+/// creates a series for every combination upfront, or by name only
+/// ([labelNames]), which creates a series once a combination is observed.
+/// The latter is meant for labels whose values are bounded, but not known in
+/// advance (like routes or status codes), never for unbounded values like
+/// ids or paths.
 class HistogramMetric extends Metric {
   final List<num> _boundaries;
+  final Set<String>? _labelNames;
   final _series = <_HistogramSeries>[];
 
   HistogramMetric.linear(
@@ -46,7 +54,10 @@ class HistogramMetric extends Metric {
     required int count,
     super.help,
     Map<String, List<String>>? labels,
-  }) : _boundaries = List.generate(count, (i) => start + (width / count) * i),
+    Set<String>? labelNames,
+  }) : assert(labels == null || labelNames == null),
+       _boundaries = List.generate(count, (i) => start + (width / count) * i),
+       _labelNames = labelNames,
        super(type: MetricType.histogram) {
     _createSeries(labels);
   }
@@ -58,13 +69,18 @@ class HistogramMetric extends Metric {
     required int count,
     super.help,
     Map<String, List<String>>? labels,
-  }) : _boundaries = List.generate(count, (i) => start * pow(factor, i)),
+    Set<String>? labelNames,
+  }) : assert(labels == null || labelNames == null),
+       _boundaries = List.generate(count, (i) => start * pow(factor, i)),
+       _labelNames = labelNames,
        super(type: MetricType.histogram) {
     _createSeries(labels);
   }
 
   void _createSeries(Map<String, List<String>>? labels) {
-    if (labels != null && labels.isNotEmpty) {
+    if (_labelNames != null) {
+      // series are created when observed
+    } else if (labels != null && labels.isNotEmpty) {
       final combinations = cartesianProduct(
         labels.entries.map(
           (e) => e.value.map((value) => MapEntry(e.key, value)),
@@ -81,17 +97,27 @@ class HistogramMetric extends Metric {
   }
 
   _HistogramSeries _findSeries(Map<String, String> labels) {
-    return _series.firstWhere(
-      (s) => s.labels.entriesEqual(labels),
-      orElse: () =>
-          throw ApiError('No metric series matches given label combination.'),
-    );
+    for (final series in _series) {
+      if (series.labels.entriesEqual(labels)) {
+        return series;
+      }
+    }
+
+    if (_labelNames case final names?
+        when labels.length == names.length && names.containsAll(labels.keys)) {
+      final series = _HistogramSeries(Map.of(labels), _boundaries);
+      _series.add(series);
+      return series;
+    }
+
+    throw ApiError('No metric series matches given label combination.');
   }
 
   /// Observes [value], optionally for the series identified by [labels].
   ///
   /// The [labels] must match one of the label combinations declared when
-  /// the metric was defined.
+  /// the metric was defined, or provide a value for each of its label
+  /// names.
   void observe(num value, [Map<String, String> labels = const {}]) =>
       _findSeries(labels).observe(value);
 

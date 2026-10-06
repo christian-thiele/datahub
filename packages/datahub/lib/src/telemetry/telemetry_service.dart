@@ -106,12 +106,16 @@ abstract interface class Telemetry {
   /// [width] and [count] will be ignored in this case. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
+  ///
+  /// Labels are declared either with their values ([labels]) or by name
+  /// only ([labelNames]), see [HistogramMetric].
   HistogramMetric linearHistogram(
     String name, {
     required num start,
     required num width,
     required int count,
     Map<String, List<String>>? labels,
+    Set<String>? labelNames,
     String? help,
   });
 
@@ -123,12 +127,16 @@ abstract interface class Telemetry {
   /// [factor] and [count] will be ignored in this case. This allows for
   /// metric objects to be dependency injected and used across different
   /// places.
+  ///
+  /// Labels are declared either with their values ([labels]) or by name
+  /// only ([labelNames]), see [HistogramMetric].
   HistogramMetric exponentialHistogram(
     String name, {
     required num start,
     required num factor,
     required int count,
     Map<String, List<String>>? labels,
+    Set<String>? labelNames,
     String? help,
   });
 
@@ -386,6 +394,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     required num width,
     required int count,
     Map<String, List<String>>? labels,
+    Set<String>? labelNames,
     String? help,
   }) {
     return switch (_metrics[name]) {
@@ -396,6 +405,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
         width: width,
         count: count,
         labels: labels,
+        labelNames: labelNames,
         help: help,
       ),
       final existing => throw ApiError(
@@ -411,6 +421,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     required num factor,
     required int count,
     Map<String, List<String>>? labels,
+    Set<String>? labelNames,
     String? help,
   }) {
     return switch (_metrics[name]) {
@@ -421,6 +432,7 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
         factor: factor,
         count: count,
         labels: labels,
+        labelNames: labelNames,
         help: help,
       ),
       final existing => throw ApiError(

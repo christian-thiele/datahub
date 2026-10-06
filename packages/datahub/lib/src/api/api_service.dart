@@ -117,6 +117,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   late final Duration _shutdownTimeout;
   late final GaugeMetric? _activeRequestsMetric;
   late final CounterMetric? _rejectedRequestsMetric;
+  late final HistogramMetric? _requestDurationMetric;
   int _activeRequests = 0;
   bool _disposing = false;
 
@@ -144,11 +145,29 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
         '${prefix}_requests_rejected',
         help:
             'Number of requests rejected because the concurrent '
-            'request limit was reached.',
+            'request limit was reached or the service is shutting down.',
+      );
+      // http.server.request.duration of the semantic conventions
+      _requestDurationMetric = telemetry.exponentialHistogram(
+        '${prefix}_request_duration_seconds',
+        start: 0.005,
+        factor: 2,
+        count: 12,
+        labelNames: {
+          'http_request_method',
+          'http_route',
+          'http_response_status_code',
+          'error_type',
+          'url_scheme',
+        },
+        help:
+            'Duration of HTTP requests until the response is ready to be '
+            'sent.',
       );
     } else {
       _activeRequestsMetric = null;
       _rejectedRequestsMetric = null;
+      _requestDurationMetric = null;
     }
     _routes = service.routes.expand((e) => e.buildRoutes()).toList();
 
@@ -198,32 +217,56 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   }
 
   Future<HttpResponse> handleRequest(HttpRequest httpRequest) async {
-    if (_disposing) {
+    final watch = Stopwatch()..start();
+    // the route and the type of unhandled exceptions are added while
+    // handling the request
+    final metricLabels = {
+      'http_request_method': httpRequest.method.name.toUpperCase(),
+      'http_route': '',
+      'url_scheme': _scheme,
+    };
+
+    final limitReached = switch (_concurrentRequestLimit) {
+      final limit? => _activeRequests >= limit,
+      null => false,
+    };
+
+    final HttpResponse response;
+    if (_disposing || limitReached) {
       _rejectedRequestsMetric?.inc();
-      return ApiRequestException.serviceUnavailable()
+      response = ApiRequestException.serviceUnavailable()
           .toResponse()
           .toHttpResponse(httpRequest.requestUri);
-    }
-
-    if (_concurrentRequestLimit case final int limit
-        when _activeRequests >= limit) {
-      _rejectedRequestsMetric?.inc();
-      return ApiRequestException.serviceUnavailable()
-          .toResponse()
-          .toHttpResponse(httpRequest.requestUri);
-    }
-
-    _activeRequests++;
-    _activeRequestsMetric?.set(_activeRequests);
-    try {
-      return await _handleRequest(httpRequest);
-    } finally {
-      _activeRequests--;
+    } else {
+      _activeRequests++;
       _activeRequestsMetric?.set(_activeRequests);
+      try {
+        response = await _handleRequest(httpRequest, metricLabels);
+      } finally {
+        _activeRequests--;
+        _activeRequestsMetric?.set(_activeRequests);
+      }
     }
+
+    final status = response.statusCode;
+    _requestDurationMetric?.observeDuration(watch.elapsed, {
+      ...metricLabels,
+      'http_response_status_code': status.toString(),
+      'error_type': switch (metricLabels['error_type']) {
+        final type? => type,
+        null when status >= 500 => status.toString(),
+        null => '',
+      },
+    });
+    return response;
   }
 
-  Future<HttpResponse> _handleRequest(HttpRequest httpRequest) async {
+  String get _scheme => service.securityContext == null ? 'http' : 'https';
+
+  Future<HttpResponse> _handleRequest(
+    HttpRequest httpRequest,
+    Map<String, String> metricLabels,
+  ) async {
     try {
       final request = ApiRequest(
         httpRequest.requestUri,
@@ -238,6 +281,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
 
       final method = httpRequest.method.name.toUpperCase();
       final route = routeParams['#pattern'];
+      metricLabels['http_route'] = route ?? '';
 
       // attributes and status according to the semantic conventions for
       // HTTP server spans
@@ -248,7 +292,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
           'http.request.method': method,
           'http.route': ?route,
           'url.path': httpRequest.path,
-          'url.scheme': service.securityContext == null ? 'http' : 'https',
+          'url.scheme': _scheme,
         },
         (span) async {
           final ApiResponse response;
@@ -293,6 +337,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
       }
       return e.toResponse().toHttpResponse(httpRequest.requestUri);
     } catch (e, stack) {
+      metricLabels['error_type'] = e.runtimeType.toString();
       log.error(
         'Request failed with internal error.',
         error: e,

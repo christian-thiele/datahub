@@ -54,7 +54,7 @@ class PrometheusExporter extends MetricsExporter {
         buffer.write(sample.name);
         if (sample.labels.isNotEmpty) {
           buffer.write(
-            '{${sample.labels.entries.map((e) => '${e.key}="${e.value}"').join(',')}}',
+            '{${sample.labels.entries.map((e) => '${e.key}="${_escapeLabelValue(e.value)}"').join(',')}}',
           );
         }
         buffer.write(' ${sample.value}');
@@ -68,6 +68,12 @@ class PrometheusExporter extends MetricsExporter {
       HttpHeaders.contentType: ['${Mime.plainText}; version=0.0.4'],
     }, Stream.value(utf8.encode(buffer.toString())));
   }
+
+  /// Escapes a label value as required by the text exposition format.
+  static String _escapeLabelValue(String value) => value
+      .replaceAll('\\', r'\\')
+      .replaceAll('"', r'\"')
+      .replaceAll('\n', r'\n');
 
   String formatTimestamp(DateTime timestamp) =>
       timestamp.millisecondsSinceEpoch.toString();

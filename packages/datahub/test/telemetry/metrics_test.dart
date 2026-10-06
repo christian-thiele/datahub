@@ -294,16 +294,48 @@ void main() {
     );
   });
 
+  declareTest('Test histogram metrics with label names', [], () async {
+    final telemetry = Find<Telemetry>().find();
+    final histogram = telemetry.exponentialHistogram(
+      'named_duration',
+      start: 1,
+      factor: 2,
+      count: 3,
+      labelNames: {'route', 'status'},
+    );
+
+    // no series before the first observation
+    expect(await _samplesOf(telemetry, 'named_duration'), isEmpty);
+
+    histogram.observe(0.5, {'route': '/a', 'status': '200'});
+    histogram.observe(3, {'status': '200', 'route': '/a'});
+    histogram.observe(1, {'route': '/b', 'status': '500'});
+
+    expect(() => histogram.observe(1, {'route': '/a'}), throwsApiError());
+    expect(
+      () => histogram.observe(1, {'route': '/a', 'status': '200', 'x': ''}),
+      throwsApiError(),
+    );
+
+    final counts = (await _samplesOf(telemetry, 'named_duration'))
+        .where((s) => s.name == 'named_duration_count')
+        .map((s) => {...s.labels, 'count': s.value});
+    expect(
+      counts,
+      unorderedEquals([
+        {'route': '/a', 'status': '200', 'count': 2},
+        {'route': '/b', 'status': '500', 'count': 1},
+      ]),
+    );
+  });
+
   declareTest('Test exception events carry the error message', [], () async {
     final event = ExceptionEvent(
       error: StateError('boom'),
       timestamp: DateTime.timestamp(),
     );
     expect(event.attributes['exception.type'], equals('StateError'));
-    expect(
-      event.attributes['exception.message'],
-      equals('Bad state: boom'),
-    );
+    expect(event.attributes['exception.message'], equals('Bad state: boom'));
   });
 }
 
