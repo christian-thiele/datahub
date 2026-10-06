@@ -2,6 +2,7 @@ export 'src/api/api_request.dart';
 export 'src/api/api_response.dart';
 export 'src/api/api_route.dart';
 export 'src/api/api_service.dart';
+export 'src/api/cors_middleware.dart';
 export 'src/api/resource_endpoint.dart';
 export 'src/api/route_matcher.dart';
 export 'src/api/route_pattern.dart';

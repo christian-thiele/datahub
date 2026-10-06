@@ -40,6 +40,7 @@ abstract class HttpHeaders {
   static const lastModified = 'last-modified';
   static const location = 'location';
   static const maxForwards = 'max-forwards';
+  static const origin = 'origin';
   static const pragma = 'pragma';
   static const proxyAuthenticate = 'proxy-authenticate';
   static const proxyAuthorization = 'proxy-authorization';
