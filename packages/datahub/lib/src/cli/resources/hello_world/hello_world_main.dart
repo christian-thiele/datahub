@@ -1,26 +1,12 @@
 String createHelloWorldMain(String projectName) =>
-    '''import 'dart:io';
-
-
+    '''import 'package:datahub/datahub.dart';
 import 'package:$projectName/$projectName.dart';
 
-void main(List<String> arguments) async {
-  await ApplicationHost(
-    [
-      HelloWorldService.new,
-    ],
-    args: arguments,
-    onInitialized: onInitialized,
-  ).run();
-}
+void main(List<String> arguments) => runApp([
+  const HelloWorldService(),
+  Schedule.every('say-hello', sayHello, interval: Duration(seconds: 10)),
+], arguments: arguments);
 
-void onInitialized() {
-  final schedulerService = resolve<SchedulerService>();
-  final helloService = resolve<HelloWorldService>();
-
-  schedulerService.schedule(
-    () => helloService.sayHello(DateTime.now().toString()),
-    RepeatSchedule(const Duration(seconds: 10), false),
-  );
-}
+Future<void> sayHello(ScheduleRun run) async =>
+    Find<HelloWorld>().find().sayHello(run.scheduledFor);
 ''';

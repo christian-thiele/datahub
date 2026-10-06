@@ -1,20 +1,39 @@
 const String helloWorldServiceFile = '''import 'package:datahub/datahub.dart';
 
-class HelloWorldService extends BaseService {
-  final log = resolve<LogService>();
+/// What the service offers to other components, found with
+/// `Find<HelloWorld>()`.
+abstract interface class HelloWorld {
+  void sayHello(DateTime time);
+}
 
-  void sayHello(String str) {
-    log.info('Hello from DataHub at \$str.');
-  }
+class HelloWorldService implements Service {
+  const HelloWorldService();
 
+  @override
+  ServiceInstance<HelloWorldService> createInstance() =>
+      _HelloWorldServiceInstance();
+}
+
+class _HelloWorldServiceInstance extends ServiceInstance<HelloWorldService>
+    implements HelloWorld {
   @override
   Future<void> initialize() async {
-    log.info('Hello world service prepares itself.');
+    await super.initialize();
+    log.info('Hello world service started.');
   }
 
   @override
-  Future<void> shutdown() async {
-    log.info('Shutting down HelloWorld Service.');
+  void sayHello(DateTime time) {
+    log.info(
+      'Hello from DataHub.',
+      labels: {'hello_world.time': time.toIso8601String()},
+    );
+  }
+
+  @override
+  Future<void> dispose() async {
+    log.info('Hello world service stops.');
+    await super.dispose();
   }
 }
 ''';

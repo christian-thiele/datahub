@@ -73,7 +73,10 @@ class ApplicationHost extends ServiceHost {
     return Scope(
       name: 'root',
       components: [
-        Scope(name: 'internal', components: [TelemetryService(), KeyService()]),
+        Scope(
+          name: 'internal',
+          components: [TelemetryService(), KeyService(), SchedulerService()],
+        ),
         Scope(name: 'application', components: components),
       ],
     );
