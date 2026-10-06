@@ -39,7 +39,10 @@ class ApertureApi extends ApiNode {
     this.oidcIssuer = const Config('aperture.oidcIssuer'),
     this.oidcAudience = const Config('aperture.oidcAudience'),
     this.oidcScopes = const Config('aperture.oidcScopes', defaultValue: []),
-    this.oidcClientId = const Config('aperture.oidcClientId'),
+    this.oidcClientId = const Config(
+      'aperture.oidcClientId',
+      defaultValue: 'aperture',
+    ),
     this.oidcClientSecret = const Config('aperture.oidcClientSecret'),
     this.oidcIdentityField = const Config(
       'aperture.oidcIdentityField',
