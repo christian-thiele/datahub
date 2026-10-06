@@ -148,13 +148,24 @@ class HttpServer {
     final connection = http2.ServerTransportConnection.viaSocket(socket);
     _http2Connections.add(connection);
     connection.incomingStreams.listen(
-      _handleHttp2Stream,
+      _handleHttp2StreamTraced,
       onError: onStreamError,
       onDone: () => _http2Connections.remove(connection),
     );
   }
 
-  void _handleHttp2Stream(http2.ServerTransportStream stream) async {
+  Future<void> _handleHttp2StreamTraced(
+    http2.ServerTransportStream stream,
+  ) async {
+    final tracer = Context.maybeOfZone()?.find(Find<Telemetry?>());
+    if (tracer != null) {
+      await tracer.trace('HTTP/2', (_) => _handleHttp2Stream(stream));
+    } else {
+      await _handleHttp2Stream(stream);
+    }
+  }
+
+  Future<void> _handleHttp2Stream(http2.ServerTransportStream stream) async {
     try {
       final dataController = StreamController<List<int>>();
       final requestCompleter = Completer<HttpRequest>();
