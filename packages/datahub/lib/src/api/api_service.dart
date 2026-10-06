@@ -11,6 +11,7 @@ import 'package:datahub/utils.dart';
 import 'api_request.dart';
 import 'api_response.dart';
 import 'api_route.dart';
+import 'request_logger.dart';
 
 abstract interface class Api {
   late final io.InternetAddress address;
@@ -45,6 +46,33 @@ class ApiService implements Service {
   final Config<bool> enableMetrics;
   final Config<String> metricPrefix;
 
+  /// Whether requests and responses are logged at trace level.
+  ///
+  /// Each request is logged when it arrives (method, path, query and
+  /// headers) and again once its response has been sent (status, duration,
+  /// response headers and both bodies), so the response record can be read
+  /// on its own. Both records are logged within the span of the request and
+  /// use OpenTelemetry semantic conventions for their labels (e.g.
+  /// `http.request.method`, `url.path`, `http.response.status_code`).
+  ///
+  /// Credentials in headers and query parameters are redacted, but bodies
+  /// are logged as they are and may contain sensitive data.
+  final Config<bool> logRequests;
+
+  /// Maximum number of bytes logged per request and response body when
+  /// [logRequests] is enabled. Longer bodies are truncated.
+  ///
+  /// Set to 0 to log body sizes only.
+  final Config<int> logRequestsBodyLimit;
+
+  /// Names of headers whose values are redacted when [logRequests] is
+  /// enabled, e.g. custom credential headers. Matched case-insensitively.
+  ///
+  /// These are redacted in addition to `authorization`,
+  /// `proxy-authorization`, `cookie`, `set-cookie` and `x-api-key`, which are
+  /// always redacted.
+  final Config<List<String>> logRequestsRedactedHeaders;
+
   final List<ApiNode> routes;
   final io.SecurityContext? securityContext;
 
@@ -63,6 +91,15 @@ class ApiService implements Service {
     this.metricPrefix = const Config<String>(
       'metricPrefix',
       defaultValue: 'api',
+    ),
+    this.logRequests = const Config<bool>('logRequests', defaultValue: false),
+    this.logRequestsBodyLimit = const Config<int>(
+      'logRequestsBodyLimit',
+      defaultValue: 1024,
+    ),
+    this.logRequestsRedactedHeaders = const Config<List<String>>(
+      'logRequestsRedactedHeaders',
+      defaultValue: [],
     ),
     required this.routes,
     this.securityContext,
@@ -140,10 +177,20 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
       _ => throw UnsupportedError('Invalid server socket type.'),
     };
 
+    final requestLogger = read(service.logRequests)
+        ? RequestLogger(
+            bodyLimit: read(service.logRequestsBodyLimit),
+            redactedHeaders: read(service.logRequestsRedactedHeaders),
+          )
+        : null;
+
     log.info('Listening on ${address.address}:$port');
     _server = HttpServer(
       socket,
-      handleRequest,
+      switch (requestLogger) {
+        final logger? => (request) => logger.handle(request, handleRequest),
+        null => handleRequest,
+      },
       _onSocketError,
       _onProtocolError,
       _onStreamError,
@@ -189,17 +236,45 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
       final (handler, routeParams) = findEndpoint(_routes, request);
       request.routeParams.addAll(routeParams);
 
+      final method = httpRequest.method.name.toUpperCase();
+      final route = routeParams['#pattern'];
+
+      // attributes and status according to the semantic conventions for
+      // HTTP server spans
       return await telemetry.trace(
-        switch (routeParams['#pattern']) {
-          final String pattern => pattern,
-          _ => 'HTTP',
-        },
+        route == null ? method : '$method $route',
         type: SpanType.server,
         attributes: {
-          'http.request.method': httpRequest.method.name.toUpperCase(),
+          'http.request.method': method,
+          'http.route': ?route,
+          'url.path': httpRequest.path,
+          'url.scheme': service.securityContext == null ? 'http' : 'https',
         },
         (span) async {
-          final response = await handler(request);
+          final ApiResponse response;
+          try {
+            response = await handler(request);
+          } on ApiRequestException catch (e) {
+            span.addAttribute('http.response.status_code', e.statusCode);
+            if (e.statusCode >= 500) {
+              span.addAttribute('error.type', e.statusCode.toString());
+              rethrow;
+            }
+
+            // client errors do not fail server spans
+            span.addExceptionEvent(e, setError: false);
+            return e.toResponse().toHttpResponse(httpRequest.requestUri);
+          } catch (e) {
+            span.addAttribute('http.response.status_code', 500);
+            span.addAttribute('error.type', e.runtimeType.toString());
+            rethrow;
+          }
+
+          span.addAttribute('http.response.status_code', response.statusCode);
+          if (response.statusCode >= 500) {
+            span.addAttribute('error.type', response.statusCode.toString());
+            span.setHasError();
+          }
           return response.toHttpResponse(httpRequest.requestUri);
         },
       );

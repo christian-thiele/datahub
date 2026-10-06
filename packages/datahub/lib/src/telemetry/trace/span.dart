@@ -95,15 +95,23 @@ class LocalSpan extends Span {
     );
   }
 
-  void addAttribute(String name, String value) {
+  /// Adds an attribute, unless one with [name] exists already.
+  ///
+  /// [value] should be a [String], [int], [double] or [bool], other values
+  /// are exported as their string representation.
+  void addAttribute(String name, Object value) {
     if (!_attributes.containsKey(name)) {
       _attributes[name] = value;
     }
   }
 
-  void addExceptionEvent(dynamic error) {
+  /// Records [error] as an event and marks the span as failed, unless
+  /// [setError] is false (e.g. for errors caused by the caller).
+  void addExceptionEvent(dynamic error, {bool setError = true}) {
     _addEvent(ExceptionEvent(error: error, timestamp: DateTime.timestamp()));
-    setHasError();
+    if (setError) {
+      setHasError();
+    }
   }
 
   void _addEvent(Event event) {
