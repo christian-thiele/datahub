@@ -13,7 +13,11 @@ import 'severity_level.dart';
 
 enum LogBodyFormat { logfmt, json, message, pretty }
 
-class StdoutLogExporter implements LogExporter {
+/// Writes log messages to stdout.
+///
+/// The `logfmt` and `json` formats write the labels of a message and the
+/// fields `severity`, `msg`, `error`, `stack`, `trace_id` and `span_id`.
+class StdoutLogExporter extends LogExporter {
   final LogBodyFormat format;
 
   StdoutLogExporter(this.format);
@@ -22,11 +26,12 @@ class StdoutLogExporter implements LogExporter {
   void add(LogMessage message) {
     final body = {
       for (final (key, value) in message.labels.tuples) key: value,
-      'severity': message.level.name.toUpperCase(),
+      'severity': message.level.severityText,
       'msg': message.line,
       if (message.error != null) 'error': message.error.toString(),
-      if (message.span?.spanId case final spanId?) 'span': spanId.hexId,
-      if (message.span?.traceId case final traceId?) 'trace': traceId.hexId,
+      if (message.stack != null) 'stack': message.stack.toString(),
+      if (message.span?.traceId case final traceId?) 'trace_id': traceId.hexId,
+      if (message.span?.spanId case final spanId?) 'span_id': spanId.hexId,
     };
 
     switch (format) {
@@ -40,9 +45,6 @@ class StdoutLogExporter implements LogExporter {
         _PrettyLog.write(message);
     }
   }
-
-  @override
-  void close() {}
 }
 
 class _PrettyLog {
@@ -126,7 +128,7 @@ class _PrettyLog {
   }
 
   static String _severityPrefix(SeverityLevel severity) {
-    return _brackets(severity.name.toUpperCase(), 8);
+    return _brackets(severity.severityText, 5);
   }
 
   static String _brackets(String text, int length) {

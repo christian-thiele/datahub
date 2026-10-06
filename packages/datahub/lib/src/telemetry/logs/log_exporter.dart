@@ -1,3 +1,10 @@
 import 'log_message.dart';
 
-abstract interface class LogExporter implements Sink<LogMessage> {}
+/// Receives the log messages that pass the configured log level.
+abstract class LogExporter {
+  void add(LogMessage message);
+
+  Future<void> initialize() async {}
+
+  Future<void> shutdown() async {}
+}

@@ -6,13 +6,13 @@ import 'trace_exporter.dart';
 /// This is used as fallback.
 class DiscardTraceExporter extends TraceExporter {
   @override
-  void add(Span data) {
+  void onStart(LocalSpan span) {
     // discard
   }
 
   @override
-  void close() {
-    // ignore
+  void onEnd(LocalSpan span) {
+    // discard
   }
 
   @override

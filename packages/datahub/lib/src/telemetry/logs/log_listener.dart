@@ -21,8 +21,12 @@ class LogListener {
     return runZoned<R>(body, zoneValues: {_symbol: this});
   }
 
+  /// Calls [onPublish] of this listener and all of its parents.
   void publishLog(LogMessage message) {
-    onPublish(message);
-    parent?.publishLog(message);
+    try {
+      onPublish(message);
+    } finally {
+      parent?.publishLog(message);
+    }
   }
 }

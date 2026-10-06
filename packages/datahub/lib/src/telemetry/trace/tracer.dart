@@ -1,15 +1,17 @@
 import 'dart:async';
 
-import 'package:boost/boost.dart';
+import 'package:meta/meta.dart';
 
 import '../span_id.dart';
 import '../telemetry_scope.dart';
 import '../trace_id.dart';
 import 'span.dart';
+import 'trace_exporter.dart';
 
 class Tracer implements TelemetryScope {
-  static const _tracerKeyPrefix = 'datahub_telemetry_tracer';
-  late final _tracerSpanKey = '$_tracerKeyPrefix/$key';
+  /// Zone key of the active span, shared by all tracers so spans of
+  /// different tracers (and logs) see the same parent.
+  static const _activeSpanKey = #datahub.telemetry.activeSpan;
 
   @override
   final String name;
@@ -22,54 +24,85 @@ class Tracer implements TelemetryScope {
 
   final bool enableDartTimeline;
 
-  final Sink<Span> _sink;
+  final TraceExporter _exporter;
+  final void Function(LocalSpan span)? _onEnd;
 
   Tracer({
     required this.name,
     required this.version,
     required this.enableDartTimeline,
     required this.attributes,
-    required Sink<Span> sink,
-  }) : _sink = sink;
+    required TraceExporter exporter,
+    void Function(LocalSpan span)? onEnd,
+  }) : _exporter = exporter,
+       _onEnd = onEnd;
 
   static String buildKey(String name, String? version) =>
-      '$name${version?.apply((v) => '@$v')}';
+      version == null ? name : '$name@$version';
 
+  /// The active span of the current zone, regardless of the tracer that
+  /// created it.
+  static Span? get currentSpan => switch (Zone.current[_activeSpanKey]) {
+    final Span span => span,
+    _ => null,
+  };
+
+  /// Runs [delegate] in a new span, which is ended when [delegate] returns.
+  ///
+  /// The span is a child of [parent], or of [currentSpan] if [parent] is
+  /// null. Exceptions thrown by [delegate] are recorded on the span (which
+  /// fails it) and rethrown.
   Future<R> trace<R>(
     String name,
-    Map<String, dynamic>? attributes,
-    SpanType? type,
-    FutureOr<R> Function(LocalSpan span) delegate,
-  ) async {
-    final span = startSpan(name, attributes, type: type);
+    FutureOr<R> Function(LocalSpan span) delegate, {
+    SpanType type = SpanType.internal,
+    Map<String, Object?>? attributes,
+    Span? parent,
+  }) async {
+    final span = startSpan(
+      name,
+      attributes: attributes,
+      type: type,
+      parent: parent,
+    );
 
     try {
       return await runInSpanZone(span, delegate);
     } finally {
-      span.stop();
+      span.end();
     }
   }
 
+  /// Starts a span, which has to be ended by calling [LocalSpan.end].
+  ///
+  /// Prefer [trace], which also makes the span the active span of the code
+  /// it runs. See [trace] for [parent].
   LocalSpan startSpan(
-    String name,
-    Map<String, dynamic>? attributes, {
-    SpanType? type,
+    String name, {
+    Map<String, Object?>? attributes,
+    SpanType type = SpanType.internal,
+    Span? parent,
   }) {
-    final parent = findParentSpan();
+    final parentSpan = parent ?? currentSpan;
     final span = LocalSpan(
       tracer: this,
-      traceId: parent?.traceId ?? TraceId.generate(),
+      traceId: parentSpan?.traceId ?? TraceId.generate(),
       spanId: SpanId.generate(),
-      parent: parent,
+      parent: parentSpan,
       name: name,
-      attributes: attributes ?? <String, dynamic>{},
+      attributes: {...?attributes},
       type: type,
+      traceFlags: parentSpan?.traceFlags ?? Span.flagSampled,
     );
     span.start();
-    _sink.add(span);
+    if (span.isSampled) {
+      _exporter.onStart(span);
+    }
     return span;
   }
 
+  /// Runs [delegate] with [span] as active span. Exceptions thrown by
+  /// [delegate] are recorded on [span] and rethrown.
   Future<R> runInSpanZone<R>(
     LocalSpan span,
     FutureOr<R> Function(LocalSpan span) delegate,
@@ -77,32 +110,22 @@ class Tracer implements TelemetryScope {
     return runZoned(() async {
       try {
         return await delegate(span);
-      } catch (error) {
-        span.addExceptionEvent(error);
+      } catch (error, stack) {
+        span.recordException(error, stack: stack);
         rethrow;
       }
-    }, zoneValues: {_tracerSpanKey: span});
+    }, zoneValues: {_activeSpanKey: span});
   }
 
-  Span? findParentSpan() => switch (Zone.current[_tracerSpanKey]) {
-    final Span span => span,
-    _ => null,
-  };
+  /// The active span of the current zone, see [currentSpan].
+  Span? findParentSpan() => currentSpan;
 
-  FutureOr<R> remoteSpan<R>(
-    TraceId traceId,
-    SpanId spanId,
-    FutureOr<R> Function() delegate,
-  ) {
-    return runZoned(
-      delegate,
-      zoneValues: {
-        _tracerSpanKey: Span(
-          traceId: traceId,
-          spanId: spanId,
-          parentSpanId: null,
-        ),
-      },
-    );
+  /// Called by [LocalSpan.end].
+  @internal
+  void spanEnded(LocalSpan span) {
+    if (span.isSampled) {
+      _exporter.onEnd(span);
+    }
+    _onEnd?.call(span);
   }
 }

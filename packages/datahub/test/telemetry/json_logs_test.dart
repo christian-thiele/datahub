@@ -30,7 +30,7 @@ void main() {
       final messages = [for (final line in lines) jsonDecode(line)];
       expect(messages[0]['severity'], equals('DEBUG'));
       expect(messages[0]['msg'], equals('Short line'));
-      expect(messages[1]['severity'], equals('WARNING'));
+      expect(messages[1]['severity'], equals('WARN'));
       expect(
         messages[1]['msg'],
         equals('Some line with \nline breaks and special chars "\'\\'),

@@ -6,19 +6,19 @@ import 'package:postgres/postgres.dart';
 
 import 'abstract/database_connection.dart';
 import 'postgresql_context.dart';
+import 'postgresql_telemetry.dart';
 
 class PostgresqlConnection extends DatabaseConnection {
   final Connection _connection;
   final bool logStatements;
-  late final String _connectionId;
+  final PostgresqlTelemetry telemetry;
 
   PostgresqlConnection(
     super.adapter,
     this._connection, {
     this.logStatements = false,
-  }) {
-    _connectionId = uuid();
-  }
+    this.telemetry = PostgresqlTelemetry.disabled,
+  });
 
   @override
   Future<void> close() async {
@@ -53,18 +53,17 @@ class PostgresqlConnection extends DatabaseConnection {
     final contextCompleter = Completer<PostgresqlContext>();
     return await runZoned(
       () {
-        final telemetry = Find<Telemetry>().find();
         return _connection.runTx((session) async {
-          return await telemetry.trace(
-            'PostgreSQL Transaction',
-            type: SpanType.internal,
-            attributes: {'postgresql.connection.id': _connectionId},
-            (span) async {
-              final context = PostgresqlContext(uuid(), session, logStatements);
-              contextCompleter.complete(context);
-              return await delegate(context);
-            },
-          );
+          return await telemetry.transaction(() async {
+            final context = PostgresqlContext(
+              uuid(),
+              session,
+              logStatements,
+              telemetry,
+            );
+            contextCompleter.complete(context);
+            return await delegate(context);
+          });
         });
       },
       zoneValues: {

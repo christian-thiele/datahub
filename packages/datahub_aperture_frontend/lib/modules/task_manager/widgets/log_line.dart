@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
@@ -34,10 +33,9 @@ class _LogLineState extends State<LogLine> {
     if (decoded != null) {
       try {
         data = decoded.map((k, v) => MapEntry(k, v.toString()));
-        severityLevel = findEnum(
+        severityLevel = const JsonDataCodec().decodeEnum(
           decoded['severity'],
           SeverityLevel.values,
-          ignoreCase: true,
         );
         message = decoded['msg']?.toString() ?? '';
         timestamp = DateTime.tryParse(decoded['timestamp']?.toString() ?? '');

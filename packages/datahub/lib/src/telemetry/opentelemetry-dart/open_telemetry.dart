@@ -1,5 +1,9 @@
 //TODO standalone library
 
+export 'opentelemetry/proto/collector/logs/v1/logs_service.pb.dart';
+export 'opentelemetry/proto/collector/logs/v1/logs_service.pbenum.dart';
+export 'opentelemetry/proto/collector/logs/v1/logs_service.pbgrpc.dart';
+export 'opentelemetry/proto/collector/logs/v1/logs_service.pbjson.dart';
 export 'opentelemetry/proto/collector/trace/v1/trace_service.pb.dart';
 export 'opentelemetry/proto/collector/trace/v1/trace_service.pbenum.dart';
 export 'opentelemetry/proto/collector/trace/v1/trace_service.pbgrpc.dart';
@@ -7,6 +11,9 @@ export 'opentelemetry/proto/collector/trace/v1/trace_service.pbjson.dart';
 export 'opentelemetry/proto/common/v1/common.pb.dart';
 export 'opentelemetry/proto/common/v1/common.pbenum.dart';
 export 'opentelemetry/proto/common/v1/common.pbjson.dart';
+export 'opentelemetry/proto/logs/v1/logs.pb.dart';
+export 'opentelemetry/proto/logs/v1/logs.pbenum.dart';
+export 'opentelemetry/proto/logs/v1/logs.pbjson.dart';
 export 'opentelemetry/proto/resource/v1/resource.pb.dart';
 export 'opentelemetry/proto/resource/v1/resource.pbenum.dart';
 export 'opentelemetry/proto/resource/v1/resource.pbjson.dart';

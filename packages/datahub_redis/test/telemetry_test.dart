@@ -200,6 +200,40 @@ void main() {
       expect(await _metric('redis_pool_size_target'), isNull);
     }, config: {'metricPrefix': 'cache'});
 
+    env.test('traces commands as client spans', (redis) async {
+      final spans = <LocalSpan>[];
+      final subscription = Find<Telemetry>().find().endedSpans.listen(
+        spans.add,
+      );
+
+      await redis.get('key');
+      await redis.set('key', 'value');
+      await expectLater(
+        redis.lpush('key', ['x']),
+        throwsA(isA<RedisServerException>()),
+      );
+      await redis.transaction((tx) {
+        tx.set('a', '1');
+        tx.set('b', '2');
+      });
+      await subscription.cancel();
+
+      final get = spans.firstWhere((s) => s.name == 'GET');
+      expect(get.type, equals(SpanType.client));
+      expect(get.attributes['db.system.name'], equals('redis'));
+      expect(get.attributes['db.operation.name'], equals('GET'));
+      expect(get.attributes['server.port'], isA<int>());
+
+      final failed = spans.firstWhere((s) => s.name == 'LPUSH');
+      expect(failed.hasError, isTrue);
+      expect(failed.attributes['db.response.status_code'], equals('WRONGTYPE'));
+      expect(failed.attributes['error.type'], equals('WRONGTYPE'));
+
+      final multi = spans.firstWhere((s) => s.name == 'MULTI');
+      expect(multi.attributes['db.operation.batch.size'], equals(2));
+      expect(multi.attributes['datahub.redis.transaction.aborted'], isFalse);
+    });
+
     env.test('works with tracing enabled', (redis) async {
       await redis.set('key', 'value');
       expect(await redis.get('key'), equals('value'));

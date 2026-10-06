@@ -17,7 +17,7 @@ mixin DatabaseConnectionManager<
     on ServiceInstance<TService> {
   final _adapterId = randomHexId(5);
 
-  late final _pool = Pool<TConnection>(
+  late final Pool<TConnection> _pool = Pool<TConnection>(
     read(targetPoolSize),
     _create,
     maxLifetime: read(maxConnectionLifetime),
@@ -26,7 +26,11 @@ mixin DatabaseConnectionManager<
     onReturn: read(resetConnectionOnReturn) ? (c) => c.reset() : null,
     maintenanceInterval: read(poolMaintenanceInterval),
     autoRefill: true,
-    onChange: _updateMetrics,
+    onChange: () => onPoolChanged(
+      target: _pool.targetSize,
+      total: _pool.total,
+      available: _pool.available,
+    ),
     onRemoveItem: (c) => c.close(),
   );
 
@@ -42,37 +46,25 @@ mixin DatabaseConnectionManager<
 
   Config<Duration> get poolMaintenanceInterval;
 
-  Config<bool> get enableMetrics;
-
-  Config<String> get metricPrefix;
-
   int get poolSize => _pool.total;
 
   int get poolAvailable => _pool.available;
 
-  late final GaugeMetric? _poolTargetMetric;
-  late final GaugeMetric? _poolTotalMetric;
-  late final GaugeMetric? _poolAvailableMetric;
-
   Future<TConnection> openConnection();
+
+  /// Called when the size of the pool changed, e.g. to update metrics.
+  void onPoolChanged({
+    required int target,
+    required int total,
+    required int available,
+  }) {}
+
+  /// Wraps taking a connection from the pool, e.g. to measure the wait.
+  Future<TConnection> onPoolTake(Future<TConnection> Function() take) => take();
 
   @override
   Future<void> initialize() async {
     await super.initialize();
-    if (read(enableMetrics)) {
-      final instrumentation = find(Find<Telemetry>());
-      final prefix = read(metricPrefix);
-      _poolTargetMetric = instrumentation.gauge('${prefix}_pool_size_target');
-      _poolTotalMetric = instrumentation.gauge('${prefix}_pool_size_total');
-      _poolAvailableMetric = instrumentation.gauge(
-        '${prefix}_pool_size_available',
-      );
-    } else {
-      _poolTargetMetric = null;
-      _poolTotalMetric = null;
-      _poolAvailableMetric = null;
-    }
-
     await _pool.fill();
   }
 
@@ -104,7 +96,9 @@ mixin DatabaseConnectionManager<
       return await delegate(Zone.current['$_adapterId/connection']);
     }
 
-    final connection = await _pool.take(timeout: timeout ?? read(poolTimeout));
+    final connection = await onPoolTake(
+      () => _pool.take(timeout: timeout ?? read(poolTimeout)),
+    );
 
     return await runZoned(() async {
       try {
@@ -127,11 +121,5 @@ mixin DatabaseConnectionManager<
         _pool.give(connection);
       }
     }, zoneValues: {'$_adapterId/connection': connection});
-  }
-
-  void _updateMetrics() {
-    _poolTargetMetric?.set(_pool.targetSize);
-    _poolTotalMetric?.set(_pool.total);
-    _poolAvailableMetric?.set(_pool.available);
   }
 }

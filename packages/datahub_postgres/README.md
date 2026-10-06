@@ -32,5 +32,23 @@ Add `datahub_postgres` to the `dependencies` section of your projects
 $ dart pub add datahub_postgres
 ```
 
+### Telemetry
+
+`PostgresqlService` publishes metrics (`enableMetrics`, default `true`) named `<metricPrefix>_<name>` (default prefix
+`postgresql`):
+
+| Metric                                                   | Type      | Description                                            |
+|----------------------------------------------------------|-----------|--------------------------------------------------------|
+| `queries_total{status}`                                  | counter   | Queries by result (`ok`, `error`)                      |
+| `query_duration_seconds`                                 | histogram | Time from sending a query until its result was received |
+| `pool_size_target` / `_total` / `_available` / `_in_use` | gauge     | State of the connection pool                           |
+| `pool_wait_seconds`                                      | histogram | Wait for a pooled connection                           |
+
+With `enableTracing` (default `true`), queries are traced as spans of kind `client` named after the operation (e.g.
+`SELECT`), with the attributes `db.system.name`, `db.namespace`, `db.operation.name`, `server.address` and
+`server.port`, and `error.type` and `db.response.status_code` (the SQLSTATE) on failure. `db.query.text` is added for
+parameterized queries, and for queries with inlined values only if `logStatements` is enabled. Transactions are
+spans named `postgresql transaction`.
+
 
 [1]: https://github.com/christian-thiele/datahub

@@ -259,7 +259,9 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
                           for (final (key, value) in message.labels.tuples)
                             key: value,
                           'timestamp': message.timestamp.toIso8601String(),
-                          'severity': message.level.name.toUpperCase(),
+                          'severity': const JsonDataCodec().encodeEnum(
+                            message.level,
+                          ),
                           'msg': message.line,
                           if (message.error != null)
                             'error': message.error.toString(),
@@ -281,8 +283,8 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
                 error: e,
                 stack: stack,
                 labels: {
-                  'taskManager.taskId': invocation.taskId,
-                  'taskManager.invocationId': invocation.id,
+                  'datahub.task.id': invocation.taskId,
+                  'datahub.task.invocation.id': invocation.id,
                 },
               );
             }
@@ -292,8 +294,8 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
         log.info(
           'Task started',
           labels: {
-            'taskManager.taskId': invocation.taskId,
-            'taskManager.invocationId': invocation.id,
+            'datahub.task.id': invocation.taskId,
+            'datahub.task.invocation.id': invocation.id,
           },
         );
         try {
@@ -302,8 +304,8 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
               log.trace(
                 'Task: ${(math.min(math.max(0, progress), 1) * 100).toInt()}%',
                 labels: {
-                  'taskManager.taskId': invocation.taskId,
-                  'taskManager.invocationId': invocation.id,
+                  'datahub.task.id': invocation.taskId,
+                  'datahub.task.invocation.id': invocation.id,
                 },
               );
               try {
@@ -329,8 +331,8 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
                   error: e,
                   stack: stack,
                   labels: {
-                    'taskManager.taskId': invocation.taskId,
-                    'taskManager.invocationId': invocation.id,
+                    'datahub.task.id': invocation.taskId,
+                    'datahub.task.invocation.id': invocation.id,
                   },
                 );
               }
@@ -342,8 +344,8 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
                 error: error,
                 stack: stack,
                 labels: {
-                  'taskManager.taskId': invocation.taskId,
-                  'taskManager.invocationId': invocation.id,
+                  'datahub.task.id': invocation.taskId,
+                  'datahub.task.invocation.id': invocation.id,
                 },
               );
               try {
@@ -375,8 +377,8 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
                   error: e,
                   stack: stack,
                   labels: {
-                    'taskManager.taskId': invocation.taskId,
-                    'taskManager.invocationId': invocation.id,
+                    'datahub.task.id': invocation.taskId,
+                    'datahub.task.invocation.id': invocation.id,
                   },
                 );
               }
@@ -385,8 +387,8 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
               log.trace(
                 'Task heartbeat',
                 labels: {
-                  'taskManager.taskId': invocation.taskId,
-                  'taskManager.invocationId': invocation.id,
+                  'datahub.task.id': invocation.taskId,
+                  'datahub.task.invocation.id': invocation.id,
                 },
               );
               try {
@@ -409,8 +411,8 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
                   error: e,
                   stack: stack,
                   labels: {
-                    'taskManager.taskId': invocation.taskId,
-                    'taskManager.invocationId': invocation.id,
+                    'datahub.task.id': invocation.taskId,
+                    'datahub.task.invocation.id': invocation.id,
                   },
                 );
               }
@@ -423,7 +425,7 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
             (span) async => await executor.execute(progress, parameters),
             attributes: {
               'datahub.task.id': executor.taskId,
-              'datahub.task.invocation_id': invocation.id,
+              'datahub.task.invocation.id': invocation.id,
             },
           );
           final finishedAt = DateTime.timestamp();
@@ -442,8 +444,8 @@ class _TaskManagerServiceInstance extends ServiceInstance<TaskManagerService>
             error: error,
             stack: stack,
             labels: {
-              'taskManager.taskId': invocation.taskId,
-              'taskManager.invocationId': invocation.id,
+              'datahub.task.id': invocation.taskId,
+              'datahub.task.invocation.id': invocation.id,
             },
           );
 

@@ -1,46 +1,47 @@
-import 'dart:io';
+import 'package:grpc/grpc.dart';
+import 'package:meta/meta.dart';
 
-import 'package:boost/boost.dart';
-import 'package:datahub/utils.dart';
-
+import '../opentelemetry-dart/open_telemetry.dart' as otel;
+import '../otlp/otlp_batch_exporter.dart';
+import '../otlp/otlp_mapping.dart';
+import '../telemetry_scope.dart';
 import 'log_exporter.dart';
 import 'log_message.dart';
 
-class OpenTelemetryLogExporter implements LogExporter {
-  final Map<String, dynamic> resourceAttributes;
+/// Exports log messages to an OpenTelemetry collector via OTLP/gRPC.
+///
+/// Labels are exported as attributes, the error and stack trace as
+/// `exception.*` attributes, and the span of the message as trace context.
+class OpenTelemetryLogExporter extends OtlpBatchExporter<LogMessage>
+    implements LogExporter {
+  final Map<String, Object?> resourceAttributes;
+  final TelemetryScope scope;
+  final otel.LogsServiceClient _client;
 
-  OpenTelemetryLogExporter({required this.resourceAttributes});
-
-  @override
-  void add(LogMessage message) {
-    try {
-      final body = {
-        for (final (key, value) in message.labels.tuples) key: value,
-        'severity': message.level.name.toUpperCase(),
-        'msg': message.line,
-      };
-
-      /*
-      final logRecord = LogRecord(
-        body: jsonEncode(body),
-        timestamp: message.timestamp.nanosecondsSinceEpoch,
-        resource: resourceAttributes,
-        severityText: message.level.name.toUpperCase(),
-        severityNumber: message.level.severityNumber,
-        traceId: message.span?.traceId.hexId,
-        spanId: message.span?.spanId.hexId,
-      );
-      */
-
-      // TODO implement export to collector endpoints
-
-      stdout.writeln(logFmtEncode(body));
-    } catch (e) {
-      stdout.writeln(e.toString());
-      stdout.writeln(message.line);
-    }
-  }
+  OpenTelemetryLogExporter({
+    required ClientChannel channel,
+    required super.exportInterval,
+    required super.exportIntervalJitter,
+    required this.scope,
+    super.exportTimeout,
+    super.maxBatchSize,
+    super.maxBufferSize,
+    this.resourceAttributes = const {},
+  }) : _client = otel.LogsServiceClient(channel),
+       super(signal: 'logs');
 
   @override
-  void close() {}
+  Future<void> initialize() async => start();
+
+  @override
+  void add(LogMessage message) => enqueue(message);
+
+  @override
+  Future<void> export(List<LogMessage> batch) =>
+      send(otlpLogsRequest(resourceAttributes, scope, batch));
+
+  /// Sends [request] to the collector.
+  @protected
+  Future<void> send(otel.ExportLogsServiceRequest request) =>
+      _client.export(request);
 }

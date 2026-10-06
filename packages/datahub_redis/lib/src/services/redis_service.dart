@@ -112,8 +112,8 @@ class RedisService implements Service {
   /// Trace every command, transaction, connection setup, pool checkout and
   /// lock acquisition as span.
   ///
-  /// Disabled by default, since the spans of busy services can displace
-  /// other spans in the exporter buffer.
+  /// Busy services create many spans, which can displace other spans if
+  /// the exporter buffer is full. Disable tracing for those.
   final Config<bool> enableTracing;
 
   const RedisService({
@@ -172,7 +172,7 @@ class RedisService implements Service {
     ),
     this.enableTracing = const Config<bool>(
       'enableTracing',
-      defaultValue: false,
+      defaultValue: true,
     ),
   });
 

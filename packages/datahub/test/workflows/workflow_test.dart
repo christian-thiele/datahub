@@ -1145,7 +1145,7 @@ void main() {
 
         final message = jsonDecode(attempts.first.messages.single) as Map;
         expect(message['msg'], 'Requesting payment, attempt 1.');
-        expect(message['severity'], 'INFO');
+        expect(message['severity'], 'info');
       },
     );
 
@@ -1388,28 +1388,28 @@ void main() {
             .value;
 
         expect(
-          sample('workflow_invoice_steps', {
+          sample('workflow_invoice_steps_total', {
             'step': 'created',
             'outcome': 'succeeded',
           }),
           1,
         );
         expect(
-          sample('workflow_invoice_steps', {
+          sample('workflow_invoice_steps_total', {
             'step': 'generated',
             'outcome': 'failed',
           }),
           1,
         );
         expect(
-          sample('workflow_invoice_steps', {
+          sample('workflow_invoice_steps_total', {
             'step': 'generated',
             'outcome': 'succeeded',
           }),
           1,
         );
         expect(
-          sample('workflow_invoice_signals', {
+          sample('workflow_invoice_signals_total', {
             'signal': 'PaymentSuccessSignal',
           }),
           1,

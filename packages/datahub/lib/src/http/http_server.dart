@@ -16,12 +16,31 @@ import 'http_request.dart';
 
 typedef HttpRequestHandler = Future<HttpResponse> Function(HttpRequest);
 
+/// HTTP/1.1 and HTTP/2 server.
+///
+/// Every request is traced in a span of kind server (unless [enableTracing]
+/// is false or there is no [Telemetry]), which continues the trace of the
+/// caller if the request has a `traceparent` header. Handlers can add to
+/// this span (e.g. `http.route`) via [Tracer.currentSpan].
 class HttpServer {
+  static const _knownMethods = {
+    'CONNECT',
+    'DELETE',
+    'GET',
+    'HEAD',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+    'TRACE',
+  };
+
   final dynamic _serverSocket;
   final HttpRequestHandler requestHandler;
   final void Function(dynamic error, StackTrace stack) onSocketError;
   final void Function(dynamic error, StackTrace stack) onProtocolError;
   final void Function(dynamic error, StackTrace stack) onStreamError;
+  final bool enableTracing;
 
   late final _http1Adapter = ServerSocketAdapter(
     _serverSocket.address,
@@ -39,8 +58,9 @@ class HttpServer {
     this.requestHandler,
     this.onSocketError,
     this.onProtocolError,
-    this.onStreamError,
-  ) {
+    this.onStreamError, {
+    this.enableTracing = true,
+  }) {
     if (_serverSocket is! io.ServerSocket &&
         _serverSocket is! io.SecureServerSocket) {
       throw Exception('No server socket.');
@@ -88,18 +108,95 @@ class HttpServer {
     _http1.listen(_handleHttp1RequestTraced);
   }
 
-  Future<void> _handleHttp1RequestTraced(io.HttpRequest request) async {
-    final tracer = Context.maybeOfZone()?.find(Find<Telemetry?>());
-    if (tracer != null) {
-      await tracer.trace('HTTP/1.1', (_) => _handleHttp1Request(request));
-    } else {
-      await _handleHttp1Request(request);
+  Future<void> _handleHttp1RequestTraced(io.HttpRequest request) {
+    String? header(String name) => switch (request.headers[name]) {
+      [final value] => value,
+      _ => null,
+    };
+
+    return _traced(
+      method: request.method,
+      uri: request.uri,
+      protocolVersion: request.protocolVersion,
+      parent: TraceContext.parse(header(TraceContext.traceparentHeader)),
+      userAgent: header(io.HttpHeaders.userAgentHeader),
+      handle: (span) => _handleHttp1Request(request, span),
+    );
+  }
+
+  /// Runs [handle] in a server span, according to the semantic conventions
+  /// for HTTP server spans.
+  Future<void> _traced({
+    required String method,
+    required Uri uri,
+    required String protocolVersion,
+    required Span? parent,
+    required String? userAgent,
+    required Future<void> Function(LocalSpan? span) handle,
+  }) async {
+    final telemetry = enableTracing
+        ? Context.maybeOfZone()?.find(Find<Telemetry?>())
+        : null;
+    if (telemetry == null) {
+      return await handle(null);
+    }
+
+    final knownMethod = _knownMethods.contains(method) ? method : '_OTHER';
+    await telemetry.trace(
+      knownMethod == '_OTHER' ? 'HTTP' : knownMethod,
+      type: SpanType.server,
+      parent: parent,
+      attributes: {
+        'http.request.method': knownMethod,
+        if (knownMethod != method) 'http.request.method_original': method,
+        'url.path': nullOrWhitespace(uri.path) ? '/' : uri.path,
+        'url.scheme': _serverSocket is io.SecureServerSocket ? 'https' : 'http',
+        'network.protocol.version': protocolVersion,
+        'server.port': _serverSocket.port,
+        'user_agent.original': ?userAgent,
+      },
+      handle,
+    );
+  }
+
+  /// Adds the status code to [span], status codes >= 500 fail it.
+  static void _recordStatus(LocalSpan? span, int statusCode) {
+    if (span == null) {
+      return;
+    }
+
+    span.setAttribute('http.response.status_code', statusCode);
+    if (statusCode >= 500) {
+      if (!span.attributes.containsKey('error.type')) {
+        span.setAttribute('error.type', statusCode.toString());
+      }
+      span.setError();
     }
   }
 
-  Future<void> _handleHttp1Request(io.HttpRequest request) async {
+  static void _recordException(
+    LocalSpan? span,
+    Object error,
+    StackTrace stack,
+  ) {
+    if (span == null) {
+      return;
+    }
+
+    span.recordException(error, stack: stack);
+    if (!span.attributes.containsKey('error.type')) {
+      span.setAttribute('error.type', error.runtimeType.toString());
+    }
+    _recordStatus(span, 500);
+  }
+
+  Future<void> _handleHttp1Request(
+    io.HttpRequest request,
+    LocalSpan? span,
+  ) async {
     try {
       var result = await requestHandler(HttpRequest.http1(request));
+      _recordStatus(span, result.statusCode);
 
       for (var h in result.headers.entries) {
         request.response.headers.add(h.key, h.value);
@@ -117,6 +214,7 @@ class HttpServer {
 
       await request.response.addStream(result.bodyData);
     } catch (e, stack) {
+      _recordException(span, e, stack);
       try {
         request.response.statusCode = 500;
         if (Context.maybeOfZone()?.environment == Environment.dev) {
@@ -148,21 +246,10 @@ class HttpServer {
     final connection = http2.ServerTransportConnection.viaSocket(socket);
     _http2Connections.add(connection);
     connection.incomingStreams.listen(
-      _handleHttp2StreamTraced,
+      _handleHttp2Stream,
       onError: onStreamError,
       onDone: () => _http2Connections.remove(connection),
     );
-  }
-
-  Future<void> _handleHttp2StreamTraced(
-    http2.ServerTransportStream stream,
-  ) async {
-    final tracer = Context.maybeOfZone()?.find(Find<Telemetry?>());
-    if (tracer != null) {
-      await tracer.trace('HTTP/2', (_) => _handleHttp2Stream(stream));
-    } else {
-      await _handleHttp2Stream(stream);
-    }
   }
 
   Future<void> _handleHttp2Stream(http2.ServerTransportStream stream) async {
@@ -181,9 +268,17 @@ class HttpServer {
               unawaited(dataController.close());
             }
 
-            requestCompleter.complete(
-              HttpRequest.http2(event, dataController.stream),
-            );
+            if (requestCompleter.isCompleted) {
+              // trailers
+              return;
+            }
+            try {
+              requestCompleter.complete(
+                HttpRequest.http2(event, dataController.stream),
+              );
+            } catch (e, stack) {
+              requestCompleter.completeError(e, stack);
+            }
           } else if (event is http2.DataStreamMessage) {
             dataController.add(event.bytes);
             if (event.endStream) {
@@ -195,44 +290,78 @@ class HttpServer {
         onError: (e, stack) => onStreamError(e, stack),
       );
 
-      final request = await requestCompleter.future;
-
+      final HttpRequest request;
       try {
-        final response = await requestHandler(request);
-        if (terminated.cancellationRequested) {
-          throw Exception('Remote closed stream.');
-        }
+        request = await requestCompleter.future;
+      } catch (e) {
+        log.debug('Invalid HTTP2 request.', error: e);
+        stream.sendHeaders([
+          http2.Header.ascii(':status', '400'),
+        ], endStream: true);
+        await incomingSubscription.cancel();
+        return;
+      }
 
-        if (response is UpgradeHttpResponse) {
-          // websockets over HTTP/2 require extended CONNECT (RFC 8441),
-          // which is not implemented
-          throw ApiException(
-            'Connection upgrade is not supported over HTTP/2.',
-          );
-        }
+      await _traced(
+        method: request.method.name.toUpperCase(),
+        uri: request.requestUri,
+        protocolVersion: '2',
+        parent: TraceContext.fromHeaders(request.headers),
+        userAgent: request.headers[io.HttpHeaders.userAgentHeader]?.firstOrNull,
+        handle: (span) => _respondHttp2(
+          stream,
+          request,
+          terminated,
+          incomingSubscription,
+          span,
+        ),
+      );
+    } catch (e, stack) {
+      log.error('Error while handling HTTP2 stream.', error: e, stack: stack);
+    }
+  }
 
-        final headers = [
-          http2.Header.ascii(':status', response.statusCode.toString()),
-          ...response.headers.entries.expand(
-            (h) =>
-                h.value.map((v) => http2.Header.ascii(h.key.toLowerCase(), v)),
-          ),
-        ];
+  Future<void> _respondHttp2(
+    http2.ServerTransportStream stream,
+    HttpRequest request,
+    CancellationToken terminated,
+    StreamSubscription<http2.StreamMessage> incomingSubscription,
+    LocalSpan? span,
+  ) async {
+    try {
+      final response = await requestHandler(request);
+      _recordStatus(span, response.statusCode);
+      if (terminated.cancellationRequested) {
+        throw Exception('Remote closed stream.');
+      }
 
-        stream.sendHeaders(headers);
+      if (response is UpgradeHttpResponse) {
+        // websockets over HTTP/2 require extended CONNECT (RFC 8441),
+        // which is not implemented
+        throw ApiException('Connection upgrade is not supported over HTTP/2.');
+      }
 
-        final responseBodyComplete = Completer();
-        final responseBodySubscription = response.bodyData.listen(
-          stream.sendData,
-          onDone: responseBodyComplete.complete,
-          onError: responseBodyComplete.completeError,
-        );
+      final headers = [
+        http2.Header.ascii(':status', response.statusCode.toString()),
+        ...response.headers.entries.expand(
+          (h) => h.value.map((v) => http2.Header.ascii(h.key.toLowerCase(), v)),
+        ),
+      ];
 
-        terminated.attach(responseBodySubscription.cancel);
-        await responseBodyComplete.future;
+      stream.sendHeaders(headers);
 
-        //## PUSH STREAM ?
-        /*if (stream.canPush && response is PushStreamResponse) {
+      final responseBodyComplete = Completer();
+      final responseBodySubscription = response.bodyData.listen(
+        stream.sendData,
+        onDone: responseBodyComplete.complete,
+        onError: responseBodyComplete.completeError,
+      );
+
+      terminated.attach(responseBodySubscription.cancel);
+      await responseBodyComplete.future;
+
+      //## PUSH STREAM ?
+      /*if (stream.canPush && response is PushStreamResponse) {
           final subscription = response.pushStream.listen(
             (event) async {
               final pushTerminated = CancellationToken();
@@ -276,40 +405,38 @@ class HttpServer {
         } else {
           await stream.outgoingMessages.close();
         }*/
-        //## PUSH STREAM ?
+      //## PUSH STREAM ?
 
-        await stream.outgoingMessages.close();
-      } catch (e, stack) {
-        // exceptions are usually handled at the ApiEndpoint and converted
-        // to ApiResponses. this is just in case:
-        var errorMessage = 'Error while handling request.';
-        try {
-          errorMessage = 'Error while handling request to "${request.path}".';
-        } catch (_) {}
-
-        log.error(errorMessage, error: e, stack: stack);
-
-        if (!terminated.cancellationRequested) {
-          stream.sendHeaders([http2.Header.ascii(':status', '500')]);
-          if (Context.maybeOfZone()?.environment == Environment.dev) {
-            stream.sendData(
-              utf8.encode('500 - Internal Server Error\n$e\n$stack'),
-            );
-          } else {
-            stream.sendData(utf8.encode('500 - Internal Server Error'));
-          }
-        }
-
-        await stream.outgoingMessages.close();
-      } finally {
-        // Stop receiving request data the handler did not consume, so it
-        // does not accumulate in [dataController]. Since the outgoing side
-        // is already closed at this point, this resets the stream if the
-        // remote is still sending data.
-        await incomingSubscription.cancel();
-      }
+      await stream.outgoingMessages.close();
     } catch (e, stack) {
-      log.error('Error while handling HTTP2 stream.', error: e, stack: stack);
+      // exceptions are usually handled at the ApiEndpoint and converted
+      // to ApiResponses. this is just in case:
+      _recordException(span, e, stack);
+      var errorMessage = 'Error while handling request.';
+      try {
+        errorMessage = 'Error while handling request to "${request.path}".';
+      } catch (_) {}
+
+      log.error(errorMessage, error: e, stack: stack);
+
+      if (!terminated.cancellationRequested) {
+        stream.sendHeaders([http2.Header.ascii(':status', '500')]);
+        if (Context.maybeOfZone()?.environment == Environment.dev) {
+          stream.sendData(
+            utf8.encode('500 - Internal Server Error\n$e\n$stack'),
+          );
+        } else {
+          stream.sendData(utf8.encode('500 - Internal Server Error'));
+        }
+      }
+
+      await stream.outgoingMessages.close();
+    } finally {
+      // Stop receiving request data the handler did not consume, so it
+      // does not accumulate in [dataController]. Since the outgoing side
+      // is already closed at this point, this resets the stream if the
+      // remote is still sending data.
+      await incomingSubscription.cancel();
     }
   }
 

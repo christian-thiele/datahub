@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:math';
 
-import 'package:boost/boost.dart';
-import 'package:datahub/utils.dart';
-
 import 'metric.dart';
 import 'metric_sample.dart';
+import 'metric_series.dart';
 import 'sample_group.dart';
 
 /// A histogram metric for use with [TelemetryService].
@@ -27,104 +25,116 @@ import 'sample_group.dart';
 /// definition methods on [TelemetryService]:
 /// * counter
 /// * gauge
+/// * histogram
 /// * linearHistogram
 /// * exponentialHistogram
 ///
 /// This way, the same metric can be injected from different places inside the
 /// application.
-/// Metrics can be instantiated anywhere and registered at the
-/// [TelemetryService] either through the [ServiceResolver] by invoking
-/// the [register] method.
 ///
-/// Labels are either declared with all of their values ([labels]), which
+/// Labels are declared either with all of their values ([labels]), which
 /// creates a series for every combination upfront, or by name only
 /// ([labelNames]), which creates a series once a combination is observed.
 /// The latter is meant for labels whose values are bounded, but not known in
 /// advance (like routes or status codes), never for unbounded values like
-/// ids or paths.
+/// ids or paths. Values for labels that were not declared are dropped, see
+/// [MetricSeriesSet].
 class HistogramMetric extends Metric {
-  final List<num> _boundaries;
-  final Set<String>? _labelNames;
-  final _series = <_HistogramSeries>[];
+  /// Bucket boundaries for durations in seconds, as recommended by the
+  /// semantic conventions (e.g. for `http.server.request.duration`).
+  static const defaultDurationBuckets = <num>[
+    0.005,
+    0.01,
+    0.025,
+    0.05,
+    0.075,
+    0.1,
+    0.25,
+    0.5,
+    0.75,
+    1,
+    2.5,
+    5,
+    7.5,
+    10,
+  ];
 
-  HistogramMetric.linear(
+  final List<num> _boundaries;
+  final MetricSeriesSet<_HistogramSeries> _series;
+
+  /// A histogram with the given upper bucket boundaries (ascending).
+  HistogramMetric(
     super.name, {
+    required List<num> buckets,
+    super.help,
+    Map<String, List<String>>? labels,
+    Set<String>? labelNames,
+  }) : assert(
+         [
+           for (var i = 1; i < buckets.length; i++) i,
+         ].every((i) => buckets[i - 1] < buckets[i]),
+         'Bucket boundaries must be ascending.',
+       ),
+       _boundaries = List.unmodifiable(buckets),
+       _series = MetricSeriesSet(
+         name,
+         labels: labels,
+         labelNames: labelNames,
+         create: (labels) => _HistogramSeries(labels, buckets),
+       ),
+       super(type: MetricType.histogram);
+
+  /// A histogram with [count] buckets of [width], the first one ending at
+  /// [start].
+  HistogramMetric.linear(
+    String name, {
     required num start,
     required num width,
     required int count,
-    super.help,
+    String? help,
     Map<String, List<String>>? labels,
     Set<String>? labelNames,
-  }) : assert(labels == null || labelNames == null),
-       _boundaries = List.generate(count, (i) => start + (width / count) * i),
-       _labelNames = labelNames,
-       super(type: MetricType.histogram) {
-    _createSeries(labels);
-  }
+  }) : this(
+         name,
+         buckets: List.generate(count, (i) => start + width * i),
+         help: help,
+         labels: labels,
+         labelNames: labelNames,
+       );
 
+  /// A histogram with [count] buckets, the first one ending at [start] and
+  /// each following one ending at [factor] times the previous end.
   HistogramMetric.exponential(
-    super.name, {
+    String name, {
     required num start,
     required num factor,
     required int count,
-    super.help,
+    String? help,
     Map<String, List<String>>? labels,
     Set<String>? labelNames,
-  }) : assert(labels == null || labelNames == null),
-       _boundaries = List.generate(count, (i) => start * pow(factor, i)),
-       _labelNames = labelNames,
-       super(type: MetricType.histogram) {
-    _createSeries(labels);
-  }
+  }) : this(
+         name,
+         buckets: List.generate(count, (i) => start * pow(factor, i)),
+         help: help,
+         labels: labels,
+         labelNames: labelNames,
+       );
 
-  void _createSeries(Map<String, List<String>>? labels) {
-    if (_labelNames != null) {
-      // series are created when observed
-    } else if (labels != null && labels.isNotEmpty) {
-      final combinations = cartesianProduct(
-        labels.entries.map(
-          (e) => e.value.map((value) => MapEntry(e.key, value)),
-        ),
-      );
-      for (final combination in combinations) {
-        _series.add(
-          _HistogramSeries(Map.fromEntries(combination), _boundaries),
-        );
-      }
-    } else {
-      _series.add(_HistogramSeries(const {}, _boundaries));
-    }
-  }
-
-  _HistogramSeries _findSeries(Map<String, String> labels) {
-    for (final series in _series) {
-      if (series.labels.entriesEqual(labels)) {
-        return series;
-      }
-    }
-
-    if (_labelNames case final names?
-        when labels.length == names.length && names.containsAll(labels.keys)) {
-      final series = _HistogramSeries(Map.of(labels), _boundaries);
-      _series.add(series);
-      return series;
-    }
-
-    throw ApiError('No metric series matches given label combination.');
-  }
+  /// The upper boundaries of the buckets.
+  List<num> get boundaries => _boundaries;
 
   /// Observes [value], optionally for the series identified by [labels].
   ///
   /// The [labels] must match one of the label combinations declared when
   /// the metric was defined, or provide a value for each of its label names.
   void observe(num value, [Map<String, String> labels = const {}]) =>
-      _findSeries(labels).observe(value);
+      _series.find(labels)?.observe(value);
 
   @override
   SampleGroup collect() {
     final now = DateTime.timestamp();
     return SampleGroup(this, [
-      for (final series in _series) ...[
+      for (final series in _series.values) ...[
         for (final b in series.buckets)
           MetricSample(
             '${name}_bucket',
@@ -155,12 +165,10 @@ class HistogramMetric extends Metric {
     FutureOr<T> Function() delegate, [
     Map<String, String> labels = const {},
   ]) async {
-    final watch = Stopwatch();
-    watch.start();
+    final watch = Stopwatch()..start();
     try {
       return await delegate();
     } finally {
-      watch.stop();
       observeDuration(watch.elapsed, labels);
     }
   }

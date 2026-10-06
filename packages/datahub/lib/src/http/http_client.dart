@@ -1,8 +1,14 @@
 import 'dart:async';
 import 'dart:io' as io;
+
 import 'package:boost/boost.dart';
+import 'package:datahub/scaffold.dart';
+import 'package:datahub/telemetry.dart';
 import 'package:http/http.dart' as http;
 import 'package:http2/http2.dart' as http2;
+import 'package:meta/meta.dart';
+
+import '../telemetry/redaction.dart';
 
 import 'http_request.dart';
 import 'http_response.dart';
@@ -64,7 +70,60 @@ abstract class HttpClient {
     }
   }
 
-  Future<HttpResponse> request(HttpRequest httpRequest);
+  /// Sends [httpRequest] and returns the response once its headers are
+  /// received.
+  ///
+  /// If there is a [Telemetry] in the current zone, the request is traced in
+  /// a span of kind client according to the semantic conventions for HTTP
+  /// client spans, which is propagated to the server via the `traceparent`
+  /// header. Status codes >= 400 fail the span.
+  Future<HttpResponse> request(HttpRequest httpRequest) async {
+    final telemetry = Context.maybeOfZone()?.find(Find<Telemetry?>());
+    if (telemetry == null) {
+      return await send(httpRequest);
+    }
+
+    final method = httpRequest.method.name.toUpperCase();
+    final uri = httpRequest.requestUri;
+    return await telemetry.trace(
+      method,
+      type: SpanType.client,
+      attributes: {
+        'http.request.method': method,
+        'server.address': uri.host,
+        'server.port': uri.port,
+        'url.full': Redaction.redactUrl(uri),
+        'network.protocol.version': isHttp2 ? '2' : '1.1',
+      },
+      (span) async {
+        final HttpResponse response;
+        try {
+          response = await send(
+            HttpRequest(httpRequest.method, uri, {
+              for (final MapEntry(:key, :value) in httpRequest.headers.entries)
+                if (key.toLowerCase() != TraceContext.traceparentHeader)
+                  key: value,
+              TraceContext.traceparentHeader: [TraceContext.format(span)],
+            }, httpRequest.bodyData),
+          );
+        } catch (e) {
+          span.setAttribute('error.type', e.runtimeType.toString());
+          rethrow;
+        }
+
+        span.setAttribute('http.response.status_code', response.statusCode);
+        if (response.statusCode >= 400) {
+          span.setAttribute('error.type', response.statusCode.toString());
+          span.setError();
+        }
+        return response;
+      },
+    );
+  }
+
+  /// Sends [httpRequest] without tracing it, see [request].
+  @protected
+  Future<HttpResponse> send(HttpRequest httpRequest);
 
   Future<void> close();
 }
@@ -78,7 +137,7 @@ class _Http11Client extends HttpClient {
   _Http11Client(super.address, this.securityContext);
 
   @override
-  Future<HttpResponse> request(HttpRequest httpRequest) async {
+  Future<HttpResponse> send(HttpRequest httpRequest) async {
     final request = http.StreamedRequest(
       httpRequest.method.name.toUpperCase(),
       httpRequest.requestUri,
@@ -191,7 +250,7 @@ class _Http2Client extends HttpClient {
   }
 
   @override
-  Future<HttpResponse> request(HttpRequest httpRequest) async {
+  Future<HttpResponse> send(HttpRequest httpRequest) async {
     final connection = await _connection.get();
 
     final path = httpRequest.requestUri.hasQuery

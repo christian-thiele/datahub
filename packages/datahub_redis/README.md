@@ -119,7 +119,7 @@ await locks.runLocked('nightly-report', () async {
 | `lockRetryInterval`       | `500` (ms)      | Polling interval of waiting lock acquirers (in addition to Pub/Sub)   |
 | `enableMetrics`           | `true`          | Publish [metrics](#telemetry)                                         |
 | `metricPrefix`            | `redis`         | Prefix of the metrics                                                 |
-| `enableTracing`           | `false`         | Trace commands, transactions, pool checkouts and locks as spans       |
+| `enableTracing`           | `true`          | Trace commands, transactions, pool checkouts and locks as spans       |
 
 ### Telemetry
 
@@ -143,9 +143,11 @@ Metrics are named `<metricPrefix>_<name>` (default prefix `redis`):
 | `subscriber_reconnects_total`, `pubsub_messages_received_total` | counter | Pub/Sub connection losses and received messages        |
 | `script_cache_misses_total`                        | counter   | `eval` calls that had to send the script (`NOSCRIPT`)              |
 
-With `enableTracing`, spans of kind `client` named `Redis <COMMAND>` are created for every command, with the
-attributes `db.system.name`, `db.operation.name`, `db.namespace`, `server.address` and `server.port`. Transactions,
-connection setup, pool checkouts, `useConnection`, and lock acquisitions get their own spans.
+With `enableTracing`, spans of kind `client` named after the command (e.g. `GET`) are created for every command,
+with the attributes `db.system.name`, `db.operation.name`, `db.namespace`, `server.address` and `server.port`, and
+`error.type` and `db.response.status_code` (the error prefix, e.g. `WRONGTYPE`) on failure. Transactions are spans named
+`MULTI` with `db.operation.batch.size`. Connection setup, pool checkouts, `useConnection` and lock acquisitions get
+their own spans.
 
 Keys, channels, patterns and values are never used as labels, span names or attributes.
 

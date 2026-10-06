@@ -1,6 +1,6 @@
 import 'sample_group.dart';
 
-//TODO docs
+/// Exposes the metrics returned by [onScrape], e.g. [PrometheusExporter].
 abstract class MetricsExporter {
   final Future<List<SampleGroup>> Function() onScrape;
 

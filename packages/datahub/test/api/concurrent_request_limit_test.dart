@@ -39,7 +39,7 @@ void main() {
       await Future.delayed(const Duration(milliseconds: 200));
 
       expect(await scrapeMetric('api_active_requests'), equals(2));
-      expect(await scrapeMetric('api_requests_rejected'), equals(0));
+      expect(await scrapeMetric('api_requests_rejected_total'), equals(0));
 
       // over the limit: must be rejected with 503 instead of being served
       await expectLater(
@@ -53,7 +53,7 @@ void main() {
         ),
       );
 
-      expect(await scrapeMetric('api_requests_rejected'), equals(1));
+      expect(await scrapeMetric('api_requests_rejected_total'), equals(1));
 
       // requests within the limit are served normally
       release.complete();

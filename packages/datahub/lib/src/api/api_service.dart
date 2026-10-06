@@ -46,6 +46,15 @@ class ApiService implements Service {
   final Config<bool> enableMetrics;
   final Config<String> metricPrefix;
 
+  /// Whether requests are traced.
+  ///
+  /// Each request is traced in a span of kind server, which continues the
+  /// trace of the caller if the request has a `traceparent` header. The
+  /// span is named after the method and the route (e.g.
+  /// `GET /orders/{id}`) and has the attributes of the semantic conventions
+  /// for HTTP server spans.
+  final Config<bool> enableTracing;
+
   /// Whether requests and responses are logged at trace level.
   ///
   /// Each request is logged when it arrives (method, path, query and
@@ -92,6 +101,10 @@ class ApiService implements Service {
       'metricPrefix',
       defaultValue: 'api',
     ),
+    this.enableTracing = const Config<bool>(
+      'enableTracing',
+      defaultValue: true,
+    ),
     this.logRequests = const Config<bool>('logRequests', defaultValue: false),
     this.logRequestsBodyLimit = const Config<int>(
       'logRequestsBodyLimit',
@@ -118,6 +131,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   late final GaugeMetric? _activeRequestsMetric;
   late final CounterMetric? _rejectedRequestsMetric;
   late final HistogramMetric? _requestDurationMetric;
+  late final bool _tracing;
   int _activeRequests = 0;
   bool _disposing = false;
 
@@ -135,6 +149,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
     telemetry = find(service.telemetry);
     _concurrentRequestLimit = read(service.concurrentRequestLimit);
     _shutdownTimeout = read(service.shutdownTimeout);
+    _tracing = read(service.enableTracing);
     if (read(service.enableMetrics)) {
       final prefix = read(service.metricPrefix);
       _activeRequestsMetric = telemetry.gauge(
@@ -142,17 +157,15 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
         help: 'Number of requests currently being served.',
       );
       _rejectedRequestsMetric = telemetry.counter(
-        '${prefix}_requests_rejected',
+        '${prefix}_requests_rejected_total',
         help:
             'Number of requests rejected because the concurrent '
             'request limit was reached or the service is shutting down.',
       );
       // http.server.request.duration of the semantic conventions
-      _requestDurationMetric = telemetry.exponentialHistogram(
+      _requestDurationMetric = telemetry.histogram(
         '${prefix}_request_duration_seconds',
-        start: 0.005,
-        factor: 2,
-        count: 12,
+        buckets: HistogramMetric.defaultDurationBuckets,
         labelNames: {
           'http_request_method',
           'http_route',
@@ -213,6 +226,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
       _onSocketError,
       _onProtocolError,
       _onStreamError,
+      enableTracing: _tracing,
     );
   }
 
@@ -267,6 +281,15 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
     HttpRequest httpRequest,
     Map<String, String> metricLabels,
   ) async {
+    // the server span of the HttpServer is completed according to the
+    // semantic conventions for HTTP server spans, the status code is added
+    // by the HttpServer
+    final span = switch (Tracer.currentSpan) {
+      final LocalSpan span when _tracing && span.type == SpanType.server =>
+        span,
+      _ => null,
+    };
+
     try {
       final request = ApiRequest(
         httpRequest.requestUri,
@@ -279,74 +302,38 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
       final (handler, routeParams) = findEndpoint(_routes, request);
       request.routeParams.addAll(routeParams);
 
-      final method = httpRequest.method.name.toUpperCase();
       final route = routeParams['#pattern'];
       metricLabels['http_route'] = route ?? '';
+      if (route != null) {
+        span?.setAttribute('http.route', route);
+        span?.updateName('${httpRequest.method.name.toUpperCase()} $route');
+      }
 
-      // attributes and status according to the semantic conventions for
-      // HTTP server spans
-      return await telemetry.trace(
-        route == null ? method : '$method $route',
-        type: SpanType.server,
-        attributes: {
-          'http.request.method': method,
-          'http.route': ?route,
-          'url.path': httpRequest.path,
-          'url.scheme': _scheme,
-        },
-        (span) async {
-          final ApiResponse response;
-          try {
-            response = await handler(request);
-          } on ApiRequestException catch (e) {
-            span.addAttribute('http.response.status_code', e.statusCode);
-            if (e.statusCode >= 500) {
-              span.addAttribute('error.type', e.statusCode.toString());
-              rethrow;
-            }
-
-            // client errors do not fail server spans
-            span.addExceptionEvent(e, setError: false);
-            return e.toResponse().toHttpResponse(httpRequest.requestUri);
-          } catch (e) {
-            span.addAttribute('http.response.status_code', 500);
-            span.addAttribute('error.type', e.runtimeType.toString());
-            rethrow;
-          }
-
-          span.addAttribute('http.response.status_code', response.statusCode);
-          if (response.statusCode >= 500) {
-            span.addAttribute('error.type', response.statusCode.toString());
-            span.setHasError();
-          }
-          return response.toHttpResponse(httpRequest.requestUri);
-        },
-      );
+      final response = await handler(request);
+      return response.toHttpResponse(httpRequest.requestUri);
     } on ApiRequestException catch (e, stack) {
       if (e.statusCode >= 500 && e.statusCode < 600) {
+        span?.recordException(e, stack: stack);
         log.error(
           'Request failed with internal error.',
           error: e,
           stack: stack,
-          labels: {
-            'http.method': httpRequest.method.name.toUpperCase().toString(),
-            'http.path': httpRequest.path,
-            'http.status_code': e.statusCode.toString(),
-          },
+          labels: _logLabels(httpRequest, e.statusCode),
         );
+      } else {
+        // client errors do not fail server spans
+        span?.recordException(e, stack: stack, setError: false);
       }
       return e.toResponse().toHttpResponse(httpRequest.requestUri);
     } catch (e, stack) {
       metricLabels['error_type'] = e.runtimeType.toString();
+      span?.recordException(e, stack: stack);
+      span?.setAttribute('error.type', e.runtimeType.toString());
       log.error(
         'Request failed with internal error.',
         error: e,
         stack: stack,
-        labels: {
-          'http.method': httpRequest.method.name.toUpperCase().toString(),
-          'http.path': httpRequest.path,
-          'http.status_code': '500',
-        },
+        labels: _logLabels(httpRequest, 500),
       );
       // ignore: datahub_lints/avoid_zone_context_in_service
       if (Context.ofZone().environment == Environment.dev) {
@@ -362,6 +349,15 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
       }
     }
   }
+
+  static Map<String, String> _logLabels(
+    HttpRequest httpRequest,
+    int statusCode,
+  ) => {
+    'http.request.method': httpRequest.method.name.toUpperCase(),
+    'url.path': httpRequest.path,
+    'http.response.status_code': statusCode.toString(),
+  };
 
   static (RequestHandler, Map<String, String>) findEndpoint(
     List<ApiRoute> routes,
@@ -437,7 +433,7 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
   }
 
   void _onStreamError(dynamic e, StackTrace? trace) {
-    log('Error while handling HTTP2 stream.\n$e');
+    log.debug('Error while handling HTTP2 stream.', error: e, stack: trace);
   }
 
   @override

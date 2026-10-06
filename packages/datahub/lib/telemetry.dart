@@ -1,3 +1,7 @@
+/// Logs, metrics and traces, see [Telemetry] and the telemetry guidelines in
+/// `doc/telemetry.md`.
+library;
+
 export 'src/telemetry/logs/log_exporter.dart';
 export 'src/telemetry/logs/log_helper.dart';
 export 'src/telemetry/logs/log_listener.dart';
@@ -20,7 +24,7 @@ export 'src/telemetry/trace/discard_trace_exporter.dart';
 export 'src/telemetry/trace/event.dart';
 export 'src/telemetry/trace/open_telemetry_trace_exporter.dart';
 export 'src/telemetry/trace/span.dart';
+export 'src/telemetry/trace/trace_context.dart';
 export 'src/telemetry/trace/trace_exporter.dart';
-export 'src/telemetry/trace/trace_group.dart';
 export 'src/telemetry/trace/tracer.dart';
 export 'src/telemetry/trace_id.dart';

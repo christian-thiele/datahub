@@ -35,7 +35,7 @@ void main() {
       expect(
         lines[1],
         equals(
-          'severity="WARNING" msg="Some line with \\nline breaks and special chars \\"\'\\\\"',
+          'severity="WARN" msg="Some line with \\nline breaks and special chars \\"\'\\\\"',
         ),
       );
       expect(

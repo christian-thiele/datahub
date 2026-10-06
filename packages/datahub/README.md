@@ -41,5 +41,11 @@ maintainable, extensible, full-stack-reactive cloud-native applications.
 - Dependency Injection
 - Reactivity
 
+### Telemetry
+
+Logs, metrics and traces follow the OpenTelemetry semantic conventions and can be exported to an OpenTelemetry
+collector (OTLP/gRPC) and Prometheus. See the [telemetry guidelines](doc/telemetry.md) for the conventions, which
+also apply to code built with DataHub.
+
 
 [1]: https://github.com/christian-thiele/datahub

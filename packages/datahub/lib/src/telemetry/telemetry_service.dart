@@ -1,13 +1,18 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:boost/boost.dart';
 import 'package:datahub/config.dart';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/utils.dart';
+import 'package:grpc/grpc.dart'
+    show ChannelCredentials, ChannelOptions, ClientChannel;
 
 import 'logs/log_exporter.dart';
+import 'logs/log_helper.dart';
 import 'logs/log_listener.dart';
 import 'logs/log_message.dart';
+import 'logs/open_telemetry_log_exporter.dart';
 import 'logs/severity_level.dart';
 import 'logs/stdout_log_exporter.dart';
 import 'metrics/counter_metric.dart';
@@ -18,97 +23,118 @@ import 'metrics/metric_collector.dart';
 import 'metrics/metrics_exporter.dart';
 import 'metrics/prometheus_exporter.dart';
 import 'metrics/sample_group.dart';
+import 'telemetry_internal.dart';
+import 'telemetry_scope.dart';
 import 'trace/discard_trace_exporter.dart';
 import 'trace/open_telemetry_trace_exporter.dart';
 import 'trace/span.dart';
 import 'trace/trace_exporter.dart';
 import 'trace/tracer.dart';
 
-/// Internal service for collecting and exposing application metrics.
+/// Logs, metrics and traces of the application.
+///
+/// See `doc/telemetry.md` of the datahub package for the conventions of
+/// the framework, which also apply to application code.
+///
+/// ## Logs
+///
+/// Logs are written with the `log` helper (e.g. `log.info(...)`). Messages
+/// are written to stdout and, if enabled, exported to an OpenTelemetry
+/// collector. Messages logged within a span carry its trace and span id.
 ///
 /// ## Metrics
 ///
-/// For exposing metrics, creating [Metric] instances is required, which provide
-/// a handle for the given metric. Best practice for creating metric instances
-/// is by using the metric definition methods on [TelemetryService]:
-/// * [counter]
-/// * [gauge]
-/// * [linearHistogram]
-/// * [exponentialHistogram]
-///
-/// This way, the same metric can be injected from different places inside the
-/// application. If instantiated separately through their constructor, they
-/// have to be registered at the [TelemetryService] by invoking the
-/// [register] method.
-///
-/// In terms of Prometheus conventions, this service provides the
-/// "CollectorRegistry" and the "Bridge" to the Prometheus text based format.
-///
-/// Metrics can be scraped (see [scrapeMetrics]) into samples, which provide a
-/// snapshot of all of the current values. Usually this is done via the
-/// metrics endpoint, which provides the [prometheus text-bases format](https://prometheus.io/docs/instrumenting/exposition_formats/#text-based-format)
-/// for exposing metrics.
-///
-/// Configuration values: (location: "datahub.telemetry.metrics")
-///
-/// * `prometheusExporter.enable`: Enable prometheus text-based format endpoint (default false)
-/// * `prometheusExporter.address`: The address the HTTP-Server listens for, null means any (default null)
-/// * `prometheusExporter.port`: The port the HTTP-Server listens on (default 9090)
-/// * `prometheusExporter.path`: The path of the metrics endpoint (default "/metrics")
-/// * `dartTimelineExporter.enable`: Enable reporting trace spans as TimelineTasks to the dart developer timeline (default true)
+/// Metrics are defined by the definition methods ([counter], [gauge],
+/// [histogram], [linearHistogram], [exponentialHistogram]), which return
+/// the same instance for the same name, so a metric can be used from
+/// different places. Custom collectors can be added with
+/// [registerCollector]. Metrics are exposed in the
+/// [Prometheus text-based format](https://prometheus.io/docs/instrumenting/exposition_formats/#text-based-format),
+/// see [scrapeMetrics].
 ///
 /// ## Traces
 ///
-/// //TODO docs
+/// Spans are created by [trace] (or a named [Tracer], see [getTracer]).
+/// The active span is shared by all tracers and propagated through zones,
+/// see [currentSpan]. Spans are exported to an OpenTelemetry collector if
+/// enabled and reported to the Dart developer timeline.
 ///
-/// Configuration values: (location: "datahub.telemetry.traces")
+/// ## Configuration (location: `telemetry`)
 ///
-/// * `openTelemetryExporter.enable`: Enable reporting trace spans to a OpenTelemetry collector (default false)
-/// * `openTelemetryExporter.host`: OpenTelemetry collector host (default null)
-/// * `openTelemetryExporter.port`: OpenTelemetry collector grpc port (default 4317)
-/// * `openTelemetryExporter.sendInterval`: The interval in which traces are sent to the collector in seconds (default 5)
-///
-/// * `dartTimelineExporter.enable`: Enable reporting trace spans as TimelineTasks to the dart developer timeline (default true)
-///
+/// * `serviceName`: The `service.name` of the resource (default "DataHub")
+/// * `serviceVersion`: The `service.version` of the resource (default null)
+/// * `logLevel`: Minimum level of exported logs, `trace`, `debug`, `info`,
+///   `warn`, `error` or `fatal` (default `debug`)
+/// * `logStdoutFormat`: `logfmt`, `json`, `message` or `pretty` (default
+///   `logfmt`)
+/// * `prometheusExporter.enable`: Serve metrics for Prometheus (default
+///   false)
+/// * `prometheusExporter.address`: Address to listen on, null means any
+///   (default null)
+/// * `prometheusExporter.port`: Port to listen on (default 9090)
+/// * `prometheusExporter.path`: Path of the metrics endpoint (default
+///   `/metrics`)
+/// * `openTelemetryExporter.enable`: Export to an OpenTelemetry collector
+///   via OTLP/gRPC (default false)
+/// * `openTelemetryExporter.host`: Host of the collector (default null)
+/// * `openTelemetryExporter.port`: gRPC port of the collector (default 4317)
+/// * `openTelemetryExporter.useTls`: Connect via TLS (default false)
+/// * `openTelemetryExporter.exportInterval`: Interval of exports (default
+///   5s)
+/// * `openTelemetryExporter.exportIntervalJitter`: Maximum random delay
+///   added to the interval (default 2s)
+/// * `openTelemetryExporter.exportTraces`: Export spans (default true)
+/// * `openTelemetryExporter.exportLogs`: Export logs (default true)
+/// * `dartTimelineExporter.enable`: Report spans as `TimelineTask`s to the
+///   Dart developer timeline (default true)
 abstract interface class Telemetry {
-  /// Writes a [LogMessage] to the configured log receiver.
+  /// Writes a [LogMessage] to the log exporters and [LogListener]s.
   void publishLog(LogMessage message);
 
   /// Defines a metric of type [CounterMetric].
   ///
-  /// If the named metric  was defined before, the same instance to the
-  /// previously efined [CounterMetric] is returned. This allows for
-  /// metric objects to be dependency injected and used across different
-  /// places.
+  /// If the named metric was defined before, the previously defined
+  /// [CounterMetric] is returned and [labels], [labelNames] and [help] are
+  /// ignored. This allows for metric objects to be dependency injected and
+  /// used across different places.
+  ///
+  /// Labels are declared either with their values ([labels]) or by name
+  /// only ([labelNames]), see [CounterMetric].
   CounterMetric counter(
     String name, {
     Map<String, List<String>>? labels,
+    Set<String>? labelNames,
     String? help,
   });
 
   /// Defines a metric of type [GaugeMetric].
   ///
-  /// If the named metric was defined before, the same instance to the
-  /// previously defined [GaugeMetric] is returned. This allows for
-  /// metric objects to be dependency injected and used across different
-  /// places.
+  /// See [counter] for metrics defined before and labels.
   GaugeMetric gauge(
     String name, {
     Map<String, List<String>>? labels,
+    Set<String>? labelNames,
+    String? help,
+  });
+
+  /// Defines a metric of type [HistogramMetric] with the given upper bucket
+  /// boundaries, e.g. [HistogramMetric.defaultDurationBuckets].
+  ///
+  /// See [counter] for metrics defined before (the buckets are ignored
+  /// then) and labels.
+  HistogramMetric histogram(
+    String name, {
+    required List<num> buckets,
+    Map<String, List<String>>? labels,
+    Set<String>? labelNames,
     String? help,
   });
 
   /// Defines a metric of type [HistogramMetric] with linear bucket
-  /// distribution.
+  /// distribution, see [HistogramMetric.linear].
   ///
-  /// If the named metric was defined before, the same instance to the
-  /// previously defined [HistogramMetric] is returned. The parameters [start],
-  /// [width] and [count] will be ignored in this case. This allows for
-  /// metric objects to be dependency injected and used across different
-  /// places.
-  ///
-  /// Labels are declared either with their values ([labels]) or by name
-  /// only ([labelNames]), see [HistogramMetric].
+  /// See [counter] for metrics defined before (the buckets are ignored
+  /// then) and labels.
   HistogramMetric linearHistogram(
     String name, {
     required num start,
@@ -120,16 +146,10 @@ abstract interface class Telemetry {
   });
 
   /// Defines a metric of type [HistogramMetric] with exponential bucket
-  /// distribution.
+  /// distribution, see [HistogramMetric.exponential].
   ///
-  /// If the named metric was defined before, the same instance to the
-  /// previously defined [HistogramMetric] is returned. The parameters [start],
-  /// [factor] and [count] will be ignored in this case. This allows for
-  /// metric objects to be dependency injected and used across different
-  /// places.
-  ///
-  /// Labels are declared either with their values ([labels]) or by name
-  /// only ([labelNames]), see [HistogramMetric].
+  /// See [counter] for metrics defined before (the buckets are ignored
+  /// then) and labels.
   HistogramMetric exponentialHistogram(
     String name, {
     required num start,
@@ -152,6 +172,7 @@ abstract interface class Telemetry {
   /// definition methods:
   ///  - [counter]
   ///  - [gauge]
+  ///  - [histogram]
   ///  - [linearHistogram]
   ///  - [exponentialHistogram]
   void registerCollector(MetricCollector metricCollector);
@@ -159,20 +180,31 @@ abstract interface class Telemetry {
   /// Unregisters a custom collector.
   void unregisterCollector(MetricCollector metricCollector);
 
-  /// Convenience method for using the default tracer to trace a span.
-  FutureOr<R> trace<R>(
+  /// Runs [delegate] in a new span of the default tracer, see
+  /// [Tracer.trace].
+  Future<R> trace<R>(
     String name,
     FutureOr<R> Function(LocalSpan span) delegate, {
     SpanType type = SpanType.internal,
-    Map<String, dynamic> attributes,
+    Map<String, Object?>? attributes,
+    Span? parent,
   });
 
-  /// Convenience methods for using the default tracer to trace an event.
-  void addEvent(String name, {Map<String, String>? arguments});
+  /// The active span of the current zone, see [Tracer.currentSpan].
+  Span? get currentSpan;
 
-  /// Convenience methods for using the default tracer to trace an exception
-  /// event and marking the current span as error.
-  void addExceptionEvent(dynamic error);
+  /// Adds an event to the [currentSpan], if it is a [LocalSpan].
+  void addEvent(String name, {Map<String, Object?>? attributes});
+
+  /// Records [error] on the [currentSpan], if it is a [LocalSpan], see
+  /// [LocalSpan.recordException].
+  void recordException(Object error, {StackTrace? stack, bool setError = true});
+
+  /// The spans of all tracers once they ended, e.g. for tests.
+  ///
+  /// This is a synchronous broadcast stream, so listeners are called when
+  /// [LocalSpan.end] is called.
+  Stream<LocalSpan> get endedSpans;
 
   /// Returns a named tracer.
   ///
@@ -180,56 +212,64 @@ abstract interface class Telemetry {
   /// are sufficient:
   ///   - [trace]
   ///   - [addEvent]
-  ///   - [addExceptionEvent]
+  ///   - [recordException]
   Tracer getTracer(String name, {String? version});
 
-  /// Returns the default tracer.
-  ///
-  /// In most cases the convenience methods for using the default tracer
-  /// are sufficient:
-  ///   - [trace]
-  ///   - [addEvent]
-  ///   - [addExceptionEvent]
+  /// Returns the default tracer, which is named after the service.
   Tracer getDefaultTracer();
 }
 
 class TelemetryService implements Service {
-  // TODO refactor / sort config vars
   final Config<String> serviceName;
+  final Config<String?> serviceVersion;
 
-  final Config<bool> enableEndpoint;
-  final Config<String?> address;
-  final Config<int> port;
-  final Config<String> path;
+  final Config<SeverityLevel> logLevel;
+  final Config<LogBodyFormat> logStdoutFormat;
+
+  final Config<bool> enablePrometheusExporter;
+  final Config<String?> prometheusExporterAddress;
+  final Config<int> prometheusExporterPort;
+  final Config<String> prometheusExporterPath;
 
   final Config<bool> enableOtelExporter;
   final Config<String?> otelCollectorHost;
   final Config<int> otelCollectorPort;
-  final Config<int> otelExporterSendInterval;
-  final Config<int> otelExporterSendIntervalJitter;
+  final Config<bool> otelUseTls;
+  final Config<Duration> otelExportInterval;
+  final Config<Duration> otelExportIntervalJitter;
+  final Config<bool> otelExportTraces;
+  final Config<bool> otelExportLogs;
 
   final Config<bool> enableDartTimeline;
-
-  final Config<LogBodyFormat> logStdoutFormat;
-  final Config<SeverityLevel> logLevel;
 
   const TelemetryService({
     this.serviceName = const Config<String>(
       'telemetry.serviceName',
       defaultValue: 'DataHub',
     ),
-    this.enableEndpoint = const Config<bool>(
-      'telemetry.prometheusExporter.enabled',
+    this.serviceVersion = const Config<String?>('telemetry.serviceVersion'),
+    this.logLevel = const Config<SeverityLevel>(
+      'telemetry.logLevel',
+      defaultValue: SeverityLevel.debug,
+      values: SeverityLevel.values,
+    ),
+    this.logStdoutFormat = const Config(
+      'telemetry.logStdoutFormat',
+      defaultValue: LogBodyFormat.logfmt,
+      values: LogBodyFormat.values,
+    ),
+    this.enablePrometheusExporter = const Config<bool>(
+      'telemetry.prometheusExporter.enable',
       defaultValue: false,
     ),
-    this.address = const Config<String?>(
+    this.prometheusExporterAddress = const Config<String?>(
       'telemetry.prometheusExporter.address',
     ),
-    this.port = const Config<int>(
+    this.prometheusExporterPort = const Config<int>(
       'telemetry.prometheusExporter.port',
       defaultValue: 9090,
     ),
-    this.path = const Config<String>(
+    this.prometheusExporterPath = const Config<String>(
       'telemetry.prometheusExporter.path',
       defaultValue: '/metrics',
     ),
@@ -244,27 +284,29 @@ class TelemetryService implements Service {
       'telemetry.openTelemetryExporter.port',
       defaultValue: 4317,
     ),
-    this.otelExporterSendInterval = const Config<int>(
-      'telemetry.openTelemetryExporter.sendInterval',
-      defaultValue: 5,
+    this.otelUseTls = const Config<bool>(
+      'telemetry.openTelemetryExporter.useTls',
+      defaultValue: false,
     ),
-    this.otelExporterSendIntervalJitter = const Config<int>(
-      'telemetry.openTelemetryExporter.sendIntervalJitter',
-      defaultValue: 2,
+    this.otelExportInterval = const Config<Duration>(
+      'telemetry.openTelemetryExporter.exportInterval',
+      defaultValue: Duration(seconds: 5),
+    ),
+    this.otelExportIntervalJitter = const Config<Duration>(
+      'telemetry.openTelemetryExporter.exportIntervalJitter',
+      defaultValue: Duration(seconds: 2),
+    ),
+    this.otelExportTraces = const Config<bool>(
+      'telemetry.openTelemetryExporter.exportTraces',
+      defaultValue: true,
+    ),
+    this.otelExportLogs = const Config<bool>(
+      'telemetry.openTelemetryExporter.exportLogs',
+      defaultValue: true,
     ),
     this.enableDartTimeline = const Config<bool>(
       'telemetry.dartTimelineExporter.enable',
       defaultValue: true,
-    ),
-    this.logStdoutFormat = const Config(
-      'telemetry.logStdoutFormat',
-      defaultValue: LogBodyFormat.logfmt,
-      values: LogBodyFormat.values,
-    ),
-    this.logLevel = const Config<SeverityLevel>(
-      'telemetry.logLevel',
-      defaultValue: SeverityLevel.debug,
-      values: SeverityLevel.values,
     ),
   });
 
@@ -275,38 +317,39 @@ class TelemetryService implements Service {
 
 class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     implements Telemetry {
-  late final LogExporter _logExporter;
+  late final SeverityLevel _logLevel;
+  late final LogExporter _stdoutExporter;
+  late final OpenTelemetryLogExporter? _otelLogExporter;
   late final MetricsExporter? _metricsExporter;
   late final TraceExporter _traceExporter;
+  late final ClientChannel? _otelChannel;
+  late final bool _enableDartTimeline;
 
   final _collectors = <MetricCollector>{};
   final _metrics = <String, Metric>{};
   final _tracers = <String, Tracer>{};
+  final _endedSpans = StreamController<LocalSpan>.broadcast(sync: true);
 
   late final Tracer defaultTracer;
-  final _scrapeMetric = GaugeMetric('datahub_instrumentation_scrape_duration');
-
-  late final SeverityLevel logLevel;
+  final _scrapeMetric = GaugeMetric(
+    'datahub_telemetry_scrape_duration_seconds',
+    help: 'Time it took to collect the metrics of the last scrape.',
+  );
 
   @override
   Future<void> initialize() async {
     await super.initialize();
-    final resourceAttributes = {
-      'service.name': read(service.serviceName),
-      'os.type': Platform.operatingSystem,
-      'os.version': Platform.operatingSystemVersion,
-      'os.hostname': Platform.localHostname,
-      'dart.version': Platform.version,
-    };
+    final resourceAttributes = _resourceAttributes();
 
-    logLevel = read(service.logLevel);
-    _logExporter = StdoutLogExporter(read(service.logStdoutFormat));
+    _logLevel = read(service.logLevel);
+    _stdoutExporter = StdoutLogExporter(read(service.logStdoutFormat));
+    _enableDartTimeline = read(service.enableDartTimeline);
 
-    if (read(service.enableEndpoint)) {
+    if (read(service.enablePrometheusExporter)) {
       _metricsExporter = PrometheusExporter(
-        address: read(service.address),
-        port: read(service.port),
-        path: read(service.path),
+        address: read(service.prometheusExporterAddress),
+        port: read(service.prometheusExporterPort),
+        path: read(service.prometheusExporterPath),
         onScrape: scrapeMetrics,
       );
 
@@ -315,43 +358,96 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
       _metricsExporter = null;
     }
 
-    if (read(service.enableOtelExporter) &&
-        read(service.otelCollectorHost) != null) {
-      _traceExporter = OpenTelemetryTraceExporter(
-        host: read(service.otelCollectorHost)!,
+    final otelHost = read(service.otelCollectorHost);
+    if (read(service.enableOtelExporter) && !nullOrWhitespace(otelHost)) {
+      final channel = _otelChannel = ClientChannel(
+        otelHost!,
         port: read(service.otelCollectorPort),
-        sendInterval: Duration(seconds: read(service.otelExporterSendInterval)),
-        sendIntervalJitter: Duration(
-          seconds: read(service.otelExporterSendIntervalJitter),
+        options: ChannelOptions(
+          credentials: read(service.otelUseTls)
+              ? const ChannelCredentials.secure()
+              : const ChannelCredentials.insecure(),
         ),
-        resourceAttributes: resourceAttributes,
       );
+      final interval = read(service.otelExportInterval);
+      final jitter = read(service.otelExportIntervalJitter);
 
-      await _traceExporter.initialize();
+      _traceExporter = read(service.otelExportTraces)
+          ? OpenTelemetryTraceExporter(
+              channel: channel,
+              exportInterval: interval,
+              exportIntervalJitter: jitter,
+              resourceAttributes: resourceAttributes,
+            )
+          : DiscardTraceExporter();
+      _otelLogExporter = read(service.otelExportLogs)
+          ? OpenTelemetryLogExporter(
+              channel: channel,
+              exportInterval: interval,
+              exportIntervalJitter: jitter,
+              scope: const SimpleTelemetryScope('datahub'),
+              resourceAttributes: resourceAttributes,
+            )
+          : null;
     } else {
+      _otelChannel = null;
       _traceExporter = DiscardTraceExporter();
+      _otelLogExporter = null;
+      if (read(service.enableOtelExporter)) {
+        log.warn(
+          'OpenTelemetry exporter is enabled, but no collector host is '
+          'configured (telemetry.openTelemetryExporter.host).',
+        );
+      }
     }
+
+    await _traceExporter.initialize();
+    await _otelLogExporter?.initialize();
 
     defaultTracer = getTracer(read(service.serviceName));
   }
 
+  /// Resource attributes according to the semantic conventions.
+  Map<String, Object?> _resourceAttributes() => {
+    'service.name': read(service.serviceName),
+    'service.version': read(service.serviceVersion),
+    'service.instance.id': uuid(),
+    'deployment.environment.name': context.environment.name,
+    'host.name': Platform.localHostname,
+    'os.type': switch (Platform.operatingSystem) {
+      'macos' || 'ios' => 'darwin',
+      'android' => 'linux',
+      final os => os,
+    },
+    'os.description': Platform.operatingSystemVersion,
+    'process.pid': pid,
+    'process.runtime.name': 'dart',
+    'process.runtime.version': Platform.version.split(' ').first,
+    'telemetry.sdk.name': 'datahub',
+    'telemetry.sdk.language': 'dart',
+  };
+
   @override
   void publishLog(LogMessage message) {
-    if (message.level.severityNumber >= logLevel.severityNumber) {
-      _logExporter.add(message);
+    if (message.level.severityNumber >= _logLevel.severityNumber) {
+      _stdoutExporter.add(message);
+      // logs of the exporters themselves are not exported
+      if (!TelemetryInternal.isActive) {
+        _otelLogExporter?.add(message);
+      }
     }
 
     try {
-      LogListener.current?.onPublish(message);
+      LogListener.current?.publishLog(message);
     } catch (e, stack) {
-      _logExporter.add(
+      _stdoutExporter.add(
         LogMessage(
           timestamp: DateTime.timestamp(),
           line: 'Error in LogListener.',
           level: SeverityLevel.error,
           error: e,
           stack: stack,
-          span: defaultTracer.findParentSpan(),
+          span: currentSpan,
         ),
       );
     }
@@ -361,31 +457,42 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
   CounterMetric counter(
     String name, {
     Map<String, List<String>>? labels,
+    Set<String>? labelNames,
     String? help,
-  }) {
-    return switch (_metrics[name]) {
-      final CounterMetric existing => existing,
-      null => _metrics[name] = CounterMetric(name, labels: labels, help: help),
-      final existing => throw ApiError(
-        'Metric $name is already defined with different type: $existing',
-      ),
-    };
-  }
+  }) => _define(
+    name,
+    () =>
+        CounterMetric(name, labels: labels, labelNames: labelNames, help: help),
+  );
 
   @override
   GaugeMetric gauge(
     String name, {
     Map<String, List<String>>? labels,
+    Set<String>? labelNames,
     String? help,
-  }) {
-    return switch (_metrics[name]) {
-      final GaugeMetric existing => existing,
-      null => _metrics[name] = GaugeMetric(name, labels: labels, help: help),
-      final existing => throw ApiError(
-        'Metric $name is already defined with different type: $existing',
-      ),
-    };
-  }
+  }) => _define(
+    name,
+    () => GaugeMetric(name, labels: labels, labelNames: labelNames, help: help),
+  );
+
+  @override
+  HistogramMetric histogram(
+    String name, {
+    required List<num> buckets,
+    Map<String, List<String>>? labels,
+    Set<String>? labelNames,
+    String? help,
+  }) => _define(
+    name,
+    () => HistogramMetric(
+      name,
+      buckets: buckets,
+      labels: labels,
+      labelNames: labelNames,
+      help: help,
+    ),
+  );
 
   @override
   HistogramMetric linearHistogram(
@@ -396,23 +503,18 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     Map<String, List<String>>? labels,
     Set<String>? labelNames,
     String? help,
-  }) {
-    return switch (_metrics[name]) {
-      final HistogramMetric existing => existing,
-      null => _metrics[name] = HistogramMetric.linear(
-        name,
-        start: start,
-        width: width,
-        count: count,
-        labels: labels,
-        labelNames: labelNames,
-        help: help,
-      ),
-      final existing => throw ApiError(
-        'Metric already defined with different type: $existing',
-      ),
-    };
-  }
+  }) => _define(
+    name,
+    () => HistogramMetric.linear(
+      name,
+      start: start,
+      width: width,
+      count: count,
+      labels: labels,
+      labelNames: labelNames,
+      help: help,
+    ),
+  );
 
   @override
   HistogramMetric exponentialHistogram(
@@ -423,42 +525,44 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     Map<String, List<String>>? labels,
     Set<String>? labelNames,
     String? help,
-  }) {
+  }) => _define(
+    name,
+    () => HistogramMetric.exponential(
+      name,
+      start: start,
+      factor: factor,
+      count: count,
+      labels: labels,
+      labelNames: labelNames,
+      help: help,
+    ),
+  );
+
+  /// Returns the metric [name] if it was defined before, otherwise defines
+  /// it with [create].
+  T _define<T extends Metric>(String name, T Function() create) {
     return switch (_metrics[name]) {
-      final HistogramMetric existing => existing,
-      null => _metrics[name] = HistogramMetric.exponential(
-        name,
-        start: start,
-        factor: factor,
-        count: count,
-        labels: labels,
-        labelNames: labelNames,
-        help: help,
-      ),
+      final T existing => existing,
+      null => _metrics[name] = create(),
       final existing => throw ApiError(
-        'Metric already defined with different type: $existing',
+        'Metric $name is already defined with a different type: $existing',
       ),
     };
   }
 
   @override
   Future<List<SampleGroup>> scrapeMetrics() async {
-    final samples = <SampleGroup>[];
-    _scrapeMetric.measureDuration(() async {
-      for (final metric in _metrics.values) {
-        samples.add(metric.collect());
-      }
-      for (final collector in _collectors) {
-        switch (collector) {
-          case SyncMetricCollector collector:
-            samples.add(collector.collect());
-          case AsyncMetricCollector collector:
-            samples.add(await collector.collect());
-        }
-      }
+    final samples = await _scrapeMetric.measureDurationAsync(() async {
+      return [
+        for (final metric in _metrics.values) metric.collect(),
+        for (final collector in _collectors.toList())
+          switch (collector) {
+            SyncMetricCollector collector => collector.collect(),
+            AsyncMetricCollector collector => await collector.collect(),
+          },
+      ];
     });
-    samples.insert(0, _scrapeMetric.collect());
-    return samples;
+    return [_scrapeMetric.collect(), ...samples];
   }
 
   @override
@@ -472,28 +576,43 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
   }
 
   @override
-  FutureOr<R> trace<R>(
+  Future<R> trace<R>(
     String name,
     FutureOr<R> Function(LocalSpan span) delegate, {
     SpanType type = SpanType.internal,
-    Map<String, dynamic>? attributes,
-  }) async {
-    return await defaultTracer.trace(name, attributes, type, delegate);
-  }
+    Map<String, Object?>? attributes,
+    Span? parent,
+  }) => defaultTracer.trace(
+    name,
+    delegate,
+    type: type,
+    attributes: attributes,
+    parent: parent,
+  );
 
   @override
-  void addEvent(String name, {Map<String, dynamic>? arguments}) {
-    if (defaultTracer.findParentSpan() case LocalSpan span) {
-      span.addEvent(name, arguments: arguments);
+  Span? get currentSpan => Tracer.currentSpan;
+
+  @override
+  void addEvent(String name, {Map<String, Object?>? attributes}) {
+    if (currentSpan case LocalSpan span) {
+      span.addEvent(name, attributes: attributes);
     }
   }
 
   @override
-  void addExceptionEvent(dynamic error) {
-    if (defaultTracer.findParentSpan() case LocalSpan span) {
-      span.addExceptionEvent(error);
+  void recordException(
+    Object error, {
+    StackTrace? stack,
+    bool setError = true,
+  }) {
+    if (currentSpan case LocalSpan span) {
+      span.recordException(error, stack: stack, setError: setError);
     }
   }
+
+  @override
+  Stream<LocalSpan> get endedSpans => _endedSpans.stream;
 
   @override
   Tracer getTracer(String name, {String? version}) {
@@ -501,8 +620,13 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
     return _tracers[key] ??= Tracer(
       name: name,
       version: version,
-      enableDartTimeline: true,
-      sink: _traceExporter,
+      enableDartTimeline: _enableDartTimeline,
+      exporter: _traceExporter,
+      onEnd: (span) {
+        if (!_endedSpans.isClosed) {
+          _endedSpans.add(span);
+        }
+      },
       attributes: {},
     );
   }
@@ -514,6 +638,9 @@ class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
   Future<void> dispose() async {
     await _metricsExporter?.shutdown();
     await _traceExporter.shutdown();
+    await _otelLogExporter?.shutdown();
+    await _otelChannel?.shutdown();
+    await _endedSpans.close();
     await super.dispose();
   }
 }

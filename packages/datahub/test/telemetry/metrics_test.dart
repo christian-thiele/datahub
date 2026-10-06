@@ -1,8 +1,7 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
-import 'package:datahub/src/test/matchers.dart';
 import 'package:datahub/src/test/test_host.dart';
-import 'package:test/expect.dart';
+import 'package:test/test.dart';
 
 void main() {
   declareTest('Test default metrics', [], () async {
@@ -18,7 +17,7 @@ void main() {
       isA<MetricSample>().having(
         (s) => s.name,
         'name',
-        equals('datahub_instrumentation_scrape_duration'),
+        equals('datahub_telemetry_scrape_duration_seconds'),
       ),
     );
     expect(metrics.first.samples.first.value, greaterThan(0));
@@ -54,11 +53,11 @@ void main() {
       },
     );
 
-    expect(() => counter.inc(), throwsApiError());
-    expect(() => counter.inc({'yes_or_no': 'no'}), throwsApiError());
+    expect(() => counter.inc(), returnsNormally);
+    expect(() => counter.inc({'yes_or_no': 'no'}), returnsNormally);
     expect(
       () => counter.inc({'yes_or_no': 'no', 'version': '4d'}),
-      throwsApiError(),
+      returnsNormally,
     );
 
     counter.inc({'yes_or_no': 'yes', 'version': '2b'});
@@ -161,11 +160,11 @@ void main() {
       },
     );
 
-    expect(() => gauge.inc(), throwsApiError());
-    expect(() => gauge.inc({'yes_or_no': 'no'}), throwsApiError());
+    expect(() => gauge.inc(), returnsNormally);
+    expect(() => gauge.inc({'yes_or_no': 'no'}), returnsNormally);
     expect(
       () => gauge.inc({'yes_or_no': 'no', 'version': '4d'}),
-      throwsApiError(),
+      returnsNormally,
     );
 
     gauge.inc({'yes_or_no': 'yes', 'version': '2b'});
@@ -266,8 +265,8 @@ void main() {
       },
     );
 
-    expect(() => histogram.observe(1), throwsApiError());
-    expect(() => histogram.observe(1, {'kind': 'other'}), throwsApiError());
+    expect(() => histogram.observe(1), returnsNormally);
+    expect(() => histogram.observe(1, {'kind': 'other'}), returnsNormally);
     histogram.observe(1.5, {'kind': 'read'});
     histogram.observe(3, {'kind': 'read'});
     histogram.observe(7, {'kind': 'write'});
@@ -311,10 +310,10 @@ void main() {
     histogram.observe(3, {'status': '200', 'route': '/a'});
     histogram.observe(1, {'route': '/b', 'status': '500'});
 
-    expect(() => histogram.observe(1, {'route': '/a'}), throwsApiError());
+    expect(() => histogram.observe(1, {'route': '/a'}), returnsNormally);
     expect(
       () => histogram.observe(1, {'route': '/a', 'status': '200', 'x': ''}),
-      throwsApiError(),
+      returnsNormally,
     );
 
     final counts = (await _samplesOf(telemetry, 'named_duration'))
@@ -327,6 +326,102 @@ void main() {
         {'route': '/b', 'status': '500', 'count': 1},
       ]),
     );
+  });
+
+  declareTest(
+    'Test undeclared labels are dropped with one warning',
+    [],
+    () async {
+      final telemetry = Find<Telemetry>().find();
+      final counter = telemetry.counter(
+        'dropping_total',
+        labels: {
+          'kind': ['a'],
+        },
+      );
+
+      final warnings = <LogMessage>[];
+      LogListener(
+        onPublish: (message) {
+          if (message.level == SeverityLevel.warning) {
+            warnings.add(message);
+          }
+        },
+      ).run(() {
+        counter.inc({'kind': 'b'});
+        counter.inc({'other': 'a'});
+        counter.inc({'kind': 'a'});
+      });
+
+      expect(warnings, hasLength(1));
+      expect(
+        warnings.single.labels,
+        equals({'datahub.metric.name': 'dropping_total'}),
+      );
+      final samples = await _samplesOf(telemetry, 'dropping_total');
+      expect(samples.single.labels, equals({'kind': 'a'}));
+      expect(samples.single.value, equals(1));
+    },
+  );
+
+  declareTest('Test counters and gauges with label names', [], () async {
+    final telemetry = Find<Telemetry>().find();
+    final counter = telemetry.counter('named_total', labelNames: {'route'});
+    final gauge = telemetry.gauge('named_gauge', labelNames: {'route'});
+
+    expect(await _samplesOf(telemetry, 'named_total'), isEmpty);
+    counter.inc({'route': '/a'});
+    counter.incBy(2, {'route': '/a'});
+    gauge.set(5, {'route': '/b'});
+
+    final counted = await _samplesOf(telemetry, 'named_total');
+    expect(counted.single.labels, equals({'route': '/a'}));
+    expect(counted.single.value, equals(3));
+    final gauged = await _samplesOf(telemetry, 'named_gauge');
+    expect(gauged.single.labels, equals({'route': '/b'}));
+    expect(gauged.single.value, equals(5));
+  });
+
+  declareTest('Test async collectors are scraped', [], () async {
+    final telemetry = Find<Telemetry>().find();
+    final collector = _SlowCollector();
+    telemetry.registerCollector(collector);
+
+    final groups = await telemetry.scrapeMetrics();
+    expect(groups.map((g) => g.name), contains('slow_value'));
+    // the scrape duration includes the async collector
+    expect(groups.first.name, 'datahub_telemetry_scrape_duration_seconds');
+    expect(groups.first.samples.single.value, greaterThanOrEqualTo(0.05));
+    telemetry.unregisterCollector(collector);
+  });
+
+  test('Linear histogram buckets have the given width', () {
+    final histogram = HistogramMetric.linear(
+      'linear',
+      start: 1,
+      width: 4,
+      count: 4,
+    );
+    expect(histogram.boundaries, equals([1, 5, 9, 13]));
+  });
+
+  declareTest('Test histogram with explicit buckets', [], () async {
+    final telemetry = Find<Telemetry>().find();
+    final histogram = telemetry.histogram(
+      'explicit_seconds',
+      buckets: HistogramMetric.defaultDurationBuckets,
+    );
+    histogram.observeDuration(const Duration(milliseconds: 20));
+
+    final buckets = {
+      for (final sample in await _samplesOf(telemetry, 'explicit_seconds'))
+        if (sample.name == 'explicit_seconds_bucket')
+          sample.labels['le']: sample.value,
+    };
+    expect(buckets['0.01'], equals(0));
+    expect(buckets['0.025'], equals(1));
+    expect(buckets['10'], equals(1));
+    expect(buckets['+Inf'], equals(1));
   });
 
   declareTest('Test exception events carry the error message', [], () async {
@@ -345,4 +440,14 @@ Future<List<MetricSample>> _samplesOf(Telemetry telemetry, String name) async {
       .where((g) => g.metric.name == name)
       .expand((g) => g.samples)
       .toList();
+}
+
+class _SlowCollector extends AsyncMetricCollector {
+  final metric = GaugeMetric('slow_value');
+
+  @override
+  Future<SampleGroup> collect() async {
+    await Future.delayed(const Duration(milliseconds: 50));
+    return metric.collect();
+  }
 }

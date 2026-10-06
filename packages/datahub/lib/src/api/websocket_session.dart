@@ -38,8 +38,8 @@ class WebsocketSession implements StreamSink<WebsocketFrame> {
   Future<void>? _closeFuture;
 
   final _tracer = Context.maybeOfZone()
-      ?.find(Find<Telemetry>())
-      .getDefaultTracer();
+      ?.find(Find<Telemetry?>())
+      ?.getDefaultTracer();
 
   late final LocalSpan? _span;
 
@@ -52,9 +52,15 @@ class WebsocketSession implements StreamSink<WebsocketFrame> {
     Duration heartbeatTimeout = const Duration(seconds: 30),
     int maxFrameSize = WebsocketFrameDecoder.defaultMaxFrameSize,
   }) {
-    _span = _tracer?.startSpan('WS', {
-      'protocol': ?protocol,
-    }, type: SpanType.internal);
+    // lives as long as the connection, a child of the span of the upgrade
+    // request
+    _span = _tracer?.startSpan(
+      'WebSocket',
+      attributes: {
+        'network.protocol.name': 'websocket',
+        'datahub.websocket.subprotocol': ?protocol,
+      },
+    );
 
     _inTraceZone(() async {
       // write errors surface on socket.done, not on the outgoing stream
@@ -219,7 +225,7 @@ class WebsocketSession implements StreamSink<WebsocketFrame> {
     }
     if (!_spanStopped) {
       _spanStopped = true;
-      _span?.stop();
+      _span?.end();
     }
     if (!_doneCompleter.isCompleted) {
       _doneCompleter.complete();

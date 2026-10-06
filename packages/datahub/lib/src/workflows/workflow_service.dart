@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:math' as math;
-import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
 import 'package:datahub/abstract.dart';
@@ -73,7 +72,10 @@ import 'workflow_step_context.dart';
 /// Each step runs in a span that continues the trace of the code that caused
 /// it (the request that sent a signal, or the step before). Metrics are
 /// prefixed with [metricPrefix] and the element type, for example
-/// `workflow_invoice_steps`.
+/// `workflow_invoice_steps_total`. Spans and logs carry the attributes
+/// `datahub.workflow.name`, `datahub.workflow.step`,
+/// `datahub.workflow.element.id`, `datahub.workflow.event.id` and
+/// `datahub.workflow.attempt`.
 class WorkflowService<T extends DataObject, TState extends Enum>
     implements Service {
   final List<WorkflowStep<T, TState>> steps;
@@ -657,20 +659,18 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     }
 
     // Continue the trace of the code that created the event.
-    return await _inTraceOf(
-      event,
-      () async => await _telemetry.trace(
-        'Workflow step ${step.name}',
-        type: SpanType.consumer,
-        attributes: {
-          'workflow': _name,
-          'workflow.step': step.name,
-          'workflow.element': event.elementId,
-          'workflow.event': event.id,
-          'workflow.attempt': event.attempts + 1,
-        },
-        run,
-      ),
+    return await _telemetry.trace(
+      'Workflow step ${step.name}',
+      type: SpanType.consumer,
+      parent: _spanOf(event),
+      attributes: {
+        'datahub.workflow.name': _name,
+        'datahub.workflow.step': step.name,
+        'datahub.workflow.element.id': event.elementId,
+        'datahub.workflow.event.id': event.id,
+        'datahub.workflow.attempt': event.attempts + 1,
+      },
+      run,
     );
   }
 
@@ -710,7 +710,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
       changes = _changes(element, result);
       await _apply(element, state, newState, changes, handle, except: event.id);
     } catch (error, stack) {
-      span?.addExceptionEvent(error);
+      span?.recordException(error, stack: stack);
       log.error(
         'Workflow step failed.',
         error: error,
@@ -735,7 +735,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     await _delete(event);
     log.debug(
       'Workflow step finished.',
-      labels: {...labels, 'workflow.state': newState.name},
+      labels: {...labels, 'datahub.workflow.state': newState.name},
     );
     return true;
   }
@@ -1097,7 +1097,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
             jsonEncode({
               ...message.labels,
               'timestamp': message.timestamp.toIso8601String(),
-              'severity': message.level.name.toUpperCase(),
+              'severity': const JsonDataCodec().encodeEnum(message.level),
               'msg': message.line,
               if (message.error != null) 'error': message.error.toString(),
             }),
@@ -1110,37 +1110,17 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
   Span? get _currentSpan =>
       _tracing ? _telemetry.getDefaultTracer().findParentSpan() : null;
 
-  /// Runs [body] as part of the trace that created [event], if it has one.
-  Future<R> _inTraceOf<R>(
-    WorkflowEvent event,
-    Future<R> Function() body,
-  ) async {
-    final traceId = _parseHex(event.traceId, TraceId.length);
-    final spanId = _parseHex(event.spanId, SpanId.length);
-    if (traceId == null || spanId == null) {
-      return await body();
-    }
-    return await _telemetry.getDefaultTracer().remoteSpan(
-      TraceId(traceId),
-      SpanId(spanId),
-      body,
-    );
-  }
-
-  static Uint8List? _parseHex(String? hex, int length) {
-    if (hex == null || hex.length != length * 2) {
-      return null;
-    }
-    final bytes = Uint8List(length);
-    for (var i = 0; i < length; i++) {
-      final byte = int.tryParse(hex.substring(i * 2, i * 2 + 2), radix: 16);
-      if (byte == null) {
-        return null;
-      }
-      bytes[i] = byte;
-    }
-    return bytes;
-  }
+  /// The span of the code that created [event], if it was traced.
+  static Span? _spanOf(WorkflowEvent event) => switch ((
+    TraceId.tryParse(event.traceId),
+    SpanId.tryParse(event.spanId),
+  )) {
+    (final traceId?, final spanId?) => Span.remote(
+      traceId: traceId,
+      spanId: spanId,
+    ),
+    _ => null,
+  };
 
   Object _idOf(T element) => _idField.valueOf(element) as Object;
 
@@ -1157,11 +1137,11 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     int? attempt,
     String? event,
   }) => {
-    'workflow': _name,
-    if (step != null) 'workflow.step': step.name,
-    if (id != null) 'workflow.element': id.toString(),
-    if (attempt != null) 'workflow.attempt': attempt.toString(),
-    'workflow.event': ?event,
+    'datahub.workflow.name': _name,
+    if (step != null) 'datahub.workflow.step': step.name,
+    if (id != null) 'datahub.workflow.element.id': id.toString(),
+    if (attempt != null) 'datahub.workflow.attempt': attempt.toString(),
+    'datahub.workflow.event.id': ?event,
   };
 }
 
@@ -1179,7 +1159,7 @@ class _WorkflowMetrics {
     required List<String> steps,
     required List<String> signals,
   }) : steps = telemetry.counter(
-         '${prefix}_steps',
+         '${prefix}_steps_total',
          labels: {
            'step': steps,
            'outcome': ['succeeded', 'failed'],
@@ -1203,14 +1183,14 @@ class _WorkflowMetrics {
          help: 'Time between a step being due and it starting.',
        ),
        signals = telemetry.counter(
-         '${prefix}_signals',
+         '${prefix}_signals_total',
          labels: {
            'signal': signals.isEmpty ? [''] : signals,
          },
          help: 'Number of signals sent.',
        ),
        parked = telemetry.counter(
-         '${prefix}_events_parked',
+         '${prefix}_events_parked_total',
          labels: {
            'status': [
              WorkflowEventStatus.failed.name,

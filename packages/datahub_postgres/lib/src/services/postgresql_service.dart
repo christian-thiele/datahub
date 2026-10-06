@@ -7,6 +7,7 @@ import 'package:postgres/postgres.dart' as pg;
 import 'abstract/database_connection_manager.dart';
 import 'postgresql_connection.dart';
 import 'postgresql_context.dart';
+import 'postgresql_telemetry.dart';
 
 abstract interface class Postgresql {
   Future<T> runTransaction<T>(
@@ -72,6 +73,9 @@ class PostgresqlService implements Service {
   final Config<bool> enableMetrics;
   final Config<String> metricPrefix;
 
+  /// Trace queries and transactions as spans, see [PostgresqlTelemetry].
+  final Config<bool> enableTracing;
+
   const PostgresqlService({
     this.applicationName = const Config('serviceName', defaultValue: 'DataHub'),
     this.host = const Config('host', defaultValue: 'localhost'),
@@ -113,6 +117,10 @@ class PostgresqlService implements Service {
       'metricPrefix',
       defaultValue: 'postgresql',
     ),
+    this.enableTracing = const Config<bool>(
+      'enableTracing',
+      defaultValue: true,
+    ),
   });
 
   @override
@@ -131,12 +139,47 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
   Future<void>? _listenerConnecting;
   var _disposed = false;
 
+  // created on first use, which is when the pool is filled while
+  // initializing
+  late final PostgresqlTelemetry _telemetry = _createTelemetry();
+
+  PostgresqlTelemetry _createTelemetry() {
+    final enableMetrics = read(service.enableMetrics);
+    final enableTracing = read(service.enableTracing);
+    if (!enableMetrics && !enableTracing) {
+      return PostgresqlTelemetry.disabled;
+    }
+
+    return PostgresqlTelemetry(
+      telemetry: find(Find<Telemetry>()),
+      metricPrefix: read(service.metricPrefix),
+      enableMetrics: enableMetrics,
+      enableTracing: enableTracing,
+      host: read(service.host),
+      port: read(service.port),
+      database: read(service.database),
+    );
+  }
+
+  @override
+  void onPoolChanged({
+    required int target,
+    required int total,
+    required int available,
+  }) => _telemetry.poolSize(target: target, total: total, available: available);
+
+  @override
+  Future<PostgresqlConnection> onPoolTake(
+    Future<PostgresqlConnection> Function() take,
+  ) => _telemetry.poolWait(take);
+
   @override
   Future<PostgresqlConnection> openConnection() async {
     return PostgresqlConnection(
       this,
       await _openRawConnection(read(service.applicationName)),
       logStatements: read(service.logStatements),
+      telemetry: _telemetry,
     );
   }
 
@@ -326,13 +369,7 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
       service.poolMaintenanceInterval;
 
   @override
-  Config<bool> get enableMetrics => service.enableMetrics;
-
-  @override
   Config<Duration> get maxConnectionLifetime => service.maxConnectionLifetime;
-
-  @override
-  Config<String> get metricPrefix => service.metricPrefix;
 
   @override
   Config<int> get targetPoolSize => service.targetPoolSize;

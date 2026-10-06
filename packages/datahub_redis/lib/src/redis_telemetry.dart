@@ -85,8 +85,12 @@ class RedisTelemetry {
           metrics?.commandTimeouts.inc();
         }
         error(e);
+        span?.setAttribute('error.type', switch (e) {
+          RedisServerException(:final code) => code,
+          _ => e.runtimeType.toString(),
+        });
         if (e is RedisServerException) {
-          span?.addAttribute('redis.error.code', e.code);
+          span?.setAttribute('db.response.status_code', e.code);
           if (e.code == 'NOSCRIPT') {
             // RedisCommands.eval falls back to sending the script source
             metrics?.scriptCacheMisses.inc();
@@ -100,8 +104,10 @@ class RedisTelemetry {
       }
     }
 
+    // span names according to the semantic conventions for database client
+    // spans: the operation, or the database system if it is unknown
     return _span(
-      'Redis ${name ?? 'COMMAND'}',
+      name ?? 'redis',
       run,
       type: SpanType.client,
       attributes: {
@@ -121,16 +127,17 @@ class RedisTelemetry {
     Future<bool> Function() delegate,
   ) {
     return _span(
-      'Redis Transaction',
+      'MULTI',
       (span) async {
-        span?.addAttribute('redis.transaction.commands', '$commandCount');
         final committed = await delegate();
-        span?.addAttribute('redis.transaction.aborted', '${!committed}');
+        span?.setAttribute('datahub.redis.transaction.aborted', !committed);
         return committed;
       },
       type: SpanType.client,
       attributes: {
         'db.system.name': 'redis',
+        'db.operation.name': 'MULTI',
+        'db.operation.batch.size': commandCount,
         'db.namespace': database.toString(),
         'server.address': host,
         'server.port': port,

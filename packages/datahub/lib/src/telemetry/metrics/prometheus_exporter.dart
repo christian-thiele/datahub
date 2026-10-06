@@ -9,8 +9,10 @@ import '../logs/log_helper.dart';
 import 'metrics_exporter.dart';
 import 'sample_group.dart';
 
-// Could be a Service...
-//TODO docs
+/// Serves the metrics in the
+/// [Prometheus text-based format](https://prometheus.io/docs/instrumenting/exposition_formats/#text-based-format).
+///
+/// Scrapes are not traced.
 class PrometheusExporter extends MetricsExporter {
   late final HttpServer _server;
 
@@ -36,6 +38,7 @@ class PrometheusExporter extends MetricsExporter {
       _onSocketError,
       _onProtocolError,
       _onStreamError,
+      enableTracing: false,
     );
   }
 
@@ -57,15 +60,17 @@ class PrometheusExporter extends MetricsExporter {
             '{${sample.labels.entries.map((e) => '${e.key}="${_escapeLabelValue(e.value)}"').join(',')}}',
           );
         }
-        buffer.write(' ${sample.value}');
-        buffer.write(' ${sample.timestamp.millisecondsSinceEpoch}');
-        buffer.writeln();
+        // timestamps are left out, since the scrape time is the time of
+        // the values
+        buffer.writeln(' ${formatValue(sample.value)}');
       }
       buffer.writeln();
     }
 
     return HttpResponse(request.requestUri, 200, {
-      HttpHeaders.contentType: ['${Mime.plainText}; version=0.0.4'],
+      HttpHeaders.contentType: [
+        '${Mime.plainText}; version=0.0.4; charset=utf-8',
+      ],
     }, Stream.value(utf8.encode(buffer.toString())));
   }
 
@@ -74,9 +79,6 @@ class PrometheusExporter extends MetricsExporter {
       .replaceAll('\\', r'\\')
       .replaceAll('"', r'\"')
       .replaceAll('\n', r'\n');
-
-  String formatTimestamp(DateTime timestamp) =>
-      timestamp.millisecondsSinceEpoch.toString();
 
   String formatValue(num value) {
     return switch (value) {
@@ -125,7 +127,7 @@ class PrometheusExporter extends MetricsExporter {
   }
 
   void _onStreamError(dynamic e, StackTrace? trace) {
-    log('Error while handling HTTP2 stream.\n$e');
+    log.debug('Error while handling HTTP2 stream.', error: e, stack: trace);
   }
 
   @override

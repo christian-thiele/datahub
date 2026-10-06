@@ -1,6 +1,7 @@
 import 'package:datahub/scaffold.dart';
 
 import '../telemetry_service.dart';
+import '../trace/tracer.dart';
 import 'log_message.dart';
 import 'severity_level.dart';
 
@@ -31,7 +32,7 @@ final class LogHelper {
         stack: stack,
         error: error,
         labels: labels,
-        span: telemetry.getDefaultTracer().findParentSpan(),
+        span: Tracer.currentSpan,
       ),
     );
   }

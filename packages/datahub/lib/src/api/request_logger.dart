@@ -6,6 +6,8 @@ import 'package:datahub/http.dart';
 import 'package:datahub/telemetry.dart';
 import 'package:datahub/utils.dart';
 
+import '../telemetry/redaction.dart';
+
 /// Logs the requests and responses passing through a [HttpRequestHandler] at
 /// trace level.
 ///
@@ -45,34 +47,6 @@ import 'package:datahub/utils.dart';
 /// Credentials in headers and query parameters are replaced by `REDACTED`,
 /// bodies are logged as they are.
 class RequestLogger {
-  static const _redacted = 'REDACTED';
-
-  /// Headers that are always redacted.
-  static const _defaultRedactedHeaders = {
-    HttpHeaders.authorization,
-    HttpHeaders.proxyAuthorization,
-    HttpHeaders.cookie,
-    HttpHeaders.setCookie,
-    'x-api-key',
-  };
-
-  static const _redactedQueryParams = {
-    'access_token',
-    'id_token',
-    'refresh_token',
-    'token',
-    'api_key',
-    'apikey',
-    'password',
-    'secret',
-    'client_secret',
-    // redacted by default according to the semantic conventions
-    'awsaccesskeyid',
-    'signature',
-    'sig',
-    'x-goog-signature',
-  };
-
   /// Maximum number of bytes logged per body.
   ///
   /// If 0, no body content is logged, only body sizes.
@@ -87,7 +61,7 @@ class RequestLogger {
     required this.bodyLimit,
     Iterable<String> redactedHeaders = const [],
   }) : _redactedHeaders = {
-         ..._defaultRedactedHeaders,
+         ...Redaction.sensitiveHeaders,
          ...redactedHeaders.map((e) => e.toLowerCase()),
        };
 
@@ -179,29 +153,8 @@ class RequestLogger {
   }
 
   /// Query of [uri] with credentials redacted, or null if there is none.
-  static String? _query(Uri uri) {
-    if (!uri.hasQuery) {
-      return null;
-    }
-
-    final query = uri.query
-        .split('&')
-        .map((param) {
-          final name = param.split('=').first;
-          final String decoded;
-          try {
-            decoded = Uri.decodeQueryComponent(name).toLowerCase();
-          } on ArgumentError {
-            return param;
-          }
-          return _redactedQueryParams.contains(decoded)
-              ? '$name=$_redacted'
-              : param;
-        })
-        .join('&');
-
-    return _escape(query);
-  }
+  static String? _query(Uri uri) =>
+      uri.hasQuery ? _escape(Redaction.redactQuery(uri.query)) : null;
 
   /// Header labels as defined by the semantic conventions, with multiple
   /// values combined into a comma-separated list.
@@ -213,7 +166,7 @@ class RequestLogger {
     for (final MapEntry(:key, :value) in headers.entries) {
       final name = key.toLowerCase();
       final values = _redactedHeaders.contains(name)
-          ? value.map(_redact)
+          ? value.map(Redaction.redactHeaderValue)
           : value.map(_escape);
       labels.update(
         '$prefix.$name',
@@ -222,12 +175,6 @@ class RequestLogger {
       );
     }
     return labels;
-  }
-
-  /// Keeps the authentication scheme (e.g. `Bearer`) for debugging.
-  static String _redact(String value) {
-    final scheme = RegExp(r'^[A-Za-z][A-Za-z0-9-]* ').stringMatch(value);
-    return '${scheme ?? ''}$_redacted';
   }
 }
 
