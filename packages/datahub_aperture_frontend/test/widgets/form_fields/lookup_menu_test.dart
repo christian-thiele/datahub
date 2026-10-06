@@ -109,7 +109,7 @@ IconData? _linkIcon(WidgetTester tester) =>
     switch (_field(tester).decoration?.suffixIcon) {
       Icon(:final icon) ||
       Tooltip(child: Icon(:final icon)) ||
-      Material(child: InkWell(child: Icon(:final icon))) => icon,
+      Material(child: Padding(child: InkWell(child: Icon(:final icon)))) => icon,
       _ => null,
     };
 
