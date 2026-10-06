@@ -116,8 +116,7 @@ class HistogramMetric extends Metric {
   /// Observes [value], optionally for the series identified by [labels].
   ///
   /// The [labels] must match one of the label combinations declared when
-  /// the metric was defined, or provide a value for each of its label
-  /// names.
+  /// the metric was defined, or provide a value for each of its label names.
   void observe(num value, [Map<String, String> labels = const {}]) =>
       _findSeries(labels).observe(value);
 
