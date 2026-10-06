@@ -85,7 +85,7 @@ class Pool<T> {
   Future<void> _runMaintenance() async {
     final expired = _items.where(_isExpired).toList();
     if (expired.isNotEmpty) {
-      log.debug(
+      log.trace(
         'Pool: Removing ${expired.length} idle item(s) that reached '
         'max lifetime.',
       );
@@ -411,7 +411,7 @@ class Pool<T> {
 
   Future<bool> _isLive(_PoolItem<T> item) async {
     if (_isExpired(item)) {
-      log.debug('Pool: Item reached max lifetime.');
+      log.trace('Pool: Item reached max lifetime.');
       return false;
     }
 
