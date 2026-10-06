@@ -26,7 +26,7 @@ class NavBarPage extends StatelessWidget {
         },
         builder: (context, state) {
           return switch (state) {
-            ConfigurationValue(:final resources, :final modules) => Row(
+            ConfigurationValue(:final resources) => Row(
               mainAxisSize: MainAxisSize.max,
               children: [
                 SideBar(
@@ -40,17 +40,6 @@ class NavBarPage extends StatelessWidget {
                             label: resource.namePlural ?? resource.name,
                             path:
                                 '/resources/${Uri.encodeComponent(resource.id)}',
-                          ),
-                      ],
-                    ),
-                    SideBarSection(
-                      title: S.of(context).modules,
-                      entries: [
-                        for (final module in modules)
-                          SideBarEntry(
-                            icon: getIcon(module.icon),
-                            label: module.displayName,
-                            path: '/modules/${Uri.encodeComponent(module.id)}',
                           ),
                       ],
                     ),

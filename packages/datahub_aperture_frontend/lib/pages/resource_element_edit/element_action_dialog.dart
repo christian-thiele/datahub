@@ -1,7 +1,6 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/blocs/resource_element/resource_action_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
-import 'package:datahub_aperture_frontend/modules/task_manager/widgets/invocation_list_item.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/aperture_animation.dart';
@@ -85,11 +84,8 @@ class ElementActionDialog extends StatelessWidget {
                     size: 22,
                     color: ApertureColors.of(context).success,
                   ),
-                  Text('Task started.'),
+                  Text('Action completed.'),
                 ],
-              ),
-              ResourceActionProgress(:final task) => InvocationListItem(
-                task: task,
               ),
             },
           );

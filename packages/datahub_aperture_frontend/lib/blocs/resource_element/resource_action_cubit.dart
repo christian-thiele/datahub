@@ -1,11 +1,6 @@
-// ignore_for_file: unused_element, unused_local_variable
-
-import 'dart:async';
-
 import 'package:datahub/api.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/blocs/error_state.dart';
-import 'package:datahub_aperture_frontend/modules/task_manager/models/task_model.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -15,8 +10,6 @@ part 'resource_action_state.dart';
 class ResourceActionCubit extends Cubit<ResourceActionState> {
   final ResourcesRepository _resourcesRepository;
   final ResourceAction action;
-
-  Timer? _progressUpdateTimer;
 
   ResourceActionCubit(
     this._resourcesRepository, {
@@ -104,51 +97,18 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
 
   Future<void> _startAction(Map<String, dynamic> parameters) async {
     try {
-      // TODO fix this, this is messy
-      /*
-      final modules = await _resourcesRepository.getModules();
-      final taskManagerEnabled = modules.any(
-        (e) => e.type == ModuleType.taskManager,
-      );*/
-      final taskManagerEnabled = false;
-
       final resourceId = state.resourceId;
       final elementId = state.elementId;
-      final result = resourceId != null && elementId != null
-          ? await _resourcesRepository.startElementAction(
-              resourceId,
-              elementId,
-              state.actionId,
-              parameters,
-            )
-          : await _resourcesRepository.startAction(state.actionId, parameters);
-      /*
-      if (taskManagerEnabled) {
-        if (result['taskId'] case final taskId) {
-          final descriptions = await _taskManagerRepository.getDescriptions();
-          final invocation = await _taskManagerRepository.getInvocation(taskId);
-          final taskDescription = descriptions
-              .where((d) => d.id == invocation.taskId)
-              .firstOrNull;
-          emit(
-            ResourceActionProgress(
-              resourceId: state.resourceId,
-              actionId: state.actionId,
-              elementId: state.elementId,
-              taskDescription: taskDescription,
-              task: TaskManagerModuleCubit.toTaskModel(
-                taskDescription,
-                invocation,
-              ),
-            ),
-          );
-          _progressUpdateTimer = Timer(
-            const Duration(seconds: 1),
-            _progressUpdate,
-          );
-          return;
-        }
-      }*/
+      if (resourceId != null && elementId != null) {
+        await _resourcesRepository.startElementAction(
+          resourceId,
+          elementId,
+          state.actionId,
+          parameters,
+        );
+      } else {
+        await _resourcesRepository.startAction(state.actionId, parameters);
+      }
       emit(
         ResourceActionDone(
           resourceId: state.resourceId,
@@ -191,55 +151,5 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
         );
       }
     }
-  }
-
-  void _progressUpdate() async {
-    if (isClosed) {
-      return;
-    }
-    /*
-    if (state case ResourceActionProgress(
-      :final taskDescription,
-      :final task,
-    )) {
-      try {
-        final invocation = await _taskManagerRepository.getInvocation(
-          task.invocationId,
-        );
-
-        emit(
-          ResourceActionProgress(
-            resourceId: state.resourceId,
-            actionId: state.actionId,
-            elementId: state.elementId,
-            taskDescription: taskDescription,
-            task: TaskManagerModuleCubit.toTaskModel(
-              taskDescription,
-              invocation,
-            ),
-          ),
-        );
-
-        _progressUpdateTimer = Timer(
-          const Duration(seconds: 1),
-          _progressUpdate,
-        );
-      } catch (e) {
-        emit(
-          ResourceActionError(
-            resourceId: state.resourceId,
-            actionId: state.resourceId,
-            elementId: state.elementId,
-            message: 'Could not update task progress.',
-          ),
-        );
-      }
-    }*/
-  }
-
-  @override
-  Future<void> close() {
-    _progressUpdateTimer?.cancel();
-    return super.close();
   }
 }

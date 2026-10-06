@@ -695,8 +695,8 @@ void main() {
       }
     });
 
-    // The shape built by `TaskManager._updateTimeoutTasks`.
-    test('reduces the task manager timeout filter', () {
+    // A heartbeat timeout: running, and no heartbeat since a deadline.
+    test('reduces a heartbeat timeout filter', () {
       final state = hit();
       final noHeartbeat = hit();
       final startedBefore = hit();

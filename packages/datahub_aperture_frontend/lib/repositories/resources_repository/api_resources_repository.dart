@@ -51,13 +51,6 @@ class ApiResourcesRepository extends ApiRepository
   }
 
   @override
-  Future<List<ModuleDescription>> getModules() async {
-    final client = await getClient();
-    final result = await client.get('/api/modules');
-    return await result.getList($ModuleDescription.bean);
-  }
-
-  @override
   Future<ResourceData> getResourceElement(
     String resourceId,
     String elementId, {

@@ -20,16 +20,9 @@ class ConfigurationCubit extends Cubit<ConfigurationState> {
 
     try {
       final resources = await _resourcesRepository.getDescriptions();
-      final modules = await _resourcesRepository.getModules();
       final actions = await _resourcesRepository.getActions();
 
-      emit(
-        ConfigurationValue(
-          resources: resources,
-          modules: modules,
-          actions: actions,
-        ),
-      );
+      emit(ConfigurationValue(resources: resources, actions: actions));
     } catch (e) {
       emit(ConfigurationError(message: e.toString()));
     }

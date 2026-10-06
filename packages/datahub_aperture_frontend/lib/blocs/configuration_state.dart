@@ -10,14 +10,9 @@ final class ConfigurationLoading extends ConfigurationState {
 
 final class ConfigurationValue extends ConfigurationState {
   final List<ResourceDescription> resources;
-  final List<ModuleDescription> modules;
   final List<ResourceAction> actions;
 
-  ConfigurationValue({
-    required this.resources,
-    required this.modules,
-    required this.actions,
-  });
+  ConfigurationValue({required this.resources, required this.actions});
 }
 
 final class ConfigurationError extends ConfigurationState

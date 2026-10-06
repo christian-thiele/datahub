@@ -6,7 +6,7 @@ import '../scenarios/demo/data/actions/resolve_ticket.dart';
 import '../scenarios/demo/data/actions/send_payment_reminders.dart';
 
 ApertureAction<T> _action<T extends DataObject>(DataBean<T> bean) =>
-    ApertureAction<T>(bean: bean, handler: (_, _) async => null);
+    ApertureAction<T>(bean: bean, handler: (_, _) async {});
 
 void main() {
   group('decodeParameters', () {

@@ -15,7 +15,6 @@ class ApertureApi extends ApiNode {
   final ApertureTileSource tileSource;
   final List<ApertureResource> resources;
   final List<ApertureAction> actions;
-  final List<ApertureModule> modules;
   final Config<String> basePath;
   final Config<String> oidcIssuer;
   final Config<String?> oidcAudience;
@@ -31,7 +30,6 @@ class ApertureApi extends ApiNode {
     this.tileSource = const OpenStreetMapTileSource(),
     this.resources = const [],
     this.actions = const [],
-    this.modules = const [],
     this.basePath = const Config(
       'aperture.basePath',
       defaultValue: '/aperture',
@@ -322,8 +320,8 @@ class ApertureApi extends ApiNode {
                 action,
                 await request.getJsonBody(),
               );
-              final taskId = await action.handle(elementId, parameters);
-              return {'taskId': ?taskId};
+              await action.handle(elementId, parameters);
+              return {};
             },
           ),
           ResourceEndpoint(
@@ -350,20 +348,10 @@ class ApertureApi extends ApiNode {
                 action,
                 await request.getJsonBody(),
               );
-              final taskId = await action.handle(null, parameters);
-              return {'taskId': ?taskId};
+              await action.handle(null, parameters);
+              return {};
             },
           ),
-          ResourceEndpoint(
-            matcher: RoutePattern('$base/api/modules'),
-            get: (request) async {
-              return modules.map((e) => e.description).toList();
-            },
-          ),
-          for (final module in modules)
-            ...module.buildApiRoutes(
-              '$base/api/modules/${module.description.id}',
-            ),
         ],
       ),
     ];

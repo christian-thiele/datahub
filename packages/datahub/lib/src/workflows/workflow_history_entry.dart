@@ -79,8 +79,8 @@ class WorkflowHistoryEntry extends $WorkflowHistoryEntry {
   /// When the next attempt is due, for a failed attempt that is retried.
   final DateTime? nextAttemptAt;
 
-  /// What the step logged while it ran, one JSON object per line (the format
-  /// of `TaskInvocation.messages`).
+  /// What the step logged while it ran, one JSON object per line (see
+  /// [LogMessage.toJsonLine]).
   final List<String> messages;
 
   const WorkflowHistoryEntry({

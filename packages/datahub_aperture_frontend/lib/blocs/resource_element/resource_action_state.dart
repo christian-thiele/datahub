@@ -33,19 +33,6 @@ class ResourceActionLoading extends ResourceActionState {
   });
 }
 
-class ResourceActionProgress extends ResourceActionState {
-  final TaskDescription? taskDescription;
-  final TaskModel task;
-
-  const ResourceActionProgress({
-    required super.resourceId,
-    required super.actionId,
-    required super.elementId,
-    required this.taskDescription,
-    required this.task,
-  });
-}
-
 class ResourceActionDone extends ResourceActionState {
   const ResourceActionDone({
     required super.resourceId,

@@ -449,11 +449,6 @@ class S {
     return Intl.message('Resources', name: 'resources', desc: '', args: []);
   }
 
-  /// `Modules`
-  String get modules {
-    return Intl.message('Modules', name: 'modules', desc: '', args: []);
-  }
-
   /// `Reload configuration`
   String get reloadConfiguration {
     return Intl.message(
@@ -494,10 +489,10 @@ class S {
     );
   }
 
-  /// `Pick a resource or module to get started.`
+  /// `Pick a resource to get started.`
   String get dashboardSubtitle {
     return Intl.message(
-      'Pick a resource or module to get started.',
+      'Pick a resource to get started.',
       name: 'dashboardSubtitle',
       desc: '',
       args: [],

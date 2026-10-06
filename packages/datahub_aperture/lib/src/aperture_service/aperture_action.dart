@@ -3,7 +3,7 @@ import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/utils.dart';
 
 typedef ApertureActionHandler<TParameters> =
-    Future<String?> Function(String? elementId, TParameters parameters);
+    Future<void> Function(String? elementId, TParameters parameters);
 
 class ApertureAction<TParameters extends DataObject> {
   final DataBean<TParameters> bean;
@@ -20,7 +20,6 @@ class ApertureAction<TParameters extends DataObject> {
     return parameters;
   }
 
-  Future<String?> handle(dynamic elementId, TParameters parameters) async {
-    return await handler(elementId, parameters);
-  }
+  Future<void> handle(dynamic elementId, TParameters parameters) =>
+      handler(elementId, parameters);
 }

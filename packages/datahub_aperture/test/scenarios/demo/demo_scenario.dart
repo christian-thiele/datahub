@@ -82,10 +82,7 @@ void main(List<String> args) => runApp([
   ServiceDelegate(initialize: seedDemoData),
 ], arguments: args);
 
-Future<String?> _markInvoicePaid(
-  String? invoiceId,
-  MarkInvoicePaid params,
-) async {
+Future<void> _markInvoicePaid(String? invoiceId, MarkInvoicePaid params) async {
   final repo = Find<DataRepository<Invoice>>().find();
   final invoice = await repo.readById(invoiceId);
   if (invoice == null) {
@@ -105,10 +102,9 @@ Future<String?> _markInvoicePaid(
       paymentReference: params.paymentReference,
     ),
   );
-  return null;
 }
 
-Future<String?> _resolveTicket(String? ticketId, ResolveTicket params) async {
+Future<void> _resolveTicket(String? ticketId, ResolveTicket params) async {
   final repo = Find<DataRepository<SupportTicket>>().find();
   final ticket = await repo.readById(ticketId);
   if (ticket == null) {
@@ -126,10 +122,9 @@ Future<String?> _resolveTicket(String? ticketId, ResolveTicket params) async {
       firstResponseAt: ticket.firstResponseAt ?? now,
     ),
   );
-  return null;
 }
 
-Future<String?> _sendPaymentReminders(
+Future<void> _sendPaymentReminders(
   String? _,
   SendPaymentReminders params,
 ) async {
@@ -152,5 +147,4 @@ Future<String?> _sendPaymentReminders(
       ),
     );
   }
-  return null;
 }

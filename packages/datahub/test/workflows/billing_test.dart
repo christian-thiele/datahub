@@ -1,5 +1,4 @@
-// Monthly invoicing with workflows, the guiding case for replacing the
-// TaskManager: a billing period per month closes itself at its end, starts one
+// Monthly invoicing with workflows: a billing period per month closes itself at its end, starts one
 // invoice per user with open positions and starts the next period. The tests
 // use periods of a few hundred milliseconds instead of months.
 import 'dart:async';

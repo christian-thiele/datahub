@@ -22,18 +22,12 @@ class DashboardPage extends StatelessWidget {
     return BasePage(
       child: BlocBuilder<ConfigurationCubit, ConfigurationState>(
         builder: (context, state) {
-          final (resources, modules, actions) = switch (state) {
-            ConfigurationValue(
-              :final resources,
-              :final modules,
-              :final actions,
-            ) =>
-              (resources, modules, actions),
-            _ => (
-              const <ResourceDescription>[],
-              const <ModuleDescription>[],
-              const <ResourceAction>[],
+          final (resources, actions) = switch (state) {
+            ConfigurationValue(:final resources, :final actions) => (
+              resources,
+              actions,
             ),
+            _ => (const <ResourceDescription>[], const <ResourceAction>[]),
           };
 
           return ListView(
@@ -59,22 +53,6 @@ class DashboardPage extends StatelessWidget {
                         title: resource.namePlural ?? resource.name,
                         onTap: () => context.go(
                           '/resources/${Uri.encodeComponent(resource.id)}',
-                        ),
-                      ),
-                  ],
-                ),
-              ],
-              if (modules.isNotEmpty) ...[
-                const SizedBox(height: 32),
-                _SectionTitle(S.of(context).modules),
-                _TileGrid(
-                  children: [
-                    for (final module in modules)
-                      _ShortcutTile(
-                        icon: getIcon(module.icon),
-                        title: module.displayName,
-                        onTap: () => context.go(
-                          '/modules/${Uri.encodeComponent(module.id)}',
                         ),
                       ),
                   ],

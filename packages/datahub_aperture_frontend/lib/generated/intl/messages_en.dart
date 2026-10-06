@@ -69,7 +69,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "cancel": MessageLookupByLibrary.simpleMessage("Cancel"),
     "caution": MessageLookupByLibrary.simpleMessage("Warning"),
     "dashboardSubtitle": MessageLookupByLibrary.simpleMessage(
-      "Pick a resource or module to get started.",
+      "Pick a resource to get started.",
     ),
     "dashboardTitle": m3,
     "date": MessageLookupByLibrary.simpleMessage("Date"),
@@ -96,7 +96,6 @@ class MessageLookup extends MessageLookupByLibrary {
     "login": MessageLookupByLibrary.simpleMessage("Login"),
     "loginAuthcode": MessageLookupByLibrary.simpleMessage("Login via IDP"),
     "logout": MessageLookupByLibrary.simpleMessage("Sign out"),
-    "modules": MessageLookupByLibrary.simpleMessage("Modules"),
     "newElement": MessageLookupByLibrary.simpleMessage("New element"),
     "newResource": m4,
     "noElements": MessageLookupByLibrary.simpleMessage("No Elements"),

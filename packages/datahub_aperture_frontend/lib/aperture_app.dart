@@ -1,8 +1,4 @@
 import 'package:datahub/config.dart';
-import 'package:datahub_aperture_frontend/modules/task_manager/repositories/task_manager_repository.dart';
-import 'package:datahub_aperture_frontend/modules/task_manager/task_manager_log_page.dart';
-import 'package:datahub_aperture_frontend/modules/task_manager/task_manager_module_page.dart';
-import 'package:datahub_aperture_frontend/repositories/api_repository.dart';
 import 'package:datahub_aperture_frontend/utils/route_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,7 +7,6 @@ import 'package:go_router/go_router.dart';
 
 import 'blocs/auth_cubit/auth_cubit.dart';
 import 'generated/l10n.dart';
-import 'modules/task_manager/repositories/api_task_manager_repository.dart';
 import 'pages/auth_page/auth_page.dart';
 import 'pages/dashboard_page.dart';
 import 'pages/resource_element_create/resource_element_create_page.dart';
@@ -108,38 +103,6 @@ class _ApertureAppState extends State<ApertureApp>
                     pageBuilder: (context, state) => MaterialPage(
                       key: ValueKey(state.matchedLocation),
                       child: ResourceElementEditPage(state),
-                    ),
-                  ),
-                ],
-              ),
-              GoRoute(
-                path: '/modules/task-manager',
-                pageBuilder: (context, state) => MaterialPage(
-                  key: ValueKey(state.matchedLocation),
-                  child: RepositoryProvider<TaskManagerRepository>(
-                    create: (context) => ApiTaskManagerRepository(
-                      baseUrl: Bootstrap.apiUrlOf(context),
-                    ),
-                    dispose: (repository) =>
-                        (repository as ApiRepository).close(),
-                    child: TaskManagerModulePage(),
-                  ),
-                ),
-                routes: [
-                  GoRoute(
-                    path: ':invocationId',
-                    pageBuilder: (context, state) => MaterialPage(
-                      child: RepositoryProvider<TaskManagerRepository>(
-                        create: (context) => ApiTaskManagerRepository(
-                          baseUrl: Bootstrap.apiUrlOf(context),
-                        ),
-                        dispose: (repository) =>
-                            (repository as ApiRepository).close(),
-                        child: TaskManagerLogPage(
-                          invocationId:
-                              state.pathParameters['invocationId'] as String,
-                        ),
-                      ),
                     ),
                   ),
                 ],
