@@ -85,6 +85,21 @@ class WorkflowService<T extends DataObject, TState extends Enum>
   /// [TState] of the element is used.
   final DataField<T, TState>? stateField;
 
+  /// The session of the workflow engine, for the work it does on its own.
+  ///
+  /// What a caller asks for is done with the session of the caller, so the
+  /// repositories decide whether it is allowed: [Workflow.start] creates the
+  /// element, [Workflow.send] stores the signal, [Workflow.retry] and
+  /// [Workflow.cancel] change the event.
+  ///
+  /// What the engine does internally uses this session: events, history, and
+  /// running the steps. So a caller who may retry an event does not need the
+  /// rights of its step.
+  ///
+  /// Without it, the engine works without a session, and the work done for
+  /// a caller runs with the session of the caller.
+  final Session? workerSession;
+
   /// The repository of the elements, defaults to the `DataRepository<T>`.
   final Find<DataRepository<T>>? repository;
 
@@ -156,6 +171,7 @@ class WorkflowService<T extends DataObject, TState extends Enum>
       'workflows.metricPrefix',
       defaultValue: 'workflow',
     ),
+    this.workerSession,
   });
 
   /// Throws an [ApiError] when the steps are declared inconsistently.
@@ -326,9 +342,11 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
   @override
   Future<T> start(T element) async {
     _ensureNotDisposed();
+
+    // The element is read and created by the caller.
     final id = _idField.valueOf(element);
     if (await _repository.readById(id) case final stored?) {
-      return await _startAgain(stored, element);
+      return await _runAsWorker(() => _startAgain(stored, element));
     }
 
     final T created;
@@ -340,10 +358,10 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
       if (stored == null) {
         rethrow;
       }
-      return await _startAgain(stored, element);
+      return await _runAsWorker(() => _startAgain(stored, element));
     }
 
-    await _begin(created, WorkflowHistoryKind.started);
+    await _runAsWorker(() => _begin(created, WorkflowHistoryKind.started));
     return created;
   }
 
@@ -373,8 +391,10 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     final element =
         await _repository.readById(id) ??
         (throw ApiRequestException.notFound('Element $id does not exist.'));
-    await _cancelEntered(_idOf(element));
-    await _begin(element, WorkflowHistoryKind.resumed);
+    await _runAsWorker(() async {
+      await _cancelEntered(_idOf(element));
+      await _begin(element, WorkflowHistoryKind.resumed);
+    });
   }
 
   /// Cancels the pending events of all [OnEnter] steps of the element, except
@@ -691,7 +711,9 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
 
     _timer?.cancel();
     _timer = _zone.createTimer(delay, () {
-      _activeTick = _runTick().whenComplete(() => _activeTick = null);
+      _activeTick = _runAsWorker(
+        _runTick,
+      ).whenComplete(() => _activeTick = null);
     });
   }
 
@@ -1362,27 +1384,30 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     }
 
     try {
-      await history.create(
-        WorkflowHistoryEntry(
-          workflow: _name,
-          elementId: id.toString(),
-          timestamp: at ?? DateTime.timestamp(),
-          kind: kind,
-          step: step?.name ?? event?.step,
-          eventId: event?.id,
-          attempt: attempt,
-          state: state?.name,
-          newState: newState?.name,
-          changes: changes == null
-              ? null
-              : {
-                  for (final MapEntry(key: field, :value) in changes.entries)
-                    field.name: field.toJson(value),
-                },
-          signal: signal,
-          error: error,
-          nextAttemptAt: nextAttemptAt,
-          messages: messages,
+      // The history is the bookkeeping of the engine, also for callers.
+      await _runAsWorker(
+        () => history.create(
+          WorkflowHistoryEntry(
+            workflow: _name,
+            elementId: id.toString(),
+            timestamp: at ?? DateTime.timestamp(),
+            kind: kind,
+            step: step?.name ?? event?.step,
+            eventId: event?.id,
+            attempt: attempt,
+            state: state?.name,
+            newState: newState?.name,
+            changes: changes == null
+                ? null
+                : {
+                    for (final MapEntry(key: field, :value) in changes.entries)
+                      field.name: field.toJson(value),
+                  },
+            signal: signal,
+            error: error,
+            nextAttemptAt: nextAttemptAt,
+            messages: messages,
+          ),
         ),
       );
     } catch (e, stack) {
@@ -1433,10 +1458,14 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
       }
       writing = true;
       try {
-        await _updateEvent(event, {
-          $WorkflowEvent.$heartbeatAt: DateTime.timestamp(),
-          $WorkflowEvent.$messages: List.of(messages),
-        });
+        // Timers of the zone of the service do not run in the session of the
+        // step.
+        await _runAsWorker(
+          () => _updateEvent(event, {
+            $WorkflowEvent.$heartbeatAt: DateTime.timestamp(),
+            $WorkflowEvent.$messages: List.of(messages),
+          }),
+        );
       } finally {
         writing = false;
       }
@@ -1463,6 +1492,18 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
       );
     }
   }
+
+  /// Runs [body] as the engine, with [WorkflowService.workerSession] as the
+  /// only session (unless it runs as the engine already).
+  Future<R> _runAsWorker<R>(Future<R> Function() body) =>
+      switch (service.workerSession) {
+        final session? when Zone.current[#datahub.workflow.worker] != this =>
+          context.withSession(
+            session,
+            () => runZoned(body, zoneValues: {#datahub.workflow.worker: this}),
+          ),
+        _ => body(),
+      };
 
   bool _isRunning(WorkflowEvent event) =>
       event.startedAt != null &&

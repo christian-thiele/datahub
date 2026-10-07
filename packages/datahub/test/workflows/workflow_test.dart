@@ -195,6 +195,164 @@ DataRepository<WorkflowEvent> get _events =>
 
 Workflow<Invoice> get _workflow => Find<Workflow<Invoice>>().find();
 
+/// A session of the tests, [identity] tells who acts.
+class _Session implements Session {
+  @override
+  final String identity;
+
+  const _Session(this.identity);
+
+  @override
+  String get debugName => identity;
+}
+
+const _engine = _Session('engine');
+
+/// The identity a repository call ran with, null without a session.
+String? get _actor => switch (Context.maybeOfZone()?.sessions) {
+  [] || null => null,
+  [final Session session] => session.identity,
+  final sessions => sessions.map((s) => s.identity).join('+'),
+};
+
+/// Who did what to which repository, as (repository, operation, actor).
+final _calls = <(String, String, String?)>[];
+
+/// Who may not do what, by repository and operation.
+const _forbidden = {
+  ('Invoice', 'create'): {'mallory'},
+  ('Invoice', 'update'): {'clerk'},
+};
+
+/// A repository that notes who calls it, and refuses what is [_forbidden].
+/// It works on the other `DataRepository<T>`.
+class _Watched<T extends DataObject> implements Service {
+  const _Watched();
+
+  @override
+  ServiceInstance<_Watched<T>> createInstance() => _WatchedInstance<T>();
+}
+
+class _WatchedInstance<T extends DataObject>
+    extends ServiceInstance<_Watched<T>>
+    implements DataRepository<T> {
+  late final DataRepository<T> _inner;
+
+  @override
+  Future<void> initialize() async {
+    await super.initialize();
+    _inner = find(Find<DataRepository<T>>((r) => r is! _WatchedInstance));
+  }
+
+  String get _name => _inner.bean.name;
+
+  Future<R> _note<R>(String operation, Future<R> Function() call) async {
+    _calls.add((_name, operation, _actor));
+    if (_forbidden[(_name, operation)]?.contains(_actor) ?? false) {
+      throw ApiRequestException(403, 'Not allowed to $operation.');
+    }
+    return await call();
+  }
+
+  @override
+  DataBean<T> get bean => _inner.bean;
+
+  @override
+  Future<T> create(T element) => _note('create', () => _inner.create(element));
+
+  @override
+  Future<T?> readById(dynamic id) => _note('read', () => _inner.readById(id));
+
+  @override
+  Future<List<T>> readAll({
+    Filter filter = Filter.empty,
+    Sort sort = Sort.empty,
+    int? offset,
+    int? limit,
+  }) => _note(
+    'read',
+    () => _inner.readAll(
+      filter: filter,
+      sort: sort,
+      offset: offset,
+      limit: limit,
+    ),
+  );
+
+  @override
+  Future<int> count({Filter filter = Filter.empty}) =>
+      _note('read', () => _inner.count(filter: filter));
+
+  @override
+  Future<bool> updateById(T element) =>
+      _note('update', () => _inner.updateById(element));
+
+  @override
+  Future<int> updateAll({
+    required Filter filter,
+    required Map<DataField<T, dynamic>, dynamic> values,
+  }) => _note('update', () => _inner.updateAll(filter: filter, values: values));
+
+  @override
+  Future<bool> deleteById(dynamic id) =>
+      _note('delete', () => _inner.deleteById(id));
+
+  @override
+  Future<int> deleteAll({required Filter filter}) =>
+      _note('delete', () => _inner.deleteAll(filter: filter));
+
+  @override
+  Future<R> atomic<R>(Future<R> Function() delegate) => _inner.atomic(delegate);
+
+  @override
+  Future<T?> first({
+    Filter filter = Filter.empty,
+    Sort sort = Sort.empty,
+    int offset = 0,
+  }) => _note(
+    'read',
+    () => _inner.first(filter: filter, sort: sort, offset: offset),
+  );
+
+  @override
+  Future<bool> any({Filter filter = Filter.empty}) =>
+      _note('read', () => _inner.any(filter: filter));
+}
+
+/// The invoice workflow with the engine acting as [_engine], and all
+/// repositories watched.
+List<Component> _watchedComponents(
+  List<InvoiceStep> steps, {
+  Duration heartbeatInterval = const Duration(seconds: 10),
+}) => [
+  MemoryRepositoryService(bean: $Invoice.bean),
+  MemoryRepositoryService(bean: $WorkflowEvent.bean),
+  MemoryRepositoryService(bean: $WorkflowHistoryEntry.bean),
+  const _Watched<Invoice>(),
+  const _Watched<WorkflowEvent>(),
+  const _Watched<WorkflowHistoryEntry>(),
+  const MemoryLockService<String>(),
+  WorkflowService<Invoice, InvoiceWorkflowState>(
+    steps: steps,
+    workerSession: _engine,
+    repository: const Find<_WatchedInstance<Invoice>>(),
+    eventRepository: const Find<_WatchedInstance<WorkflowEvent>>(),
+    historyRepository: const Find<_WatchedInstance<WorkflowHistoryEntry>>(),
+    pollInterval: const Config.value(Duration(milliseconds: 20)),
+    heartbeatInterval: Config.value(heartbeatInterval),
+  ),
+];
+
+/// Runs [body] as the caller [identity].
+Future<R> _as<R>(String identity, Future<R> Function() body) =>
+    Context.ofZone().withSession(_Session(identity), body);
+
+/// The actors of the calls to [repository], optionally of one [operation].
+Set<String?> _actors(String repository, [String? operation]) => {
+  for (final (name, op, actor) in _calls)
+    if (name == repository && (operation == null || op == operation)) actor,
+};
+
 Future<Invoice> _start([
   InvoiceWorkflowState state = InvoiceWorkflowState.created,
 ]) => _workflow.start(
@@ -1852,6 +2010,172 @@ void main() {
         expect(
           (await _read(other.id)).state,
           isNot(InvoiceWorkflowState.paymentReceived),
+        );
+      },
+    );
+  });
+
+  group('worker session', () {
+    setUp(_calls.clear);
+
+    final stepActors = <String?>[];
+    declareTest(
+      'starts elements as the caller and runs the steps as the engine',
+      _watchedComponents(
+        _steps(
+          generate: (step) async {
+            stepActors.add(_actor);
+            return _generate(step);
+          },
+        ),
+      ),
+      () async {
+        final invoice = await _as('alice', _start);
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentRequested,
+        );
+
+        expect(_actors('Invoice', 'create'), {'alice'});
+        // The step sees the engine as the only session, and writes as it.
+        expect(stepActors, ['engine']);
+        expect(_actors('Invoice', 'update'), {'engine'});
+        expect(_actors('WorkflowEvent'), {'engine'});
+        expect(_actors('WorkflowHistoryEntry'), {'engine'});
+      },
+    );
+
+    declareTest(
+      'does not create elements for callers who may not create them',
+      _watchedComponents(_steps()),
+      () async {
+        await expectLater(
+          _as('mallory', _start),
+          throwsA(
+            isA<ApiRequestException>().having((e) => e.statusCode, 'code', 403),
+          ),
+        );
+        expect(await _events.readAll(), isEmpty);
+      },
+    );
+
+    declareTest(
+      'resumes, sends and reads as the caller',
+      _watchedComponents(_steps()),
+      () async {
+        final invoice = await _invoices.create(
+          Invoice(
+            recipient: 'Tester',
+            invoiceFile: null,
+            amount: 123,
+            state: InvoiceWorkflowState.paymentRequested,
+          ),
+        );
+        _calls.clear();
+
+        await _as('alice', () => _workflow.resume(invoice.id));
+        expect(_actors('Invoice', 'read'), {'alice'});
+
+        await _as(
+          'alice',
+          () => _workflow.send(
+            PaymentSuccessSignal(invoiceId: invoice.id, reference: 'ref'),
+          ),
+        );
+        expect(_actors('WorkflowEvent', 'create'), {'alice'});
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentReceived,
+        );
+
+        _calls.clear();
+        await _as('alice', () => _workflow.events());
+        await _as('alice', () => _workflow.history(invoice.id));
+        expect(_actors('WorkflowEvent'), {'alice'});
+        expect(_actors('WorkflowHistoryEntry'), {'alice'});
+      },
+    );
+
+    var attempts = 0;
+    declareTest(
+      'lets a caller retry and cancel steps it may not run itself',
+      _watchedComponents(
+        _steps(
+          retry: const RetryPolicy.none(),
+          generateAfter: const Duration(hours: 1),
+          requestPayment: (step) async {
+            if (++attempts == 1) {
+              throw ApiRequestException(503, 'Payment API not available.');
+            }
+            return _requestPayment(step);
+          },
+        ),
+      ),
+      () async {
+        // The clerk may not write invoices, the step does it.
+        final invoice = await _start(InvoiceWorkflowState.generated);
+        await _eventuallyEvent(WorkflowEventStatus.failed);
+        final parked = (await _workflow.events(elementId: invoice.id)).single;
+        _calls.clear();
+
+        await _as('clerk', () => _workflow.retry(parked.id));
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentRequested,
+        );
+        expect(_actors('WorkflowEvent', 'read'), contains('clerk'));
+        expect(_actors('WorkflowEvent', 'update'), contains('clerk'));
+        expect(_actors('Invoice', 'update'), {'engine'});
+        expect(_actors('WorkflowHistoryEntry', 'create'), {'engine'});
+
+        final waiting = await _start();
+        final pending = (await _workflow.events(elementId: waiting.id)).single;
+        _calls.clear();
+        await _as('clerk', () => _workflow.cancel(pending.id));
+        expect(_actors('WorkflowEvent', 'read'), {'clerk'});
+        expect(_actors('WorkflowEvent', 'delete'), {'clerk'});
+        expect(_actors('WorkflowHistoryEntry', 'create'), {'engine'});
+        expect(await _workflow.events(elementId: waiting.id), isEmpty);
+      },
+    );
+
+    final paymentStarted = Completer<void>();
+    final paymentMayFinish = Completer<void>();
+    declareTest(
+      'renews the heartbeat as the engine',
+      _watchedComponents(
+        _steps(
+          requestPayment: (step) async {
+            paymentStarted.complete();
+            await paymentMayFinish.future;
+            return _requestPayment(step);
+          },
+        ),
+        heartbeatInterval: const Duration(milliseconds: 20),
+      ),
+      () async {
+        addTearDown(() {
+          if (!paymentMayFinish.isCompleted) {
+            paymentMayFinish.complete();
+          }
+        });
+        final invoice = await _as('alice', _start);
+        await paymentStarted.future;
+
+        final updates = _calls.where(
+          (call) => call.$1 == 'WorkflowEvent' && call.$2 == 'update',
+        );
+        final before = updates.length;
+        await _eventually(
+          () => updates.length >= before + 3,
+          reason: 'heartbeats',
+        );
+        expect(_actors('WorkflowEvent', 'update'), {'engine'});
+
+        paymentMayFinish.complete();
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentRequested,
         );
       },
     );
