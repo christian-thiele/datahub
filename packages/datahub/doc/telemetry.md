@@ -44,6 +44,10 @@ reference implementations.
 - **Lifecycle:** prefer `trace()`, which makes the span active for the code it runs and ends it. Spans are exported
   when they start, so a span is visible even if the service crashes, and again when they end if they were exported
   while running. Always end spans created by `startSpan`.
+- **Initialization:** `ServiceHost.initialize` traces a span `initialize <host type>` with a child span
+  `initialize <service type>` per service, nested like the services. A service's span is active while it
+  initializes, so its spans and logs belong to it. Spans of services initialized before the `TelemetryService` are
+  created once it is up, backdated to when they started (`startSpan(startTimestamp:)`, `end(timestamp)`).
 - **Propagation:** across processes with the W3C `traceparent` header (`TraceContext`, done by `HttpServer` and
   `HttpClient`). Stored work (e.g. workflow events) stores the trace and span id and continues with
   `trace(..., parent: Span.remote(...))`. Spans of unsampled traces are created (for log correlation) but not

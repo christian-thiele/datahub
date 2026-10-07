@@ -77,11 +77,15 @@ class Tracer implements TelemetryScope {
   ///
   /// Prefer [trace], which also makes the span the active span of the code
   /// it runs. See [trace] for [parent].
+  ///
+  /// [startTimestamp] backdates the span, e.g. for an operation that started
+  /// before the tracer was available, see [LocalSpan.start].
   LocalSpan startSpan(
     String name, {
     Map<String, Object?>? attributes,
     SpanType type = SpanType.internal,
     Span? parent,
+    DateTime? startTimestamp,
   }) {
     final parentSpan = parent ?? currentSpan;
     final span = LocalSpan(
@@ -94,7 +98,7 @@ class Tracer implements TelemetryScope {
       type: type,
       traceFlags: parentSpan?.traceFlags ?? Span.flagSampled,
     );
-    span.start();
+    span.start(startTimestamp);
     if (span.isSampled) {
       _exporter.onStart(span);
     }

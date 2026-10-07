@@ -11,6 +11,7 @@ import 'tree_node.dart';
 part 'component.dart';
 part 'context.dart';
 part 'find.dart';
+part 'initialization_span.dart';
 part 'scope.dart';
 part 'service.dart';
 
@@ -39,6 +40,7 @@ abstract class ServiceHost implements ServiceRegistry {
   Future<TreeNode> _initializeComponent(
     TreeNode? parent,
     Component component,
+    _InitializationSpan parentSpan,
   ) async {
     switch (component) {
       case final Service service:
@@ -53,36 +55,46 @@ abstract class ServiceHost implements ServiceRegistry {
           debugName: '${component.runtimeType}#${component.hashCode}',
         );
 
-        final children = <Component>[];
-        _registerHandler = children.add;
+        final span = _InitializationSpan(
+          'initialize ${service.runtimeType}',
+          parent: parentSpan,
+        );
 
-        try {
-          final instance = service.createInstance();
-          instance.service = service;
-          instance.registry = this;
-          instance.context = context;
+        return await span.trace(() async {
+          final children = <Component>[];
+          _registerHandler = children.add;
 
-          await context.run(() async {
-            await instance.initialize();
-          });
+          try {
+            final instance = service.createInstance();
+            instance.service = service;
+            instance.registry = this;
+            instance.context = context;
 
-          node.instance = instance;
-        } catch (e, stack) {
-          log.fatal(
-            'Could not initialize component ${service.runtimeType}.',
-            error: e,
-            stack: stack,
-          );
-          rethrow;
-        }
+            await context.run(() async {
+              await instance.initialize();
+            });
 
-        _registerHandler = null;
+            node.instance = instance;
+            if (instance case final Telemetry telemetry) {
+              span.useTelemetry(telemetry);
+            }
+          } catch (e, stack) {
+            log.fatal(
+              'Could not initialize component ${service.runtimeType}.',
+              error: e,
+              stack: stack,
+            );
+            rethrow;
+          }
 
-        for (final child in children) {
-          await _initializeComponent(node, child);
-        }
+          _registerHandler = null;
 
-        return node;
+          for (final child in children) {
+            await _initializeComponent(node, child, span);
+          }
+
+          return node;
+        });
 
       case final Scope scope:
         final node = ScopeTreeNode(scope: scope);
@@ -98,7 +110,7 @@ abstract class ServiceHost implements ServiceRegistry {
 
         await context.run(() async {
           for (final child in scope.components) {
-            await _initializeComponent(node, child);
+            await _initializeComponent(node, child, parentSpan);
           }
         });
         return node;
@@ -150,7 +162,10 @@ abstract class ServiceHost implements ServiceRegistry {
   Future<void> initialize() async {
     if (_root == null) {
       _state = ServiceHostState.initializing;
-      _root = await _initializeComponent(null, buildRoot());
+      final span = _InitializationSpan.root('initialize $runtimeType');
+      _root = await span.trace(
+        () => _initializeComponent(null, buildRoot(), span),
+      );
       _state = ServiceHostState.initialized;
       _runPostInitializationCallbacks();
     } else {

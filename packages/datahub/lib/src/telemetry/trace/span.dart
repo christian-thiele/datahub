@@ -111,12 +111,17 @@ class LocalSpan extends Span {
        _attributes = attributes,
        super(parentSpanId: parent?.spanId);
 
-  void start() {
+  /// Starts the span at [timestamp], which defaults to now. Calling [start]
+  /// again has no effect.
+  ///
+  /// The task on the Dart developer timeline always starts now, since it
+  /// cannot be backdated.
+  void start([DateTime? timestamp]) {
     if (_startTimestamp != null) {
       return;
     }
 
-    _startTimestamp = DateTime.timestamp();
+    _startTimestamp = timestamp ?? DateTime.timestamp();
     try {
       if (tracer.enableDartTimeline) {
         _timelineTask = dev.TimelineTask(
@@ -208,10 +213,11 @@ class LocalSpan extends Span {
     }
   }
 
-  /// Ends the span. Calling [end] again has no effect.
-  void end() {
+  /// Ends the span at [timestamp], which defaults to now. Calling [end] again
+  /// has no effect.
+  void end([DateTime? timestamp]) {
     if (_endTimestamp == null) {
-      _endTimestamp = DateTime.timestamp();
+      _endTimestamp = timestamp ?? DateTime.timestamp();
       _timelineTask?.finish();
       tracer.spanEnded(this);
     }
