@@ -80,7 +80,7 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
       final jwksRequest = await jwksClient.get('').thenGetJsonBody();
 
       if (jwksRequest['keys'] is! List) {
-        throw Exception('Invalid JWKS.');
+        throw ApiException('Invalid JWKS.');
       }
 
       for (final key in jwksRequest['keys']) {
@@ -95,7 +95,7 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
               return pub;
             }
           } else {
-            throw Exception('Could not find e/n properties on key.');
+            throw ApiException('Could not find e/n properties on key.');
           }
         }
       }
@@ -103,7 +103,7 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
       await jwksClient.close();
     }
 
-    throw Exception('Key not found in JWKS.');
+    throw ApiRequestException.unauthorized('Key not found in JWKS.');
   }
 
   @override
