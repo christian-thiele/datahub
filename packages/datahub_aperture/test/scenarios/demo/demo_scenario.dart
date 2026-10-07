@@ -89,8 +89,18 @@ void main(List<String> args) => runApp([
 /// A sent invoice becomes overdue at its due date, which sends a payment
 /// reminder. A [MarkInvoicePaid] signal marks it as paid.
 final _invoiceSteps = <WorkflowStep<Invoice, InvoiceStatus>>[
-  OnEnter(name: 'Mark Overdue', InvoiceStatus.sent, _markOverdue, at: (invoice) => invoice.dueAt),
-  OnEnter(name: 'Send Reminder', InvoiceStatus.overdue, _sendReminder, retry: RetryPolicy.none()),
+  OnEnter(
+    name: 'Mark Overdue',
+    InvoiceStatus.sent,
+    _markOverdue,
+    at: (invoice) => invoice.dueAt,
+  ),
+  OnEnter(
+    name: 'Send Reminder',
+    InvoiceStatus.overdue,
+    _sendReminder,
+    retry: RetryPolicy.none(),
+  ),
   OnSignal(
     name: 'Mark Paid',
     $MarkInvoicePaid.bean,
