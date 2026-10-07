@@ -13,17 +13,29 @@ class PostgresqlDataAttribute extends PostgresqlAttribute {
     super.constraints,
   });
 
+  /// Builds a column definition for [field].
+  ///
+  /// [PostgresqlAttributeConstraint] annotations on the field are applied
+  /// as given. Additionally a [PrimaryKeyConstraint] is derived from an [Id]
+  /// annotation and a [NotNullConstraint] from a non-nullable field type,
+  /// unless a constraint of the same kind is already annotated explicitly.
   factory PostgresqlDataAttribute.fromField(DataField field) {
-    // TODO read postgres meta annotations to override default behavior
     final type = PostgresqlDataType.findForDataField(field);
+    final annotated = field
+        .allMetaOfType<PostgresqlAttributeConstraint>()
+        .toList(growable: false);
+    final hasPrimaryKey = annotated.any((e) => e is PrimaryKeyConstraint);
+    final hasNotNull = annotated.any((e) => e is NotNullConstraint);
     return PostgresqlDataAttribute(
       field: field,
       name: toNamingConvention(field.name, NamingConvention.lowerSnakeCase),
       type: type,
       constraints: [
-        if (field.hasMetaOfType<Id>())
+        ...annotated,
+        if (!hasPrimaryKey && field.hasMetaOfType<Id>())
           PrimaryKeyConstraint(auto: field.hasMetaOfType<Id>((id) => id.auto)),
-        if (field is DataField<dynamic, Object>) NotNullConstraint(),
+        if (!hasNotNull && field is DataField<dynamic, Object>)
+          const NotNullConstraint(),
       ],
     );
   }

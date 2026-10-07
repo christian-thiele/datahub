@@ -128,17 +128,8 @@ class RevisableStatements<TData extends DataObject<TData>> {
   ]);
 
   /// Allocates a new id: `SELECT <id>, <now>`.
-  Sql allocateId() => Sql.join([
-    RawSql('SELECT '),
-    if (layout.idSequence case final sequence?)
-      Sql.function('nextval', [
-        Sql.text(layout.qualifiedName(sequence.name).toString()),
-      ])
-    else
-      RawSql('gen_random_uuid()::varchar'),
-    RawSql(', '),
-    _dbNow,
-  ]);
+  Sql allocateId() =>
+      Sql.join([RawSql('SELECT '), layout.idGenerator, RawSql(', '), _dbNow]);
 
   /// Reads the database time and the latest revision (including scheduled
   /// ones): `SELECT <now>, <version>?, <is deleted>?`.

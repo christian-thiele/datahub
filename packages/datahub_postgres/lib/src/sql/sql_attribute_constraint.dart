@@ -11,14 +11,16 @@ class SqlAttributeConstraint {
   Sql toSql() {
     return switch (constraint) {
       NotNullConstraint() => RawSql('NOT NULL'),
+      // an explicit DEFAULT replaces the built-in generation of auto keys
       PrimaryKeyConstraint(:final auto) => Sql.join([
         RawSql('PRIMARY KEY'),
-        if (auto &&
-            (attribute.type is PostgresqlInt ||
-                attribute.type is PostgresqlSerial))
-          RawSql(' GENERATED ALWAYS AS IDENTITY'),
-        if (auto && attribute.type is PostgresqlString)
-          RawSql(' DEFAULT gen_random_uuid()'),
+        if (auto && !attribute.hasConstraint<DefaultConstraint>()) ...[
+          if (attribute.type is PostgresqlInt ||
+              attribute.type is PostgresqlSerial)
+            RawSql(' GENERATED ALWAYS AS IDENTITY'),
+          if (attribute.type is PostgresqlString)
+            RawSql(' DEFAULT gen_random_uuid()'),
+        ],
       ]),
       UniqueConstraint() => RawSql('UNIQUE'),
       DefaultConstraint(:final value) => Sql.join([RawSql('DEFAULT '), value]),
