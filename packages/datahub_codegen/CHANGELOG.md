@@ -1,3 +1,7 @@
+## 0.18.0-dev.21
+
+ - Update a dependency to the latest release.
+
 ## 0.18.0-dev.20
 
  - **FIX**: fixed constraints on List and Map types.

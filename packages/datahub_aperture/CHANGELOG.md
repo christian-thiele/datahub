@@ -1,3 +1,15 @@
+## 0.1.0-dev.24
+
+> Note: This release has breaking changes.
+
+ - **FIX**: Filter.matches Enum handling.
+ - **FIX**: added default oidcClientId value "aperture" for ApertureApi.
+ - **FEAT**(aperture): added allowCreate, allowUpdate and allowDelete flags.
+ - **FEAT**: show workflows in aperture.
+ - **FEAT**: workflow administration api.
+ - **DOCS**: changed copyright notice.
+ - **BREAKING** **FEAT**: removed obsolete TaskManager and Aperture module api.
+
 ## 0.1.0-dev.23
 
  - **FIX**: fixed constraints on List and Map types.

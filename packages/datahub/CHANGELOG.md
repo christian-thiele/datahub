@@ -1,3 +1,31 @@
+## 0.18.0-dev.30
+
+> Note: This release has breaking changes.
+
+ - **FIX**: Filter.matches Enum handling.
+ - **FIX**: exception types in key service.
+ - **FIX**: HTTP2 header parsing and tracing.
+ - **FIX**: pool emits trace instead of debug logs.
+ - **FIX**(telemetry): fixed GaugeMetric type.
+ - **FIX**(telemetry): fixed addAttributes on spans.
+ - **FEAT**: added initialization tracing.
+ - **FEAT**: show workflows in aperture.
+ - **FEAT**(lints): added lints for scheduler and workflows.
+ - **FEAT**: workflow administration api.
+ - **FEAT**: ApiService metrics.
+ - **FEAT**: ApiService request logging.
+ - **FEAT**(api): added CorsMiddleware.
+ - **FEAT**: added DataBean.diff.
+ - **FEAT**(telemetry): added histogram labels.
+ - **FEAT**(datahub): added LockProvider and MemoryLockService implementation.
+ - **FEAT**(lints): Recommended set `package:datahub/recommended.yaml`, which enables the lint plugin with best-practice lints switched on.
+ - **DOCS**: comment.
+ - **BREAKING** **FEAT**: removed obsolete TaskManager and Aperture module api.
+ - **BREAKING** **FEAT**: added new scheduler service.
+ - **BREAKING** **FEAT**(telemetry): align tracing, logging and metrics with OpenTelemetry.
+ - **BREAKING** **FEAT**: added workflow system.
+ - **BREAKING** **FEAT**(datahub): added abstract and services export barrels to separate interfaces and service implementations.
+
 ## 0.18.0-dev.29
 
  - **FIX**: fixed constraints on List and Map types.

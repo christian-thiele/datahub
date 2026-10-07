@@ -3,6 +3,86 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-07
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`datahub` - `v0.18.0-dev.30`](#datahub---v0180-dev30)
+ - [`datahub_aperture` - `v0.1.0-dev.24`](#datahub_aperture---v010-dev24)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.19`](#datahub_aperture_frontend---v010-dev19)
+ - [`datahub_postgres` - `v0.18.0-dev.28`](#datahub_postgres---v0180-dev28)
+ - [`datahub_redis` - `v0.18.0-dev.2`](#datahub_redis---v0180-dev2)
+
+Packages with other changes:
+
+ - [`datahub_codegen` - `v0.18.0-dev.21`](#datahub_codegen---v0180-dev21)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_codegen` - `v0.18.0-dev.21`
+
+---
+
+#### `datahub` - `v0.18.0-dev.30`
+
+ - **FIX**: Filter.matches Enum handling.
+ - **FIX**: exception types in key service.
+ - **FIX**: HTTP2 header parsing and tracing.
+ - **FIX**: pool emits trace instead of debug logs.
+ - **FIX**(telemetry): fixed GaugeMetric type.
+ - **FIX**(telemetry): fixed addAttributes on spans.
+ - **FEAT**: added initialization tracing.
+ - **FEAT**: show workflows in aperture.
+ - **FEAT**(lints): added lints for scheduler and workflows.
+ - **FEAT**: workflow administration api.
+ - **FEAT**: ApiService metrics.
+ - **FEAT**: ApiService request logging.
+ - **FEAT**(api): added CorsMiddleware.
+ - **FEAT**: added DataBean.diff.
+ - **FEAT**(telemetry): added histogram labels.
+ - **FEAT**(datahub): added LockProvider and MemoryLockService implementation.
+ - **FEAT**(lints): Recommended set `package:datahub/recommended.yaml`, which enables the lint plugin with best-practice lints switched on.
+ - **DOCS**: comment.
+ - **BREAKING** **FEAT**: removed obsolete TaskManager and Aperture module api.
+ - **BREAKING** **FEAT**: added new scheduler service.
+ - **BREAKING** **FEAT**(telemetry): align tracing, logging and metrics with OpenTelemetry.
+ - **BREAKING** **FEAT**: added workflow system.
+ - **BREAKING** **FEAT**(datahub): added abstract and services export barrels to separate interfaces and service implementations.
+
+#### `datahub_aperture` - `v0.1.0-dev.24`
+
+ - **FIX**: Filter.matches Enum handling.
+ - **FIX**: added default oidcClientId value "aperture" for ApertureApi.
+ - **FEAT**(aperture): added allowCreate, allowUpdate and allowDelete flags.
+ - **FEAT**: show workflows in aperture.
+ - **FEAT**: workflow administration api.
+ - **DOCS**: changed copyright notice.
+ - **BREAKING** **FEAT**: removed obsolete TaskManager and Aperture module api.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.19`
+
+ - **FEAT**(aperture): added allowCreate, allowUpdate and allowDelete flags.
+ - **FEAT**: show workflows in aperture.
+ - **BREAKING** **FEAT**: removed obsolete TaskManager and Aperture module api.
+ - **BREAKING** **FEAT**(telemetry): align tracing, logging and metrics with OpenTelemetry.
+
+#### `datahub_postgres` - `v0.18.0-dev.28`
+
+ - **BREAKING** **FEAT**(telemetry): align tracing, logging and metrics with OpenTelemetry.
+
+#### `datahub_redis` - `v0.18.0-dev.2`
+
+ - **FEAT**(redis): added tracing.
+ - **FEAT**: added datahub_redis package.
+ - **BREAKING** **FEAT**(telemetry): align tracing, logging and metrics with OpenTelemetry.
+
+
 ## 2026-09-24
 
 ### Changes

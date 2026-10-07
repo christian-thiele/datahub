@@ -1,3 +1,9 @@
+## 0.18.0-dev.28
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **FEAT**(telemetry): align tracing, logging and metrics with OpenTelemetry.
+
 ## 0.18.0-dev.27
 
  - **FIX**: fixed constraints on List and Map types.

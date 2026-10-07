@@ -1,3 +1,12 @@
+## 0.1.0-dev.19
+
+> Note: This release has breaking changes.
+
+ - **FEAT**(aperture): added allowCreate, allowUpdate and allowDelete flags.
+ - **FEAT**: show workflows in aperture.
+ - **BREAKING** **FEAT**: removed obsolete TaskManager and Aperture module api.
+ - **BREAKING** **FEAT**(telemetry): align tracing, logging and metrics with OpenTelemetry.
+
 ## 0.1.0-dev.18
 
  - **FIX**(aperture): fixed disabled lookup field not clickable.
