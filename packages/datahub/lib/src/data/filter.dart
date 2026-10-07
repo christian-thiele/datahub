@@ -1,3 +1,4 @@
+import 'data_codec.dart';
 import 'data_field.dart';
 import 'data_object.dart';
 import 'expression.dart';
@@ -241,6 +242,19 @@ dynamic _evaluateExpression(DataObject object, Expression expression) {
   };
 }
 
+bool _compareStrings(String left, CompareType type, String right) {
+  return switch (type) {
+    CompareType.equals => left == right,
+    CompareType.contains => RegExp(right, caseSensitive: false).hasMatch(left),
+    CompareType.isIn => RegExp(left, caseSensitive: false).hasMatch(right),
+    CompareType.notEquals => left != right,
+    CompareType.greaterThan => (left as Comparable).compareTo(right) > 0,
+    CompareType.lessThan => (left as Comparable).compareTo(right) < 0,
+    CompareType.greaterOrEqual => (left as Comparable).compareTo(right) >= 0,
+    CompareType.lessOrEqual => (left as Comparable).compareTo(right) <= 0,
+  };
+}
+
 bool _compare(dynamic left, CompareType type, dynamic right) {
   // Null handling (matches PostgreSQL IS NULL / IS NOT NULL)
   if (right == null) {
@@ -260,12 +274,7 @@ bool _compare(dynamic left, CompareType type, dynamic right) {
 
   // String contains/isIn: case-insensitive regex (matches PostgreSQL ~*)
   if (left is String && right is String) {
-    if (type == CompareType.contains) {
-      return RegExp(right, caseSensitive: false).hasMatch(left);
-    }
-    if (type == CompareType.isIn) {
-      return RegExp(left, caseSensitive: false).hasMatch(right);
-    }
+    return _compareStrings(left, type, right);
   }
 
   // List contains: element membership (matches PostgreSQL ANY)
@@ -290,6 +299,14 @@ bool _compare(dynamic left, CompareType type, dynamic right) {
       CompareType.greaterOrEqual => !left.isBefore(right),
       CompareType.lessOrEqual => !left.isAfter(right),
     };
+  }
+
+  if (left is Enum && right is String) {
+    return _compareStrings(JsonDataCodec().encodeEnum(left), type, right);
+  }
+
+  if (left is String && right is Enum) {
+    return _compareStrings(left, type, JsonDataCodec().encodeEnum(right));
   }
 
   // Default comparisons

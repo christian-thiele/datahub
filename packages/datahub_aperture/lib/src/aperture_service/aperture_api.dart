@@ -509,6 +509,10 @@ class ApertureApi extends ApiNode {
       return value;
     }
 
+    if (field.type.isSubtypeOf<Enum?>()) {
+      return value;
+    }
+
     return const JsonDataCodec().decodeType(field.type, value);
   }
 
