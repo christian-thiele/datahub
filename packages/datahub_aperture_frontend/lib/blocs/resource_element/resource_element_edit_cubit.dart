@@ -40,7 +40,9 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
       decodeFieldData(resource, data);
 
       final initialChanges = <ResourceField, dynamic>{};
-      if (version == null && revertFromVersion != null) {
+      if (resource.allowUpdate &&
+          version == null &&
+          revertFromVersion != null) {
         final revisionData = await _resourceRepository.getResourceElement(
           resourceId,
           elementId,
@@ -140,7 +142,7 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
       :final title,
     )) {
       final field = resource.fields.firstWhere((e) => e.id == fieldId);
-      if (field.readOnly) {
+      if (field.readOnly || !resource.allowUpdate) {
         return;
       }
 

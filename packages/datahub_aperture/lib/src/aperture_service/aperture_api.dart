@@ -149,8 +149,7 @@ class ApertureApi extends ApiNode {
               );
 
               final repo = resource.repository.find();
-              const isWritableRepository = true; //TODO
-              if (!isWritableRepository) {
+              if (!resource.allowCreate) {
                 throw ApiRequestException.methodNotAllowed();
               }
 
@@ -233,8 +232,7 @@ class ApertureApi extends ApiNode {
               final data = await request.getData($ResourceRevisionRequest.bean);
               final repo = resource.repository.find();
 
-              const isWritableRepository = true; //TODO
-              if (!isWritableRepository) {
+              if (!resource.allowUpdate) {
                 throw ApiRequestException.methodNotAllowed();
               }
 
@@ -299,8 +297,7 @@ class ApertureApi extends ApiNode {
               final elementId = request.getRouteParam<String>('elementId');
               final repo = resource.repository.find();
 
-              const isWritableRepository = true; // TODO
-              if (!isWritableRepository) {
+              if (!resource.allowDelete) {
                 throw ApiRequestException.methodNotAllowed();
               }
 

@@ -96,10 +96,27 @@ abstract interface class $ResourceDescription
     toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
   );
 
-  static final $readOnly = DataField<ResourceDescription, bool>(
-    name: 'readOnly',
-    valueOf: (p) => p.readOnly,
-    fromJson: (value, {String? name}) => $$codec.decodeBool(value, name: name),
+  static final $allowCreate = DataField<ResourceDescription, bool>(
+    name: 'allowCreate',
+    valueOf: (p) => p.allowCreate,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? true), name: name),
+    toJson: (value) => $$codec.encodeBool(value),
+  );
+
+  static final $allowUpdate = DataField<ResourceDescription, bool>(
+    name: 'allowUpdate',
+    valueOf: (p) => p.allowUpdate,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? true), name: name),
+    toJson: (value) => $$codec.encodeBool(value),
+  );
+
+  static final $allowDelete = DataField<ResourceDescription, bool>(
+    name: 'allowDelete',
+    valueOf: (p) => p.allowDelete,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
   );
 
@@ -148,7 +165,9 @@ abstract interface class $ResourceDescription
           $idField,
           $displayFields,
           $titleTemplate,
-          $readOnly,
+          $allowCreate,
+          $allowUpdate,
+          $allowDelete,
           $revisable,
           $actions,
           $workflow,
@@ -173,7 +192,9 @@ abstract interface class $ResourceDescription
     List<String>? displayFields,
     String? titleTemplate,
     bool nullTitleTemplate = false,
-    bool? readOnly,
+    bool? allowCreate,
+    bool? allowUpdate,
+    bool? allowDelete,
     bool? revisable,
     List<ResourceAction>? actions,
     ResourceWorkflow? workflow,
@@ -192,7 +213,9 @@ abstract interface class $ResourceDescription
       titleTemplate: nullTitleTemplate
           ? null
           : (titleTemplate ?? $data.titleTemplate),
-      readOnly: readOnly ?? $data.readOnly,
+      allowCreate: allowCreate ?? $data.allowCreate,
+      allowUpdate: allowUpdate ?? $data.allowUpdate,
+      allowDelete: allowDelete ?? $data.allowDelete,
       revisable: revisable ?? $data.revisable,
       actions: actions ?? $data.actions,
       workflow: nullWorkflow ? null : (workflow ?? $data.workflow),
@@ -214,7 +237,9 @@ abstract interface class $ResourceDescription
           data['displayFields']?.cast<String>().toList(growable: false) ??
           const [],
       titleTemplate: data['titleTemplate'],
-      readOnly: data['readOnly'],
+      allowCreate: data['allowCreate'] ?? true,
+      allowUpdate: data['allowUpdate'] ?? true,
+      allowDelete: data['allowDelete'] ?? true,
       revisable: data['revisable'],
       actions: data['actions']?.cast<ResourceAction>().toList(growable: false),
       workflow: data['workflow'],
@@ -263,9 +288,17 @@ abstract interface class $ResourceDescription
         data['titleTemplate'],
         name: DataCodec.childName(name, 'titleTemplate'),
       ),
-      readOnly: $readOnly.fromJson(
-        data['readOnly'],
-        name: DataCodec.childName(name, 'readOnly'),
+      allowCreate: $allowCreate.fromJson(
+        data['allowCreate'],
+        name: DataCodec.childName(name, 'allowCreate'),
+      ),
+      allowUpdate: $allowUpdate.fromJson(
+        data['allowUpdate'],
+        name: DataCodec.childName(name, 'allowUpdate'),
+      ),
+      allowDelete: $allowDelete.fromJson(
+        data['allowDelete'],
+        name: DataCodec.childName(name, 'allowDelete'),
       ),
       revisable: $revisable.fromJson(
         data['revisable'],
@@ -295,7 +328,9 @@ abstract interface class $ResourceDescription
       'idField': $idField.toJson($$data.idField),
       'displayFields': $displayFields.toJson($$data.displayFields),
       'titleTemplate': $titleTemplate.toJson($$data.titleTemplate),
-      'readOnly': $readOnly.toJson($$data.readOnly),
+      'allowCreate': $allowCreate.toJson($$data.allowCreate),
+      'allowUpdate': $allowUpdate.toJson($$data.allowUpdate),
+      'allowDelete': $allowDelete.toJson($$data.allowDelete),
       'revisable': $revisable.toJson($$data.revisable),
       'actions': $actions.toJson($$data.actions),
       'workflow': $workflow.toJson($$data.workflow),

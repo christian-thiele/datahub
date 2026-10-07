@@ -18,7 +18,9 @@ class ResourceDescription extends $ResourceDescription {
   final String idField;
   final List<String> displayFields;
   final String? titleTemplate;
-  final bool readOnly;
+  final bool allowCreate;
+  final bool allowUpdate;
+  final bool allowDelete;
   final bool revisable;
   final List<ResourceAction> actions;
 
@@ -36,7 +38,9 @@ class ResourceDescription extends $ResourceDescription {
     required this.idField,
     this.displayFields = const [],
     this.titleTemplate,
-    required this.readOnly,
+    this.allowCreate = true,
+    this.allowUpdate = true,
+    this.allowDelete = true,
     required this.revisable,
     required this.actions,
     this.workflow,

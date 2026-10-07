@@ -60,7 +60,6 @@ class _Repository implements ResourcesRepository {
         fields: fields,
         relations: const [],
         idField: 'id',
-        readOnly: false,
         revisable: true,
         actions: const [],
       );

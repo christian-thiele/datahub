@@ -21,7 +21,6 @@ ResourceDescription _resource(List<ResourceField> fields) =>
       fields: fields,
       relations: const [],
       idField: 'id',
-      readOnly: false,
       revisable: false,
       actions: const [],
     );

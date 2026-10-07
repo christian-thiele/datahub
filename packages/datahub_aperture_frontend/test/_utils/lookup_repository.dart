@@ -12,7 +12,6 @@ const people = ResourceDescription(
   relations: [],
   idField: 'id',
   displayFields: ['name'],
-  readOnly: false,
   revisable: false,
   actions: [],
 );

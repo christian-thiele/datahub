@@ -59,13 +59,14 @@ class ResourcePage extends StatelessWidget {
                               icon: Icon(Icons.account_tree_outlined),
                               label: Text(S.of(context).workflow),
                             ),
-                          FilledButton.icon(
-                            onPressed: () => context.go('./create'),
-                            label: Text(
-                              S.of(context).newResource(resource.name),
+                          if (resource.allowCreate)
+                            FilledButton.icon(
+                              onPressed: () => context.go('./create'),
+                              label: Text(
+                                S.of(context).newResource(resource.name),
+                              ),
+                              icon: Icon(Icons.add),
                             ),
-                            icon: Icon(Icons.add),
-                          ),
                         ],
                       ),
                       FilterView(

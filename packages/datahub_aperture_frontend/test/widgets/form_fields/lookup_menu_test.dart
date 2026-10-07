@@ -263,7 +263,6 @@ void main() {
           relations: [],
           idField: 'id',
           displayFields: ['name'],
-          readOnly: false,
           revisable: false,
           actions: [],
         ),

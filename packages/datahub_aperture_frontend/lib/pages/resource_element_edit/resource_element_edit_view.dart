@@ -39,6 +39,9 @@ class ResourceElementEditView extends StatelessWidget {
   /// Leads to this element, not including its [title].
   final List<Breadcrumb> breadcrumbs;
 
+  /// Whether the fields of the element can be changed.
+  final bool editable;
+
   const ResourceElementEditView({
     super.key,
     required this.title,
@@ -54,18 +57,20 @@ class ResourceElementEditView extends StatelessWidget {
     required this.actions,
     this.onActionPressed,
     this.revisable = true,
+    this.editable = true,
     this.workflow,
   });
 
   @override
   Widget build(BuildContext context) {
     final readOnly =
+        !editable ||
         data.version != null &&
-        data.revisions.isNotEmpty &&
-        data.version !=
-            data.revisions
-                .map((e) => e.version)
-                .fold<int>(0, (max, v) => v > max ? v : max);
+            data.revisions.isNotEmpty &&
+            data.version !=
+                data.revisions
+                    .map((e) => e.version)
+                    .fold<int>(0, (max, v) => v > max ? v : max);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,

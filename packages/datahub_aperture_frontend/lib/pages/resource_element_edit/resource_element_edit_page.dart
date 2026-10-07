@@ -85,6 +85,7 @@ class ResourceElementEditPage extends StatelessWidget {
                     changes: changes,
                     validations: validations,
                     revisable: resource.revisable,
+                    editable: resource.allowUpdate,
                     workflow: resource.workflow != null
                         ? ElementWorkflowPanel(
                             resource: resource,
@@ -122,17 +123,22 @@ class ResourceElementEditPage extends StatelessWidget {
                         ),
                       );
                     },
-                    onDeletePressed: (from) {
-                      final cubit = context.read<ResourceElementEditCubit>();
-                      ConfirmationDialog.show(
-                        context,
-                        title: S.of(context).caution,
-                        child: Text(S.of(context).reallyDeleteElement(title)),
-                        confirmText: S.of(context).delete,
-                        destructive: true,
-                        onConfirmPressed: () => cubit.delete(from: from),
-                      );
-                    },
+                    onDeletePressed: !resource.allowDelete
+                        ? null
+                        : (from) {
+                            final cubit = context
+                                .read<ResourceElementEditCubit>();
+                            ConfirmationDialog.show(
+                              context,
+                              title: S.of(context).caution,
+                              child: Text(
+                                S.of(context).reallyDeleteElement(title),
+                              ),
+                              confirmText: S.of(context).delete,
+                              destructive: true,
+                              onConfirmPressed: () => cubit.delete(from: from),
+                            );
+                          },
                   ),
                 ),
               _ => LoadingView(),

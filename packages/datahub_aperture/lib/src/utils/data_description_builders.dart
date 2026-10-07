@@ -44,13 +44,14 @@ ResourceDescription buildResourceDescription(
   final apertureMeta = bean.metaOfType<ApertureMeta>();
   final workflow = findResourceWorkflow(res);
 
-  final isReadOnly = false;
   return ResourceDescription(
     id: buildResourceId(res),
     name: meta?.name ?? niceName(bean.name),
     namePlural: meta?.namePlural,
     icon: meta?.icon ?? Icons.data_object,
-    readOnly: isReadOnly,
+    allowCreate: res.allowCreate,
+    allowUpdate: res.allowUpdate,
+    allowDelete: res.allowDelete,
     revisable: repository is RevisableDataRepository,
     actions: [
       for (final action in res.actions) action.buildDescription(relatedBeans),
