@@ -17,6 +17,7 @@ workspace:
   - packages/datahub_aperture
   - packages/datahub_aperture_frontend
   - packages/datahub_codegen
+  - packages/datahub_lints
   - packages/datahub_postgres
   - packages/datahub_redis
 

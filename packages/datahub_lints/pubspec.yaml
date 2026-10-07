@@ -3,14 +3,15 @@ description: Analyzer plugin providing DataHub specific analysis rules, quick fi
 version: 0.18.0-dev.2
 homepage: https://datahubproject.net
 repository: https://github.com/christian-thiele/datahub
+resolution: workspace
 
 environment:
   sdk: ^3.9.0
 
 dependencies:
-  analysis_server_plugin: ^0.3.8
+  analysis_server_plugin: ^0.3.18
   analyzer: '>=10.0.0 <15.0.0'
-  analyzer_plugin: '>=0.14.1 <0.15.0'
+  analyzer_plugin: ^0.14.12
   path: ^1.9.0
   yaml: ^3.1.0
 
