@@ -3,6 +3,7 @@ import 'package:datahub/datahub.dart';
 import 'resource_action.dart';
 import 'resource_field.dart';
 import 'resource_relation.dart';
+import 'resource_workflow.dart';
 
 part 'resource_description.g.dart';
 
@@ -21,6 +22,10 @@ class ResourceDescription extends $ResourceDescription {
   final bool revisable;
   final List<ResourceAction> actions;
 
+  /// The workflow the elements move through, if the application has one for
+  /// the element type.
+  final ResourceWorkflow? workflow;
+
   const ResourceDescription({
     required this.id,
     required this.name,
@@ -34,5 +39,6 @@ class ResourceDescription extends $ResourceDescription {
     required this.readOnly,
     required this.revisable,
     required this.actions,
+    this.workflow,
   });
 }

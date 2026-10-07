@@ -2,11 +2,14 @@ import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/pages/resource_element_edit/element_action_dialog.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
+import 'package:datahub_aperture_frontend/repositories/workflow_repository/workflow_repository.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
+
+import '../_utils/fake_workflow_repository.dart';
 
 const _markPaid = ResourceAction(
   id: 'MarkInvoicePaid',
@@ -90,5 +93,47 @@ void main() {
 
     expect(find.text('Value is required.'), findsOneWidget);
     expect(repository.started, isEmpty);
+  });
+
+  testWidgets('sends a signal with the values filled in', (tester) async {
+    final workflows = FakeWorkflowRepository();
+    await tester.pumpWidget(
+      RepositoryProvider<WorkflowRepository>.value(
+        value: workflows,
+        child: MaterialApp(
+          theme: ApertureThemeData.defaultTheme,
+          localizationsDelegates: const [S.delegate],
+          supportedLocales: S.delegate.supportedLocales,
+          home: const Scaffold(
+            body: ElementActionDialog.signal(
+              resourceId: 'Invoice',
+              elementId: '7',
+              action: ResourceAction(
+                id: 'CancelInvoice',
+                displayName: 'Cancel invoice',
+                icon: 0,
+                parameterFields: [
+                  ResourceField(
+                    id: 'invoiceId',
+                    name: 'Invoice',
+                    type: ResourceFieldType.int,
+                  ),
+                ],
+              ),
+              initialValues: {'invoiceId': 7},
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Send'));
+    await tester.pumpAndSettle();
+
+    final (elementId, signalId, payload) = workflows.signals.single;
+    expect(elementId, '7');
+    expect(signalId, 'CancelInvoice');
+    expect(payload, {'invoiceId': 7});
+    expect(find.textContaining('Signal sent.'), findsOneWidget);
   });
 }

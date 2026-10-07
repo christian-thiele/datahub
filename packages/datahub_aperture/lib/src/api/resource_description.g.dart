@@ -123,6 +123,18 @@ abstract interface class $ResourceDescription
         $$codec.encodeList<ResourceAction>(value, (v) => v.toJson()),
   );
 
+  static final $workflow = DataField<ResourceDescription, ResourceWorkflow?>(
+    name: 'workflow',
+    valueOf: (p) => p.workflow,
+    dataBean: () => $ResourceWorkflow.bean,
+    fromJson: (value, {String? name}) => $$codec.decodeNullable(
+      value,
+      $ResourceWorkflow.bean.fromJson,
+      name: name,
+    ),
+    toJson: (value) => $$codec.encodeNullable(value, (v) => v.toJson()),
+  );
+
   static final DataBean<ResourceDescription> bean =
       DataBean<ResourceDescription>(
         name: 'ResourceDescription',
@@ -139,6 +151,7 @@ abstract interface class $ResourceDescription
           $readOnly,
           $revisable,
           $actions,
+          $workflow,
         ]),
         fromValues: fromValues,
         fromJson: fromJson,
@@ -163,6 +176,8 @@ abstract interface class $ResourceDescription
     bool? readOnly,
     bool? revisable,
     List<ResourceAction>? actions,
+    ResourceWorkflow? workflow,
+    bool nullWorkflow = false,
   }) {
     final $data = this as ResourceDescription;
     return ResourceDescription(
@@ -180,6 +195,7 @@ abstract interface class $ResourceDescription
       readOnly: readOnly ?? $data.readOnly,
       revisable: revisable ?? $data.revisable,
       actions: actions ?? $data.actions,
+      workflow: nullWorkflow ? null : (workflow ?? $data.workflow),
     );
   }
 
@@ -201,6 +217,7 @@ abstract interface class $ResourceDescription
       readOnly: data['readOnly'],
       revisable: data['revisable'],
       actions: data['actions']?.cast<ResourceAction>().toList(growable: false),
+      workflow: data['workflow'],
     );
   }
 
@@ -258,6 +275,10 @@ abstract interface class $ResourceDescription
         data['actions'],
         name: DataCodec.childName(name, 'actions'),
       ),
+      workflow: $workflow.fromJson(
+        data['workflow'],
+        name: DataCodec.childName(name, 'workflow'),
+      ),
     );
   }
 
@@ -277,6 +298,7 @@ abstract interface class $ResourceDescription
       'readOnly': $readOnly.toJson($$data.readOnly),
       'revisable': $revisable.toJson($$data.revisable),
       'actions': $actions.toJson($$data.actions),
+      'workflow': $workflow.toJson($$data.workflow),
     }..removeWhere((k, v) => v == null);
   }
 }

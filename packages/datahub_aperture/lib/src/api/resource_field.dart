@@ -13,6 +13,7 @@ class ResourceField extends $ResourceField {
   final bool nullable;
   final String? description;
   final bool readOnly;
+  final bool auto;
   final int? length;
   final String? validation;
   final List<ResourceField>? objectDescription;
@@ -28,6 +29,7 @@ class ResourceField extends $ResourceField {
     this.nullable = false,
     this.description,
     this.readOnly = false,
+    this.auto = false,
     this.length,
     this.validation,
     this.objectDescription,

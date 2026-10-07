@@ -225,4 +225,34 @@ void main() {
       }
     });
   });
+
+  group('refresh', () {
+    test('shows the element as it is now, without loading', () async {
+      final repository = _Repository(current: {'name': 'Before'});
+      final cubit = await _open(repository);
+      final states = <ResourceElementEditState>[];
+      final subscription = cubit.stream.listen(states.add);
+      addTearDown(subscription.cancel);
+
+      repository.current['name'] = 'After';
+      await cubit.refresh();
+
+      expect(states.whereType<ResourceElementEditLoading>(), isEmpty);
+      final state = cubit.state as ResourceElementEditValue;
+      expect(state.data.fieldData['name'], 'After');
+    });
+
+    test('keeps unsaved changes', () async {
+      final repository = _Repository(current: {'name': 'Before'});
+      final cubit = await _open(repository);
+      cubit.setFieldValue('name', 'Typed');
+
+      repository.current['name'] = 'After';
+      await cubit.refresh();
+
+      final state = cubit.state as ResourceElementEditValue;
+      expect(state.data.fieldData['name'], 'Before');
+      expect(state.changes, {_name: 'Typed'});
+    });
+  });
 }

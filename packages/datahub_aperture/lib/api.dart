@@ -17,6 +17,8 @@ export 'src/api/resource_relation_filter.dart';
 export 'src/api/resource_revision_info.dart';
 export 'src/api/resource_revision_request.dart';
 export 'src/api/resource_revision_type.dart';
+export 'src/api/resource_workflow.dart';
+export 'src/api/resource_workflow_event.dart';
 export 'src/api/simple_auth_refresh_request.dart';
 export 'src/api/simple_auth_request.dart';
 export 'src/api/simple_auth_response.dart';

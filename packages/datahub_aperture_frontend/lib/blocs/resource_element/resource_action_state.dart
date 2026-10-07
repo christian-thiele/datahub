@@ -1,54 +1,27 @@
 part of 'resource_action_cubit.dart';
 
 sealed class ResourceActionState {
-  final String? resourceId;
-  final String actionId;
-  final String? elementId;
-
-  const ResourceActionState({
-    required this.resourceId,
-    required this.actionId,
-    required this.elementId,
-  });
+  const ResourceActionState();
 }
 
 class ResourceActionEditing extends ResourceActionState {
   final Map<String, dynamic> values;
   final Map<String, String> validation;
 
-  const ResourceActionEditing({
-    required super.resourceId,
-    required super.actionId,
-    required super.elementId,
-    required this.values,
-    required this.validation,
-  });
+  const ResourceActionEditing({required this.values, required this.validation});
 }
 
 class ResourceActionLoading extends ResourceActionState {
-  const ResourceActionLoading({
-    required super.resourceId,
-    required super.actionId,
-    required super.elementId,
-  });
+  const ResourceActionLoading();
 }
 
 class ResourceActionDone extends ResourceActionState {
-  const ResourceActionDone({
-    required super.resourceId,
-    required super.actionId,
-    required super.elementId,
-  });
+  const ResourceActionDone();
 }
 
 class ResourceActionError extends ResourceActionState implements ErrorState {
   @override
   final String? message;
 
-  const ResourceActionError({
-    required super.resourceId,
-    required super.actionId,
-    required super.elementId,
-    this.message,
-  });
+  const ResourceActionError({this.message});
 }

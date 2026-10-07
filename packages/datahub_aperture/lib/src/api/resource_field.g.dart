@@ -58,6 +58,14 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     toJson: (value) => $$codec.encodeBool(value),
   );
 
+  static final $auto = DataField<ResourceField, bool>(
+    name: 'auto',
+    valueOf: (p) => p.auto,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? false), name: name),
+    toJson: (value) => $$codec.encodeBool(value),
+  );
+
   static final $length = DataField<ResourceField, int?>(
     name: 'length',
     valueOf: (p) => p.length,
@@ -146,6 +154,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       $nullable,
       $description,
       $readOnly,
+      $auto,
       $length,
       $validation,
       $objectDescription,
@@ -170,6 +179,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     String? description,
     bool nullDescription = false,
     bool? readOnly,
+    bool? auto,
     int? length,
     bool nullLength = false,
     String? validation,
@@ -191,6 +201,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       nullable: nullable ?? $data.nullable,
       description: nullDescription ? null : (description ?? $data.description),
       readOnly: readOnly ?? $data.readOnly,
+      auto: auto ?? $data.auto,
       length: nullLength ? null : (length ?? $data.length),
       validation: nullValidation ? null : (validation ?? $data.validation),
       objectDescription: nullObjectDescription
@@ -211,6 +222,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       nullable: data['nullable'] ?? false,
       description: data['description'],
       readOnly: data['readOnly'] ?? false,
+      auto: data['auto'] ?? false,
       length: data['length'],
       validation: data['validation'],
       objectDescription: data['objectDescription']
@@ -248,6 +260,10 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       readOnly: $readOnly.fromJson(
         data['readOnly'],
         name: DataCodec.childName(name, 'readOnly'),
+      ),
+      auto: $auto.fromJson(
+        data['auto'],
+        name: DataCodec.childName(name, 'auto'),
       ),
       length: $length.fromJson(
         data['length'],
@@ -290,6 +306,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       'nullable': $nullable.toJson($$data.nullable),
       'description': $description.toJson($$data.description),
       'readOnly': $readOnly.toJson($$data.readOnly),
+      'auto': $auto.toJson($$data.auto),
       'length': $length.toJson($$data.length),
       'validation': $validation.toJson($$data.validation),
       'objectDescription': $objectDescription.toJson($$data.objectDescription),

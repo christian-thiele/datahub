@@ -12,6 +12,7 @@ import 'pages/dashboard_page.dart';
 import 'pages/resource_element_create/resource_element_create_page.dart';
 import 'pages/resource_element_edit/resource_element_edit_page.dart';
 import 'pages/resource_page/resource_page.dart';
+import 'pages/resource_workflow/resource_workflow_page.dart';
 import 'services/auth_service.dart';
 import 'utils/bloc_listenable.dart';
 import 'utils/bootstrap.dart';
@@ -103,6 +104,13 @@ class _ApertureAppState extends State<ApertureApp>
                     pageBuilder: (context, state) => MaterialPage(
                       key: ValueKey(state.matchedLocation),
                       child: ResourceElementEditPage(state),
+                    ),
+                  ),
+                  GoRoute(
+                    path: 'workflow',
+                    pageBuilder: (context, state) => MaterialPage(
+                      key: ValueKey(state.matchedLocation),
+                      child: ResourceWorkflowPage(state),
                     ),
                   ),
                 ],

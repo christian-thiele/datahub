@@ -27,6 +27,10 @@ abstract interface class Workflow<T extends DataObject> {
   /// Use it for elements that were stored without [start], whose state was
   /// changed outside of the workflow. Steps that already ran in this state
   /// will run again.
+  ///
+  /// Pending [OnEnter] steps of the element (of any state) are cancelled, so
+  /// that steps of a state it left do not wait to be dropped and steps of its
+  /// state do not run twice. Steps that are running right now are left alone.
   Future<void> resume(Object id);
 
   /// Sends [signal] and returns without waiting for it to be handled.
@@ -48,14 +52,16 @@ abstract interface class Workflow<T extends DataObject> {
   /// is logged and the signal is dropped.
   Future<void> send(WorkflowSignal<T> signal);
 
-  /// What happened to the element [id], oldest first.
+  /// What happened to the element [id], oldest first (or [newestFirst]).
   ///
   /// The history is only written if a `DataRepository<WorkflowHistoryEntry>`
-  /// is available, this throws otherwise.
+  /// is available (see [WorkflowDescription.writesHistory]), this throws
+  /// otherwise.
   Future<List<WorkflowHistoryEntry>> history(
     Object id, {
     int offset = 0,
     int limit = 100,
+    bool newestFirst = false,
   });
 
   /// The steps of the workflow.
@@ -64,14 +70,18 @@ abstract interface class Workflow<T extends DataObject> {
   /// The events of the workflow, optionally of one element and with one
   /// status, oldest first.
   ///
-  /// Events that are being handled have `startedAt` set and a recent
-  /// `heartbeatAt`, and their `messages` show what the step logged so far.
+  /// Events that are being handled (see [isRunning]) show what the step
+  /// logged so far in their `messages`.
   Future<List<WorkflowEvent>> events({
     Object? elementId,
     WorkflowEventStatus? status,
     int offset = 0,
     int limit = 100,
   });
+
+  /// Whether a worker is handling [event] right now: it has `startedAt` set
+  /// and a recent `heartbeatAt`.
+  bool isRunning(WorkflowEvent event);
 
   /// Sets a parked (failed or expired) event back to pending, with a new round
   /// of attempts. A signal gets a new expiry.
@@ -82,6 +92,15 @@ abstract interface class Workflow<T extends DataObject> {
   Future<void> cancel(String eventId);
 
   /// Sends the signal of type [signal] (the name of its bean) restored from
-  /// [payload], see [send]. Throws if the payload is not a valid signal.
-  Future<void> sendJson(String signal, Map<String, dynamic> payload);
+  /// [payload], see [send].
+  ///
+  /// Throws an `ApiRequestException` with status 400 if the payload is not a
+  /// valid signal (naming the invalid fields in its `data`, like a
+  /// `ValidationException`), or if [elementId] is given and the signal is
+  /// meant for another element.
+  Future<void> sendJson(
+    String signal,
+    Map<String, dynamic> payload, {
+    Object? elementId,
+  });
 }

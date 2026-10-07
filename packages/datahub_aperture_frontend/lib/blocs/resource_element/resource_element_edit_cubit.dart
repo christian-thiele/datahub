@@ -87,6 +87,50 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
     }
   }
 
+  /// Reloads the element without a loading screen, for example after its
+  /// workflow changed it.
+  ///
+  /// Only the latest version is reloaded, and only if nothing would be lost:
+  /// the element must not have unsaved changes.
+  Future<void> refresh() async {
+    if (version != null || revertFromVersion != null) {
+      return;
+    }
+
+    if (state case final ResourceElementEditValue state
+        when state is! ResourceElementEditSaving && state.changes.isEmpty) {
+      try {
+        final data = await _resourceRepository.getResourceElement(
+          resourceId,
+          elementId,
+        );
+        decodeFieldData(state.resource, data);
+
+        // Unless something happened in the meantime.
+        if (!isClosed && identical(this.state, state)) {
+          emit(
+            ResourceElementEditValue(
+              title: getElementTitle(state.resource, data),
+              resource: state.resource,
+              data: data,
+              relations: [
+                for (final relation in state.resource.relations)
+                  FilteredResource(
+                    resourceId: relation.resourceId,
+                    name: relation.name,
+                    filter: buildFilter(relation.filter, data),
+                  ),
+              ],
+              validations: const {},
+            ),
+          );
+        }
+      } catch (_) {
+        // The element as it was is still shown, the next refresh may work.
+      }
+    }
+  }
+
   void setFieldValue(String fieldId, dynamic value) {
     if (state case ResourceElementEditValue(
       :final resource,

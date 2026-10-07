@@ -42,6 +42,7 @@ ResourceDescription buildResourceDescription(
 
   final meta = bean.metaOfType<Meta>();
   final apertureMeta = bean.metaOfType<ApertureMeta>();
+  final workflow = findResourceWorkflow(res);
 
   final isReadOnly = false;
   return ResourceDescription(
@@ -70,10 +71,60 @@ ResourceDescription buildResourceDescription(
         .map((e) => e.name)
         .toList(),
     titleTemplate: apertureMeta?.titleTemplate,
+    workflow: workflow != null
+        ? buildResourceWorkflowDescription(workflow, relatedBeans)
+        : null,
   );
 }
 
 String buildResourceId(ApertureResource res) => res.repository.find().bean.name;
+
+/// The workflow of the element type of [res], if the application has one.
+///
+/// The element type identifies a workflow, so no configuration is needed.
+Workflow? findResourceWorkflow(ApertureResource res) {
+  final name = res.repository.find().bean.name;
+  return Find<Workflow?>(
+    (workflow) => workflow?.describe().name == name,
+  ).find();
+}
+
+ResourceWorkflow buildResourceWorkflowDescription(
+  Workflow workflow,
+  Iterable<DataBean> relatedBeans,
+) {
+  final description = workflow.describe();
+  return ResourceWorkflow(
+    stateField: description.stateField,
+    states: description.states,
+    writesHistory: description.writesHistory,
+    steps: [
+      for (final step in description.steps)
+        ResourceWorkflowStep(
+          name: step.name,
+          kind: step.kind,
+          state: step.state,
+          after: step.after,
+          scheduled: step.scheduled,
+          accept: step.accept,
+          signal: step.signalBean?.name,
+          failureState: step.failureState,
+        ),
+    ],
+    signals: [
+      for (final step in description.steps)
+        if (step.signalBean case final bean?)
+          ResourceWorkflowSignal(
+            action: _actionDescription(
+              bean,
+              relatedBeans,
+              defaultIcon: Icons.bolt,
+            ),
+            accept: step.accept,
+          ),
+    ],
+  );
+}
 
 ResourceField fieldDescription(
   DataBean bean,
@@ -86,8 +137,10 @@ ResourceField fieldDescription(
   final length = field.constraintOfType<MaxLengthConstraint>();
   final isAuto = field.hasMetaOfType<Id>((id) => id.auto);
 
+  // Relations to types that are no resource have nothing to look up.
   final ResourceFieldLookup? lookup;
-  if (field.metaOfType<RelationId>() case final relationId?) {
+  if (field.metaOfType<RelationId>() case final relationId?
+      when relatedBeans.any((e) => e.type == relationId.type)) {
     final relationBean = relatedBeans.firstWhere(
       (e) => e.type == relationId.type,
     );
@@ -106,6 +159,7 @@ ResourceField fieldDescription(
     name: meta?.name ?? niceName(field.name),
     description: meta?.description,
     readOnly: isAuto || (apertureMeta?.readOnly ?? false),
+    auto: isAuto,
     validation: validation?.expression,
     length: length?.length,
     type: type,
@@ -210,18 +264,25 @@ ResourceFieldType _fieldListElementType(DataField<dynamic, dynamic> field) {
 ResourceAction buildResourceActionDescription(
   ApertureAction action,
   Iterable<DataBean> beans,
-) {
-  final meta = action.bean.metaOfType<Meta>();
+) => _actionDescription(action.bean, beans, defaultIcon: Icons.data_object);
+
+String buildResourceActionId(ApertureAction action) => action.bean.name;
+
+/// An action whose parameters are the fields of [bean], used for actions and
+/// for workflow signals.
+ResourceAction _actionDescription(
+  DataBean bean,
+  Iterable<DataBean> beans, {
+  required int defaultIcon,
+}) {
+  final meta = bean.metaOfType<Meta>();
 
   return ResourceAction(
-    id: buildResourceActionId(action),
-    displayName: meta?.name ?? niceName(action.bean.name),
-    icon: meta?.icon ?? Icons.data_object,
+    id: bean.name,
+    displayName: meta?.name ?? niceName(bean.name),
+    icon: meta?.icon ?? defaultIcon,
     parameterFields: [
-      for (final field in action.bean.fields)
-        fieldDescription(action.bean, field, beans),
+      for (final field in bean.fields) fieldDescription(bean, field, beans),
     ],
   );
 }
-
-String buildResourceActionId(ApertureAction action) => action.bean.name;

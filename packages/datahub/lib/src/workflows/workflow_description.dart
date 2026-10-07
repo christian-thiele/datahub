@@ -5,6 +5,9 @@ class WorkflowDescription {
   /// Name of the element type, which identifies the workflow.
   final String name;
 
+  /// Name of the field of the element that holds its state.
+  final String stateField;
+
   final List<WorkflowStepDescription> steps;
 
   /// The states the steps refer to. (The enum of the states is not available
@@ -12,10 +15,15 @@ class WorkflowDescription {
   /// missing.)
   final List<String> states;
 
+  /// Whether the history of the elements is written, see `Workflow.history`.
+  final bool writesHistory;
+
   const WorkflowDescription({
     required this.name,
+    required this.stateField,
     required this.steps,
     required this.states,
+    required this.writesHistory,
   });
 }
 

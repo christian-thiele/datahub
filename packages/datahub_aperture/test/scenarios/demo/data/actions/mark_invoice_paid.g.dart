@@ -9,6 +9,17 @@ part of 'mark_invoice_paid.dart';
 abstract interface class $MarkInvoicePaid with DataObject<MarkInvoicePaid> {
   const $MarkInvoicePaid();
   static const $$codec = JsonDataCodec();
+  static final $invoiceId = DataField<MarkInvoicePaid, int>(
+    name: 'invoiceId',
+    valueOf: (p) => p.invoiceId,
+    fromJson: (value, {String? name}) => $$codec.decodeInt(value, name: name),
+    toJson: (value) => $$codec.encodeInt(value),
+    meta: [
+      const Meta(name: 'Invoice'),
+      const RelationId<Invoice>(),
+    ],
+  );
+
   static final $paidAt = DataField<MarkInvoicePaid, DateTime>(
     name: 'paidAt',
     valueOf: (p) => p.paidAt,
@@ -35,6 +46,7 @@ abstract interface class $MarkInvoicePaid with DataObject<MarkInvoicePaid> {
   static final DataBean<MarkInvoicePaid> bean = DataBean<MarkInvoicePaid>(
     name: 'MarkInvoicePaid',
     fields: List<DataField<MarkInvoicePaid, dynamic>>.unmodifiable([
+      $invoiceId,
       $paidAt,
       $paymentReference,
     ]),
@@ -48,12 +60,14 @@ abstract interface class $MarkInvoicePaid with DataObject<MarkInvoicePaid> {
   @override
   List<DataField<MarkInvoicePaid, dynamic>> get $$fields => bean.fields;
   MarkInvoicePaid copyWith({
+    int? invoiceId,
     DateTime? paidAt,
     String? paymentReference,
     bool nullPaymentReference = false,
   }) {
     final $data = this as MarkInvoicePaid;
     return MarkInvoicePaid(
+      invoiceId: invoiceId ?? $data.invoiceId,
       paidAt: paidAt ?? $data.paidAt,
       paymentReference: nullPaymentReference
           ? null
@@ -63,6 +77,7 @@ abstract interface class $MarkInvoicePaid with DataObject<MarkInvoicePaid> {
 
   static MarkInvoicePaid fromValues(Map<String, dynamic> data) {
     return MarkInvoicePaid(
+      invoiceId: data['invoiceId'],
       paidAt: data['paidAt'],
       paymentReference: data['paymentReference'],
     );
@@ -77,6 +92,10 @@ abstract interface class $MarkInvoicePaid with DataObject<MarkInvoicePaid> {
       );
     }
     return MarkInvoicePaid(
+      invoiceId: $invoiceId.fromJson(
+        data['invoiceId'],
+        name: DataCodec.childName(name, 'invoiceId'),
+      ),
       paidAt: $paidAt.fromJson(
         data['paidAt'],
         name: DataCodec.childName(name, 'paidAt'),
@@ -92,6 +111,7 @@ abstract interface class $MarkInvoicePaid with DataObject<MarkInvoicePaid> {
   Map<String, dynamic> toJson() {
     final $$data = this as MarkInvoicePaid;
     return {
+      'invoiceId': $invoiceId.toJson($$data.invoiceId),
       'paidAt': $paidAt.toJson($$data.paidAt),
       'paymentReference': $paymentReference.toJson($$data.paymentReference),
     }..removeWhere((k, v) => v == null);

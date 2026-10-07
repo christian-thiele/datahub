@@ -176,6 +176,12 @@ class ApertureApi extends ApiNode {
                     'Repository does not support revisions.',
                   );
                 }
+              } else if (findResourceWorkflow(resource) case final workflow?) {
+                final id = repo.bean.requireIdField.valueOf(object);
+                if (await repo.readById(id) != null) {
+                  throw ApiRequestException(409, 'Element $id exists already.');
+                }
+                created = await workflow.start(object);
               } else {
                 created = await repo.create(object);
               }
@@ -232,7 +238,9 @@ class ApertureApi extends ApiNode {
                 throw ApiRequestException.methodNotAllowed();
               }
 
-              return await repo.atomic(() async {
+              final workflow = findResourceWorkflow(resource);
+              var stateChanged = false;
+              final result = await repo.atomic(() async {
                 final existing = await repo.readById(elementId);
                 if (existing == null) {
                   throw ApiRequestException.notFound();
@@ -248,6 +256,13 @@ class ApertureApi extends ApiNode {
                 }
 
                 repo.bean.validateConstraints(object);
+
+                if (workflow != null && data.from == null) {
+                  final stateField = workflow.describe().stateField;
+                  stateChanged =
+                      existing.toJson()[stateField] !=
+                      (object as DataObject).toJson()[stateField];
+                }
 
                 if (data.from case final from?) {
                   if (repo case RevisableDataRepository repo) {
@@ -268,6 +283,11 @@ class ApertureApi extends ApiNode {
                   return _toResourceData(repo, updated);
                 }
               });
+
+              if (stateChanged) {
+                await workflow!.resume(elementId);
+              }
+              return result;
             },
             delete: (request) async {
               final resourceId = request.getRouteParam<String>('resourceId');
@@ -352,9 +372,123 @@ class ApertureApi extends ApiNode {
               return {};
             },
           ),
+          ResourceEndpoint(
+            matcher: RoutePattern(
+              '$base/api/resources/{resourceId}/workflow/events',
+            ),
+            get: (request) async {
+              final workflow = _workflowOf(request);
+              final offset = request.getParam<int?>('offset') ?? 0;
+              final limit = math.min(
+                100,
+                request.getParam<int?>('limit') ?? 50,
+              );
+              final status = switch (request.getParam<String?>('status')) {
+                final status? => const JsonDataCodec().decodeEnum(
+                  status,
+                  WorkflowEventStatus.values,
+                  name: 'status',
+                ),
+                null => null,
+              };
+
+              final events = await workflow.events(
+                elementId: request.getParam<String?>('elementId'),
+                status: status,
+                offset: offset,
+                limit: limit + 1,
+              );
+              return ResourceWorkflowEventsResponse(
+                hasNextPage: events.length > limit,
+                data: [
+                  for (final event in events.take(limit))
+                    ResourceWorkflowEvent(
+                      event: event,
+                      running: workflow.isRunning(event),
+                    ),
+                ],
+              );
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern(
+              '$base/api/resources/{resourceId}/workflow/events/{eventId}',
+            ),
+            delete: (request) async {
+              await _workflowOf(
+                request,
+              ).cancel(request.getRouteParam<String>('eventId'));
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern(
+              '$base/api/resources/{resourceId}/workflow/events/{eventId}/retry',
+            ),
+            post: (request) async {
+              await _workflowOf(
+                request,
+              ).retry(request.getRouteParam<String>('eventId'));
+              return {};
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern(
+              '$base/api/resources/{resourceId}/elements/{elementId}/workflow/history',
+            ),
+            get: (request) async {
+              final workflow = _workflowOf(request);
+              if (!workflow.describe().writesHistory) {
+                throw ApiRequestException.notFound(
+                  'The history of the workflow is not written.',
+                );
+              }
+
+              return await workflow.history(
+                request.getRouteParam<String>('elementId'),
+                offset: request.getParam<int?>('offset') ?? 0,
+                limit: math.min(100, request.getParam<int?>('limit') ?? 50),
+                newestFirst: true,
+              );
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern(
+              '$base/api/resources/{resourceId}/elements/{elementId}/workflow/signals/{signalId}',
+            ),
+            post: (request) async {
+              await _workflowOf(request).sendJson(
+                request.getRouteParam<String>('signalId'),
+                await request.getJsonBody(),
+                elementId: request.getRouteParam<String>('elementId'),
+              );
+              return {};
+            },
+          ),
+          ResourceEndpoint(
+            matcher: RoutePattern(
+              '$base/api/resources/{resourceId}/elements/{elementId}/workflow/resume',
+            ),
+            post: (request) async {
+              await _workflowOf(
+                request,
+              ).resume(request.getRouteParam<String>('elementId'));
+              return {};
+            },
+          ),
         ],
       ),
     ];
+  }
+
+  /// The workflow of the resource of [request], see [findResourceWorkflow].
+  Workflow _workflowOf(ApiRequest request) {
+    final resourceId = request.getRouteParam<String>('resourceId');
+    final resource = resources.firstWhere(
+      (resource) => buildResourceId(resource) == resourceId,
+      orElse: () => throw ApiRequestException.notFound(),
+    );
+    return findResourceWorkflow(resource) ??
+        (throw ApiRequestException.notFound('The resource has no workflow.'));
   }
 
   static ResourceData _toResourceData(

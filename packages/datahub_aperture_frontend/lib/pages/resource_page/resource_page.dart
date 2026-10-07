@@ -53,6 +53,12 @@ class ResourcePage extends StatelessWidget {
                             icon: Icon(Icons.refresh),
                             tooltip: S.of(context).refresh,
                           ),
+                          if (resource.workflow != null)
+                            OutlinedButton.icon(
+                              onPressed: () => context.go('./workflow'),
+                              icon: Icon(Icons.account_tree_outlined),
+                              label: Text(S.of(context).workflow),
+                            ),
                           FilledButton.icon(
                             onPressed: () => context.go('./create'),
                             label: Text(

@@ -20,7 +20,15 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
     emit(ResourceElementCreateLoading());
     try {
       final resource = await _resourceRepository.getDescription(resourceId);
-      final fields = resource.fields.where((f) => !f.readOnly).toList();
+      // Read-only fields without a value source on creation still have to be
+      // provided by the user, otherwise the element can't be created.
+      final fields = [
+        for (final field in resource.fields)
+          if (!field.readOnly)
+            field
+          else if (!field.auto && !field.nullable)
+            field.copyWith(readOnly: false),
+      ];
       final changes = <ResourceField, dynamic>{};
       for (final field in fields.where(
         (e) => e.type == ResourceFieldType.list,
@@ -51,10 +59,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
       :final changes,
       :final description,
     )) {
-      final field = description.getField(fieldId);
-      if (field.readOnly) {
-        return;
-      }
+      final field = fields.firstWhere((f) => f.id == fieldId);
 
       final fieldValidation = validateFieldValue(field, value);
       final validation = <String, String>{
@@ -82,7 +87,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
         when state is! ResourceElementCreateSaving) {
       try {
         final validation = <String, String>{
-          for (final field in state.description.fields)
+          for (final field in state.fields)
             field.id: ?validateFieldValue(field, state.changes[field]),
         };
 
@@ -108,8 +113,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
 
         emit(savingState.saved(updated.id, updated.version));
       } catch (e) {
-        if (editableFieldErrors(e, state.description.fields)
-            case final errors?) {
+        if (editableFieldErrors(e, state.fields) case final errors?) {
           emit(
             ResourceElementCreateEditing(
               description: state.description,

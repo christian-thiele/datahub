@@ -1037,7 +1037,8 @@ class _DemoSeeder {
       );
 
   Future<void> _createInvoices(List<_InvoicePlan> plans) async {
-    final repo = Find<DataRepository<Invoice>>().find();
+    // Started, so that sent invoices become overdue at their due date.
+    final workflow = Find<Workflow<Invoice>>().find();
     final sequence = <int, int>{};
 
     for (final plan in plans) {
@@ -1106,7 +1107,7 @@ class _DemoSeeder {
       ];
 
       final financial = ctx.financialContact;
-      await repo.create(
+      await workflow.start(
         Invoice(
           invoiceNumber: invoiceNumber,
           clientId: client.id,

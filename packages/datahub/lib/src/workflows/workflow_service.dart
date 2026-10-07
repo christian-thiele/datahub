@@ -373,7 +373,43 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     final element =
         await _repository.readById(id) ??
         (throw ApiRequestException.notFound('Element $id does not exist.'));
+    await _cancelEntered(_idOf(element));
     await _begin(element, WorkflowHistoryKind.resumed);
+  }
+
+  /// Cancels the pending events of all [OnEnter] steps of the element, except
+  /// running ones.
+  ///
+  /// Resuming replaces them: the steps of a state the element left (outside of
+  /// the workflow) do not wait until they are dropped, and the steps of the
+  /// current state do not run twice.
+  Future<void> _cancelEntered(Object id) async {
+    final names = [
+      for (final step in _enterSteps.values.expand((steps) => steps)) step.name,
+    ];
+    if (names.isEmpty) {
+      return;
+    }
+
+    final pending = await _events.readAll(
+      filter: Filter.andGroup([
+        $WorkflowEvent.$workflow.equals(_name),
+        $WorkflowEvent.$elementId.equals(id.toString()),
+        $WorkflowEvent.$step.isIn(names),
+        $WorkflowEvent.$status.equals(WorkflowEventStatus.pending),
+      ]),
+    );
+    for (final event in pending.where((event) => !_isRunning(event))) {
+      await _events.deleteById(event.id);
+      final step = _steps[event.step];
+      await _record(
+        WorkflowHistoryKind.cancelled,
+        id,
+        step: step,
+        event: event,
+        state: step is OnEnter<T, TState> ? step.state : null,
+      );
+    }
   }
 
   /// Lets [element] enter its current state.
@@ -432,6 +468,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     Object id, {
     int offset = 0,
     int limit = 100,
+    bool newestFirst = false,
   }) async {
     final history =
         _history ??
@@ -444,7 +481,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
         $WorkflowHistoryEntry.$workflow.equals(_name),
         $WorkflowHistoryEntry.$elementId.equals(id.toString()),
       ]),
-      sort: $WorkflowHistoryEntry.$timestamp.asc(),
+      sort: $WorkflowHistoryEntry.$timestamp.sort(!newestFirst),
       offset: offset,
       limit: limit,
     );
@@ -453,6 +490,8 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
   @override
   WorkflowDescription describe() => WorkflowDescription(
     name: _name,
+    stateField: _stateField.name,
+    writesHistory: _history != null,
     steps: [
       for (final step in service.steps)
         if (step is OnEnter<T, TState>)
@@ -555,7 +594,14 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
   }
 
   @override
-  Future<void> sendJson(String signal, Map<String, dynamic> payload) async {
+  bool isRunning(WorkflowEvent event) => _isRunning(event);
+
+  @override
+  Future<void> sendJson(
+    String signal,
+    Map<String, dynamic> payload, {
+    Object? elementId,
+  }) async {
     final step =
         _signalSteps.firstWhereOrNull(
           (step) => step.signalBean.name == signal,
@@ -568,9 +614,26 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     try {
       decoded = step.signalBean.fromJson(payload);
     } on CodecException catch (error) {
-      throw ApiRequestException.badRequest('Invalid signal: $error');
+      throw ApiRequestException(
+        400,
+        'Invalid signal: ${error.message}',
+        data: {
+          if (error.name case final name?)
+            'fields': {
+              name: [error.message],
+            },
+        },
+      );
     }
     step.signalBean.validateConstraints(decoded);
+
+    if (elementId != null &&
+        step.targetOf(decoded).toString() != elementId.toString()) {
+      throw ApiRequestException.badRequest(
+        'The signal is meant for element ${step.targetOf(decoded)}, '
+        'not for $elementId.',
+      );
+    }
     await send(decoded as WorkflowSignal<T>);
   }
 

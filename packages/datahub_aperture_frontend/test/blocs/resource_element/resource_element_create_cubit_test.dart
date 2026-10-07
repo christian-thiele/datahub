@@ -11,6 +11,20 @@ const _id = ResourceField(
   name: 'Id',
   type: ResourceFieldType.int,
   readOnly: true,
+  auto: true,
+);
+const _code = ResourceField(
+  id: 'code',
+  name: 'Code',
+  type: ResourceFieldType.string,
+  readOnly: true,
+);
+const _note = ResourceField(
+  id: 'note',
+  name: 'Note',
+  type: ResourceFieldType.string,
+  nullable: true,
+  readOnly: true,
 );
 const _numbers = ResourceField(
   id: 'numbers',
@@ -24,8 +38,9 @@ const _numbers = ResourceField(
 /// Fails to create elements with [saveError].
 class _Repository implements ResourcesRepository {
   final Object saveError;
+  final List<ResourceField> fields;
 
-  _Repository(this.saveError);
+  _Repository(this.saveError, {this.fields = const [_id, _numbers]});
 
   @override
   Future<ResourceDescription> getDescription(String id) async =>
@@ -33,7 +48,7 @@ class _Repository implements ResourcesRepository {
         id: id,
         name: 'Example',
         icon: 0,
-        fields: const [_id, _numbers],
+        fields: fields,
         relations: const [],
         idField: 'id',
         readOnly: false,
@@ -98,5 +113,28 @@ void main() {
     final cubit = await _saveNumbers(_fieldError('id', 'Already taken.'));
 
     expect(cubit.state, isA<ResourceElementCreateError>());
+  });
+
+  test('lets required read-only fields be set on creation', () async {
+    final cubit = ResourceElementCreateCubit(
+      _Repository(Object(), fields: const [_id, _code, _note]),
+      resourceId: 'Example',
+    );
+    addTearDown(cubit.close);
+
+    final state = await cubit.stream.firstWhere(
+      (state) => state is ResourceElementCreateEditing,
+    );
+    expect((state as ResourceElementCreateEditing).fields, [
+      _code.copyWith(readOnly: false),
+    ]);
+
+    await cubit.saveChanges();
+    expect((cubit.state as ResourceElementCreateEditing).validation, {
+      'code': S.current.validationRequired,
+    });
+
+    cubit.setFieldValue('code', 'A-1');
+    expect((cubit.state as ResourceElementCreateEditing).validation, isEmpty);
   });
 }

@@ -2,7 +2,6 @@ import 'package:datahub/utils.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/blocs/resource_element/resource_action_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
-import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -30,48 +29,31 @@ const _resolve = ResourceAction(
   parameterFields: [_resolution, _closeImmediately, _reference],
 );
 
-/// Records the parameters actions are started with, failing with [error] if
+/// Records the parameters actions are run with, failing with [error] if
 /// given.
-class _Repository implements ResourcesRepository {
+class _Runner {
   final Object? error;
-  final started = <Map<String, dynamic>>[];
-  final startedGlobal = <(String, Map<String, dynamic>)>[];
+  final runs = <Map<String, dynamic>>[];
 
-  _Repository([this.error]);
+  _Runner([this.error]);
 
-  @override
-  Future<Map<String, dynamic>> startAction(
-    String actionId,
-    Map<String, dynamic> parameters,
-  ) async {
-    startedGlobal.add((actionId, parameters));
-    return {};
-  }
-
-  @override
-  Future<Map<String, dynamic>> startElementAction(
-    String resourceId,
-    String elementId,
-    String actionId,
-    Map<String, dynamic> parameters,
-  ) async {
-    started.add(parameters);
+  Future<void> call(Map<String, dynamic> parameters) async {
+    runs.add(parameters);
     if (error case final error?) {
       throw error;
     }
-    return {};
   }
-
-  @override
-  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }
 
-ResourceActionCubit _cubit(_Repository repository, ResourceAction action) {
+ResourceActionCubit _cubit(
+  _Runner runner,
+  ResourceAction action, {
+  Map<String, dynamic> initialValues = const {},
+}) {
   final cubit = ResourceActionCubit(
-    repository,
-    resourceId: 'SupportTicket',
     action: action,
-    elementId: '1',
+    run: runner.call,
+    initialValues: initialValues,
   );
   addTearDown(cubit.close);
   return cubit;
@@ -81,9 +63,9 @@ void main() {
   setUpAll(() => S.load(const Locale('en')));
 
   test('starts actions without parameters right away', () async {
-    final repository = _Repository();
+    final runner = _Runner();
     final cubit = _cubit(
-      repository,
+      runner,
       const ResourceAction(
         id: 'Archive',
         displayName: 'Archive',
@@ -93,68 +75,58 @@ void main() {
     );
 
     await cubit.stream.firstWhere((state) => state is ResourceActionDone);
-    expect(repository.started, [<String, dynamic>{}]);
-  });
-
-  test('starts global actions without an element', () async {
-    final repository = _Repository();
-    final cubit = ResourceActionCubit(
-      repository,
-      action: const ResourceAction(
-        id: 'RebuildIndex',
-        displayName: 'Rebuild index',
-        icon: 0,
-        parameterFields: [],
-      ),
-    );
-    addTearDown(cubit.close);
-
-    final state = await cubit.stream.firstWhere(
-      (state) => state is ResourceActionDone,
-    );
-    expect(state.resourceId, isNull);
-    expect(state.elementId, isNull);
-    expect(repository.started, isEmpty);
-    expect(repository.startedGlobal.single.$1, 'RebuildIndex');
-    expect(repository.startedGlobal.single.$2, isEmpty);
+    expect(runner.runs, [<String, dynamic>{}]);
   });
 
   test('waits for the parameters to be filled in', () async {
-    final repository = _Repository();
-    final cubit = _cubit(repository, _resolve);
+    final runner = _Runner();
+    final cubit = _cubit(runner, _resolve);
 
     final state = cubit.state as ResourceActionEditing;
     expect(state.values, {'closeImmediately': false});
     expect(state.validation, isEmpty);
-    expect(repository.started, isEmpty);
+    expect(runner.runs, isEmpty);
+  });
+
+  test('fills in the initial values', () async {
+    final runner = _Runner();
+    final cubit = _cubit(
+      runner,
+      _resolve,
+      initialValues: {'reference': 'T-1', 'closeImmediately': true},
+    );
+
+    final state = cubit.state as ResourceActionEditing;
+    expect(state.values, {'closeImmediately': true, 'reference': 'T-1'});
+    expect(runner.runs, isEmpty);
   });
 
   test('does not start with missing parameters', () async {
-    final repository = _Repository();
-    final cubit = _cubit(repository, _resolve);
+    final runner = _Runner();
+    final cubit = _cubit(runner, _resolve);
 
     await cubit.start();
 
     final state = cubit.state as ResourceActionEditing;
     expect(state.validation.keys, ['resolution']);
-    expect(repository.started, isEmpty);
+    expect(runner.runs, isEmpty);
   });
 
   test('starts with the parameters filled in', () async {
-    final repository = _Repository();
-    final cubit = _cubit(repository, _resolve);
+    final runner = _Runner();
+    final cubit = _cubit(runner, _resolve);
 
     cubit.setParameterValue(_resolution, 'Replaced the router.');
     await cubit.start();
 
     expect(cubit.state, isA<ResourceActionDone>());
-    expect(repository.started, [
+    expect(runner.runs, [
       {'closeImmediately': false, 'resolution': 'Replaced the router.'},
     ]);
   });
 
   test('shows parameter errors of the backend at the parameters', () async {
-    final repository = _Repository(
+    final runner = _Runner(
       ApiRequestException.fromResponse(400, {
         'statusCode': 400,
         'errorMessage': 'Invalid values for fields: resolution',
@@ -163,7 +135,7 @@ void main() {
         },
       }),
     );
-    final cubit = _cubit(repository, _resolve);
+    final cubit = _cubit(runner, _resolve);
 
     cubit.setParameterValue(_resolution, 'Done.');
     await cubit.start();

@@ -1,33 +1,34 @@
 import 'package:datahub/api.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/blocs/error_state.dart';
-import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'resource_action_state.dart';
 
-class ResourceActionCubit extends Cubit<ResourceActionState> {
-  final ResourcesRepository _resourcesRepository;
-  final ResourceAction action;
+/// Runs an action (or sends a signal) with its parameters.
+typedef ActionRunner = Future<void> Function(Map<String, dynamic> parameters);
 
-  ResourceActionCubit(
-    this._resourcesRepository, {
+/// Asks for the parameters of [action] and runs it with [run].
+class ResourceActionCubit extends Cubit<ResourceActionState> {
+  final ResourceAction action;
+  final ActionRunner _run;
+
+  /// [initialValues] fill in parameters, for example the element a signal is
+  /// meant for.
+  ResourceActionCubit({
     required this.action,
-    String? resourceId,
-    String? elementId,
-  }) : super(
+    required ActionRunner run,
+    Map<String, dynamic> initialValues = const {},
+  }) : _run = run,
+       super(
          action.parameterFields.isEmpty
-             ? ResourceActionLoading(
-                 resourceId: resourceId,
-                 actionId: action.id,
-                 elementId: elementId,
-               )
+             ? const ResourceActionLoading()
              : ResourceActionEditing(
-                 resourceId: resourceId,
-                 actionId: action.id,
-                 elementId: elementId,
-                 values: _initialValues(action.parameterFields),
+                 values: {
+                   ..._initialValues(action.parameterFields),
+                   ...initialValues,
+                 },
                  validation: const {},
                ),
        ) {
@@ -54,9 +55,6 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
 
       emit(
         ResourceActionEditing(
-          resourceId: state.resourceId,
-          actionId: state.actionId,
-          elementId: state.elementId,
           values: {...state.values, field.id: value},
           validation: validation,
         ),
@@ -74,48 +72,21 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
 
       if (validation.isNotEmpty) {
         return emit(
-          ResourceActionEditing(
-            resourceId: state.resourceId,
-            actionId: state.actionId,
-            elementId: state.elementId,
-            values: state.values,
-            validation: validation,
-          ),
+          ResourceActionEditing(values: state.values, validation: validation),
         );
       }
 
-      emit(
-        ResourceActionLoading(
-          resourceId: state.resourceId,
-          actionId: state.actionId,
-          elementId: state.elementId,
-        ),
-      );
+      emit(const ResourceActionLoading());
       await _startAction(state.values);
     }
   }
 
   Future<void> _startAction(Map<String, dynamic> parameters) async {
     try {
-      final resourceId = state.resourceId;
-      final elementId = state.elementId;
-      if (resourceId != null && elementId != null) {
-        await _resourcesRepository.startElementAction(
-          resourceId,
-          elementId,
-          state.actionId,
-          parameters,
-        );
-      } else {
-        await _resourcesRepository.startAction(state.actionId, parameters);
+      await _run(parameters);
+      if (!isClosed) {
+        emit(const ResourceActionDone());
       }
-      emit(
-        ResourceActionDone(
-          resourceId: state.resourceId,
-          actionId: state.actionId,
-          elementId: state.elementId,
-        ),
-      );
     } catch (e) {
       if (isClosed) {
         return;
@@ -123,32 +94,11 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
 
       // Parameters the backend rejected can be corrected in the form.
       if (editableFieldErrors(e, action.parameterFields) case final errors?) {
-        emit(
-          ResourceActionEditing(
-            resourceId: state.resourceId,
-            actionId: state.actionId,
-            elementId: state.elementId,
-            values: parameters,
-            validation: errors,
-          ),
-        );
+        emit(ResourceActionEditing(values: parameters, validation: errors));
       } else if (e case ApiRequestException(:final message)) {
-        emit(
-          ResourceActionError(
-            resourceId: state.resourceId,
-            actionId: state.actionId,
-            elementId: state.elementId,
-            message: message,
-          ),
-        );
+        emit(ResourceActionError(message: message));
       } else {
-        emit(
-          ResourceActionError(
-            resourceId: state.resourceId,
-            actionId: state.actionId,
-            elementId: state.elementId,
-          ),
-        );
+        emit(const ResourceActionError());
       }
     }
   }

@@ -23,6 +23,9 @@ import 'demo_seed.dart';
 
 /// A realistic backoffice for "ACME Digital", a fictional software
 /// agency: clients, contacts, projects, timesheets, invoices, support tickets.
+///
+/// Invoices move through a workflow (see [_invoiceSteps]), which Aperture
+/// shows on the invoices.
 void main(List<String> args) => runApp([
   KeyService(),
   MemoryRepositoryService(bean: $Employee.bean),
@@ -33,47 +36,48 @@ void main(List<String> args) => runApp([
   MemoryRepositoryService(bean: $TimeEntry.bean),
   MemoryRepositoryService(bean: $Invoice.bean),
   MemoryRepositoryService(bean: $SupportTicket.bean),
+  MemoryRepositoryService(bean: $WorkflowEvent.bean),
+  MemoryRepositoryService(bean: $WorkflowHistoryEntry.bean),
+  MemoryLockService<String>(),
+  WorkflowService<Invoice, InvoiceStatus>(steps: _invoiceSteps),
   DemoAuthService(),
   TestAuthProvider(),
   ApiService(
     routes: [
-      ApertureApi(
-        title: const Config.value('ACME Backoffice'),
-        theme: ApertureTheme(color: 0xff0f766e),
-        oidcIssuer: const Config.value(
-          'http://localhost:8081/realms/local-oidc',
-        ),
-        oidcClientId: const Config.value('aperture'),
-        resources: [
-          ApertureResource(repository: Find<DataRepository<Client>>()),
-          ApertureResource(repository: Find<DataRepository<Contact>>()),
-          ApertureResource(repository: Find<DataRepository<Project>>()),
-          ApertureResource(repository: Find<DataRepository<TimeEntry>>()),
-          ApertureResource(
-            repository: Find<DataRepository<Invoice>>(),
+      // The frontend is served from another origin during development.
+      CorsMiddleware(
+        routes: [
+          ApertureApi(
+            title: const Config.value('ACME Backoffice'),
+            theme: ApertureTheme(color: 0xff0f766e),
+            oidcIssuer: const Config.value(
+              'http://localhost:8081/realms/local-oidc',
+            ),
+            oidcClientId: const Config.value('aperture'),
+            resources: [
+              ApertureResource(repository: Find<DataRepository<Client>>()),
+              ApertureResource(repository: Find<DataRepository<Contact>>()),
+              ApertureResource(repository: Find<DataRepository<Project>>()),
+              ApertureResource(repository: Find<DataRepository<TimeEntry>>()),
+              ApertureResource(repository: Find<DataRepository<Invoice>>()),
+              ApertureResource(
+                repository: Find<DataRepository<SupportTicket>>(),
+                actions: [
+                  ApertureAction<ResolveTicket>(
+                    bean: $ResolveTicket.bean,
+                    handler: _resolveTicket,
+                  ),
+                ],
+              ),
+              ApertureResource(repository: Find<DataRepository<Product>>()),
+              ApertureResource(repository: Find<DataRepository<Employee>>()),
+            ],
             actions: [
-              ApertureAction<MarkInvoicePaid>(
-                bean: $MarkInvoicePaid.bean,
-                handler: _markInvoicePaid,
+              ApertureAction<SendPaymentReminders>(
+                bean: $SendPaymentReminders.bean,
+                handler: _sendPaymentReminders,
               ),
             ],
-          ),
-          ApertureResource(
-            repository: Find<DataRepository<SupportTicket>>(),
-            actions: [
-              ApertureAction<ResolveTicket>(
-                bean: $ResolveTicket.bean,
-                handler: _resolveTicket,
-              ),
-            ],
-          ),
-          ApertureResource(repository: Find<DataRepository<Product>>()),
-          ApertureResource(repository: Find<DataRepository<Employee>>()),
-        ],
-        actions: [
-          ApertureAction<SendPaymentReminders>(
-            bean: $SendPaymentReminders.bean,
-            handler: _sendPaymentReminders,
           ),
         ],
       ),
@@ -82,26 +86,46 @@ void main(List<String> args) => runApp([
   ServiceDelegate(initialize: seedDemoData),
 ], arguments: args);
 
-Future<void> _markInvoicePaid(String? invoiceId, MarkInvoicePaid params) async {
-  final repo = Find<DataRepository<Invoice>>().find();
-  final invoice = await repo.readById(invoiceId);
-  if (invoice == null) {
-    throw ApiRequestException.notFound('Invoice not found.');
-  }
-  if (invoice.status == InvoiceStatus.draft ||
-      invoice.status == InvoiceStatus.cancelled) {
-    throw ApiRequestException.badRequest(
-      'Only sent or overdue invoices can be marked as paid.',
-    );
+/// A sent invoice becomes overdue at its due date, which sends a payment
+/// reminder. A [MarkInvoicePaid] signal marks it as paid.
+final _invoiceSteps = <WorkflowStep<Invoice, InvoiceStatus>>[
+  OnEnter(name: 'Mark Overdue', InvoiceStatus.sent, _markOverdue, at: (invoice) => invoice.dueAt),
+  OnEnter(name: 'Send Reminder', InvoiceStatus.overdue, _sendReminder, retry: RetryPolicy.none()),
+  OnSignal(
+    name: 'Mark Paid',
+    $MarkInvoicePaid.bean,
+    accept: [InvoiceStatus.sent, InvoiceStatus.overdue],
+    target: (signal) => signal.invoiceId,
+    handle: (step) async => step.element.copyWith(
+      status: InvoiceStatus.paid,
+      paidAt: step.signal.paidAt,
+      paymentReference: step.signal.paymentReference,
+    ),
+  ),
+];
+
+Future<Invoice> _markOverdue(StepContext<Invoice> step) async {
+  log.info('Invoice ${step.element.invoiceNumber} is overdue.');
+  return step.element.copyWith(status: InvoiceStatus.overdue);
+}
+
+/// Invoices whose reminder bounced, see [_sendReminder].
+final _bounced = <int>{};
+
+Future<Invoice> _sendReminder(StepContext<Invoice> step) async {
+  final invoice = step.element;
+  if (invoice.remindersSent >= 3) {
+    log.info('Reminded three times already, waiting for the payment.');
+    return invoice;
   }
 
-  await repo.updateById(
-    invoice.copyWith(
-      status: InvoiceStatus.paid,
-      paidAt: params.paidAt,
-      paymentReference: params.paymentReference,
-    ),
-  );
+  log.info('Sending a payment reminder for ${invoice.invoiceNumber}.');
+  // The first reminder of each invoice bounces, to show failed steps (and
+  // retrying them) in Aperture.
+  if (_bounced.add(invoice.id)) {
+    throw ApiException('The mail server rejected the reminder.');
+  }
+  return invoice.copyWith(remindersSent: invoice.remindersSent + 1);
 }
 
 Future<void> _resolveTicket(String? ticketId, ResolveTicket params) async {
@@ -124,6 +148,8 @@ Future<void> _resolveTicket(String? ticketId, ResolveTicket params) async {
   );
 }
 
+/// Sends another reminder for overdue invoices. Invoices become overdue in
+/// their workflow.
 Future<void> _sendPaymentReminders(
   String? _,
   SendPaymentReminders params,
@@ -133,18 +159,14 @@ Future<void> _sendPaymentReminders(
     Duration(days: params.minDaysOverdue),
   );
   final invoices = await repo.readAll(
-    filter: Filter.orGroup([
-      $Invoice.$status.equals(InvoiceStatus.sent),
-      $Invoice.$status.equals(InvoiceStatus.overdue),
-    ]).and($Invoice.$dueAt.lessThan(cutoff)),
+    filter: $Invoice.$status
+        .equals(InvoiceStatus.overdue)
+        .and($Invoice.$dueAt.lessThan(cutoff)),
   );
 
   for (final invoice in invoices) {
     await repo.updateById(
-      invoice.copyWith(
-        status: InvoiceStatus.overdue,
-        remindersSent: math.min(3, invoice.remindersSent + 1),
-      ),
+      invoice.copyWith(remindersSent: math.min(3, invoice.remindersSent + 1)),
     );
   }
 }

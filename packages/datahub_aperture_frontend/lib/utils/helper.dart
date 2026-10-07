@@ -298,3 +298,9 @@ extension ResourceFieldExtension on ResourceField {
     _ => null,
   };
 }
+
+/// The message the backend gave for [error], if it is an API error.
+String? apiErrorMessage(Object error) => switch (error) {
+  ApiRequestException(:final data) => data['errorMessage']?.toString(),
+  _ => null,
+};

@@ -11,6 +11,7 @@ import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_overlay.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
 import 'package:datahub_aperture_frontend/widgets/page_header.dart';
+import 'package:datahub_aperture_frontend/widgets/workflow/element_workflow_panel.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
@@ -84,6 +85,15 @@ class ResourceElementEditPage extends StatelessWidget {
                     changes: changes,
                     validations: validations,
                     revisable: resource.revisable,
+                    workflow: resource.workflow != null
+                        ? ElementWorkflowPanel(
+                            resource: resource,
+                            data: data,
+                            onElementChanged: context
+                                .read<ResourceElementEditCubit>()
+                                .refresh,
+                          )
+                        : null,
                     onFieldValueChanged: (field, value) => context
                         .read<ResourceElementEditCubit>()
                         .setFieldValue(field.id, value),

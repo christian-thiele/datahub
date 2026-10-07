@@ -9,6 +9,7 @@ import 'package:datahub_aperture_frontend/widgets/options_button.dart';
 import 'package:datahub_aperture_frontend/widgets/page_header.dart';
 import 'package:datahub_aperture_frontend/widgets/resources/revision_view.dart';
 import 'package:datahub_aperture_frontend/widgets/side_panel.dart';
+import 'package:datahub_aperture_frontend/widgets/side_panel_tabs.dart';
 import 'package:flutter/material.dart';
 
 import 'resource_relation_view.dart';
@@ -31,6 +32,10 @@ class ResourceElementEditView extends StatelessWidget {
   final void Function(String)? onActionPressed;
   final bool revisable;
 
+  /// The workflow of the element, shown in the side panel (next to the
+  /// revisions, if there are any).
+  final Widget? workflow;
+
   /// Leads to this element, not including its [title].
   final List<Breadcrumb> breadcrumbs;
 
@@ -49,6 +54,7 @@ class ResourceElementEditView extends StatelessWidget {
     required this.actions,
     this.onActionPressed,
     this.revisable = true,
+    this.workflow,
   });
 
   @override
@@ -126,13 +132,29 @@ class ResourceElementEditView extends StatelessWidget {
         Expanded(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              final showRevisions = revisable && data.version != null;
-              final revisionView = showRevisions
-                  ? RevisionView(
+              final panels = [
+                if (revisable && data.version != null)
+                  SidePanelTab(
+                    label: S.of(context).revisions,
+                    icon: Icons.history,
+                    child: RevisionView(
                       revisions: data.revisions,
                       currentVersion: data.version!,
-                    )
-                  : null;
+                    ),
+                  ),
+                if (workflow case final workflow?)
+                  SidePanelTab(
+                    label: S.of(context).workflow,
+                    icon: Icons.account_tree_outlined,
+                    child: workflow,
+                  ),
+              ];
+              final sidePanel = switch (panels) {
+                [] => null,
+                [final panel] => panel.child,
+                _ => SidePanelTabs(tabs: panels),
+              };
+              final sidePanelWidth = workflow != null ? 360.0 : 300.0;
               final stacked = constraints.maxWidth < 900;
 
               final content = Column(
@@ -157,10 +179,10 @@ class ResourceElementEditView extends StatelessWidget {
                   ),
                   for (final relation in relations)
                     ResourceRelationView(filteredResource: relation),
-                  if (stacked && revisionView != null)
+                  if (stacked && sidePanel != null)
                     SizedBox(
                       height: 520,
-                      child: SidePanel(width: null, child: revisionView),
+                      child: SidePanel(width: null, child: sidePanel),
                     ),
                 ],
               );
@@ -175,7 +197,8 @@ class ResourceElementEditView extends StatelessWidget {
                 spacing: 20,
                 children: [
                   Expanded(child: SingleChildScrollView(child: content)),
-                  if (revisionView != null) SidePanel(child: revisionView),
+                  if (sidePanel != null)
+                    SidePanel(width: sidePanelWidth, child: sidePanel),
                 ],
               );
             },

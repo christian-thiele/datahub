@@ -124,6 +124,7 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
                 focusNode: _dateFocus,
                 enabled: widget.onChanged != null,
                 onTap: () {
+                  _fillEmptyWithNow();
                   _dateController.selection = TextSelection(
                     baseOffset: 0,
                     extentOffset: _dateController.text.length,
@@ -166,6 +167,7 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
                       focusNode: _timeFocus,
                       enabled: widget.onChanged != null,
                       onTap: () {
+                        _fillEmptyWithNow();
                         _timeController.selection = TextSelection(
                           baseOffset: 0,
                           extentOffset: _timeController.text.length,
@@ -180,6 +182,13 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
         ],
       ),
     );
+  }
+
+  /// Fills an empty value with the current time when the user starts editing.
+  void _fillEmptyWithNow() {
+    if (widget.value == null) {
+      widget.onChanged?.call(DateTime.now());
+    }
   }
 
   void _processDate(String text) {

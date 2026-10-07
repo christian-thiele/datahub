@@ -27,6 +27,7 @@ connects to the Aperture REST API and provides a browser-based admin UI for mana
 - Field types supported: text, int, double, bool, enum, timestamp, file, geometry (GeoJSON), nested objects, and lists
 - Relation fields rendered as lookup menus backed by the API
 - Column filtering on resource list views
+- Workflow administration — the state, open events (with the live log of running steps) and history of an element, sending signals, retrying and discarding events, and a workflow page per resource
 - OIDC authorization code flow with PKCE (automatic token refresh via shared preferences)
 - Configurable seed color theming at runtime, with light and dark mode following the system setting
 - Localized in English and German

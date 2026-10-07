@@ -443,6 +443,45 @@ void main() {
     },
   );
 
+  declareTest(
+    'replaces the pending steps of an element that is resumed',
+    _components(
+      _steps(generateAfter: const Duration(seconds: 1)),
+      history: true,
+    ),
+    () async {
+      final invoice = await _start();
+      Future<List<String>> pendingSteps() async => [
+        for (final event in await _workflow.events(elementId: invoice.id))
+          event.step,
+      ];
+      final steps = await pendingSteps();
+      expect(steps, hasLength(1));
+
+      // In the same state, the step does not run twice.
+      await _workflow.resume(invoice.id);
+      expect(await pendingSteps(), steps);
+
+      // Moved to another state outside of the workflow, the step of the state
+      // it left is cancelled (paymentRequested has no steps of its own).
+      await _invoices.updateById(
+        (await _read(
+          invoice.id,
+        )).copyWith(state: InvoiceWorkflowState.paymentRequested),
+      );
+      await _workflow.resume(invoice.id);
+      expect(await pendingSteps(), isEmpty);
+
+      expect((await _workflow.history(invoice.id)).map((e) => e.kind), [
+        WorkflowHistoryKind.started,
+        WorkflowHistoryKind.cancelled,
+        WorkflowHistoryKind.resumed,
+        WorkflowHistoryKind.cancelled,
+        WorkflowHistoryKind.resumed,
+      ]);
+    },
+  );
+
   var restingCalls = 0;
   declareTest(
     'lets a step leave the element in its state',
@@ -1596,6 +1635,18 @@ void main() {
         expect(running.step, 'generated');
         expect(running.worker, 'worker-0');
         expect(running.startedAt, isNotNull);
+        expect(_workflow.isRunning(running), isTrue);
+        // A worker that stopped renewing the heartbeat crashed.
+        expect(
+          _workflow.isRunning(
+            running.copyWith(
+              heartbeatAt: DateTime.timestamp().subtract(
+                const Duration(seconds: 1),
+              ),
+            ),
+          ),
+          isFalse,
+        );
         final heartbeat = running.heartbeatAt!;
         await _eventually(
           () async => (await _workflow.events(
@@ -1625,6 +1676,8 @@ void main() {
     declareTest('describes the workflow', _components(_steps()), () async {
       final description = _workflow.describe();
       expect(description.name, 'Invoice');
+      expect(description.stateField, 'state');
+      expect(description.writesHistory, isFalse);
       expect(description.steps.map((s) => (s.name, s.kind)), [
         ('created', WorkflowStepKind.enter),
         ('generated', WorkflowStepKind.enter),
@@ -1638,6 +1691,46 @@ void main() {
         unorderedEquals(['created', 'generated', 'paymentRequested']),
       );
     });
+
+    declareTest(
+      'reads the history newest first',
+      _components(_steps(), history: true),
+      () async {
+        expect(_workflow.describe().writesHistory, isTrue);
+
+        final invoice = await _start();
+        // Started, and the steps of created and generated.
+        await _eventually(
+          () async => (await _workflow.history(invoice.id)).length == 3,
+          reason: 'the history to be written',
+        );
+
+        final oldestFirst = await _workflow.history(invoice.id);
+        final newestFirst = await _workflow.history(
+          invoice.id,
+          newestFirst: true,
+        );
+        expect(
+          newestFirst.map((e) => e.id),
+          unorderedEquals(oldestFirst.map((e) => e.id)),
+        );
+        expect(newestFirst.first.kind, WorkflowHistoryKind.stepSucceeded);
+        expect(newestFirst.last.kind, WorkflowHistoryKind.started);
+        for (var i = 1; i < newestFirst.length; i++) {
+          expect(
+            newestFirst[i - 1].timestamp.isBefore(newestFirst[i].timestamp),
+            isFalse,
+          );
+        }
+
+        final newest = await _workflow.history(
+          invoice.id,
+          newestFirst: true,
+          limit: 1,
+        );
+        expect(newest.single.id, newestFirst.first.id);
+      },
+    );
 
     var attempts = 0;
     declareTest(
@@ -1687,6 +1780,7 @@ void main() {
       () async {
         final invoice = await _start();
         final pending = (await _workflow.events(elementId: invoice.id)).single;
+        expect(_workflow.isRunning(pending), isFalse);
 
         await _workflow.cancel(pending.id);
         expect(await _workflow.events(elementId: invoice.id), isEmpty);
@@ -1709,10 +1803,13 @@ void main() {
       );
       expect((await _read(invoice.id)).paymentReference, 'from-json');
 
+      // The invalid field is named, so that forms can show the error there.
       await expectLater(
         _workflow.sendJson('PaymentSuccessSignal', {'invoiceId': invoice.id}),
         throwsA(
-          isA<ApiRequestException>().having((e) => e.statusCode, 'code', 400),
+          isA<ApiRequestException>()
+              .having((e) => e.statusCode, 'code', 400)
+              .having((e) => e.data['fields'], 'fields', contains('reference')),
         ),
       );
       await expectLater(
@@ -1722,5 +1819,41 @@ void main() {
         ),
       );
     });
+
+    declareTest(
+      'sends a signal from JSON only to the given element',
+      _components(_steps()),
+      () async {
+        final invoice = await _start(InvoiceWorkflowState.paymentRequested);
+        final other = await _start(InvoiceWorkflowState.paymentRequested);
+        final payload = {'invoiceId': invoice.id, 'reference': 'checked'};
+
+        await expectLater(
+          _workflow.sendJson(
+            'PaymentSuccessSignal',
+            payload,
+            elementId: other.id,
+          ),
+          throwsA(
+            isA<ApiRequestException>().having((e) => e.statusCode, 'code', 400),
+          ),
+        );
+        expect(await _workflow.events(elementId: invoice.id), isEmpty);
+
+        await _workflow.sendJson(
+          'PaymentSuccessSignal',
+          payload,
+          elementId: invoice.id,
+        );
+        await _eventuallyInState(
+          invoice.id,
+          InvoiceWorkflowState.paymentReceived,
+        );
+        expect(
+          (await _read(other.id)).state,
+          isNot(InvoiceWorkflowState.paymentReceived),
+        );
+      },
+    );
   });
 }

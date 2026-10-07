@@ -613,6 +613,461 @@ class S {
   String get total {
     return Intl.message('Total', name: 'total', desc: '', args: []);
   }
+
+  /// `Action completed.`
+  String get actionCompleted {
+    return Intl.message(
+      'Action completed.',
+      name: 'actionCompleted',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Signal sent. The workflow handles it in the background.`
+  String get signalSent {
+    return Intl.message(
+      'Signal sent. The workflow handles it in the background.',
+      name: 'signalSent',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Send`
+  String get sendSignal {
+    return Intl.message('Send', name: 'sendSignal', desc: '', args: []);
+  }
+
+  /// `Send signal`
+  String get sendSignalMenu {
+    return Intl.message(
+      'Send signal',
+      name: 'sendSignalMenu',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Waits for {states}`
+  String waitsFor(Object states) {
+    return Intl.message(
+      'Waits for $states',
+      name: 'waitsFor',
+      desc: '',
+      args: [states],
+    );
+  }
+
+  /// `Workflow`
+  String get workflow {
+    return Intl.message('Workflow', name: 'workflow', desc: '', args: []);
+  }
+
+  /// `{resource} workflow`
+  String workflowOf(Object resource) {
+    return Intl.message(
+      '$resource workflow',
+      name: 'workflowOf',
+      desc: '',
+      args: [resource],
+    );
+  }
+
+  /// `Revisions`
+  String get revisions {
+    return Intl.message('Revisions', name: 'revisions', desc: '', args: []);
+  }
+
+  /// `State`
+  String get state {
+    return Intl.message('State', name: 'state', desc: '', args: []);
+  }
+
+  /// `Open`
+  String get openEvents {
+    return Intl.message('Open', name: 'openEvents', desc: '', args: []);
+  }
+
+  /// `Nothing open.`
+  String get noOpenEvents {
+    return Intl.message(
+      'Nothing open.',
+      name: 'noOpenEvents',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `History`
+  String get history {
+    return Intl.message('History', name: 'history', desc: '', args: []);
+  }
+
+  /// `No history yet.`
+  String get noHistory {
+    return Intl.message(
+      'No history yet.',
+      name: 'noHistory',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `The history is not recorded.`
+  String get historyNotWritten {
+    return Intl.message(
+      'The history is not recorded.',
+      name: 'historyNotWritten',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Load more`
+  String get loadMore {
+    return Intl.message('Load more', name: 'loadMore', desc: '', args: []);
+  }
+
+  /// `Resume workflow`
+  String get resumeWorkflow {
+    return Intl.message(
+      'Resume workflow',
+      name: 'resumeWorkflow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Run the steps of state "{state}" again?`
+  String reallyResumeWorkflow(Object state) {
+    return Intl.message(
+      'Run the steps of state "$state" again?',
+      name: 'reallyResumeWorkflow',
+      desc: '',
+      args: [state],
+    );
+  }
+
+  /// `Resume`
+  String get resume {
+    return Intl.message('Resume', name: 'resume', desc: '', args: []);
+  }
+
+  /// `Retry`
+  String get retry {
+    return Intl.message('Retry', name: 'retry', desc: '', args: []);
+  }
+
+  /// `Discard`
+  String get discard {
+    return Intl.message('Discard', name: 'discard', desc: '', args: []);
+  }
+
+  /// `Discard "{step}"? It will not be handled.`
+  String reallyDiscardEvent(Object step) {
+    return Intl.message(
+      'Discard "$step"? It will not be handled.',
+      name: 'reallyDiscardEvent',
+      desc: '',
+      args: [step],
+    );
+  }
+
+  /// `Pending`
+  String get eventPending {
+    return Intl.message('Pending', name: 'eventPending', desc: '', args: []);
+  }
+
+  /// `Running`
+  String get eventRunning {
+    return Intl.message('Running', name: 'eventRunning', desc: '', args: []);
+  }
+
+  /// `Failed`
+  String get eventFailed {
+    return Intl.message('Failed', name: 'eventFailed', desc: '', args: []);
+  }
+
+  /// `Expired`
+  String get eventExpired {
+    return Intl.message('Expired', name: 'eventExpired', desc: '', args: []);
+  }
+
+  /// `Due {time}`
+  String eventDue(Object time) {
+    return Intl.message('Due $time', name: 'eventDue', desc: '', args: [time]);
+  }
+
+  /// `Next attempt {time}`
+  String eventNextAttempt(Object time) {
+    return Intl.message(
+      'Next attempt $time',
+      name: 'eventNextAttempt',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `Running on {worker}`
+  String eventRunningOn(Object worker) {
+    return Intl.message(
+      'Running on $worker',
+      name: 'eventRunningOn',
+      desc: '',
+      args: [worker],
+    );
+  }
+
+  /// `Expired {time}`
+  String eventExpiredAt(Object time) {
+    return Intl.message(
+      'Expired $time',
+      name: 'eventExpiredAt',
+      desc: '',
+      args: [time],
+    );
+  }
+
+  /// `Created`
+  String get created {
+    return Intl.message('Created', name: 'created', desc: '', args: []);
+  }
+
+  /// `Due`
+  String get due {
+    return Intl.message('Due', name: 'due', desc: '', args: []);
+  }
+
+  /// `Expires`
+  String get expires {
+    return Intl.message('Expires', name: 'expires', desc: '', args: []);
+  }
+
+  /// `Started`
+  String get started {
+    return Intl.message('Started', name: 'started', desc: '', args: []);
+  }
+
+  /// `Heartbeat`
+  String get heartbeat {
+    return Intl.message('Heartbeat', name: 'heartbeat', desc: '', args: []);
+  }
+
+  /// `Worker`
+  String get worker {
+    return Intl.message('Worker', name: 'worker', desc: '', args: []);
+  }
+
+  /// `Attempts`
+  String get attempts {
+    return Intl.message('Attempts', name: 'attempts', desc: '', args: []);
+  }
+
+  /// `Signal`
+  String get signal {
+    return Intl.message('Signal', name: 'signal', desc: '', args: []);
+  }
+
+  /// `Log`
+  String get log {
+    return Intl.message('Log', name: 'log', desc: '', args: []);
+  }
+
+  /// `Nothing logged.`
+  String get noLog {
+    return Intl.message('Nothing logged.', name: 'noLog', desc: '', args: []);
+  }
+
+  /// `Element`
+  String get element {
+    return Intl.message('Element', name: 'element', desc: '', args: []);
+  }
+
+  /// `Open element`
+  String get openElement {
+    return Intl.message(
+      'Open element',
+      name: 'openElement',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Changes`
+  String get changes {
+    return Intl.message('Changes', name: 'changes', desc: '', args: []);
+  }
+
+  /// `Next attempt`
+  String get nextAttempt {
+    return Intl.message(
+      'Next attempt',
+      name: 'nextAttempt',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Started in "{state}"`
+  String historyStarted(Object state) {
+    return Intl.message(
+      'Started in "$state"',
+      name: 'historyStarted',
+      desc: '',
+      args: [state],
+    );
+  }
+
+  /// `Resumed in "{state}"`
+  String historyResumed(Object state) {
+    return Intl.message(
+      'Resumed in "$state"',
+      name: 'historyResumed',
+      desc: '',
+      args: [state],
+    );
+  }
+
+  /// `Signal "{step}" received`
+  String historySignalReceived(Object step) {
+    return Intl.message(
+      'Signal "$step" received',
+      name: 'historySignalReceived',
+      desc: '',
+      args: [step],
+    );
+  }
+
+  /// `"{step}" ran`
+  String historyStepSucceeded(Object step) {
+    return Intl.message(
+      '"$step" ran',
+      name: 'historyStepSucceeded',
+      desc: '',
+      args: [step],
+    );
+  }
+
+  /// `"{step}" failed`
+  String historyStepFailed(Object step) {
+    return Intl.message(
+      '"$step" failed',
+      name: 'historyStepFailed',
+      desc: '',
+      args: [step],
+    );
+  }
+
+  /// `"{step}" given up`
+  String historyParked(Object step) {
+    return Intl.message(
+      '"$step" given up',
+      name: 'historyParked',
+      desc: '',
+      args: [step],
+    );
+  }
+
+  /// `"{step}" discarded`
+  String historyCancelled(Object step) {
+    return Intl.message(
+      '"$step" discarded',
+      name: 'historyCancelled',
+      desc: '',
+      args: [step],
+    );
+  }
+
+  /// `"{step}" retried`
+  String historyRetried(Object step) {
+    return Intl.message(
+      '"$step" retried',
+      name: 'historyRetried',
+      desc: '',
+      args: [step],
+    );
+  }
+
+  /// `Steps`
+  String get steps {
+    return Intl.message('Steps', name: 'steps', desc: '', args: []);
+  }
+
+  /// `Events`
+  String get events {
+    return Intl.message('Events', name: 'events', desc: '', args: []);
+  }
+
+  /// `All`
+  String get all {
+    return Intl.message('All', name: 'all', desc: '', args: []);
+  }
+
+  /// `No events.`
+  String get noEvents {
+    return Intl.message('No events.', name: 'noEvents', desc: '', args: []);
+  }
+
+  /// `On entering "{state}"`
+  String stepOnEnter(Object state) {
+    return Intl.message(
+      'On entering "$state"',
+      name: 'stepOnEnter',
+      desc: '',
+      args: [state],
+    );
+  }
+
+  /// `Signal, accepted in {states}`
+  String stepOnSignal(Object states) {
+    return Intl.message(
+      'Signal, accepted in $states',
+      name: 'stepOnSignal',
+      desc: '',
+      args: [states],
+    );
+  }
+
+  /// `after {duration}`
+  String stepAfter(Object duration) {
+    return Intl.message(
+      'after $duration',
+      name: 'stepAfter',
+      desc: '',
+      args: [duration],
+    );
+  }
+
+  /// `at the time of the element`
+  String get stepAtElementTime {
+    return Intl.message(
+      'at the time of the element',
+      name: 'stepAtElementTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `On failure: {state}`
+  String stepFailureState(Object state) {
+    return Intl.message(
+      'On failure: $state',
+      name: 'stepFailureState',
+      desc: '',
+      args: [state],
+    );
+  }
+
+  /// `The event was handled.`
+  String get eventHandled {
+    return Intl.message(
+      'The event was handled.',
+      name: 'eventHandled',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

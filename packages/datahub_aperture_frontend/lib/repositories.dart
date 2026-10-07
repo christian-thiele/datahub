@@ -4,6 +4,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'repositories/api_repository.dart';
 import 'repositories/resources_repository/api_resources_repository.dart';
 import 'repositories/resources_repository/resources_repository.dart';
+import 'repositories/workflow_repository/api_workflow_repository.dart';
+import 'repositories/workflow_repository/workflow_repository.dart';
 import 'services/auth_service.dart';
 import 'utils/bootstrap.dart';
 
@@ -22,6 +24,11 @@ class Repositories extends StatelessWidget {
               ApiResourcesRepository(baseUrl: Bootstrap.apiUrlOf(context)),
           dispose: (repo) => (repo as ApiRepository).close(),
           lazy: false,
+        ),
+        RepositoryProvider<WorkflowRepository>(
+          create: (context) =>
+              ApiWorkflowRepository(baseUrl: Bootstrap.apiUrlOf(context)),
+          dispose: (repo) => (repo as ApiRepository).close(),
         ),
       ],
       child: child,
