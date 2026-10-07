@@ -1,7 +1,7 @@
 # Recommended DataHub analysis rules.
 plugins:
   datahub_lints:
-    version: ^0.18.0-dev.2
+    version: ^0.18.0-dev.3
     diagnostics:
       const_service_constructor: true
       reducible_filter_group: true
