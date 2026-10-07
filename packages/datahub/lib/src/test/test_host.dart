@@ -26,10 +26,8 @@ class TestHost extends ServiceHost {
   @override
   Component buildRoot() {
     return Scope(
-      name: 'root',
       components: [
         Scope(
-          name: 'internal',
           components: [
             TelemetryService(
               logStdoutFormat: Config(
@@ -47,8 +45,8 @@ class TestHost extends ServiceHost {
             SchedulerService(),
           ],
         ),
-        Scope(name: 'application', components: components),
-        Scope(name: 'test', components: [TestRunnerService()]),
+        Scope(components: components),
+        Scope(components: [TestRunnerService()]),
       ],
     );
   }

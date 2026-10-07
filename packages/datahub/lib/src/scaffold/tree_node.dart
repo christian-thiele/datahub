@@ -53,8 +53,8 @@ class ScopeTreeNode extends TreeNode {
 
   @override
   ConfigPath _buildConfigPath() {
-    if (scope.config case final config?) {
-      return super._buildConfigPath().join(ConfigPath(config));
+    if (scope.name case final name?) {
+      return super._buildConfigPath().join(ConfigPath(name));
     } else {
       return super._buildConfigPath();
     }

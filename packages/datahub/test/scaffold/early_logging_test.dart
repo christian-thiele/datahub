@@ -61,17 +61,13 @@ void main() {
     // "Could not find component with Find<Telemetry>" and buried the actual
     // error whenever a component failed before telemetry was up.
     test('an initialization failure is reported as itself', () async {
-      final host = BareHost(
-        Scope(name: 'root', components: [const FailingService()]),
-      );
+      final host = BareHost(Scope(components: [const FailingService()]));
 
       await expectLater(host.initialize(), throwsA(isA<BoomException>()));
     });
 
     test('log() falls back to printing instead of throwing', () async {
-      final host = BareHost(
-        Scope(name: 'root', components: [const LoggingService()]),
-      );
+      final host = BareHost(Scope(components: [const LoggingService()]));
 
       final printed = <String>[];
       await runZoned(

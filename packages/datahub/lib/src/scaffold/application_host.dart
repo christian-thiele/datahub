@@ -71,13 +71,11 @@ class ApplicationHost extends ServiceHost {
   @override
   Component buildRoot() {
     return Scope(
-      name: 'root',
       components: [
         Scope(
-          name: 'internal',
           components: [TelemetryService(), KeyService(), SchedulerService()],
         ),
-        Scope(name: 'application', components: components),
+        Scope(components: components),
       ],
     );
   }

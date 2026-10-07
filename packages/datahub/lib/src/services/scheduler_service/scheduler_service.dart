@@ -359,7 +359,12 @@ class _SchedulerServiceInstance extends ServiceInstance<SchedulerService>
           },
         ).run(
           () => schedule
-              .run(ScheduleContext(name: schedule.name, scheduledFor: scheduledFor))
+              .run(
+                ScheduleContext(
+                  name: schedule.name,
+                  scheduledFor: scheduledFor,
+                ),
+              )
               .timeout(schedule.timeout),
         );
       });

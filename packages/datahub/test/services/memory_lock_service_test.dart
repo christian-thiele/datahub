@@ -5,13 +5,15 @@ import 'package:datahub/test.dart';
 import 'package:test/test.dart';
 
 void main() {
-  declareTest('MemoryLockService resolves as LockProvider', [
-    MemoryLockService(),
-  ], () async {
-    final provider = Find<LockProvider>().find();
-    final result = await provider.runLocked('hello', () async => 'world');
-    expect(result, equals('world'));
-  });
+  declareTest(
+    'MemoryLockService resolves as LockProvider',
+    [MemoryLockService()],
+    () async {
+      final provider = Find<LockProvider>().find();
+      final result = await provider.runLocked('hello', () async => 'world');
+      expect(result, equals('world'));
+    },
+  );
 
   group('MemoryLockService', () {
     late ServiceInstance instance;

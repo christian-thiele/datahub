@@ -13,11 +13,10 @@ class _Host extends ServiceHost {
 
   @override
   Component buildRoot() => Scope(
-    name: 'root',
     components: [
       ...beforeTelemetry,
       TelemetryService(),
-      Scope(name: 'application', components: components),
+      Scope(components: components),
     ],
   );
 }

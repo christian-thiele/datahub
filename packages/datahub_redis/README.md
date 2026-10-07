@@ -45,7 +45,7 @@ Register the service, typically inside a scope that holds its configuration:
 
 ```dart
 Scope(
-  config: 'redis',
+  name: 'redis',
   components: [RedisService()],
 )
 ```

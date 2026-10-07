@@ -39,13 +39,11 @@ Find<ProbeServiceInstance> probe(String label) =>
     Find<ProbeServiceInstance>((p) => p.label == label);
 
 void main() {
-  // Scope(config:) prefixes every Config path below it. Nothing covered this
-  // before, even though two separate mechanisms used to compute it.
   declareTest(
     'Scope: config prefix applies to services inside it',
     [
       Scope(
-        config: 'db',
+        name: 'db',
         components: [ProbeService(label: 'db')],
       ),
     ],
@@ -64,10 +62,10 @@ void main() {
     'Scope: nested config prefixes compose',
     [
       Scope(
-        config: 'outer',
+        name: 'outer',
         components: [
           Scope(
-            config: 'inner',
+            name: 'inner',
             components: [ProbeService(label: 'nested')],
           ),
         ],
@@ -86,12 +84,12 @@ void main() {
   );
 
   declareTest(
-    'Scope: a scope without config: adds no prefix',
+    'Scope: a scope without name: adds no prefix',
     [
       Scope(
         components: [
           Scope(
-            config: 'db',
+            name: 'db',
             components: [
               Scope(components: [ProbeService(label: 'db')]),
             ],
@@ -112,7 +110,7 @@ void main() {
     'Scope: a dotted config prefix is expanded',
     [
       Scope(
-        config: 'services.db',
+        name: 'services.db',
         components: [ProbeService(label: 'db')],
       ),
     ],
@@ -130,11 +128,11 @@ void main() {
     'Scope: sibling scopes resolve independently',
     [
       Scope(
-        config: 'primary',
+        name: 'primary',
         components: [ProbeService(label: 'primary')],
       ),
       Scope(
-        config: 'replica',
+        name: 'replica',
         components: [ProbeService(label: 'replica')],
       ),
     ],
@@ -159,7 +157,7 @@ void main() {
 
   group('TreeNode - config path caching', () {
     ScopeTreeNode node(String? config) => ScopeTreeNode(
-      scope: Scope(config: config, components: const []),
+      scope: Scope(name: config, components: const []),
     );
 
     test('composes the path from the tree', () {
