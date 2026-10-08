@@ -1,5 +1,6 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
+import 'package:datahub_aperture_frontend/backend_compatibility.dart';
 import 'package:datahub_aperture_frontend/utils/web_utils.dart';
 import 'package:flutter/foundation.dart';
 
@@ -52,10 +53,16 @@ class ApiBootstrapRepository implements BootstrapRepository {
     );
 
     try {
-      final bootstrap = await client
-          .get('/api/bootstrap')
-          .thenGetData($ApertureBootstrap.bean);
-      return (baseUri, bootstrap);
+      final json = await client.get('/api/bootstrap').thenGetJsonBody();
+
+      // Checked before decoding, the bootstrap schema might differ as well.
+      final backendVersion = json['version'];
+      if (backendVersion is! String? ||
+          !isCompatibleBackendVersion(backendVersion)) {
+        throw IncompatibleBackendException(backendVersion?.toString());
+      }
+
+      return (baseUri, $ApertureBootstrap.bean.fromJson(json));
     } finally {
       client.close();
     }

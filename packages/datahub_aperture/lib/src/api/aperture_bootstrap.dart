@@ -7,6 +7,8 @@ part 'aperture_bootstrap.g.dart';
 
 @Data()
 class ApertureBootstrap extends $ApertureBootstrap {
+  final String version;
+
   final String title;
 
   final ApertureTheme theme;
@@ -21,6 +23,7 @@ class ApertureBootstrap extends $ApertureBootstrap {
   final String? oidcClientSecret;
 
   const ApertureBootstrap({
+    required this.version,
     required this.title,
     required this.theme,
     required this.environment,

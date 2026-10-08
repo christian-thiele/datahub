@@ -9,6 +9,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 ApertureBootstrap _bootstrap({Uint8List? logo}) => ApertureBootstrap(
+  version: apertureVersion,
   title: 'Admin <Panel>',
   theme: ApertureTheme(logo: logo),
   environment: Environment.prod,

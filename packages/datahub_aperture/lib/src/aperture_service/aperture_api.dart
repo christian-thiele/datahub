@@ -61,6 +61,7 @@ class ApertureApi extends ApiNode {
           matchers: [RoutePattern('$base/api/bootstrap')],
         ),
         get: (request) async => ApertureBootstrap(
+          version: apertureVersion,
           title: title.read(),
           theme: theme,
           environment: Context.ofZone().environment,

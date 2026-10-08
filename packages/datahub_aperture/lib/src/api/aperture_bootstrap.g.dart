@@ -9,6 +9,14 @@ part of 'aperture_bootstrap.dart';
 abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
   const $ApertureBootstrap();
   static const $$codec = JsonDataCodec();
+  static final $version = DataField<ApertureBootstrap, String>(
+    name: 'version',
+    valueOf: (p) => p.version,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeString(value, name: name),
+    toJson: (value) => $$codec.encodeString(value),
+  );
+
   static final $title = DataField<ApertureBootstrap, String>(
     name: 'title',
     valueOf: (p) => p.title,
@@ -82,6 +90,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
   static final DataBean<ApertureBootstrap> bean = DataBean<ApertureBootstrap>(
     name: 'ApertureBootstrap',
     fields: List<DataField<ApertureBootstrap, dynamic>>.unmodifiable([
+      $version,
       $title,
       $theme,
       $environment,
@@ -100,6 +109,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
   @override
   List<DataField<ApertureBootstrap, dynamic>> get $$fields => bean.fields;
   ApertureBootstrap copyWith({
+    String? version,
     String? title,
     ApertureTheme? theme,
     Environment? environment,
@@ -114,6 +124,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
   }) {
     final $data = this as ApertureBootstrap;
     return ApertureBootstrap(
+      version: version ?? $data.version,
       title: title ?? $data.title,
       theme: theme ?? $data.theme,
       environment: environment ?? $data.environment,
@@ -131,6 +142,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
 
   static ApertureBootstrap fromValues(Map<String, dynamic> data) {
     return ApertureBootstrap(
+      version: data['version'],
       title: data['title'],
       theme: data['theme'],
       environment: data['environment'],
@@ -151,6 +163,10 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
       );
     }
     return ApertureBootstrap(
+      version: $version.fromJson(
+        data['version'],
+        name: DataCodec.childName(name, 'version'),
+      ),
       title: $title.fromJson(
         data['title'],
         name: DataCodec.childName(name, 'title'),
@@ -190,6 +206,7 @@ abstract interface class $ApertureBootstrap with DataObject<ApertureBootstrap> {
   Map<String, dynamic> toJson() {
     final $$data = this as ApertureBootstrap;
     return {
+      'version': $version.toJson($$data.version),
       'title': $title.toJson($$data.title),
       'theme': $theme.toJson($$data.theme),
       'environment': $environment.toJson($$data.environment),
