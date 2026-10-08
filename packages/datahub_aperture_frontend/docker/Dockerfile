@@ -1,4 +1,12 @@
-FROM ghcr.io/cirruslabs/flutter:beta AS build
+FROM debian:bookworm-slim AS build
+
+ARG FLUTTER_VERSION=3.47.2
+RUN apt-get update && apt-get install -y --no-install-recommends \
+      git curl unzip xz-utils ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git /opt/flutter
+ENV PATH="/opt/flutter/bin:${PATH}"
+RUN flutter config --no-analytics --enable-web && flutter precache --web
 
 WORKDIR /app
 

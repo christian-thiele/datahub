@@ -1,0 +1,23 @@
+# VCS / IDE
+.git/
+.github/
+.idea/
+.vscode/
+**/.idea/
+**/*.iml
+**/.DS_Store
+
+# Dart / Flutter
+**/.dart_tool/
+**/build/
+**/.flutter-plugins
+**/.flutter-plugins-dependencies
+**/.pub-cache/
+**/.pub/
+**/doc/api/
+**/pubspec_overrides.yaml
+**/pubspec.lock
+
+**/*.log
+**/Dockerfile*
+**/docker-compose*.yml
