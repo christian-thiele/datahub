@@ -125,6 +125,33 @@ void main() {
     );
   });
 
+  test('Select for update', () {
+    expect(
+      SqlSelect(
+        _table,
+        [SqlColumnAttribute('id')],
+        limit: 1,
+        forUpdate: true,
+      ).toString(),
+      'SELECT "id" FROM "public"."item" LIMIT \$1::bigint FOR UPDATE',
+    );
+    expect(
+      SqlSelect(
+        _table,
+        [SqlColumnAttribute('id')],
+        forUpdate: true,
+        skipLocked: true,
+      ).toString(),
+      'SELECT "id" FROM "public"."item" FOR UPDATE SKIP LOCKED',
+    );
+    expect(
+      SqlSelect(_table, [
+        SqlColumnAttribute('id'),
+      ], skipLocked: true).toString(),
+      'SELECT "id" FROM "public"."item"',
+    );
+  });
+
   test('Select distinct on single attribute', () {
     expect(
       SqlSelect(

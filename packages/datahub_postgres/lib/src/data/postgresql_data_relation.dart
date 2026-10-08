@@ -27,6 +27,8 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
     List<Expression> group = const <Expression>[],
     int offset = 0,
     int limit = -1,
+    bool forUpdate = false,
+    bool skipLocked = false,
   }) async {
     final relationAttributes = attributes.map((e) => (e, relation));
     final result = await context.execute(
@@ -37,6 +39,8 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
           relationAttributes,
           includeAlias: true,
         ),
+        forUpdate: forUpdate,
+        skipLocked: skipLocked,
         distinctOn: buildExpressionAttributes(distinctOn, relationAttributes),
         where: buildFilterSql(filter, relationAttributes),
         group: group.isNotEmpty
@@ -68,6 +72,8 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
+    bool forUpdate = false,
+    bool skipLocked = false,
   }) async {
     final relationAttributes = attributes.map((e) => (e, relation));
     final result = await context.execute(
@@ -77,6 +83,8 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
         distinctOn: buildExpressionAttributes(distinctOn, relationAttributes),
         offset: offset,
         limit: limit,
+        forUpdate: forUpdate,
+        skipLocked: skipLocked,
         where: buildFilterSql(filter, relationAttributes),
         order: buildSortSql(sort, relationAttributes),
       ),
@@ -96,6 +104,8 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
+    bool forUpdate = false,
+    bool skipLocked = false,
   }) async {
     final allAttributes = attributes
         .map<(PostgresqlDataAttribute, PostgresqlRelation)>(
@@ -119,6 +129,8 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
         distinctOn: buildExpressionAttributes(distinctOn, allAttributes),
         offset: offset,
         limit: limit,
+        forUpdate: forUpdate,
+        skipLocked: skipLocked,
         where: buildFilterSql(filter, allAttributes),
         order: buildSortSql(sort, allAttributes),
       ),

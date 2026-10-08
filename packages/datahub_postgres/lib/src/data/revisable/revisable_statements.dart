@@ -12,13 +12,18 @@ import 'revisable_layout.dart';
 ///
 /// Locking protocol (all locks are transaction scoped advisory locks):
 ///
-/// * The relation lock is held shared by single element writes and by
-///   promotions and exclusively by bulk writes ([bulkUpdate], [bulkDelete]).
+/// * The relation lock is held shared by single element writes, locked reads
+///   and promotions and exclusively by bulk writes ([bulkUpdate],
+///   [bulkDelete]).
 /// * The element lock serializes all changes of an element's current row and
-///   schedule entries. Writers wait for it, promotions only try to acquire it
-///   and skip elements that are locked.
+///   schedule entries. Writers and locked reads wait for it ([lockElement],
+///   [lockElements]), promotions and skip-locked reads only try to acquire it
+///   ([tryLockElements]) and skip elements that are locked.
+/// * Locked reads additionally lock the current rows of the elements with
+///   `FOR UPDATE` ([selectCurrent]), always after the element locks, so the
+///   lock order is the same as for writers.
 ///
-/// Reads never lock.
+/// Plain reads never lock.
 class RevisableStatements<TData extends DataObject<TData>> {
   /// Channel notified when a revision is scheduled. Payload is
   /// [RevisableLayout.key].
@@ -93,6 +98,58 @@ class RevisableStatements<TData extends DataObject<TData>> {
     _elementLockKey(_idParam(id)),
     RawSql(')'),
   ]);
+
+  /// Waits for the shared relation lock and the element locks of [ids].
+  ///
+  /// Elements are locked in sorted id order, so transactions locking
+  /// overlapping sets cannot deadlock each other. See [lockElement].
+  Sql lockElements(List<Object> ids) => Sql.join([
+    RawSql('SELECT pg_advisory_xact_lock_shared('),
+    _relationLockKey,
+    RawSql(')'),
+    for (final id in _sortedIds(ids)) ...[
+      RawSql(', pg_advisory_xact_lock('),
+      _elementLockKey(_idParam(id)),
+      RawSql(')'),
+    ],
+  ]);
+
+  /// Waits for the shared relation lock and tries to acquire the element
+  /// locks of [ids] without waiting: `SELECT <void>, <locked>...`, one
+  /// boolean per id in the given order.
+  Sql tryLockElements(List<Object> ids) => Sql.join([
+    RawSql('SELECT pg_advisory_xact_lock_shared('),
+    _relationLockKey,
+    RawSql(')'),
+    for (final id in ids) ...[
+      RawSql(', pg_try_advisory_xact_lock('),
+      _elementLockKey(_idParam(id)),
+      RawSql(')'),
+    ],
+  ]);
+
+  List<Object> _sortedIds(List<Object> ids) =>
+      [...ids]..sort((a, b) => (a as Comparable).compareTo(b));
+
+  /// Filter matching the elements with the given [ids].
+  Filter idsFilter(List<Object> ids) => CompareFilter(
+    bean.requireIdField,
+    CompareType.isIn,
+    ValueExpression(_typedIds(ids)),
+  );
+
+  /// [ids] as an array parameter of the id column's type.
+  Sql _idsParam(List<Object> ids) {
+    final value = _typedIds(ids);
+    return ParameterSql(value, PostgresqlDataType.findForDynamic(value));
+  }
+
+  /// [ids] as a list typed like the id column (int or String ids only, see
+  /// [RevisableLayout]).
+  List<Object> _typedIds(List<Object> ids) => switch (layout.historyId.type) {
+    PostgresqlInt() => ids.cast<int>().toList(),
+    _ => ids.cast<String>().toList(),
+  };
 
   /// Tries to acquire the element lock of [id] without waiting.
   Sql tryLockElement(dynamic id) => Sql.join([
@@ -325,16 +382,7 @@ class RevisableStatements<TData extends DataObject<TData>> {
   /// elements: `SELECT count`.
   Sql promote(List<Object> ids) {
     final id = layout.scheduleId.name;
-    final idsParam = switch (layout.scheduleId.type) {
-      PostgresqlInt() => ParameterSql<List<int>>(
-        ids.cast<int>().toList(),
-        const PostgresqlIntArray(),
-      ),
-      _ => ParameterSql<List<String>>(
-        ids.cast<String>().toList(),
-        const PostgresqlStringArray(),
-      ),
-    };
+    final idsParam = _idsParam(ids);
 
     return SqlWith([
       SqlCte(
@@ -420,11 +468,16 @@ class RevisableStatements<TData extends DataObject<TData>> {
   ///
   /// `sys_to` is the time the next scheduled revision becomes effective. It
   /// is only computed for the selected page.
+  ///
+  /// With [forUpdate] the selected page of current rows is locked for update,
+  /// with [skipLocked] rows locked by other transactions are skipped.
   Sql selectCurrent({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
     int limit = -1,
+    bool forUpdate = false,
+    bool skipLocked = false,
   }) {
     final page = SqlSelect(
       _current,
@@ -436,6 +489,8 @@ class RevisableStatements<TData extends DataObject<TData>> {
       order: buildSortSql(sort, _currentFilterAttributes),
       offset: offset,
       limit: limit,
+      forUpdate: forUpdate,
+      skipLocked: skipLocked,
     );
 
     final scheduledTo = Sql.join([
@@ -457,6 +512,22 @@ class RevisableStatements<TData extends DataObject<TData>> {
       RawSqlAttribute(scheduledTo),
     ], order: buildSortSql(sort, _currentFilterAttributes));
   }
+
+  /// Ids of the current elements matching [filter], paged like
+  /// [selectCurrent].
+  Sql selectCurrentIds({
+    Filter filter = Filter.empty,
+    Sort sort = Sort.empty,
+    int offset = 0,
+    int limit = -1,
+  }) => SqlSelect(
+    _current,
+    [_column(layout.currentId, _currentName)],
+    where: buildFilterSql(filter, _currentFilterAttributes),
+    order: buildSortSql(sort, _currentFilterAttributes),
+    offset: offset,
+    limit: limit,
+  );
 
   /// All revisions of [id], latest first.
   ///

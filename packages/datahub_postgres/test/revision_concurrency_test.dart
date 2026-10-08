@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:datahub/datahub.dart';
@@ -139,4 +140,214 @@ void main() {
       });
     },
   );
+
+  declareTest(
+    'Revisable: locked reads',
+    environment: postgresEnvironment,
+    [
+      testPostgresqlService(poolSize: 10),
+      PostgresqlRevisableRepositoryService(bean: $Person.bean),
+    ],
+    () async {
+      final persons = Find<RevisableDataRepository<Person>>().find();
+      final byId = Sort.asc($Person.$id);
+
+      await asUser(() async {
+        final created = [
+          for (var i = 0; i < 5; i++)
+            await persons.create(
+              Person(firstName: 'P$i', lastName: 'Lustig', birthday: null),
+            ),
+        ];
+        final first = created.first;
+        final others = created.skip(1).map((e) => e.id).toList();
+
+        // a locked read blocks a concurrent write until the transaction ends
+        final lockTaken = Completer<void>();
+        final release = Completer<void>();
+        var written = false;
+        final writing = () async {
+          await lockTaken.future;
+          return await persons.updateById(first.copyWith(lastName: 'Locked'));
+        }().whenComplete(() => written = true);
+        final reading = persons.atomic(() async {
+          final read = await persons.revisableReadById(first.id, locked: true);
+          lockTaken.complete();
+          await release.future;
+          return read;
+        });
+        await lockTaken.future;
+        await Future<void>.delayed(const Duration(milliseconds: 300));
+        expect(written, isFalse, reason: 'write must wait for the locked read');
+        release.complete();
+        expect((await reading)!.version, 0);
+        expect(await writing, isTrue);
+        expect((await persons.revisableReadById(first.id))!.version, 1);
+
+        // while another transaction holds an element, skipLocked reads skip
+        // it (plain reads do not) and paging continues with the next elements
+        final held = Completer<void>();
+        final releaseHeld = Completer<void>();
+        final holding = persons.atomic(() async {
+          await persons.readById(first.id, locked: true);
+          held.complete();
+          await releaseHeld.future;
+        });
+        await held.future;
+        try {
+          expect(await persons.readById(first.id), isNotNull);
+          expect(
+            await persons.readById(first.id, locked: true, skipLocked: true),
+            isNull,
+          );
+          expect(
+            await persons.revisableReadById(
+              first.id,
+              locked: true,
+              skipLocked: true,
+            ),
+            isNull,
+          );
+          expect(
+            await persons.readRevisionsById(
+              first.id,
+              locked: true,
+              skipLocked: true,
+            ),
+            isEmpty,
+          );
+          expect(
+            (await persons.first(
+              sort: byId,
+              locked: true,
+              skipLocked: true,
+            ))?.id,
+            others.first,
+          );
+          expect(
+            (await persons.readAll(
+              sort: byId,
+              limit: 2,
+              locked: true,
+              skipLocked: true,
+            )).map((e) => e.id),
+            others.take(2),
+          );
+          expect(
+            (await persons.readAll(
+              sort: byId,
+              locked: true,
+              skipLocked: true,
+            )).map((e) => e.id),
+            others,
+          );
+          expect(
+            await persons.any(
+              filter: Filter.equals($Person.$id, first.id),
+              locked: true,
+              skipLocked: true,
+            ),
+            isFalse,
+          );
+          expect(await persons.any(locked: true, skipLocked: true), isTrue);
+        } finally {
+          releaseHeld.complete();
+          await holding;
+        }
+        expect(
+          await persons.readById(first.id, locked: true, skipLocked: true),
+          isNotNull,
+        );
+
+        // concurrent workers each pick a different element
+        final picked = await _pickConcurrently(
+          persons,
+          6,
+          () async => (await persons.first(
+            sort: byId,
+            locked: true,
+            skipLocked: true,
+          ))?.id,
+        );
+        expect(picked.nonNulls.toSet(), created.map((e) => e.id).toSet());
+        expect(picked.where((e) => e == null), hasLength(1));
+
+        await expectConsistent('person');
+      });
+    },
+  );
+
+  declareTest(
+    'Repository: locked reads',
+    environment: postgresEnvironment,
+    [
+      testPostgresqlService(poolSize: 10),
+      PostgresqlDataRepositoryService(bean: $City.bean),
+    ],
+    () async {
+      final cities = Find<DataRepository<City>>().find();
+      final byId = Sort.asc($City.$id);
+      final ids = [for (var i = 0; i < 5; i++) 'c$i'];
+      for (final id in ids) {
+        await cities.create(City(id: id, name: id, zip: '0'));
+      }
+
+      // a locked read blocks a concurrent write until the transaction ends
+      final lockTaken = Completer<void>();
+      final release = Completer<void>();
+      var written = false;
+      final writing = () async {
+        await lockTaken.future;
+        return await cities.updateById(City(id: 'c0', name: 'x', zip: '1'));
+      }().whenComplete(() => written = true);
+      final reading = cities.atomic(() async {
+        final read = await cities.readById('c0', locked: true);
+        lockTaken.complete();
+        await release.future;
+        return read;
+      });
+      await lockTaken.future;
+      await Future<void>.delayed(const Duration(milliseconds: 300));
+      expect(written, isFalse, reason: 'write must wait for the locked read');
+      release.complete();
+      expect((await reading)!.name, 'c0');
+      expect(await writing, isTrue);
+      expect((await cities.readById('c0'))!.name, 'x');
+
+      // concurrent workers each pick a different element
+      final picked = await _pickConcurrently(
+        cities,
+        6,
+        () async => (await cities.first(
+          sort: byId,
+          locked: true,
+          skipLocked: true,
+        ))?.id,
+      );
+      expect(picked.nonNulls.toSet(), ids.toSet());
+      expect(picked.where((e) => e == null), hasLength(1));
+    },
+  );
+}
+
+/// Runs [workers] transactions on [repository] that each [pick] an element
+/// and hold their locks until all workers have picked.
+Future<List<Object?>> _pickConcurrently(
+  DataRepository<dynamic> repository,
+  int workers,
+  Future<Object?> Function() pick,
+) async {
+  var pending = workers;
+  final allPicked = Completer<void>();
+  return await Future.wait([
+    for (var i = 0; i < workers; i++)
+      repository.atomic(() async {
+        final id = await pick();
+        if (--pending == 0) {
+          allPicked.complete();
+        }
+        await allPicked.future;
+        return id;
+      }),
+  ]);
 }

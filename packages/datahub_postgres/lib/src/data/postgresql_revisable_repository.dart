@@ -36,9 +36,11 @@ import 'revisable/revisable_statements.dart';
 ///    tables without revisions.
 ///  * A scheduled revision violating a constraint of the current state
 ///    table is skipped (and logged) until a later revision supersedes it.
-///  * Writes hold one advisory lock per element until the transaction ends.
-///    Transactions writing many thousands of elements one by one may exceed
-///    `max_locks_per_transaction`; use [updateAll] / [deleteAll] instead.
+///  * Writes and locked reads hold one advisory lock per element until the
+///    transaction ends. Transactions writing many thousands of elements one
+///    by one, or reading them with `locked: true`, may exceed
+///    `max_locks_per_transaction`; use [updateAll] / [deleteAll] or limit
+///    locked reads instead.
 ///
 /// Databases using the view based layout of earlier versions (`<name>` view
 /// on `<name>_revision`) are migrated on initialization. Instances running
@@ -199,39 +201,91 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
+  /// Locked reads take the advisory element locks of the elements read
+  /// before locking their current rows with `FOR UPDATE`. Writers take the
+  /// element lock before touching current rows as well, so the lock order is
+  /// consistent and readers and writers cannot deadlock.
+  ///
+  /// Elements are determined before locking, so elements that start to match
+  /// [filter] while waiting for locks are not included. The result contains
+  /// at most [limit] elements, fewer if not enough elements could be locked
+  /// ([skipLocked]) or elements stopped matching [filter] while waiting.
   @override
   Future<List<RevisionData<TData>>> revisableReadAll({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   }) async {
     if (filter.isNothing) {
       return [];
     }
 
     return await find(postgresql).runTransaction((db) async {
+      if (!locked) {
+        final result = await db.execute(
+          _statements.selectCurrent(
+            filter: filter,
+            sort: sort,
+            offset: offset ?? 0,
+            limit: limit ?? -1,
+          ),
+        );
+        return _mapRevisions(result, _layout.currentTable);
+      }
+
+      final ids = await _lockMatching(
+        db,
+        filter: filter,
+        sort: sort,
+        offset: offset ?? 0,
+        limit: limit,
+        skipLocked: skipLocked,
+      );
+      if (ids.isEmpty) {
+        return [];
+      }
+
       final result = await db.execute(
         _statements.selectCurrent(
-          filter: filter,
+          filter: filter.and(_statements.idsFilter(ids)),
           sort: sort,
-          offset: offset ?? 0,
-          limit: limit ?? -1,
+          forUpdate: true,
+          skipLocked: skipLocked,
         ),
       );
       return _mapRevisions(result, _layout.currentTable);
     });
   }
 
+  /// A locked read takes the element lock, which blocks new revisions of the
+  /// element, and locks the current row (history rows are immutable). With
+  /// [skipLocked], null is returned if the element is locked by another
+  /// transaction.
   @override
-  Future<RevisionData<TData>?> revisableReadById(id, {int? version}) async {
+  Future<RevisionData<TData>?> revisableReadById(
+    id, {
+    int? version,
+    bool locked = false,
+    bool skipLocked = false,
+  }) async {
     return await find(postgresql).runTransaction((db) async {
+      if (locked) {
+        final ids = await _lockElements(db, [id], skipLocked: skipLocked);
+        if (ids.isEmpty) {
+          return null;
+        }
+      }
       final result = await db.execute(
         version != null
             ? _statements.selectRevision(id, version)
             : _statements.selectCurrent(
                 filter: identityFilter(bean, id),
                 limit: 1,
+                forUpdate: locked,
+                skipLocked: skipLocked,
               ),
       );
       return _mapRevisions(
@@ -241,13 +295,24 @@ mixin PostgresqlRevisableRepository<
     });
   }
 
+  /// A locked read takes the element lock, which blocks new revisions of the
+  /// element (history rows are immutable). With [skipLocked], an empty list
+  /// is returned if the element is locked by another transaction.
   @override
   Future<List<RevisionData<TData>>> readRevisionsById(
     id, {
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   }) async {
     return await find(postgresql).runTransaction((db) async {
+      if (locked) {
+        final ids = await _lockElements(db, [id], skipLocked: skipLocked);
+        if (ids.isEmpty) {
+          return [];
+        }
+      }
       final result = await db.execute(
         _statements.selectRevisions(
           id,
@@ -257,6 +322,70 @@ mixin PostgresqlRevisableRepository<
       );
       return _mapRevisions(result, _layout.historyTable);
     });
+  }
+
+  /// Locks the elements of the page of [filter] given by [sort], [offset] and
+  /// [limit] (see [_lockElements]) and returns their ids.
+  ///
+  /// With [skipLocked], skipped elements keep their place in the result set,
+  /// so further pages are read (starting after all candidates seen) until
+  /// [limit] elements are locked or the candidates run out.
+  Future<List<Object>> _lockMatching(
+    PostgresqlContext db, {
+    required Filter filter,
+    required Sort sort,
+    required int offset,
+    required int? limit,
+    required bool skipLocked,
+  }) async {
+    final ids = <Object>[];
+    var pageOffset = offset;
+    var exhausted = false;
+    while (!exhausted && (limit == null || ids.length < limit)) {
+      final pageLimit = limit == null ? -1 : limit - ids.length;
+      final candidates = await db.execute(
+        _statements.selectCurrentIds(
+          filter: filter,
+          sort: sort,
+          offset: pageOffset,
+          limit: pageLimit,
+        ),
+      );
+      ids.addAll(
+        await _lockElements(db, [
+          for (final row in candidates) row[0] as Object,
+        ], skipLocked: skipLocked),
+      );
+      pageOffset += candidates.length;
+      exhausted =
+          !skipLocked || pageLimit == -1 || candidates.length < pageLimit;
+    }
+    return ids;
+  }
+
+  /// Takes the shared relation lock and the element locks of [ids], waiting
+  /// for them or, with [skipLocked], skipping elements locked by others.
+  ///
+  /// Returns the ids of the locked elements.
+  Future<List<Object>> _lockElements(
+    PostgresqlContext db,
+    List<Object> ids, {
+    required bool skipLocked,
+  }) async {
+    if (ids.isEmpty) {
+      return [];
+    }
+
+    if (skipLocked) {
+      final row = (await db.execute(_statements.tryLockElements(ids))).first;
+      return [
+        for (final (index, id) in ids.indexed)
+          if (row[index + 1] == true) id,
+      ];
+    }
+
+    await db.execute(_statements.lockElements(ids));
+    return ids;
   }
 
   @override
@@ -278,28 +407,54 @@ mixin PostgresqlRevisableRepository<
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
+    bool locked = false,
+    bool skipLocked = false,
   }) async {
     final results = await readAll(
       filter: filter,
       sort: sort,
       offset: offset,
       limit: 1,
+      locked: locked,
+      skipLocked: skipLocked,
     );
     return results.firstOrNull;
   }
 
   @override
-  Future<bool> any({Filter filter = Filter.empty}) async {
+  Future<bool> any({
+    Filter filter = Filter.empty,
+    bool locked = false,
+    bool skipLocked = false,
+  }) async {
     if (filter.isNothing) {
       return false;
     }
 
     return await find(postgresql).runTransaction((db) async {
+      var matching = filter;
+      if (locked) {
+        final ids = await _lockMatching(
+          db,
+          filter: filter,
+          sort: Sort.empty,
+          offset: 0,
+          limit: 1,
+          skipLocked: skipLocked,
+        );
+        if (ids.isEmpty) {
+          return false;
+        }
+        matching = filter.and(_statements.idsFilter(ids));
+      }
+
       final result = await dataRelation.select(
         db,
         [ValueExpression(1)],
-        filter: filter,
+        filter: matching,
         limit: 1,
+        forUpdate: locked,
+        skipLocked: skipLocked,
       );
       return result.isNotEmpty;
     });

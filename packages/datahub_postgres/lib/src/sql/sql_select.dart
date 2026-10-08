@@ -34,6 +34,13 @@ class SqlSelect with SqlBuilder {
   final int limit;
   final int offset;
 
+  /// Locks the selected rows for update until the transaction ends.
+  final bool forUpdate;
+
+  /// With [forUpdate]: skips rows locked by other transactions instead of
+  /// waiting for them.
+  final bool skipLocked;
+
   const SqlSelect(
     this.from,
     this.attributes, {
@@ -43,6 +50,8 @@ class SqlSelect with SqlBuilder {
     this.order,
     this.limit = -1,
     this.offset = 0,
+    this.forUpdate = false,
+    this.skipLocked = false,
   });
 
   @override
@@ -63,6 +72,8 @@ class SqlSelect with SqlBuilder {
       if (offset != 0)
         RawSql(' OFFSET ') + ParameterSql(offset, PostgresqlInt()),
       if (limit != -1) RawSql(' LIMIT ') + ParameterSql(limit, PostgresqlInt()),
+      if (forUpdate)
+        RawSql(skipLocked ? ' FOR UPDATE SKIP LOCKED' : ' FOR UPDATE'),
     ]);
   }
 }

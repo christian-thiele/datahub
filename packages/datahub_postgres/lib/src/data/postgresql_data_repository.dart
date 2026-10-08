@@ -47,8 +47,16 @@ mixin PostgresqlDataRepository<
   }
 
   @override
-  Future<TData?> readById(dynamic id) async {
-    return await first(filter: identityFilter(bean, id));
+  Future<TData?> readById(
+    dynamic id, {
+    bool locked = false,
+    bool skipLocked = false,
+  }) async {
+    return await first(
+      filter: identityFilter(bean, id),
+      locked: locked,
+      skipLocked: skipLocked,
+    );
   }
 
   @override
@@ -57,6 +65,8 @@ mixin PostgresqlDataRepository<
     Sort sort = Sort.empty,
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   }) async {
     if (filter.isNothing) {
       return [];
@@ -69,6 +79,8 @@ mixin PostgresqlDataRepository<
         sort: sort,
         offset: offset ?? 0,
         limit: limit ?? -1,
+        forUpdate: locked,
+        skipLocked: skipLocked,
       );
     });
   }
@@ -131,7 +143,11 @@ mixin PostgresqlDataRepository<
   }
 
   @override
-  Future<bool> any({Filter filter = Filter.empty}) async {
+  Future<bool> any({
+    Filter filter = Filter.empty,
+    bool locked = false,
+    bool skipLocked = false,
+  }) async {
     if (filter.isNothing) {
       return false;
     }
@@ -142,6 +158,8 @@ mixin PostgresqlDataRepository<
         [ValueExpression(1)],
         filter: filter,
         limit: 1,
+        forUpdate: locked,
+        skipLocked: skipLocked,
       );
       return result.isNotEmpty;
     });
@@ -152,12 +170,16 @@ mixin PostgresqlDataRepository<
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
+    bool locked = false,
+    bool skipLocked = false,
   }) async {
     final results = await readAll(
       filter: filter,
       sort: sort,
       offset: offset,
       limit: 1,
+      locked: locked,
+      skipLocked: skipLocked,
     );
     return results.firstOrNull;
   }
