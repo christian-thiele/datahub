@@ -1,3 +1,7 @@
+## 0.18.0-dev.33
+
+ - **FIX**(test): fixed tests.
+
 ## 0.18.0-dev.32
 
  - **FIX**: added handle parameter to runLocked.
