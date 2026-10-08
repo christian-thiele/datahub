@@ -112,6 +112,8 @@ class ResourceElementEditPage extends StatelessWidget {
                         ),
                     ],
                     onActionPressed: (actionId) {
+                      // The action probably changed the element.
+                      final cubit = context.read<ResourceElementEditCubit>();
                       showDialog(
                         context: context,
                         builder: (context) => ElementActionDialog(
@@ -121,7 +123,7 @@ class ResourceElementEditPage extends StatelessWidget {
                             (a) => a.id == actionId,
                           ),
                         ),
-                      );
+                      ).then((_) => cubit.refresh());
                     },
                     onDeletePressed: !resource.allowDelete
                         ? null

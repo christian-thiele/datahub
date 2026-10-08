@@ -30,18 +30,20 @@ const _resolve = ResourceAction(
 );
 
 /// Records the parameters actions are run with, failing with [error] if
-/// given.
+/// given, responding with [result] otherwise.
 class _Runner {
   final Object? error;
+  final ResourceActionResult? result;
   final runs = <Map<String, dynamic>>[];
 
-  _Runner([this.error]);
+  _Runner([this.error, this.result]);
 
-  Future<void> call(Map<String, dynamic> parameters) async {
+  Future<ResourceActionResult?> call(Map<String, dynamic> parameters) async {
     runs.add(parameters);
     if (error case final error?) {
       throw error;
     }
+    return result;
   }
 }
 
@@ -123,6 +125,21 @@ void main() {
     expect(runner.runs, [
       {'closeImmediately': false, 'resolution': 'Replaced the router.'},
     ]);
+  });
+
+  test('keeps what the action responded with', () async {
+    const result = ResourceActionResult(
+      success: false,
+      message: 'Could not notify the customer.',
+      data: {'attempts': 3},
+    );
+    final runner = _Runner(null, result);
+    final cubit = _cubit(runner, _resolve);
+
+    cubit.setParameterValue(_resolution, 'Replaced the router.');
+    await cubit.start();
+
+    expect((cubit.state as ResourceActionDone).result, same(result));
   });
 
   test('shows parameter errors of the backend at the parameters', () async {

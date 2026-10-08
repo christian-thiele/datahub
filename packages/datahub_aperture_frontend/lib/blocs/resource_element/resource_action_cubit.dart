@@ -6,8 +6,10 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 part 'resource_action_state.dart';
 
-/// Runs an action (or sends a signal) with its parameters.
-typedef ActionRunner = Future<void> Function(Map<String, dynamic> parameters);
+/// Runs an action (or sends a signal) with its parameters. Returns what the
+/// action responded with, null for signals.
+typedef ActionRunner =
+    Future<ResourceActionResult?> Function(Map<String, dynamic> parameters);
 
 /// Asks for the parameters of [action] and runs it with [run].
 class ResourceActionCubit extends Cubit<ResourceActionState> {
@@ -83,9 +85,9 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
 
   Future<void> _startAction(Map<String, dynamic> parameters) async {
     try {
-      await _run(parameters);
+      final result = await _run(parameters);
       if (!isClosed) {
-        emit(const ResourceActionDone());
+        emit(ResourceActionDone(result: result));
       }
     } catch (e) {
       if (isClosed) {

@@ -1,11 +1,10 @@
-import 'dart:math' as math;
-
 import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 
 import '../../_utils/test_auth_provider.dart';
 import 'data/actions/mark_invoice_paid.dart';
+import 'data/actions/renew_price_agreement.dart';
 import 'data/actions/resolve_ticket.dart';
 import 'data/actions/send_payment_reminders.dart';
 import 'data/client.dart';
@@ -69,7 +68,15 @@ void main(List<String> args) => runApp([
                   ),
                 ],
               ),
-              ApertureResource(repository: Find<DataRepository<Product>>()),
+              ApertureResource(
+                repository: Find<DataRepository<Product>>(),
+                actions: [
+                  ApertureAction<RenewPriceAgreement>(
+                    bean: $RenewPriceAgreement.bean,
+                    handler: _renewPriceAgreement,
+                  ),
+                ],
+              ),
               ApertureResource(repository: Find<DataRepository<Employee>>()),
             ],
             actions: [
@@ -138,7 +145,10 @@ Future<Invoice> _sendReminder(StepContext<Invoice> step) async {
   return invoice.copyWith(remindersSent: invoice.remindersSent + 1);
 }
 
-Future<void> _resolveTicket(String? ticketId, ResolveTicket params) async {
+Future<BaseActionResult> _resolveTicket(
+  String? ticketId,
+  ResolveTicket params,
+) async {
   final repo = Find<DataRepository<SupportTicket>>().find();
   final ticket = await repo.readById(ticketId);
   if (ticket == null) {
@@ -156,11 +166,17 @@ Future<void> _resolveTicket(String? ticketId, ResolveTicket params) async {
       firstResponseAt: ticket.firstResponseAt ?? now,
     ),
   );
+
+  return ActionResult(
+    message: params.closeImmediately
+        ? 'The ticket was closed.'
+        : 'The ticket was resolved and waits for the customer to confirm.',
+  );
 }
 
 /// Sends another reminder for overdue invoices. Invoices become overdue in
 /// their workflow.
-Future<void> _sendPaymentReminders(
+Future<BaseActionResult> _sendPaymentReminders(
   String? _,
   SendPaymentReminders params,
 ) async {
@@ -174,9 +190,68 @@ Future<void> _sendPaymentReminders(
         .and($Invoice.$dueAt.lessThan(cutoff)),
   );
 
-  for (final invoice in invoices) {
+  // At most three reminders are sent, the rest is left to collection.
+  final reminded = invoices.where((invoice) => invoice.remindersSent < 3);
+  for (final invoice in reminded) {
     await repo.updateById(
-      invoice.copyWith(remindersSent: math.min(3, invoice.remindersSent + 1)),
+      invoice.copyWith(remindersSent: invoice.remindersSent + 1),
     );
   }
+
+  final skipped = invoices.length - reminded.length;
+  return ActionResult(
+    success: skipped == 0,
+    message: skipped == 0
+        ? 'Sent ${reminded.length} payment reminders.'
+        : 'Sent ${reminded.length} payment reminders, $skipped invoices '
+              'already got three reminders.',
+    data: {
+      'reminded': [for (final invoice in reminded) invoice.invoiceNumber],
+      if (skipped > 0)
+        'skipped': [
+          for (final invoice in invoices.where((i) => i.remindersSent >= 3))
+            invoice.invoiceNumber,
+        ],
+    },
+  );
+}
+
+/// Ends a price agreement and starts a new one with another price, which is
+/// shown instead.
+Future<BaseActionResult> _renewPriceAgreement(
+  String? productId,
+  RenewPriceAgreement params,
+) async {
+  final repo = Find<DataRepository<Product>>().find();
+  final product = await repo.readById(productId);
+  if (product == null) {
+    throw ApiRequestException.notFound('Price agreement not found.');
+  }
+
+  if (!params.validFrom.isAfter(product.validFrom)) {
+    throw ApiRequestException(
+      400,
+      'The renewal must start after the current agreement.',
+      data: {
+        'fields': {
+          'validFrom': ['Must be after ${product.validFrom}.'],
+        },
+      },
+    );
+  }
+
+  await repo.updateById(
+    product.copyWith(validUntil: params.validFrom, active: false),
+  );
+  final renewed = await repo.create(
+    product.copyWith(
+      id: '',
+      price: params.price,
+      validFrom: params.validFrom,
+      nullValidUntil: true,
+      active: true,
+    ),
+  );
+
+  return RedirectActionResult(bean: $Product.bean, id: renewed.id);
 }

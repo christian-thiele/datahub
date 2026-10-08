@@ -133,7 +133,7 @@ class ApiResourcesRepository extends ApiRepository
   }
 
   @override
-  Future<Map<String, dynamic>> startElementAction(
+  Future<ResourceActionResult> startElementAction(
     String resourceId,
     String elementId,
     String actionId,
@@ -151,11 +151,11 @@ class ApiResourcesRepository extends ApiRepository
             'actionId': actionId,
           },
         )
-        .thenGetJsonBody();
+        .thenGetData($ResourceActionResult.bean);
   }
 
   @override
-  Future<Map<String, dynamic>> startAction(
+  Future<ResourceActionResult> startAction(
     String actionId,
     Map<String, dynamic> parameters,
   ) async {
@@ -167,6 +167,6 @@ class ApiResourcesRepository extends ApiRepository
           codec.encodeMap(parameters, codec.encodeDynamic),
           urlParams: {'actionId': actionId},
         )
-        .thenGetJsonBody();
+        .thenGetData($ResourceActionResult.bean);
   }
 }

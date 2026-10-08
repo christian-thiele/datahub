@@ -7,6 +7,7 @@ import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/data/value_view.dart';
 import 'package:datahub_aperture_frontend/widgets/dialogs/aperture_dialog.dart';
+import 'package:datahub_aperture_frontend/widgets/json_text.dart';
 import 'package:flutter/material.dart';
 
 import 'workflow_event_dialog.dart';

@@ -41,14 +41,14 @@ abstract interface class ResourcesRepository {
     DateTime? from,
   );
 
-  Future<Map<String, dynamic>> startElementAction(
+  Future<ResourceActionResult> startElementAction(
     String resourceId,
     String elementId,
     String actionId,
     Map<String, dynamic> parameters,
   );
 
-  Future<Map<String, dynamic>> startAction(
+  Future<ResourceActionResult> startAction(
     String actionId,
     Map<String, dynamic> parameters,
   );

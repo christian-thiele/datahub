@@ -16,7 +16,10 @@ class ResourceActionLoading extends ResourceActionState {
 }
 
 class ResourceActionDone extends ResourceActionState {
-  const ResourceActionDone();
+  /// What the action responded with, null for signals.
+  final ResourceActionResult? result;
+
+  const ResourceActionDone({this.result});
 }
 
 class ResourceActionError extends ResourceActionState implements ErrorState {

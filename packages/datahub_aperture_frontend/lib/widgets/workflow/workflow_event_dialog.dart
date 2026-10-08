@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/blocs/workflow/workflow_event_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
@@ -9,11 +7,11 @@ import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/data/value_view.dart';
 import 'package:datahub_aperture_frontend/widgets/dialogs/aperture_dialog.dart';
 import 'package:datahub_aperture_frontend/widgets/dialogs/confirmation_dialog.dart';
+import 'package:datahub_aperture_frontend/widgets/json_text.dart';
 import 'package:datahub_aperture_frontend/widgets/log_line.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'workflow_event_status.dart';
 
@@ -250,28 +248,6 @@ class WorkflowLog extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [for (final line in messages) LogLine(line: line)],
         ),
-      ),
-    );
-  }
-}
-
-/// JSON data, formatted.
-class JsonText extends StatelessWidget {
-  final Object? data;
-
-  const JsonText(this.data, {super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceContainerLow,
-        borderRadius: BorderRadius.circular(ApertureThemeData.radiusSmall),
-      ),
-      child: SelectableText(
-        const JsonEncoder.withIndent('  ').convert(data),
-        style: GoogleFonts.jetBrainsMono(fontSize: 12, height: 1.5),
       ),
     );
   }

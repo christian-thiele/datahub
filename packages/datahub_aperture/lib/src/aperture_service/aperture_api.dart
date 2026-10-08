@@ -338,8 +338,9 @@ class ApertureApi extends ApiNode {
                 action,
                 await request.getJsonBody(),
               );
-              await action.handle(elementId, parameters);
-              return {};
+              return _buildActionResult(
+                await action.handle(elementId, parameters),
+              );
             },
           ),
           ResourceEndpoint(
@@ -366,8 +367,7 @@ class ApertureApi extends ApiNode {
                 action,
                 await request.getJsonBody(),
               );
-              await action.handle(null, parameters);
-              return {};
+              return _buildActionResult(await action.handle(null, parameters));
             },
           ),
           ResourceEndpoint(
@@ -646,6 +646,34 @@ class ApertureApi extends ApiNode {
     }
 
     return const JsonDataCodec().decodeType(field.type, value);
+  }
+
+  ResourceActionResult _buildActionResult(BaseActionResult? result) {
+    switch (result) {
+      case null:
+        return const ResourceActionResult();
+      case ActionResult(:final success, :final message, :final data):
+        return ResourceActionResult(
+          success: success,
+          message: message,
+          data: data,
+        );
+      case RedirectActionResult(:final bean, :final id):
+        if (!resources.any(
+          (resource) => buildResourceId(resource) == bean.name,
+        )) {
+          throw StateError(
+            'Action redirects to ${bean.name}, which is not a resource.',
+          );
+        }
+
+        return ResourceActionResult(
+          redirect: ResourceActionRedirect(
+            resourceId: bean.name,
+            elementId: id,
+          ),
+        );
+    }
   }
 
   static DataObject _decodeActionParameters(
