@@ -3,6 +3,64 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - [`datahub` - `v0.18.0-dev.31`](#datahub---v0180-dev31)
+ - [`datahub_redis` - `v0.18.0-dev.3`](#datahub_redis---v0180-dev3)
+
+Packages with other changes:
+
+ - [`datahub_lints` - `v0.18.0-dev.3`](#datahub_lints---v0180-dev3)
+ - [`datahub_postgres` - `v0.18.0-dev.29`](#datahub_postgres---v0180-dev29)
+ - [`datahub_aperture` - `v0.1.0-dev.25`](#datahub_aperture---v010-dev25)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.20`](#datahub_aperture_frontend---v010-dev20)
+ - [`datahub_codegen` - `v0.18.0-dev.22`](#datahub_codegen---v0180-dev22)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_aperture` - `v0.1.0-dev.25`
+ - `datahub_aperture_frontend` - `v0.1.0-dev.20`
+ - `datahub_codegen` - `v0.18.0-dev.22`
+
+---
+
+#### `datahub` - `v0.18.0-dev.31`
+
+ - **FEAT**: DataRepository locked, skipLocked.
+ - **FEAT**: added workerSession to WorkflowService.
+ - **BREAKING** **FEAT**: removed Scope.config, Scope.name is now used as config prefix.
+
+#### `datahub_redis` - `v0.18.0-dev.3`
+
+ - **BREAKING** **FEAT**: removed Scope.config, Scope.name is now used as config prefix.
+
+#### `datahub_lints` - `v0.18.0-dev.3`
+
+ - **FIX**(lints): add dependency injection assist now adds the initialization in service instances.
+ - **FEAT**(lints): added lints for scheduler and workflows.
+ - **FEAT**(lints): Recommended set `package:datahub/recommended.yaml`, which enables the lint plugin with best-practice lints switched on.
+ - **FEAT**(lints): Lints `reducible_filter_group` and `reducible_sort_group` for filter and sort groups that can be written shorter: empty groups, groups with one element, nested groups, and operands without effect. Both come with a fix that simplifies the group.
+ - **FEAT**(lints): Lint `aperture_relation_requires_resource` for an `@ApertureRelation<R>()` whose related class has no `ApertureResource` in the same `ApertureApi` ("Related bean for R not found for ApertureRelation of T").
+ - **FEAT**(lints): Lints `reducible_filter_group` and `reducible_sort_group` for filter and sort groups that can be written shorter: empty groups, groups with  one element, nested groups, and operands without effect. Both come with a fix that simplifies the group.
+ - **FEAT**(lints): Analysis rule `constant_filter_group` for `Filter.empty` in an `or` group and `Filter.nothing` in an `and` group, which make the group match everything or nothing.
+ - **FEAT**(lints): Assist converting an `a.and(b).and(c)` / `a.or(b)` chain into `Filter.andGroup` / `Filter.orGroup`.
+ - **FEAT**(lints): added revisable repository lints.
+ - **FEAT**(lint): added postgres revisable lints.
+
+#### `datahub_postgres` - `v0.18.0-dev.29`
+
+ - **FEAT**(postgres): for update implements DataRepository locked / skipLocked.
+ - **FEAT**(postgres): column attributes can be used as DataObject field annotations.
+
+
 ## 2026-10-07
 
 ### Changes

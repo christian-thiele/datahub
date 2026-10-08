@@ -1,3 +1,9 @@
+## 0.18.0-dev.3
+
+> Note: This release has breaking changes.
+
+ - **BREAKING** **FEAT**: removed Scope.config, Scope.name is now used as config prefix.
+
 ## 0.18.0-dev.2
 
 > Note: This release has breaking changes.

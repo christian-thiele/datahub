@@ -1,3 +1,8 @@
+## 0.18.0-dev.29
+
+ - **FEAT**(postgres): for update implements DataRepository locked / skipLocked.
+ - **FEAT**(postgres): column attributes can be used as DataObject field annotations.
+
 ## 0.18.0-dev.28
 
 > Note: This release has breaking changes.

@@ -1,3 +1,11 @@
+## 0.18.0-dev.31
+
+> Note: This release has breaking changes.
+
+ - **FEAT**: DataRepository locked, skipLocked.
+ - **FEAT**: added workerSession to WorkflowService.
+ - **BREAKING** **FEAT**: removed Scope.config, Scope.name is now used as config prefix.
+
 ## 0.18.0-dev.30
 
 > Note: This release has breaking changes.

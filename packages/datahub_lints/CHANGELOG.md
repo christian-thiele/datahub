@@ -1,3 +1,16 @@
+## 0.18.0-dev.3
+
+ - **FIX**(lints): add dependency injection assist now adds the initialization in service instances.
+ - **FEAT**(lints): added lints for scheduler and workflows.
+ - **FEAT**(lints): Recommended set `package:datahub/recommended.yaml`, which enables the lint plugin with best-practice lints switched on.
+ - **FEAT**(lints): Lints `reducible_filter_group` and `reducible_sort_group` for filter and sort groups that can be written shorter: empty groups, groups with one element, nested groups, and operands without effect. Both come with a fix that simplifies the group.
+ - **FEAT**(lints): Lint `aperture_relation_requires_resource` for an `@ApertureRelation<R>()` whose related class has no `ApertureResource` in the same `ApertureApi` ("Related bean for R not found for ApertureRelation of T").
+ - **FEAT**(lints): Lints `reducible_filter_group` and `reducible_sort_group` for filter and sort groups that can be written shorter: empty groups, groups with  one element, nested groups, and operands without effect. Both come with a fix that simplifies the group.
+ - **FEAT**(lints): Analysis rule `constant_filter_group` for `Filter.empty` in an `or` group and `Filter.nothing` in an `and` group, which make the group match everything or nothing.
+ - **FEAT**(lints): Assist converting an `a.and(b).and(c)` / `a.or(b)` chain into `Filter.andGroup` / `Filter.orGroup`.
+ - **FEAT**(lints): added revisable repository lints.
+ - **FEAT**(lint): added postgres revisable lints.
+
 ## 0.18.0-dev.2
 
 - FEAT(lints): Analysis rule requiring configuration without an in-code default
