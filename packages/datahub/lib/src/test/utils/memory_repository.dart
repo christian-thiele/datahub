@@ -84,6 +84,8 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
     Sort sort = Sort.empty,
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   }) async {
     final sorted = _map.values.toList();
     if (sort case ExpressionSort(
@@ -101,7 +103,11 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
   }
 
   @override
-  Future<T?> readById(id) async {
+  Future<T?> readById(
+    id, {
+    bool locked = false,
+    bool skipLocked = false,
+  }) async {
     return _map[_alignIdType(id)];
   }
 
@@ -160,7 +166,11 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
   }
 
   @override
-  Future<bool> any({Filter filter = Filter.empty}) async {
+  Future<bool> any({
+    Filter filter = Filter.empty,
+    bool locked = false,
+    bool skipLocked = false,
+  }) async {
     return (await count(filter: filter)) > 0;
   }
 
@@ -169,6 +179,8 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
+    bool locked = false,
+    bool skipLocked = false,
   }) async {
     return (await readAll(
       filter: filter,

@@ -15,7 +15,12 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
   ///
   /// Must throw a [MissingIdFieldError] when the [DataObject] does not provide
   /// an ID-field.
-  Future<RevisionData<T>?> revisableReadById(dynamic id, {int? version});
+  Future<RevisionData<T>?> revisableReadById(
+    dynamic id, {
+    int? version,
+    bool locked = false,
+    bool skipLocked = false,
+  });
 
   /// Read all elements with [RevisionData] respecting [filter], [sort],
   /// [offset] and [limit] values.
@@ -24,6 +29,8 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
     Sort sort = Sort.empty,
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   });
 
   /// Find an element by its [DataBean.idField] value and reads all revisions
@@ -34,6 +41,8 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
     dynamic id, {
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   });
 
   /// Create a new element revision.
@@ -56,8 +65,16 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
   }
 
   @override
-  Future<T?> readById(dynamic id) async {
-    final revision = await revisableReadById(id);
+  Future<T?> readById(
+    dynamic id, {
+    bool locked = false,
+    bool skipLocked = false,
+  }) async {
+    final revision = await revisableReadById(
+      id,
+      locked: locked,
+      skipLocked: skipLocked,
+    );
     return revision?.data;
   }
 
@@ -67,12 +84,16 @@ mixin RevisableDataRepository<T extends DataObject> on DataRepository<T> {
     Sort sort = Sort.empty,
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   }) async {
     final result = await revisableReadAll(
       filter: filter,
       sort: sort,
       offset: offset,
       limit: limit,
+      locked: locked,
+      skipLocked: skipLocked,
     );
     return result.map((e) => e.data).toList();
   }

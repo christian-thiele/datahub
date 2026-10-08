@@ -261,7 +261,14 @@ class _WatchedInstance<T extends DataObject>
   Future<T> create(T element) => _note('create', () => _inner.create(element));
 
   @override
-  Future<T?> readById(dynamic id) => _note('read', () => _inner.readById(id));
+  Future<T?> readById(
+    dynamic id, {
+    bool locked = false,
+    bool skipLocked = false,
+  }) => _note(
+    'read',
+    () => _inner.readById(id, locked: locked, skipLocked: skipLocked),
+  );
 
   @override
   Future<List<T>> readAll({
@@ -269,6 +276,8 @@ class _WatchedInstance<T extends DataObject>
     Sort sort = Sort.empty,
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   }) => _note(
     'read',
     () => _inner.readAll(
@@ -276,6 +285,8 @@ class _WatchedInstance<T extends DataObject>
       sort: sort,
       offset: offset,
       limit: limit,
+      locked: locked,
+      skipLocked: skipLocked,
     ),
   );
 
@@ -309,14 +320,28 @@ class _WatchedInstance<T extends DataObject>
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
+    bool locked = false,
+    bool skipLocked = false,
   }) => _note(
     'read',
-    () => _inner.first(filter: filter, sort: sort, offset: offset),
+    () => _inner.first(
+      filter: filter,
+      sort: sort,
+      offset: offset,
+      locked: locked,
+      skipLocked: skipLocked,
+    ),
   );
 
   @override
-  Future<bool> any({Filter filter = Filter.empty}) =>
-      _note('read', () => _inner.any(filter: filter));
+  Future<bool> any({
+    Filter filter = Filter.empty,
+    bool locked = false,
+    bool skipLocked = false,
+  }) => _note(
+    'read',
+    () => _inner.any(filter: filter, locked: locked, skipLocked: skipLocked),
+  );
 }
 
 /// The invoice workflow with the engine acting as [_engine], and all

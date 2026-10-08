@@ -6,6 +6,15 @@ import '../sort.dart';
 
 /// An interface for [Component]s providing CRUD functionality for a
 /// [DataObject].
+///
+/// Read methods accept a `locked` flag. When true, the elements read are
+/// locked for update until the enclosing transaction ends (see [atomic]):
+/// concurrent writes to those elements wait, which allows read-modify-write
+/// sequences without lost updates. Outside of [atomic] the lock is released
+/// as soon as the read completes. With `skipLocked`, elements locked by
+/// other transactions are skipped instead of waited for, so concurrent
+/// workers each pick different elements; it has no effect without `locked`.
+/// Implementations without row locking may ignore both flags.
 abstract class DataRepository<T extends DataObject> {
   DataBean<T> get bean;
 
@@ -21,7 +30,11 @@ abstract class DataRepository<T extends DataObject> {
   ///
   /// Must throw a [MissingIdFieldError] when the [DataObject] does not provide
   /// an ID-field.
-  Future<T?> readById(dynamic id);
+  Future<T?> readById(
+    dynamic id, {
+    bool locked = false,
+    bool skipLocked = false,
+  });
 
   /// Read all elements respecting [filter], [sort], [offset] and [limit] values.
   Future<List<T>> readAll({
@@ -29,6 +42,8 @@ abstract class DataRepository<T extends DataObject> {
     Sort sort = Sort.empty,
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   });
 
   /// Returns the count of all elements that match [filter].
@@ -72,8 +87,14 @@ abstract class DataRepository<T extends DataObject> {
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
+    bool locked = false,
+    bool skipLocked = false,
   });
 
   /// Returns true if any element matches the [filter].
-  Future<bool> any({Filter filter = Filter.empty});
+  Future<bool> any({
+    Filter filter = Filter.empty,
+    bool locked = false,
+    bool skipLocked = false,
+  });
 }

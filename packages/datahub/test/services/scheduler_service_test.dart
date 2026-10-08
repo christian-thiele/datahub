@@ -379,7 +379,11 @@ class _YieldingRecordRepositoryInstance
   }
 
   @override
-  Future<ScheduleRecord?> readById(dynamic id) async {
+  Future<ScheduleRecord?> readById(
+    dynamic id, {
+    bool locked = false,
+    bool skipLocked = false,
+  }) async {
     await _yield();
     return _records[id];
   }
@@ -390,6 +394,8 @@ class _YieldingRecordRepositoryInstance
     Sort sort = Sort.empty,
     int? offset,
     int? limit,
+    bool locked = false,
+    bool skipLocked = false,
   }) async {
     await _yield();
     return _records.values.where(filter.matches).toList();
@@ -400,14 +406,19 @@ class _YieldingRecordRepositoryInstance
       (await readAll(filter: filter)).length;
 
   @override
-  Future<bool> any({Filter filter = Filter.empty}) async =>
-      (await count(filter: filter)) > 0;
+  Future<bool> any({
+    Filter filter = Filter.empty,
+    bool locked = false,
+    bool skipLocked = false,
+  }) async => (await count(filter: filter)) > 0;
 
   @override
   Future<ScheduleRecord?> first({
     Filter filter = Filter.empty,
     Sort sort = Sort.empty,
     int offset = 0,
+    bool locked = false,
+    bool skipLocked = false,
   }) async => (await readAll(filter: filter)).firstOrNull;
 
   @override
