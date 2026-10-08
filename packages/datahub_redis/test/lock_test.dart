@@ -43,7 +43,7 @@ void main() {
 
     env.test('runLocked returns the result and releases', (redis) async {
       final locks = _locks();
-      final result = await locks.runLocked('job', () async {
+      final result = await locks.runLocked('job', (_) async {
         expect(await locks.tryAcquireLock('job'), isNull);
         return 42;
       });
@@ -55,7 +55,7 @@ void main() {
     env.test('runLocked releases when the delegate throws', (redis) async {
       final locks = _locks();
       await expectLater(
-        locks.runLocked('job', () async => throw StateError('failed')),
+        locks.runLocked('job', (_) async => throw StateError('failed')),
         throwsStateError,
       );
       expect(await locks.tryAcquireLock('job'), isNotNull);
@@ -185,7 +185,7 @@ void main() {
 
         // a non-atomic read-modify-write that loses updates without locking
         Future<void> increment(LockProvider<String> locks) =>
-            locks.runLocked('counter', () async {
+            locks.runLocked('counter', (_) async {
               final value = int.parse((await redis.get('counter'))!);
               await Future<void>.delayed(const Duration(milliseconds: 2));
               await redis.set('counter', '${value + 1}');

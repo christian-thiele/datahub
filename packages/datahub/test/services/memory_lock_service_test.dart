@@ -10,7 +10,7 @@ void main() {
     [MemoryLockService()],
     () async {
       final provider = Find<LockProvider>().find();
-      final result = await provider.runLocked('hello', () async => 'world');
+      final result = await provider.runLocked('hello', (_) async => 'world');
       expect(result, equals('world'));
     },
   );
@@ -132,7 +132,7 @@ void main() {
         for (var i = 0; i < 3; i++)
           provider.runLocked(
             'key',
-            () async => order.add(i),
+            (_) async => order.add(i),
             timeout: const Duration(seconds: 5),
           ),
       ];
@@ -161,7 +161,7 @@ void main() {
     });
 
     test('runLocked returns the result and releases', () async {
-      final result = await provider.runLocked('key', () async {
+      final result = await provider.runLocked('key', (_) async {
         expect(await provider.tryAcquireLock('key'), isNull);
         return 42;
       });
@@ -172,7 +172,7 @@ void main() {
 
     test('runLocked passes exceptions through and releases', () async {
       await expectLater(
-        provider.runLocked('key', () async => throw StateError('failed')),
+        provider.runLocked('key', (_) async => throw StateError('failed')),
         throwsA(isA<StateError>()),
       );
       expect(await provider.tryAcquireLock('key'), isNotNull);
@@ -183,7 +183,7 @@ void main() {
       var called = false;
 
       await expectLater(
-        provider.runLocked('key', () async => called = true),
+        provider.runLocked('key', (_) async => called = true),
         throwsA(isA<ResourceLockedException>()),
       );
       expect(called, isFalse);
