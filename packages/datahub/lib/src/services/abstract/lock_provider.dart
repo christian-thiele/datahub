@@ -74,13 +74,13 @@ extension LockProviderExtension<T extends Object> on LockProvider<T> {
   /// Nested calls with the same [key] will see the lock as locked.
   Future<Result> runLocked<Result>(
     T key,
-    Future<Result> Function() delegate, {
+    Future<Result> Function(LockHandle handle) delegate, {
     Duration timeout = Duration.zero,
   }) async {
     final handle = await acquireLock(key, timeout: timeout);
 
     try {
-      return await delegate();
+      return await delegate(handle);
     } finally {
       try {
         await handle.release();
