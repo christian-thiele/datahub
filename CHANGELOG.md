@@ -11,6 +11,50 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 Packages with breaking changes:
 
+ - [`datahub_aperture` - `v0.1.0-dev.26`](#datahub_aperture---v010-dev26)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.21`](#datahub_aperture_frontend---v010-dev21)
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.32`](#datahub---v0180-dev32)
+ - [`datahub_codegen` - `v0.18.0-dev.23`](#datahub_codegen---v0180-dev23)
+ - [`datahub_postgres` - `v0.18.0-dev.30`](#datahub_postgres---v0180-dev30)
+ - [`datahub_redis` - `v0.18.0-dev.4`](#datahub_redis---v0180-dev4)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_codegen` - `v0.18.0-dev.23`
+ - `datahub_postgres` - `v0.18.0-dev.30`
+ - `datahub_redis` - `v0.18.0-dev.4`
+
+---
+
+#### `datahub_aperture` - `v0.1.0-dev.26`
+
+ - **FEAT**(aperture): added frontend version check.
+ - **BREAKING** **FEAT**(aperture): added action responses.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.21`
+
+ - **FIX**(aperture_frontend): fixed Dockerfile.
+ - **FEAT**(aperture): added frontend version check.
+ - **BREAKING** **FEAT**(aperture): added action responses.
+
+#### `datahub` - `v0.18.0-dev.32`
+
+ - **FIX**: added handle parameter to runLocked.
+
+
+## 2026-10-08
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
  - [`datahub` - `v0.18.0-dev.31`](#datahub---v0180-dev31)
  - [`datahub_redis` - `v0.18.0-dev.3`](#datahub_redis---v0180-dev3)
 

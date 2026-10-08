@@ -1,3 +1,11 @@
+## 0.1.0-dev.21
+
+> Note: This release has breaking changes.
+
+ - **FIX**(aperture_frontend): fixed Dockerfile.
+ - **FEAT**(aperture): added frontend version check.
+ - **BREAKING** **FEAT**(aperture): added action responses.
+
 ## 0.1.0-dev.20
 
  - Update a dependency to the latest release.

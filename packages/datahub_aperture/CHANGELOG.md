@@ -1,3 +1,10 @@
+## 0.1.0-dev.26
+
+> Note: This release has breaking changes.
+
+ - **FEAT**(aperture): added frontend version check.
+ - **BREAKING** **FEAT**(aperture): added action responses.
+
 ## 0.1.0-dev.25
 
  - Update a dependency to the latest release.

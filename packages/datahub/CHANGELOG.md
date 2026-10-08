@@ -1,3 +1,7 @@
+## 0.18.0-dev.32
+
+ - **FIX**: added handle parameter to runLocked.
+
 ## 0.18.0-dev.31
 
 > Note: This release has breaking changes.
