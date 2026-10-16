@@ -87,6 +87,8 @@ class ApiRequest {
       }
     } on CodecException catch (e) {
       throw ApiRequestException.badRequest(e.message);
+    } on ApiRequestException {
+      rethrow;
     } catch (_) {
       throw ApiRequestException.badRequest('Invalid body data.');
     }
@@ -95,8 +97,15 @@ class ApiRequest {
   }
 
   /// Returns decoded body data using a [DataBean].
+  ///
+  /// Throws [ApiRequestException.badRequest] if the body could not be decoded.
   Future<T> getData<T extends DataObject>(DataBean<T> bean) async {
-    return bean.fromJson(await getJsonBody());
+    final json = await getJsonBody();
+    try {
+      return bean.fromJson(json);
+    } on CodecException catch (e) {
+      throw ApiRequestException.badRequest(e.message);
+    }
   }
 
   /// Returns decoded body data as list using a [DataBean].
@@ -104,19 +113,28 @@ class ApiRequest {
   /// Setting [allowSingleFlat] to true enables parsing of a json object
   /// (instead of a list of objects) into a list with one item instead of
   /// throwing a bad-request exception.
+  ///
+  /// Throws [ApiRequestException.badRequest] if the body could not be decoded.
   Future<List<T>> getList<T extends DataObject>(
     DataBean<T> bean, {
     bool allowSingleFlat = false,
   }) async {
-    final json = jsonDecode(await getTextBody());
-    return switch (json) {
-      Map<String, dynamic>() when allowSingleFlat => [bean.fromJson(json)],
-      List<dynamic>() =>
-        json.indexed
-            .map((e) => bean.fromJson(e.$2, name: '[${e.$1}]'))
-            .toList(),
-      _ => throw ApiRequestException.badRequest('Invalid body data.'),
-    };
+    try {
+      final json = jsonDecode(await getTextBody());
+
+      return switch (json) {
+        Map<String, dynamic>() when allowSingleFlat => [bean.fromJson(json)],
+        List<dynamic>() =>
+          json.indexed
+              .map((e) => bean.fromJson(e.$2, name: '[${e.$1}]'))
+              .toList(),
+        _ => throw ApiRequestException.badRequest('Invalid body data.'),
+      };
+    } on CodecException catch (e) {
+      throw ApiRequestException.badRequest(e.message);
+    } on FormatException catch (_) {
+      throw ApiRequestException.badRequest('Invalid body data.');
+    }
   }
 
   /// Returns the named query parameter.
