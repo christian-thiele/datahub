@@ -75,7 +75,7 @@ mixin DatabaseConnectionManager<
   }
 
   Future<TConnection> _create() async {
-    log.debug('Creating new connection for pool.');
+    log.trace('Creating new connection for pool.');
 
     return await openConnection();
   }
