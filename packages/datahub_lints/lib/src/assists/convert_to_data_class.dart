@@ -8,12 +8,21 @@ import 'package:analyzer_plugin/utilities/change_builder/change_builder_dart.dar
 import '../rules/data/data_class_rules.dart';
 import '../util/ast.dart';
 import '../util/fix_kinds.dart';
+import '../util/primary_constructor.dart';
 
 /// Turns a plain class into a DataHub data class.
 ///
 /// Applies every convention the generator relies on at once: the `@Data()`
 /// annotation, the generated superclass, the part directive and a const
-/// constructor taking the fields as named parameters.
+/// primary constructor declaring the fields, which usually leaves no body:
+///
+/// ```dart
+/// @Data()
+/// class const Person({required final String name}) extends $Person;
+/// ```
+///
+/// On language versions without primary constructors, a classic const
+/// constructor taking the fields as named parameters is written instead.
 class ConvertToDataClass extends ResolvedCorrectionProducer {
   ConvertToDataClass({required super.context});
 
@@ -27,9 +36,7 @@ class ConvertToDataClass extends ResolvedCorrectionProducer {
   @override
   Future<void> compute(ChangeBuilder builder) async {
     final declaration = node.thisOrAncestorOfType<ClassDeclaration>();
-    if (declaration == null ||
-        hasPrimaryConstructor(declaration) ||
-        hasDataAnnotation(declaration)) {
+    if (declaration == null || hasDataAnnotation(declaration)) {
       return;
     }
 
@@ -45,6 +52,38 @@ class ConvertToDataClass extends ResolvedCorrectionProducer {
     }
 
     final name = classNameToken(declaration).lexeme;
+    final superclass = ' extends \$$name';
+
+    if (primaryConstructorOf(declaration) case final primary?) {
+      await builder.addDartFileEdit(file, (builder) {
+        _writePartDirective(builder, unit, partName);
+        builder.addSimpleInsertion(declaration.offset, '@Data()\n');
+        if (primary.constKeyword == null) {
+          builder.addSimpleInsertion(primary.typeName.offset, 'const ');
+        }
+        builder.addSimpleInsertion(primary.end, superclass);
+      });
+      return;
+    }
+
+    final conversion = PrimaryConstructorConversion.of(
+      declaration,
+      isConst: true,
+    );
+    if (conversion != null) {
+      await builder.addDartFileEdit(file, (builder) {
+        _writePartDirective(builder, unit, partName);
+        builder.addSimpleInsertion(declaration.offset, '@Data()\n');
+        conversion.apply(
+          builder,
+          unitResult.content,
+          unit.lineInfo,
+          clauses: superclass,
+        );
+      });
+      return;
+    }
+
     final fields = _namedFields(declaration);
     final constructor = unnamedConstructorOf(declaration);
 
@@ -57,7 +96,7 @@ class ConvertToDataClass extends ResolvedCorrectionProducer {
       _writePartDirective(builder, unit, partName);
 
       builder.addSimpleInsertion(declaration.offset, '@Data()\n');
-      builder.addSimpleInsertion(declaration.namePart.end, ' extends \$$name');
+      builder.addSimpleInsertion(declaration.namePart.end, superclass);
 
       if (constructor != null) {
         if (constructor.constKeyword == null) {

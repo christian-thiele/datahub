@@ -89,7 +89,8 @@ and in `dart analyze`.
 | `super_initialize_first` ⚠️ | `super.initialize()` that is not the first statement of the override | move it to the top |
 | `super_dispose_last` ⚠️ | `super.dispose()` that is not the last statement of the override | move it to the bottom |
 | `avoid_injection_in_initializer` ⚠️ | `find()`, `read()` or `context` in a `ServiceInstance` constructor, where the context is not assigned yet | — |
-| `const_service_constructor` 💡 | a `Service` implementation without a const constructor | add `const` |
+| `const_service_constructor` 💡 | a `Service` implementation without a const constructor, including a primary constructor without `const` | add `const` / declare `class const Name()` |
+| `prefer_primary_constructor` 💡 | a data class or service that repeats its fields in a classic constructor instead of declaring them in a primary constructor | convert to a primary constructor |
 
 #### Configuration
 
@@ -104,7 +105,38 @@ and in `dart analyze`.
 |------|---------|-----|
 | `data_class_requires_part` ⚠️ | a `@Data()` class in a library without its `part '….g.dart';` | add the directive |
 | `data_class_extends_generated` ⚠️ | a `@Data()` class that does not extend `$Name` | add the superclass |
-| `data_class_const_constructor` ⚠️ | a `@Data()` class without an unnamed const constructor, or one taking positional parameters | add `const` / write the constructor |
+| `data_class_const_constructor` ⚠️ | a `@Data()` class whose primary constructor is not const, or that has neither a primary constructor nor an unnamed const constructor | add `const` / declare the fields in a const primary constructor |
+
+#### Primary constructors
+
+From language version 3.13 on, data classes and services declare their fields
+in a primary constructor. Data classes are const and usually have no body at
+all:
+
+```dart
+@Data()
+class const Person({required final String name, final int? age})
+    extends $Person;
+```
+
+Services declare their `Find` and `Config` dependencies without a type
+annotation; the type follows from the default value:
+
+```dart
+class const MyService({
+  final dependency = const Find<Dependency>(),
+  final myVar = const Config<String>('myVar'),
+}) implements Service {
+  @override
+  ServiceInstance<MyService> createInstance() => MyServiceInstance();
+}
+```
+
+`prefer_primary_constructor` reports classes still written the classic way
+and converts them, adding the type arguments the defaults need. The quick fixes
+and assists below write primary constructors as well. In libraries on an older
+language version, everything keeps writing classic constructors and
+`prefer_primary_constructor` stays silent.
 
 #### Filters and sorts
 
@@ -171,8 +203,8 @@ in VS Code).
 | Assist | Offered on | Generates |
 |--------|-----------|-----------|
 | Generate ServiceInstance | a `Service` without `createInstance()` | the `createInstance()` override and the matching `ServiceInstance` class |
-| Convert to DataHub data class | a plain class | `@Data()`, the `$Name` superclass, the part directive and a const constructor over the fields |
-| Add Find injection field | a `Service` | a `final Find<T> name;` field and its constructor parameter |
+| Convert to DataHub data class | a plain class | `@Data()`, the `$Name` superclass, the part directive and a const primary constructor declaring the fields |
+| Add Find injection field | a `Service` | a `final name = const Find<T>()` parameter of the primary constructor (a `final Find<T> name;` field and its parameter for a classic constructor), plus the resolved dependency in the `ServiceInstance` |
 | Convert to 'Filter.andGroup' / 'Filter.orGroup' | an `a.and(b).and(c)` / `a.or(b)` chain | `Filter.andGroup([a, b, c])` |
 
 ### Configuration

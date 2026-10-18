@@ -55,12 +55,14 @@ class _Visitor extends SimpleAstVisitor<void> {
       return;
     }
 
-    // Primary constructors carry their own constness; do not second-guess it.
-    if (hasPrimaryConstructor(node)) {
+    final name = classNameToken(node);
+
+    if (primaryConstructorOf(node) case final primary?) {
+      if (primary.constKeyword == null) {
+        rule.reportAtToken(name, arguments: [name.lexeme]);
+      }
       return;
     }
-
-    final name = classNameToken(node);
 
     // A class with no explicit constructor gets a non-const default one.
     if (!hasAnyConstructor(node)) {

@@ -2,6 +2,8 @@ import 'package:analysis_server_plugin/edit/dart/correction_producer.dart';
 import 'package:analyzer/dart/ast/ast.dart';
 import 'package:analyzer_plugin/utilities/assist/assist.dart';
 import 'package:analyzer_plugin/utilities/change_builder/change_builder_core.dart';
+import 'package:analyzer_plugin/utilities/change_builder/change_builder_dart.dart';
+import 'package:analyzer_plugin/utilities/range_factory.dart';
 
 import '../util/ast.dart';
 import '../util/datahub_types.dart';
@@ -46,21 +48,13 @@ class GenerateServiceInstance extends ResolvedCorrectionProducer {
     final serviceName = classNameToken(declaration).lexeme;
     final instanceName = '${serviceName}Instance';
     await builder.addDartFileEdit(file, (builder) {
-      final anchor =
-          classMembers(declaration).lastOrNull?.end ??
-          declaration.body.beginToken.end;
-
-      builder.addInsertion(anchor, (builder) {
-        builder.writeln();
-        builder.writeln();
+      void writeCreateInstance(DartEditBuilder builder) {
         builder.writeln('  @override');
         builder.write('  ServiceInstance<$serviceName> createInstance() =>');
         builder.write(' $instanceName();');
-      });
+      }
 
-      // Anchored to the declaration rather than the end of the unit, so the
-      // result does not depend on whether the file ends with a newline.
-      builder.addInsertion(declaration.end, (builder) {
+      void writeInstanceClass(DartEditBuilder builder) {
         builder.writeln();
         builder.writeln();
         builder.writeln(
@@ -71,7 +65,34 @@ class GenerateServiceInstance extends ResolvedCorrectionProducer {
         builder.writeln('    await super.initialize();');
         builder.writeln('  }');
         builder.write('}');
+      }
+
+      // A primary constructor may leave the service without a body, which
+      // ends the declaration, so both halves go into a single edit.
+      final body = declaration.body;
+      if (body is EmptyClassBody) {
+        builder.addReplacement(range.token(body.semicolon), (builder) {
+          builder.writeln(' {');
+          writeCreateInstance(builder);
+          builder.writeln();
+          builder.write('}');
+          writeInstanceClass(builder);
+        });
+        return;
+      }
+
+      final anchor =
+          classMembers(declaration).lastOrNull?.end ?? body.beginToken.end;
+
+      builder.addInsertion(anchor, (builder) {
+        builder.writeln();
+        builder.writeln();
+        writeCreateInstance(builder);
       });
+
+      // Anchored to the declaration rather than the end of the unit, so the
+      // result does not depend on whether the file ends with a newline.
+      builder.addInsertion(declaration.end, writeInstanceClass);
     });
   }
 }

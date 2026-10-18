@@ -148,16 +148,16 @@ class _ExtendsVisitor extends SimpleAstVisitor<void> {
 
 /// Reports a `@Data()` class whose constructor the generator cannot use.
 ///
-/// The builder looks up the unnamed const constructor and reads only its
-/// named field-formal parameters.
+/// The builder instantiates the class through its primary constructor, or
+/// the unnamed constructor when there is none, and both must be const.
 class DataClassConstConstructorRule extends AnalysisRule {
   static const LintCode code = LintCode(
     'data_class_const_constructor',
-    "The data class '{0}' needs an unnamed const constructor with named "
-        'parameters.',
+    "The data class '{0}' needs a const primary constructor or an unnamed "
+        'const constructor.',
     correctionMessage:
-        'Try declaring a const constructor that takes all fields as named '
-        'parameters.',
+        "Try declaring the fields in a const primary constructor, such as "
+        "'class const {0}(...)', or making the constructor const.",
     severity: DiagnosticSeverity.WARNING,
     uniqueName: 'LintCode.data_class_const_constructor',
   );
@@ -166,8 +166,9 @@ class DataClassConstConstructorRule extends AnalysisRule {
     : super(
         name: 'data_class_const_constructor',
         description:
-            'The data builder resolves the unnamed const constructor of a '
-            '@Data() class and reads only its named field-formal parameters.',
+            'The data builder instantiates a @Data() class through its '
+            'primary constructor, or its unnamed constructor when there is '
+            'none, which must be const.',
       );
 
   @override
@@ -189,26 +190,22 @@ class _ConstructorVisitor extends SimpleAstVisitor<void> {
 
   @override
   void visitClassDeclaration(ClassDeclaration node) {
-    if (!hasDataAnnotation(node) || hasPrimaryConstructor(node)) {
+    if (!hasDataAnnotation(node)) {
       return;
     }
 
     final name = classNameToken(node);
-    final unnamed = unnamedConstructorOf(node);
 
-    if (unnamed == null || unnamed.constKeyword == null) {
-      rule.reportAtToken(name, arguments: [name.lexeme]);
+    if (primaryConstructorOf(node) case final primary?) {
+      if (primary.constKeyword == null) {
+        rule.reportAtToken(name, arguments: [name.lexeme]);
+      }
       return;
     }
 
-    // Positional parameters are invisible to the generator, so a class that
-    // uses them silently loses those fields.
-    final positional = unnamed.parameters.parameters
-        .where((p) => p.isPositional)
-        .toList();
-
-    if (positional.isNotEmpty) {
-      rule.reportAtNode(positional.first, arguments: [name.lexeme]);
+    final unnamed = unnamedConstructorOf(node);
+    if (unnamed == null || unnamed.constKeyword == null) {
+      rule.reportAtToken(name, arguments: [name.lexeme]);
     }
   }
 }

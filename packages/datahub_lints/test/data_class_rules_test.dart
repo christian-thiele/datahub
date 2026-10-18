@@ -169,8 +169,8 @@ class Person extends \$Person {
     ]);
   }
 
-  test_positionalParameter_isReported() async {
-    const content = '''
+  test_positionalParameter_isNotReported() async {
+    await assertNoDiagnostics('''
 import 'package:datahub/datahub.dart';
 
 part 'test.g.dart';
@@ -180,8 +180,41 @@ class Person extends \$Person {
   final String name;
   const Person(this.name);
 }
+''');
+  }
+
+  test_constPrimaryConstructor_isNotReported() async {
+    await assertNoDiagnostics('''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class const Person({required final String name}) extends \$Person;
+''');
+  }
+
+  test_namedConstPrimaryConstructor_isNotReported() async {
+    await assertNoDiagnostics('''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class const Person.create(final String name) extends \$Person;
+''');
+  }
+
+  test_nonConstPrimaryConstructor_isReported() async {
+    const content = '''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class Person({required final String name}) extends \$Person;
 ''';
-    await assertDiagnostics(content, [lintOn(content, 'this.name')]);
+    await assertDiagnostics(content, [lintOn(content, 'Person(', length: 6)]);
   }
 
   test_namedConstConstructor_isNotReported() async {

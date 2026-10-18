@@ -186,6 +186,29 @@ class AvoidInjectionInInitializerTest extends DatahubRuleTest {
     );
   }
 
+  test_primaryConstructorBody_isReported() async {
+    const content = '''
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  const Db();
+  @override
+  ServiceInstance createInstance() => DbInstance(1);
+}
+
+class DbInstance(final int retries) extends ServiceInstance<Db> {
+  Object? other;
+
+  this {
+    other = find(const Find<Db>());
+  }
+}
+''';
+    await assertDiagnostics(content, [
+      lintOn(content, 'find(const Find<Db>())'),
+    ]);
+  }
+
   test_inMethod_isNotReported() async {
     await assertNoDiagnostics(
       _instance('''
@@ -233,6 +256,29 @@ import 'package:datahub/datahub.dart';
 
 class Db implements Service {
   const Db();
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''');
+  }
+
+  test_nonConstPrimaryConstructor_isReported() async {
+    const content = '''
+import 'package:datahub/datahub.dart';
+
+class Db({final host = const Config<String>('host')}) implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''';
+    await assertDiagnostics(content, [lintOn(content, 'Db({', length: 2)]);
+  }
+
+  test_constPrimaryConstructor_isNotReported() async {
+    await assertNoDiagnostics('''
+import 'package:datahub/datahub.dart';
+
+class const Db({final host = const Config<String>('host')}) implements Service {
   @override
   ServiceInstance createInstance() => throw '';
 }

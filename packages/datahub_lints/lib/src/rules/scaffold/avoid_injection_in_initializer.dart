@@ -117,7 +117,10 @@ class _Visitor extends SimpleAstVisitor<void> {
         return false;
       }
 
-      if (current is ConstructorDeclaration) {
+      // The body of a primary constructor is the `this : ... { ... }`
+      // member, which runs during construction just like a classic one.
+      if (current is ConstructorDeclaration ||
+          current is PrimaryConstructorBody) {
         return true;
       }
 

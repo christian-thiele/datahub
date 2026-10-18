@@ -16,11 +16,26 @@ Builder dataBuilder(BuilderOptions options) =>
 class MetaField {
   final LibraryElement library;
   final FieldElement element;
+  final FieldFormalParameterElement parameter;
   final List<DartObject> constraints;
   final List<DartObject> meta;
   final String? defaultValueExpression;
   final String key;
+
+  /// The public name of the field.
+  ///
+  /// This is the name of the constructor parameter, which may differ from
+  /// the name of the instance variable when using private named parameters.
   final String name;
+
+  /// The name of the instance variable (may be private).
+  String get fieldName => element.displayName;
+
+  /// Whether the field is initialized by a positional constructor parameter.
+  bool get isPositional => parameter.isPositional;
+
+  /// The constructor argument passing [value] to the parameter of this field.
+  String argument(String value) => isPositional ? value : '$name: $value';
 
   DartType get type => element.type;
 
@@ -38,6 +53,7 @@ class MetaField {
     required this.name,
     required this.key,
     required this.element,
+    required this.parameter,
     required this.constraints,
     required this.meta,
     required this.defaultValueExpression,
@@ -60,6 +76,7 @@ class DataBuilder extends Generator {
     for (final dataClass in dataClasses) {
       final className = dataClass.displayName;
       final constructor = findDataConstructor(dataClass);
+      final constructorName = constructorInvocation(className, constructor);
       final dataAnnotation = dataChecker.firstAnnotationOfExact(dataClass);
       final namingConventionIndex = ConstantReader(dataAnnotation)
           .read('defaultNamingConvention')
@@ -72,11 +89,12 @@ class DataBuilder extends Generator {
         for (final param
             in constructor.formalParameters
                 .whereType<FieldFormalParameterElement>()
-                .where((e) => e.isNamed && e.field != null))
+                .where((e) => e.field != null))
           MetaField(
-            name: param.field!.displayName,
-            key: fieldKey(param.field!, namingConvention),
+            name: param.displayName,
+            key: fieldKey(param.field!, param.displayName, namingConvention),
             element: param.field!,
+            parameter: param,
             constraints: TypeChecker.typeNamed(
               DataFieldConstraint,
             ).annotationsOf(param.field!).toList(),
@@ -91,7 +109,7 @@ class DataBuilder extends Generator {
       ln(
         generateClass(
           className,
-          constructor,
+          constructorName,
           fields,
           TypeChecker.typeNamed(MetaData).annotationsOf(dataClass).toList(),
         ),
@@ -103,7 +121,7 @@ class DataBuilder extends Generator {
 
   String generateClass(
     String className,
-    ConstructorElement constructor,
+    String constructorName,
     List<MetaField> fields,
     List<DartObject> metaAnnotations,
   ) {
@@ -123,9 +141,9 @@ class DataBuilder extends Generator {
       '@override List<DataField<$className, dynamic>> get \$\$fields => bean.fields;',
     );
 
-    ln(generateCopyWith(className, fields));
-    ln(generateFromValues(className, fields));
-    ln(generateFromJson(className, fields));
+    ln(generateCopyWith(className, constructorName, fields));
+    ln(generateFromValues(className, constructorName, fields));
+    ln(generateFromJson(className, constructorName, fields));
     ln(generateToJson(className, fields));
 
     ln('}');
@@ -138,7 +156,7 @@ class DataBuilder extends Generator {
       'static final \$${field.name} = DataField<$className, ${field.prefixedTypeNameNullable}>(',
     );
     ln('name: \'${field.name}\',');
-    ln('valueOf: (p)=>p.${field.name},');
+    ln('valueOf: (p)=>p.${field.fieldName},');
 
     final valueWithDefault = switch (field.defaultValueExpression) {
       final val? => '(value ?? $val)',
@@ -247,10 +265,14 @@ class DataBuilder extends Generator {
     return ln.toString();
   }
 
-  String generateFromValues(String className, List<MetaField> fields) {
+  String generateFromValues(
+    String className,
+    String constructorName,
+    List<MetaField> fields,
+  ) {
     final ln = Writer();
     ln('static $className fromValues(Map<String, dynamic> data) {');
-    ln('return $className(');
+    ln('return $constructorName(');
     for (final field in fields) {
       final valueAccessor = 'data[\'${field.name}\']';
 
@@ -265,7 +287,7 @@ class DataBuilder extends Generator {
         accessor = valueAccessor;
       }
 
-      ln('${field.name}: $accessor');
+      ln(field.argument(accessor));
       if (field.defaultValueExpression != null) {
         ln(' ?? ${field.defaultValueExpression},');
       } else {
@@ -277,7 +299,11 @@ class DataBuilder extends Generator {
     return ln.toString();
   }
 
-  String generateFromJson(String className, List<MetaField> fields) {
+  String generateFromJson(
+    String className,
+    String constructorName,
+    List<MetaField> fields,
+  ) {
     final ln = Writer();
     ln('static $className fromJson(dynamic data, {String? name}) {');
     ln('if (data is! Map<String, dynamic>) {');
@@ -286,10 +312,10 @@ class DataBuilder extends Generator {
     );
     ln('}');
 
-    ln('return $className(');
+    ln('return $constructorName(');
     for (final field in fields) {
       ln(
-        '${field.name}: \$${field.name}.fromJson(data[\'${field.key}\'], name: DataCodec.childName(name, \'${field.key}\')),',
+        '${field.argument('\$${field.name}.fromJson(data[\'${field.key}\'], name: DataCodec.childName(name, \'${field.key}\'))')},',
       );
     }
     ln(');');
@@ -303,13 +329,19 @@ class DataBuilder extends Generator {
     ln('final \$\$data = this as $className;');
     ln('return {');
     for (final field in fields) {
-      ln("'${field.key}': \$${field.name}.toJson(\$\$data.${field.name}),");
+      ln(
+        "'${field.key}': \$${field.name}.toJson(\$\$data.${field.fieldName}),",
+      );
     }
     ln('}..removeWhere((k, v) => v == null); }');
     return ln.toString();
   }
 
-  String generateCopyWith(String className, List<MetaField> fields) {
+  String generateCopyWith(
+    String className,
+    String constructorName,
+    List<MetaField> fields,
+  ) {
     final ln = Writer();
     ln('$className copyWith(${fields.isNotEmpty ? '{' : ''}');
 
@@ -325,17 +357,17 @@ class DataBuilder extends Generator {
     ln('${fields.isNotEmpty ? '}' : ''}) { ');
 
     ln('final \$data = this as $className;');
-    ln('return $className(');
+    ln('return $constructorName(');
 
     for (final field in fields) {
       final fieldNullable =
           field.type.nullabilitySuffix != NullabilitySuffix.none;
 
       final valueStatement = fieldNullable
-          ? 'null${firstUp(field.name)} ? null : (${field.name} ?? \$data.${field.name})'
-          : '${field.name} ?? \$data.${field.name}';
+          ? 'null${firstUp(field.name)} ? null : (${field.name} ?? \$data.${field.fieldName})'
+          : '${field.name} ?? \$data.${field.fieldName}';
 
-      ln('${field.name}: $valueStatement,');
+      ln('${field.argument(valueStatement)},');
     }
 
     ln('); }');
@@ -371,21 +403,47 @@ class DataBuilder extends Generator {
 
   String fieldKey(
     FieldElement field,
+    String name,
     NamingConvention defaultNamingConvention,
   ) {
     final checker = TypeChecker.typeNamed(JsonKey);
     if (checker.firstAnnotationOf(field) case final annotation?) {
       return annotation.getField('key')!.toStringValue()!;
     }
-    return toNamingConvention(field.displayName, defaultNamingConvention);
+    return toNamingConvention(name, defaultNamingConvention);
   }
 }
 
+/// Finds the constructor used to instantiate a data class.
+///
+/// If the class declares a const primary constructor (Dart 3.13+), it is
+/// used regardless of its name. Otherwise the unnamed const constructor
+/// is used.
 ConstructorElement findDataConstructor(ClassElement dataClass) {
+  if (dataClass.primaryConstructor case final primary?) {
+    if (primary.isConst && primary.isGenerative) {
+      return primary;
+    }
+
+    throw Exception(
+      'The primary constructor of data class ${dataClass.displayName} '
+      'must be const (e.g. `class const ${dataClass.displayName}(...)`).',
+    );
+  }
+
   return dataClass.constructors.firstWhere(
     (e) => e.name == 'new' && e.isConst,
     orElse: () => throw Exception(
       'Data class ${dataClass.displayName} does not provide an unnamed const constructor.',
     ),
   );
+}
+
+/// The expression used to invoke [constructor] of class [className].
+String constructorInvocation(String className, ConstructorElement constructor) {
+  final name = constructor.name;
+  if (name == null || name == 'new' || name.isEmpty) {
+    return className;
+  }
+  return '$className.$name';
 }

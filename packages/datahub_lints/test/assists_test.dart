@@ -45,6 +45,33 @@ class DbInstance extends ServiceInstance<Db> {
     );
   }
 
+  test_primaryConstructorWithoutBody() async {
+    await assertAssist(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class const Db() implements Service;
+''',
+      at: 'Db()',
+      assistKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+class const Db() implements Service {
+  @override
+  ServiceInstance<Db> createInstance() => DbInstance();
+}
+
+class DbInstance extends ServiceInstance<Db> {
+  @override
+  Future<void> initialize() async {
+    await super.initialize();
+  }
+}
+''',
+    );
+  }
+
   test_notOfferedWhenAlreadyPresent() async {
     await assertNoAssist(
       r'''
@@ -77,6 +104,112 @@ class Plain {
 @reflectiveTest
 class AddFindInjectionTest extends PluginTestBase {
   static const _kind = 'datahub.assist.addFindInjection';
+
+  test_primaryConstructor_opensNamedSection() async {
+    await assertAssist(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class const Db() implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+      at: 'Db()',
+      assistKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+class const Db({final dependency = const Find<Dependency>()}) implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+    );
+  }
+
+  test_primaryConstructor_appendsToNamedSection() async {
+    await assertAssist(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class const Db({
+  final host = const Config<String>('host'),
+}) implements Service {
+  @override
+  ServiceInstance<Db> createInstance() => DbInstance();
+}
+
+class DbInstance extends ServiceInstance<Db> {
+  @override
+  Future<void> initialize() async {
+    await super.initialize();
+  }
+}
+''',
+      at: 'Db({',
+      assistKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+class const Db({
+  final host = const Config<String>('host'),
+  final dependency = const Find<Dependency>(),
+}) implements Service {
+  @override
+  ServiceInstance<Db> createInstance() => DbInstance();
+}
+
+class DbInstance extends ServiceInstance<Db> {
+  late final Dependency dependency;
+  @override
+  Future<void> initialize() async {
+    await super.initialize();
+    dependency = find(service.dependency);
+  }
+}
+''',
+    );
+  }
+
+  test_noConstructor_declaresPrimaryConstructor() async {
+    await assertAssist(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+      at: 'Db implements',
+      assistKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+class const Db({final dependency = const Find<Dependency>()}) implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+    );
+  }
+
+  test_noConstructorBeforePrimaryConstructors_isNotOffered() async {
+    await assertNoAssist(
+      r'''
+// @dart=3.9
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+      at: 'Db implements',
+      assistKindId: _kind,
+    );
+  }
 
   test_opensNamedSectionWhenEmpty() async {
     await assertAssist(
@@ -220,7 +353,7 @@ class DbInstance extends ServiceInstance<Db> {
 class ConvertToDataClassTest extends PluginTestBase {
   static const _kind = 'datahub.assist.convertToDataClass';
 
-  test_addsAnnotationSuperclassPartAndConstructor() async {
+  test_declaresFieldsInPrimaryConstructor() async {
     await assertAssist(
       r'''
 import 'package:datahub/datahub.dart';
@@ -233,6 +366,89 @@ class Person {
       at: 'Person {',
       assistKindId: _kind,
       expected: r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class const Person({required final String name, final int? age}) extends $Person;
+''',
+    );
+  }
+
+  test_convertsExistingConstructor() async {
+    await assertAssist(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class Person {
+  /// The id.
+  @Id()
+  final int id;
+  final String name;
+
+  Person({
+    this.id = 0,
+    required this.name,
+  });
+
+  String get greeting => 'Hi $name';
+}
+''',
+      at: 'Person {',
+      assistKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class const Person({
+  /// The id.
+  @Id() final int id = 0,
+  required final String name,
+}) extends $Person {
+  String get greeting => 'Hi $name';
+}
+''',
+    );
+  }
+
+  test_completesExistingPrimaryConstructor() async {
+    await assertAssist(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class Person(final String name);
+''',
+      at: 'Person(',
+      assistKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class const Person(final String name) extends $Person;
+''',
+    );
+  }
+
+  test_classicConstructorBeforePrimaryConstructors() async {
+    await assertAssist(
+      r'''
+// @dart=3.9
+import 'package:datahub/datahub.dart';
+
+class Person {
+  final String name;
+  final int? age;
+}
+''',
+      at: 'Person {',
+      assistKindId: _kind,
+      expected: r'''
+// @dart=3.9
 import 'package:datahub/datahub.dart';
 
 part 'test.g.dart';

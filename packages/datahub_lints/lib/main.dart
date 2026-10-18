@@ -8,6 +8,7 @@ import 'src/assists/generate_service_instance.dart';
 import 'src/fixes/add_await.dart';
 import 'src/fixes/add_const_keyword.dart';
 import 'src/fixes/add_enum_values.dart';
+import 'src/fixes/convert_to_primary_constructor.dart';
 import 'src/fixes/data_class_fixes.dart';
 import 'src/fixes/move_lifecycle_super.dart';
 import 'src/fixes/simplify_query_group.dart';
@@ -21,6 +22,7 @@ import 'src/rules/data/data_class_rules.dart';
 import 'src/rules/data/reducible_filter_group.dart';
 import 'src/rules/data/reducible_sort_group.dart';
 import 'src/rules/postgres/revisable_repository_rules.dart';
+import 'src/rules/prefer_primary_constructor.dart';
 import 'src/rules/scaffold/avoid_injection_in_initializer.dart';
 import 'src/rules/scaffold/avoid_zone_context_in_service.dart';
 import 'src/rules/scaffold/await_lifecycle_super.dart';
@@ -53,6 +55,7 @@ class DatahubLintsPlugin extends Plugin {
     _registerPostgresRules(registry);
     _registerSchedulerRules(registry);
     _registerWorkflowRules(registry);
+    _registerConventionRules(registry);
     _registerAssists(registry);
   }
 
@@ -182,6 +185,15 @@ class DatahubLintsPlugin extends Plugin {
     registry.registerWarningRule(WorkflowSignalRequiresAcceptRule());
     registry.registerWarningRule(WorkflowSignalExpiresImmediatelyRule());
     registry.registerWarningRule(WorkflowSignalNotForElementRule());
+  }
+
+  /// Style conventions shared by data classes and services, so opt-in.
+  void _registerConventionRules(PluginRegistry registry) {
+    registry.registerLintRule(PreferPrimaryConstructorRule());
+    registry.registerFixForRule(
+      PreferPrimaryConstructorRule.code,
+      ConvertToPrimaryConstructor.new,
+    );
   }
 
   /// Boilerplate generators, offered at a syntax node rather than against a

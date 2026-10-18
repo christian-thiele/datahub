@@ -69,6 +69,12 @@ abstract final class DatahubFixKind {
     DartFixKindPriority.standard,
     'Simplify the group',
   );
+
+  static const convertToPrimaryConstructor = FixKind(
+    'datahub.fix.convertToPrimaryConstructor',
+    DartFixKindPriority.standard,
+    'Convert to a primary constructor',
+  );
 }
 
 /// Assist kinds for the DataHub boilerplate generators.

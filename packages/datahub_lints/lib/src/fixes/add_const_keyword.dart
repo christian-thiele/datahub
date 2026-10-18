@@ -5,9 +5,11 @@ import 'package:analyzer_plugin/utilities/fixes/fixes.dart';
 
 import '../util/ast.dart';
 import '../util/fix_kinds.dart';
+import '../util/primary_constructor.dart';
 
-/// Makes a class const-constructible: adds `const` to the unnamed constructor,
-/// or writes one when the class relies on the implicit default constructor.
+/// Makes a class const-constructible: adds `const` to the primary or unnamed
+/// constructor, or declares a const primary constructor when the class relies
+/// on the implicit default constructor.
 class AddConstKeyword extends ResolvedCorrectionProducer {
   AddConstKeyword({required super.context});
 
@@ -21,7 +23,16 @@ class AddConstKeyword extends ResolvedCorrectionProducer {
   @override
   Future<void> compute(ChangeBuilder builder) async {
     final declaration = node.thisOrAncestorOfType<ClassDeclaration>();
-    if (declaration == null || hasPrimaryConstructor(declaration)) {
+    if (declaration == null) {
+      return;
+    }
+
+    if (primaryConstructorOf(declaration) case final primary?) {
+      if (primary.constKeyword == null) {
+        await builder.addDartFileEdit(file, (builder) {
+          builder.addSimpleInsertion(primary.typeName.offset, 'const ');
+        });
+      }
       return;
     }
 
@@ -41,6 +52,18 @@ class AddConstKeyword extends ResolvedCorrectionProducer {
     // No constructor at all: only safe to add one when nothing else is
     // declared that a generated constructor would have to initialize.
     if (hasAnyConstructor(declaration)) {
+      return;
+    }
+
+    final conversion = PrimaryConstructorConversion.of(
+      declaration,
+      isConst: true,
+      inferInjectionTypes: true,
+    );
+    if (conversion != null) {
+      await builder.addDartFileEdit(file, (builder) {
+        conversion.apply(builder, unitResult.content, unit.lineInfo);
+      });
       return;
     }
 

@@ -9,6 +9,7 @@ import 'package:analyzer_plugin/utilities/range_factory.dart';
 import '../rules/data/data_class_rules.dart';
 import '../util/ast.dart';
 import '../util/fix_kinds.dart';
+import '../util/primary_constructor.dart';
 
 /// Inserts the `part '<file>.g.dart';` directive for a `@Data()` library.
 class AddPartDirective extends ResolvedCorrectionProducer {
@@ -86,10 +87,12 @@ class ExtendGeneratedClass extends ResolvedCorrectionProducer {
   }
 }
 
-/// Gives a `@Data()` class the unnamed const constructor the generator needs.
+/// Gives a `@Data()` class the const constructor the generator needs.
 ///
-/// Adds `const` when a suitable constructor already exists, and writes one
-/// taking every field as a named parameter when it does not.
+/// Adds `const` when a suitable constructor already exists. When it does
+/// not, every field moves into a const primary constructor as a named
+/// declaring parameter, or into a classic constructor on language versions
+/// without primary constructors.
 class AddDataClassConstructor extends ResolvedCorrectionProducer {
   AddDataClassConstructor({required super.context});
 
@@ -103,7 +106,16 @@ class AddDataClassConstructor extends ResolvedCorrectionProducer {
   @override
   Future<void> compute(ChangeBuilder builder) async {
     final declaration = node.thisOrAncestorOfType<ClassDeclaration>();
-    if (declaration == null || hasPrimaryConstructor(declaration)) {
+    if (declaration == null) {
+      return;
+    }
+
+    if (primaryConstructorOf(declaration) case final primary?) {
+      if (primary.constKeyword == null) {
+        await builder.addDartFileEdit(file, (builder) {
+          builder.addSimpleInsertion(primary.typeName.offset, 'const ');
+        });
+      }
       return;
     }
 
@@ -123,6 +135,17 @@ class AddDataClassConstructor extends ResolvedCorrectionProducer {
     // Writing a constructor is only safe when none exists at all; otherwise a
     // named one may already be doing the initialization.
     if (hasAnyConstructor(declaration)) {
+      return;
+    }
+
+    final conversion = PrimaryConstructorConversion.of(
+      declaration,
+      isConst: true,
+    );
+    if (conversion != null) {
+      await builder.addDartFileEdit(file, (builder) {
+        conversion.apply(builder, unitResult.content, unit.lineInfo);
+      });
       return;
     }
 

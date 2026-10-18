@@ -12,6 +12,16 @@ import '../util/lifecycle.dart';
 
 /// Adds a `Find` injection field to a service declaration.
 ///
+/// A service with a primary constructor, or without any constructor, gets a
+/// declaring parameter whose type follows from its default value:
+///
+/// ```dart
+/// class const MyService({final dependency = const Find<Dependency>()})
+/// ```
+///
+/// A service with a classic constructor gets a `final Find<T>` field and a
+/// matching `this.` parameter instead.
+///
 /// When the service's `ServiceInstance` is declared in the same file, it also
 /// gets a `late final` field for the dependency, resolved in `initialize`.
 ///
@@ -30,7 +40,7 @@ class AddFindInjection extends ResolvedCorrectionProducer {
   @override
   Future<void> compute(ChangeBuilder builder) async {
     final declaration = node.thisOrAncestorOfType<ClassDeclaration>();
-    if (declaration == null || hasPrimaryConstructor(declaration)) {
+    if (declaration == null) {
       return;
     }
 
@@ -39,7 +49,51 @@ class AddFindInjection extends ResolvedCorrectionProducer {
       return;
     }
 
-    // Without a constructor there is nowhere to thread the parameter through.
+    final primary = primaryConstructorOf(declaration);
+    if (primary != null) {
+      await builder.addDartFileEdit(file, (builder) {
+        final parameters = primary.formalParameters;
+        final (offset, prefix, suffix) = _parameterInsertion(parameters);
+        builder.addInsertion(offset, (builder) {
+          builder.write(prefix);
+          _writeDeclaringParameter(builder);
+          builder.write(suffix);
+        });
+
+        _addInstanceInjectionFor(builder, element);
+      });
+      return;
+    }
+
+    // Without any constructor, declare a primary one for the parameter.
+    final instanceFields = [
+      for (final member in classMembers(declaration))
+        if (member is FieldDeclaration && !member.isStatic) member.fields,
+    ];
+    final hasUninitializedFields = instanceFields.any(
+      (f) => !f.isLate && f.variables.any((v) => v.initializer == null),
+    );
+
+    if (!hasAnyConstructor(declaration) &&
+        !hasUninitializedFields &&
+        supportsPrimaryConstructors(declaration)) {
+      await builder.addDartFileEdit(file, (builder) {
+        final namePart = declaration.namePart;
+        if (instanceFields.every((f) => f.isFinal && !f.isLate)) {
+          builder.addSimpleInsertion(namePart.typeName.offset, 'const ');
+        }
+        builder.addInsertion(namePart.end, (builder) {
+          builder.write('({');
+          _writeDeclaringParameter(builder);
+          builder.write('})');
+        });
+
+        _addInstanceInjectionFor(builder, element);
+      });
+      return;
+    }
+
+    // Otherwise there is nowhere to thread the parameter through.
     final constructor = unnamedConstructorOf(declaration);
     if (constructor == null) {
       return;
@@ -71,18 +125,38 @@ class AddFindInjection extends ResolvedCorrectionProducer {
         builder.write(suffix);
       });
 
-      final instance = _instanceDeclarationOf(element);
-      if (instance != null) {
-        _addInstanceInjection(builder, instance);
-      }
+      _addInstanceInjectionFor(builder, element);
     });
+  }
+
+  /// Writes `final dependency = const Find<Dependency>()`, with the name and
+  /// the type as linked edit groups.
+  void _writeDeclaringParameter(DartEditBuilder builder) {
+    builder.write('final ');
+    builder.addSimpleLinkedEdit('name', 'dependency');
+    builder.write(' = const Find<');
+    builder.addSimpleLinkedEdit('type', 'Dependency');
+    builder.write('>()');
+  }
+
+  /// Resolves the dependency in the `ServiceInstance` of [service], when
+  /// that is declared in the same file.
+  void _addInstanceInjectionFor(
+    DartFileEditBuilder builder,
+    InterfaceElement service,
+  ) {
+    final instance = _instanceDeclarationOf(service);
+    if (instance != null) {
+      _addInstanceInjection(builder, instance);
+    }
   }
 
   /// The `ServiceInstance<S>` declared in this file for the service [service].
   ClassDeclaration? _instanceDeclarationOf(InterfaceElement service) {
     for (final declaration in unit.declarations.whereType<ClassDeclaration>()) {
+      // Without a block body there is nowhere to add the field.
       final element = declaration.declaredFragment?.element;
-      if (element == null || hasPrimaryConstructor(declaration)) {
+      if (element == null || declaration.body is! BlockClassBody) {
         continue;
       }
 

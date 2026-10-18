@@ -4,5 +4,6 @@ plugins:
     version: ^0.18.0-dev.3
     diagnostics:
       const_service_constructor: true
+      prefer_primary_constructor: true
       reducible_filter_group: true
       reducible_sort_group: true

@@ -10,6 +10,7 @@ void main() {
     defineReflectiveTests(AddConstKeywordFixTest);
     defineReflectiveTests(AddEnumValuesFixTest);
     defineReflectiveTests(DataClassFixTest);
+    defineReflectiveTests(ConvertToPrimaryConstructorFixTest);
     defineReflectiveTests(MoveSuperInitializeFirstFixTest);
     defineReflectiveTests(MoveSuperDisposeLastFixTest);
   });
@@ -123,6 +124,79 @@ class Db implements Service {
 ''',
     );
   }
+
+  test_addsConstToPrimaryConstructor() async {
+    await assertFix(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class Db({final host = const Config<String>('host')}) implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+      at: 'Db({',
+      fixKindId: 'datahub.fix.addConstKeyword',
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+class const Db({final host = const Config<String>('host')}) implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+    );
+  }
+
+  test_declaresPrimaryConstructorForImplicitOne() async {
+    await assertFix(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+      at: 'Db implements',
+      fixKindId: 'datahub.fix.addConstKeyword',
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+class const Db() implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+    );
+  }
+
+  test_writesClassicConstructorBeforePrimaryConstructors() async {
+    await assertFix(
+      r'''
+// @dart=3.9
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+      at: 'Db implements',
+      fixKindId: 'datahub.fix.addConstKeyword',
+      expected: r'''
+// @dart=3.9
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  const Db();
+
+  @override
+  ServiceInstance createInstance() => throw '';
+}
+''',
+    );
+  }
 }
 
 @reflectiveTest
@@ -221,6 +295,210 @@ part 'test.g.dart';
 @Data()
 class Person extends $Person {
   const Person();
+}
+''',
+    );
+  }
+
+  test_addsConstToPrimaryConstructor() async {
+    await assertFix(
+      r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class Person(final String name) extends $Person;
+''',
+      at: 'Person(',
+      fixKindId: 'datahub.fix.addConstKeyword',
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class const Person(final String name) extends $Person;
+''',
+    );
+  }
+
+  test_declaresFieldsInPrimaryConstructor() async {
+    await assertFix(
+      r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class Person extends $Person {
+  final String name;
+  final int? age;
+}
+''',
+      at: 'Person extends',
+      fixKindId: 'datahub.fix.addConstKeyword',
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class const Person({required final String name, final int? age}) extends $Person;
+''',
+    );
+  }
+}
+
+@reflectiveTest
+class ConvertToPrimaryConstructorFixTest extends PluginTestBase {
+  static const _kind = 'datahub.fix.convertToPrimaryConstructor';
+
+  @override
+  List<String> get enabledLintRules => const ['prefer_primary_constructor'];
+
+  test_service_injectionTypesFollowFromDefaults() async {
+    await assertFix(
+      r'''
+import 'package:datahub/datahub.dart';
+
+class Db implements Service {
+  final Find<Object> other;
+  final Config<String> host;
+  final Config<int> port;
+  final String name;
+
+  const Db({
+    this.other = const Find(),
+    this.host = const Config('host'),
+    this.port = const Config<int>('port', defaultValue: 5432),
+    required this.name,
+  });
+
+  @override
+  ServiceInstance<Db> createInstance() => throw '';
+}
+''',
+      at: 'Db({',
+      fixKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+class const Db({
+  final other = const Find<Object>(),
+  final host = const Config<String>('host'),
+  final port = const Config<int>('port', defaultValue: 5432),
+  required final String name,
+}) implements Service {
+  @override
+  ServiceInstance<Db> createInstance() => throw '';
+}
+''',
+    );
+  }
+
+  test_service_keepsSuperParametersAndOtherMembers() async {
+    await assertFix(
+      r'''
+import 'package:datahub/datahub.dart';
+
+abstract class Base implements Service {
+  final int retries;
+  const Base({this.retries = 3});
+}
+
+class Db extends Base {
+  static const defaultHost = 'localhost';
+
+  final Config<String> host;
+  final timeout = const Duration(seconds: 1);
+
+  Db({super.retries, this.host = const Config('host')});
+
+  @override
+  ServiceInstance<Db> createInstance() => throw '';
+}
+''',
+      at: 'Db({',
+      fixKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+abstract class Base implements Service {
+  final int retries;
+  const Base({this.retries = 3});
+}
+
+class Db({super.retries, final host = const Config<String>('host')}) extends Base {
+  static const defaultHost = 'localhost';
+
+  final timeout = const Duration(seconds: 1);
+
+  @override
+  ServiceInstance<Db> createInstance() => throw '';
+}
+''',
+    );
+  }
+
+  test_dataClass_dropsBody() async {
+    await assertFix(
+      r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class Person extends $Person {
+  @Id()
+  final int id;
+  final String name;
+  final List<String> tags;
+
+  const Person({this.id = 0, required this.name, this.tags = const []});
+}
+''',
+      at: 'Person({',
+      fixKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class const Person({@Id() final int id = 0, required final String name, final List<String> tags = const []}) extends $Person;
+''',
+    );
+  }
+
+  test_dataClass_positionalParameters() async {
+    await assertFix(
+      r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class Point extends $Point {
+  final int x;
+  final int y;
+  final int? z;
+
+  const Point(this.x, this.y, [this.z]);
+
+  int get sum => x + y + (z ?? 0);
+}
+''',
+      at: 'Point(this',
+      fixKindId: _kind,
+      expected: r'''
+import 'package:datahub/datahub.dart';
+
+part 'test.g.dart';
+
+@Data()
+class const Point(final int x, final int y, [final int? z]) extends $Point {
+  int get sum => x + y + (z ?? 0);
 }
 ''',
     );
