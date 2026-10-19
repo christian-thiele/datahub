@@ -1,3 +1,7 @@
+## 0.18.0-dev.32
+
+ - **FIX**: "Creating new connection..." as trace log.
+
 ## 0.18.0-dev.31
 
  - Update a dependency to the latest release.

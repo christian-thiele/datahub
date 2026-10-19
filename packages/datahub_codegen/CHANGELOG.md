@@ -1,3 +1,7 @@
+## 0.18.0-dev.25
+
+ - **FEAT**: adapt codegen and lints to dart 3.13 primary constructor.
+
 ## 0.18.0-dev.24
 
  - Update a dependency to the latest release.

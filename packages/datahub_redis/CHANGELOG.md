@@ -1,3 +1,7 @@
+## 0.18.0-dev.6
+
+ - Update a dependency to the latest release.
+
 ## 0.18.0-dev.5
 
  - **FIX**(test): fixed tests.

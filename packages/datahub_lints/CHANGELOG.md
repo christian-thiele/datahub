@@ -1,3 +1,7 @@
+## 0.18.0-dev.4
+
+ - **FEAT**: adapt codegen and lints to dart 3.13 primary constructor.
+
 ## 0.18.0-dev.3
 
  - **FIX**(lints): add dependency injection assist now adds the initialization in service instances.

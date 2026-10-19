@@ -1,3 +1,8 @@
+## 0.18.0-dev.34
+
+ - **FIX**: request decoding methods throw ApiRequestException.badRequest when body data is invalid.
+ - **FEAT**: adapt codegen and lints to dart 3.13 primary constructor.
+
 ## 0.18.0-dev.33
 
  - **FIX**(test): fixed tests.

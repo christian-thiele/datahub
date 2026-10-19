@@ -3,6 +3,60 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-19
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`datahub` - `v0.18.0-dev.34`](#datahub---v0180-dev34)
+ - [`datahub_aperture` - `v0.1.0-dev.28`](#datahub_aperture---v010-dev28)
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.23`](#datahub_aperture_frontend---v010-dev23)
+ - [`datahub_codegen` - `v0.18.0-dev.25`](#datahub_codegen---v0180-dev25)
+ - [`datahub_lints` - `v0.18.0-dev.4`](#datahub_lints---v0180-dev4)
+ - [`datahub_postgres` - `v0.18.0-dev.32`](#datahub_postgres---v0180-dev32)
+ - [`datahub_redis` - `v0.18.0-dev.6`](#datahub_redis---v0180-dev6)
+
+Packages with dependency updates only:
+
+> Packages listed below depend on other packages in this workspace that have had changes. Their versions have been incremented to bump the minimum dependency versions of the packages they depend upon in this project.
+
+ - `datahub_redis` - `v0.18.0-dev.6`
+
+---
+
+#### `datahub` - `v0.18.0-dev.34`
+
+ - **FIX**: request decoding methods throw ApiRequestException.badRequest when body data is invalid.
+ - **FEAT**: adapt codegen and lints to dart 3.13 primary constructor.
+
+#### `datahub_aperture` - `v0.1.0-dev.28`
+
+ - **FEAT**(aperture): file download for actions.
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.23`
+
+ - **FEAT**(aperture): file download for actions.
+
+#### `datahub_codegen` - `v0.18.0-dev.25`
+
+ - **FEAT**: adapt codegen and lints to dart 3.13 primary constructor.
+
+#### `datahub_lints` - `v0.18.0-dev.4`
+
+ - **FEAT**: adapt codegen and lints to dart 3.13 primary constructor.
+
+#### `datahub_postgres` - `v0.18.0-dev.32`
+
+ - **FIX**: "Creating new connection..." as trace log.
+
+
 ## 2026-10-08
 
 ### Changes
