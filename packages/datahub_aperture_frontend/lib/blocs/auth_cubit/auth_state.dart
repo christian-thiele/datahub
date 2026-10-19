@@ -1,10 +1,10 @@
 part of 'auth_cubit.dart';
 
-sealed class AuthState {}
+sealed class AuthState;
 
-final class AuthStateUnauthorized extends AuthState {}
+final class AuthStateUnauthorized extends AuthState;
 
-final class AuthStateLoading extends AuthState {}
+final class AuthStateLoading extends AuthState;
 
 final class AuthStateError extends AuthState {
   final String? message;

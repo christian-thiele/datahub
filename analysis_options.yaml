@@ -8,6 +8,17 @@ analyzer:
 linter:
   rules:
     directives_ordering: true
+    unnecessary_type_name_in_constructor: true
+    parameter_assignments: true
+    empty_constructor_bodies: true
+    empty_container_bodies: true
+    initialize_in_field_declaration: true
+    unnecessary_const_in_enum_constructor: true
+    use_primary_constructors: true
+    unnecessary_primary_constructor_body: true
+    use_declaring_parameters: true
+    unnecessary_nullable_for_final_variable_declarations: true
+    prefer_const_constructors: true
 
 plugins:
   dependency_overrides:

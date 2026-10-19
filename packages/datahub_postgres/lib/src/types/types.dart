@@ -87,7 +87,7 @@ class PostgresqlEnum extends PostgresqlDataType<Enum> {
   }
 }
 
-abstract interface class PostgresqlArray<T> {}
+abstract interface class PostgresqlArray<T>;
 
 class PostgresqlStringArray extends PostgresqlDataType<List<String>>
     implements PostgresqlArray<String> {
@@ -190,7 +190,7 @@ class PostgresqlByteArray extends PostgresqlDataType<Uint8List>
   const PostgresqlByteArray() : super('bytea', pg.Type.byteArray);
 }
 
-interface class PostgresqlJson {}
+interface class PostgresqlJson;
 
 class PostgresqlJsonMap extends PostgresqlDataType<Map<String, dynamic>>
     implements PostgresqlJson {

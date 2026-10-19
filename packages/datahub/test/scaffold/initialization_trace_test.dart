@@ -66,7 +66,7 @@ class _ChildService implements Service {
   ServiceInstance createInstance() => _ChildServiceInstance();
 }
 
-class _ChildServiceInstance extends ServiceInstance<_ChildService> {}
+class _ChildServiceInstance extends ServiceInstance<_ChildService>;
 
 /// Fails to initialize, after passing its active span to [onSpan].
 class _FailingService implements Service {

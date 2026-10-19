@@ -1,6 +1,6 @@
 part of 'configuration_cubit.dart';
 
-sealed class ConfigurationState {}
+sealed class ConfigurationState;
 
 final class ConfigurationLoading extends ConfigurationState {
   final bool _initial;

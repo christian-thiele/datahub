@@ -51,7 +51,7 @@ class StreamBatchListener<T> {
   void cancel() => _subscription.cancel();
 }
 
-abstract class _Event<T> {}
+abstract class _Event<T>;
 
 class _DataEvent<T> extends _Event<T> {
   final T data;
@@ -66,4 +66,4 @@ class _ErrorEvent<T> extends _Event<T> {
   _ErrorEvent(this.error, this.stack);
 }
 
-class _DoneEvent<T> extends _Event<T> {}
+class _DoneEvent<T> extends _Event<T>;

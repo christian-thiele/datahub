@@ -23,4 +23,4 @@ import 'redis_commands.dart';
 /// the callback (for example the result of a queued command) does not work.
 /// Read values before starting the transaction, using `WATCH` to detect
 /// concurrent modifications (see [RedisConnection.watch]).
-abstract interface class RedisTransaction implements RedisCommands {}
+abstract interface class RedisTransaction implements RedisCommands;

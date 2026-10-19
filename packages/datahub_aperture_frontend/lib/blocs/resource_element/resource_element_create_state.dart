@@ -1,8 +1,8 @@
 part of 'resource_element_create_cubit.dart';
 
-sealed class ResourceElementCreateState {}
+sealed class ResourceElementCreateState;
 
-final class ResourceElementCreateLoading extends ResourceElementCreateState {}
+final class ResourceElementCreateLoading extends ResourceElementCreateState;
 
 abstract class ResourceElementCreateValue extends ResourceElementCreateState {
   final ResourceDescription description;

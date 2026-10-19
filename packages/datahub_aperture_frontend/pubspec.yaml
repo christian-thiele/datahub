@@ -9,7 +9,7 @@ publish_to: 'none'
 version: 0.1.0-dev.22
 
 environment:
-  sdk: ^3.9.0
+  sdk: ^3.13.0
 
 flutter:
   uses-material-design: true
