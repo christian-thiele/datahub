@@ -1,1 +1,6 @@
-enum Environment { dev, test, stg, prod }
+enum Environment() {
+  dev,
+  test,
+  stg,
+  prod,
+}

@@ -27,16 +27,16 @@ import 'scan.dart';
 /// command timeout and fails all pending commands, since the reply stream
 /// cannot be matched to commands anymore after any of those. [isOpen]
 /// reflects this immediately.
-class RedisSocketConnection with RedisCommands implements RedisConnection {
-  static final _multi = RespEncoder.encode(const ['MULTI']);
-  static final _exec = RespEncoder.encode(const ['EXEC']);
-
-  final Socket _socket;
+class RedisSocketConnection._(
+  final Socket _socket, {
 
   /// Default timeout for commands, null means no timeout.
-  final Duration? commandTimeout;
-
-  final RedisTelemetry _telemetry;
+  required final Duration? commandTimeout,
+  required var int _database,
+  required final RedisTelemetry _telemetry,
+}) with RedisCommands implements RedisConnection {
+  static final _multi = RespEncoder.encode(const ['MULTI']);
+  static final _exec = RespEncoder.encode(const ['EXEC']);
 
   final _parser = RespParser();
   final _pending = ListQueue<_PendingReply>();
@@ -51,20 +51,12 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
 
   void Function(RedisReply reply)? _pushHandler;
 
-  final int _initialDatabase;
-  int _database;
+  final int _initialDatabase = _database;
   var _watching = false;
   var _inMulti = false;
   var _tainted = false;
 
-  RedisSocketConnection._(
-    this._socket, {
-    required this.commandTimeout,
-    required int database,
-    required RedisTelemetry telemetry,
-  }) : _telemetry = telemetry,
-       _initialDatabase = database,
-       _database = database {
+  this {
     _socket.listen(
       _onData,
       onError: (Object error) =>
@@ -597,7 +589,7 @@ class RedisSocketConnection with RedisCommands implements RedisConnection {
   }
 }
 
-class _PendingReply {
+class _PendingReply() {
   final completer = Completer<RedisReply>();
   Timer? timer;
 }

@@ -3,7 +3,7 @@ import 'package:datahub/data.dart';
 import 'data_field.dart';
 import 'equality.dart';
 
-abstract mixin class DataObject<T> {
+abstract mixin class DataObject<T>() {
   String get $$name;
 
   List<DataField<T, dynamic>> get $$fields;

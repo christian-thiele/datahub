@@ -1,26 +1,21 @@
 import 'package:boost/boost.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 
-class SqlInsert with SqlBuilder {
-  final SqlQualifiedRelation relation;
-  final Map<SqlTypedAttribute, dynamic> values;
-  final List<SqlAttribute> returning;
-  final SqlOnConflict? onConflict;
-
-  const SqlInsert(
-    this.relation,
-    this.values, {
-    this.returning = const [],
-    this.onConflict,
-  });
-
+class const SqlInsert(
+  final SqlQualifiedRelation relation,
+  final Map<SqlTypedAttribute, dynamic> values, {
+  final List<SqlAttribute> returning = const [],
+  final SqlOnConflict? onConflict,
+}) with SqlBuilder {
   @override
   Sql toSql() => Sql.join([
-    RawSql('INSERT INTO '),
+    const RawSql('INSERT INTO '),
     relation.toSql(),
-    RawSql(' ('),
-    ...values.keys.map((e) => e.toSqlUnqualified()).separatedBy(RawSql(', ')),
-    RawSql(') VALUES ('),
+    const RawSql(' ('),
+    ...values.keys
+        .map((e) => e.toSqlUnqualified())
+        .separatedBy(const RawSql(', ')),
+    const RawSql(') VALUES ('),
     ...values.entries
         .map<Sql>((e) {
           return switch (e.value) {
@@ -28,40 +23,32 @@ class SqlInsert with SqlBuilder {
             _ => ParameterSql(e.value, e.key.type),
           };
         })
-        .separatedBy(RawSql(', ')),
-    RawSql(')'),
-    if (onConflict case final onConflict?) RawSql(' ') + onConflict,
-    if (returning.isNotEmpty) RawSql(' RETURNING '),
-    ...returning.cast<Sql>().separatedBy(RawSql(', ')),
+        .separatedBy(const RawSql(', ')),
+    const RawSql(')'),
+    if (onConflict case final onConflict?) const RawSql(' ') + onConflict,
+    if (returning.isNotEmpty) const RawSql(' RETURNING '),
+    ...returning.cast<Sql>().separatedBy(const RawSql(', ')),
   ]);
 }
 
 /// `INSERT INTO relation (columns) <source>` where source is a query.
-class SqlInsertSelect with SqlBuilder {
-  final SqlQualifiedRelation relation;
-  final List<SqlAttribute> columns;
-  final Sql source;
-  final List<SqlAttribute> returning;
-  final SqlOnConflict? onConflict;
-
-  const SqlInsertSelect(
-    this.relation,
-    this.columns,
-    this.source, {
-    this.returning = const [],
-    this.onConflict,
-  });
-
+class const SqlInsertSelect(
+  final SqlQualifiedRelation relation,
+  final List<SqlAttribute> columns,
+  final Sql source, {
+  final List<SqlAttribute> returning = const [],
+  final SqlOnConflict? onConflict,
+}) with SqlBuilder {
   @override
   Sql toSql() => Sql.join([
-    RawSql('INSERT INTO '),
+    const RawSql('INSERT INTO '),
     relation.toSql(),
-    RawSql(' ('),
-    ...columns.map((e) => e.toSqlUnqualified()).separatedBy(RawSql(', ')),
-    RawSql(') '),
+    const RawSql(' ('),
+    ...columns.map((e) => e.toSqlUnqualified()).separatedBy(const RawSql(', ')),
+    const RawSql(') '),
     source,
-    if (onConflict case final onConflict?) RawSql(' ') + onConflict,
-    if (returning.isNotEmpty) RawSql(' RETURNING '),
-    ...returning.cast<Sql>().separatedBy(RawSql(', ')),
+    if (onConflict case final onConflict?) const RawSql(' ') + onConflict,
+    if (returning.isNotEmpty) const RawSql(' RETURNING '),
+    ...returning.cast<Sql>().separatedBy(const RawSql(', ')),
   ]);
 }

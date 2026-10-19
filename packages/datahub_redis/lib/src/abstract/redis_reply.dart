@@ -11,9 +11,7 @@ import 'redis_exception.dart';
 /// reply cannot be represented as the requested type. Reading a
 /// [RedisErrorReply] through a conversion getter throws the corresponding
 /// [RedisServerException].
-sealed class RedisReply {
-  const RedisReply();
-
+sealed class const RedisReply() {
   /// Whether this is a null reply (null bulk string or null array).
   bool get isNull => this is RedisNull;
 
@@ -76,11 +74,7 @@ sealed class RedisReply {
 }
 
 /// A status reply like `OK` or `PONG`.
-final class RedisSimpleString extends RedisReply {
-  final String value;
-
-  const RedisSimpleString(this.value);
-
+final class const RedisSimpleString(final String value) extends RedisReply {
   @override
   bool operator ==(Object other) =>
       other is RedisSimpleString && other.value == value;
@@ -97,11 +91,7 @@ final class RedisSimpleString extends RedisReply {
 /// Error replies are thrown as [RedisServerException] by command methods.
 /// They only appear as values inside arrays, for example in the results of a
 /// transaction.
-final class RedisErrorReply extends RedisReply {
-  final String message;
-
-  const RedisErrorReply(this.message);
-
+final class const RedisErrorReply(final String message) extends RedisReply {
   RedisServerException toException() => RedisServerException(message);
 
   @override
@@ -116,11 +106,7 @@ final class RedisErrorReply extends RedisReply {
 }
 
 /// A signed 64 bit integer reply.
-final class RedisInteger extends RedisReply {
-  final int value;
-
-  const RedisInteger(this.value);
-
+final class const RedisInteger(final int value) extends RedisReply {
   @override
   bool operator ==(Object other) =>
       other is RedisInteger && other.value == value;
@@ -136,9 +122,9 @@ final class RedisInteger extends RedisReply {
 final class RedisBulkString extends RedisReply {
   final Uint8List bytes;
 
-  const RedisBulkString(this.bytes);
+  const new(this.bytes);
 
-  RedisBulkString.fromString(String value) : bytes = utf8.encode(value);
+  new fromString(String value) : bytes = utf8.encode(value);
 
   @override
   bool operator ==(Object other) {
@@ -162,11 +148,7 @@ final class RedisBulkString extends RedisReply {
 }
 
 /// An array reply.
-final class RedisArray extends RedisReply {
-  final List<RedisReply> items;
-
-  const RedisArray(this.items);
-
+final class const RedisArray(final List<RedisReply> items) extends RedisReply {
   @override
   bool operator ==(Object other) {
     if (other is! RedisArray || other.items.length != items.length) {
@@ -188,9 +170,7 @@ final class RedisArray extends RedisReply {
 }
 
 /// A null reply, which RESP2 sends as null bulk string or null array.
-final class RedisNull extends RedisReply {
-  const RedisNull();
-
+final class const RedisNull() extends RedisReply {
   @override
   bool operator ==(Object other) => other is RedisNull;
 

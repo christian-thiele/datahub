@@ -9,12 +9,12 @@ import 'package:datahub/utils.dart';
 import 'package:pointycastle/export.dart';
 
 /// Json Web Token
-class Jwt extends TokenAuth {
+class Jwt(super.token, {super.prefix = 'Bearer '}) extends TokenAuth {
   static final _jsonBase64 = json.fuse(utf8.fuse(base64Url));
 
-  final Map<String, dynamic> header;
-  final Map<String, dynamic> payload;
-  final Uint8List signature;
+  final Map<String, dynamic> header = _readHeader(token);
+  final Map<String, dynamic> payload = _readPayload(token);
+  final Uint8List signature = _readSignature(token);
 
   String? get alg => header['alg'];
 
@@ -43,12 +43,7 @@ class Jwt extends TokenAuth {
       ? null
       : DateTime.fromMillisecondsSinceEpoch((payload['exp'] as int) * 1000);
 
-  Jwt(super.token, {super.prefix = 'Bearer '})
-    : header = _readHeader(token),
-      payload = _readPayload(token),
-      signature = _readSignature(token);
-
-  factory Jwt.create(
+  factory create(
     Map<String, dynamic> header,
     Map<String, dynamic> payload,
     RSAPrivateKey key,
@@ -146,7 +141,11 @@ class Jwt extends TokenAuth {
 
     final key =
         publicKey ??
-        await Find<KeyCache>().find().getOAuthKey(Uri.parse(iss!), alg!, kid!);
+        await const Find<KeyCache>().find().getOAuthKey(
+          Uri.parse(iss!),
+          alg!,
+          kid!,
+        );
 
     final body = utf8.encode(token.split('.').take(2).join('.'));
     final signer = Signer('SHA-256/RSA');

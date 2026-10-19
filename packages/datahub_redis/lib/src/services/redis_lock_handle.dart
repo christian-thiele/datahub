@@ -34,36 +34,33 @@ return 0
 /// duration. The handle expires when a renewal finds the lock taken over
 /// (after the lease ran out), or when no renewal succeeded for a whole lease
 /// duration, for example because the server was unreachable.
-class RedisLockHandle implements LockHandle {
+class RedisLockHandle({
   /// The Redis key of the lock.
-  final String key;
+  required final String key,
 
   /// The key as requested by the caller, without prefix.
-  final String name;
+  required final String name,
 
   /// Random value identifying this holder.
-  final String token;
-
-  final Duration leaseDuration;
-
-  /// Pooled commands that are not bound to a connection of the caller.
-  final RedisCommands _commands;
-
-  /// Monotonic clock of the service.
-  final Stopwatch _clock;
-
-  /// Zone for timers, independent of the zone of whoever acquired the lock.
-  final Zone _zone;
-
-  final RedisTelemetry _telemetry;
-
-  final void Function(RedisLockHandle handle) _onFinished;
-
-  /// Point in time (on [_clock]) the lock was acquired.
-  final Duration _acquiredAt;
+  required final String token,
+  required final Duration leaseDuration,
 
   /// Point in time (on [_clock]) until the lease is known to be valid.
-  Duration _validUntil;
+  required var Duration _validUntil,
+
+  /// Pooled commands that are not bound to a connection of the caller.
+  required final RedisCommands _commands,
+
+  /// Monotonic clock of the service.
+  required final Stopwatch _clock,
+
+  /// Zone for timers, independent of the zone of whoever acquired the lock.
+  required final Zone _zone,
+  required final RedisTelemetry _telemetry,
+  required final void Function(RedisLockHandle handle) _onFinished,
+}) implements LockHandle {
+  /// Point in time (on [_clock]) the lock was acquired.
+  final Duration _acquiredAt = _clock.elapsed;
 
   final _expired = Completer<void>();
   Timer? _renewTimer;
@@ -71,24 +68,7 @@ class RedisLockHandle implements LockHandle {
   var _released = false;
   var _renewing = false;
 
-  RedisLockHandle({
-    required this.key,
-    required this.name,
-    required this.token,
-    required this.leaseDuration,
-    required Duration validUntil,
-    required RedisCommands commands,
-    required Stopwatch clock,
-    required Zone zone,
-    required RedisTelemetry telemetry,
-    required void Function(RedisLockHandle handle) onFinished,
-  }) : _validUntil = validUntil,
-       _commands = commands,
-       _clock = clock,
-       _acquiredAt = clock.elapsed,
-       _zone = zone,
-       _telemetry = telemetry,
-       _onFinished = onFinished {
+  this {
     _schedule(leaseDuration ~/ 3);
   }
 

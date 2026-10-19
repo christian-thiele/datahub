@@ -24,7 +24,9 @@ import 'revisable_layout.dart';
 ///   lock order is the same as for writers.
 ///
 /// Plain reads never lock.
-class RevisableStatements<TData extends DataObject<TData>> {
+class RevisableStatements<TData extends DataObject<TData>>(
+  final RevisableLayout<TData> layout,
+) {
   /// Channel notified when a revision is scheduled. Payload is
   /// [RevisableLayout.key].
   static const notificationChannel = 'datahub_revisable';
@@ -35,10 +37,6 @@ class RevisableStatements<TData extends DataObject<TData>> {
   static const _sysCreated = RevisableLayout.sysCreated;
   static const _sysFrom = RevisableLayout.sysFrom;
   static const _sysIsDeleted = RevisableLayout.sysIsDeleted;
-
-  final RevisableLayout<TData> layout;
-
-  RevisableStatements(this.layout);
 
   DataBean<TData> get bean => layout.bean;
 
@@ -77,12 +75,12 @@ class RevisableStatements<TData extends DataObject<TData>> {
 
   Sql get _relationLockKey => Sql.function('hashtextextended', [
     Sql.text('datahub.revisable.rel:${layout.key}'),
-    RawSql('0'),
+    const RawSql('0'),
   ]);
 
   Sql _elementLockKey(Sql id) => Sql.join([
     Sql.function('hashtext', [Sql.text(layout.key)]),
-    RawSql(', '),
+    const RawSql(', '),
     Sql.function('hashtext', [Sql.cast(id, const PostgresqlText())]),
   ]);
 
@@ -92,11 +90,11 @@ class RevisableStatements<TData extends DataObject<TData>> {
   /// statement is taken before it waits, so reads of the same statement
   /// could miss changes committed while waiting.
   Sql lockElement(dynamic id) => Sql.join([
-    RawSql('SELECT pg_advisory_xact_lock_shared('),
+    const RawSql('SELECT pg_advisory_xact_lock_shared('),
     _relationLockKey,
-    RawSql('), pg_advisory_xact_lock('),
+    const RawSql('), pg_advisory_xact_lock('),
     _elementLockKey(_idParam(id)),
-    RawSql(')'),
+    const RawSql(')'),
   ]);
 
   /// Waits for the shared relation lock and the element locks of [ids].
@@ -104,13 +102,13 @@ class RevisableStatements<TData extends DataObject<TData>> {
   /// Elements are locked in sorted id order, so transactions locking
   /// overlapping sets cannot deadlock each other. See [lockElement].
   Sql lockElements(List<Object> ids) => Sql.join([
-    RawSql('SELECT pg_advisory_xact_lock_shared('),
+    const RawSql('SELECT pg_advisory_xact_lock_shared('),
     _relationLockKey,
-    RawSql(')'),
+    const RawSql(')'),
     for (final id in _sortedIds(ids)) ...[
-      RawSql(', pg_advisory_xact_lock('),
+      const RawSql(', pg_advisory_xact_lock('),
       _elementLockKey(_idParam(id)),
-      RawSql(')'),
+      const RawSql(')'),
     ],
   ]);
 
@@ -118,13 +116,13 @@ class RevisableStatements<TData extends DataObject<TData>> {
   /// locks of [ids] without waiting: `SELECT <void>, <locked>...`, one
   /// boolean per id in the given order.
   Sql tryLockElements(List<Object> ids) => Sql.join([
-    RawSql('SELECT pg_advisory_xact_lock_shared('),
+    const RawSql('SELECT pg_advisory_xact_lock_shared('),
     _relationLockKey,
-    RawSql(')'),
+    const RawSql(')'),
     for (final id in ids) ...[
-      RawSql(', pg_try_advisory_xact_lock('),
+      const RawSql(', pg_try_advisory_xact_lock('),
       _elementLockKey(_idParam(id)),
-      RawSql(')'),
+      const RawSql(')'),
     ],
   ]);
 
@@ -153,23 +151,23 @@ class RevisableStatements<TData extends DataObject<TData>> {
 
   /// Tries to acquire the element lock of [id] without waiting.
   Sql tryLockElement(dynamic id) => Sql.join([
-    RawSql('SELECT pg_try_advisory_xact_lock('),
+    const RawSql('SELECT pg_try_advisory_xact_lock('),
     _elementLockKey(_idParam(id)),
-    RawSql(')'),
+    const RawSql(')'),
   ]);
 
   /// Waits for the exclusive relation lock (bulk writes).
   Sql lockRelationExclusive() => Sql.join([
-    RawSql('SELECT pg_advisory_xact_lock('),
+    const RawSql('SELECT pg_advisory_xact_lock('),
     _relationLockKey,
-    RawSql(')'),
+    const RawSql(')'),
   ]);
 
   /// Tries to acquire the shared relation lock without waiting.
   Sql tryLockRelationShared() => Sql.join([
-    RawSql('SELECT pg_try_advisory_xact_lock_shared('),
+    const RawSql('SELECT pg_try_advisory_xact_lock_shared('),
     _relationLockKey,
-    RawSql(')'),
+    const RawSql(')'),
   ]);
 
   // ---------------------------------------------------------------------------
@@ -177,30 +175,36 @@ class RevisableStatements<TData extends DataObject<TData>> {
 
   /// `SELECT EXISTS(...)`: true if any revision of [id] exists.
   Sql hasRevisions(dynamic id) => Sql.join([
-    RawSql('SELECT EXISTS (SELECT 1 FROM '),
+    const RawSql('SELECT EXISTS (SELECT 1 FROM '),
     _history,
-    RawSql(' WHERE '),
+    const RawSql(' WHERE '),
     buildFilterSql(identityFilter(bean, id), _historyFilterAttributes)!,
-    RawSql(')'),
+    const RawSql(')'),
   ]);
 
   /// Allocates a new id: `SELECT <id>, <now>`.
-  Sql allocateId() =>
-      Sql.join([RawSql('SELECT '), layout.idGenerator, RawSql(', '), _dbNow]);
+  Sql allocateId() => Sql.join([
+    const RawSql('SELECT '),
+    layout.idGenerator,
+    const RawSql(', '),
+    _dbNow,
+  ]);
 
   /// Reads the database time and the latest revision (including scheduled
   /// ones): `SELECT <now>, <version>?, <is deleted>?`.
   Sql head(dynamic id) => Sql.join([
-    RawSql('SELECT '),
+    const RawSql('SELECT '),
     _dbNow,
-    RawSql(
+    const RawSql(
       ', "h"."sys_version", "h"."sys_is_deleted" FROM (SELECT 1) AS "one" ',
     ),
-    RawSql('LEFT JOIN LATERAL (SELECT "sys_version", "sys_is_deleted" FROM '),
+    const RawSql(
+      'LEFT JOIN LATERAL (SELECT "sys_version", "sys_is_deleted" FROM ',
+    ),
     _history,
-    RawSql(' WHERE '),
+    const RawSql(' WHERE '),
     buildFilterSql(identityFilter(bean, id), _historyFilterAttributes)!,
-    RawSql(' ORDER BY "sys_version" DESC LIMIT 1) AS "h" ON true'),
+    const RawSql(' ORDER BY "sys_version" DESC LIMIT 1) AS "h" ON true'),
   ]);
 
   /// Appends a revision to history and applies it.
@@ -236,12 +240,12 @@ class RevisableStatements<TData extends DataObject<TData>> {
               ? id
               : attribute.field.valueOf(data),
       },
-      returning: [SqlWildcard()],
+      returning: [const SqlWildcard()],
     );
 
     final scheduleOfElement = Sql.join([
       _column(layout.scheduleId),
-      RawSql(' = '),
+      const RawSql(' = '),
       _idParam(id),
     ]);
 
@@ -254,7 +258,7 @@ class RevisableStatements<TData extends DataObject<TData>> {
             _schedule,
             Sql.join([
               scheduleOfElement,
-              RawSql(' AND "sys_from" >= '),
+              const RawSql(' AND "sys_from" >= '),
               ParameterSql(from, const PostgresqlDateTime()),
             ]),
           ),
@@ -282,16 +286,16 @@ class RevisableStatements<TData extends DataObject<TData>> {
         else
           SqlCte('up', _upsertCurrent('ins')),
       ],
-    ], SqlSelect(Sql.name('ins'), [SqlWildcard()]));
+    ], SqlSelect(Sql.name('ins'), [const SqlWildcard()]));
   }
 
   /// Wakes up promoters of all instances when the transaction commits.
   Sql notify() => Sql.join([
-    RawSql('SELECT pg_notify('),
+    const RawSql('SELECT pg_notify('),
     Sql.text(notificationChannel),
-    RawSql(', '),
+    const RawSql(', '),
     Sql.text(layout.key),
-    RawSql(')'),
+    const RawSql(')'),
   ]);
 
   /// Inserts or updates current rows from history rows in [source] (live
@@ -309,7 +313,7 @@ class RevisableStatements<TData extends DataObject<TData>> {
         Sql.name(source),
         columns,
         where: skipTombstones
-            ? RawSql('NOT ') + _column(_sysIsDeleted, source)
+            ? const RawSql('NOT ') + _column(_sysIsDeleted, source)
             : null,
       ),
       onConflict: SqlOnConflict.doUpdate(
@@ -323,7 +327,7 @@ class RevisableStatements<TData extends DataObject<TData>> {
         },
         where: Sql.join([
           _column(_sysVersion, _currentName),
-          RawSql(' < '),
+          const RawSql(' < '),
           _column(_sysVersion, 'excluded'),
         ]),
       ),
@@ -336,14 +340,14 @@ class RevisableStatements<TData extends DataObject<TData>> {
       _current,
       Sql.join([
         _column(layout.currentId, _currentName),
-        RawSql(' = '),
+        const RawSql(' = '),
         _column(layout.historyId, source),
-        RawSql(' AND '),
+        const RawSql(' AND '),
         _column(_sysVersion, _currentName),
-        RawSql(' < '),
+        const RawSql(' < '),
         _column(_sysVersion, source),
         if (onlyTombstones) ...[
-          RawSql(' AND '),
+          const RawSql(' AND '),
           _column(_sysIsDeleted, source),
         ],
       ]),
@@ -359,19 +363,19 @@ class RevisableStatements<TData extends DataObject<TData>> {
   Sql dueIds(int limit) {
     final id = Sql.name(layout.scheduleId.name);
     return Sql.join([
-      RawSql('SELECT "d".'),
+      const RawSql('SELECT "d".'),
       id,
-      RawSql(' FROM (SELECT DISTINCT '),
+      const RawSql(' FROM (SELECT DISTINCT '),
       id,
-      RawSql(' FROM '),
+      const RawSql(' FROM '),
       _schedule,
-      RawSql(' WHERE "sys_from" <= '),
+      const RawSql(' WHERE "sys_from" <= '),
       _dbNow,
-      RawSql(' AND "sys_failed_at" IS NULL LIMIT '),
+      const RawSql(' AND "sys_failed_at" IS NULL LIMIT '),
       ParameterSql(limit, const PostgresqlInt()),
-      RawSql(') AS "d" WHERE pg_try_advisory_xact_lock('),
-      _elementLockKey(RawSql('"d".') + id),
-      RawSql(')'),
+      const RawSql(') AS "d" WHERE pg_try_advisory_xact_lock('),
+      _elementLockKey(const RawSql('"d".') + id),
+      const RawSql(')'),
     ]);
   }
 
@@ -391,9 +395,9 @@ class RevisableStatements<TData extends DataObject<TData>> {
           _schedule,
           Sql.join([
             Sql.name(id),
-            RawSql(' = ANY('),
+            const RawSql(' = ANY('),
             idsParam,
-            RawSql(') AND "sys_from" <= '),
+            const RawSql(') AND "sys_from" <= '),
             _dbNow,
           ]),
           returning: [
@@ -408,39 +412,39 @@ class RevisableStatements<TData extends DataObject<TData>> {
           Sql.name('due'),
           [SqlColumnAttribute(id), SqlColumnAttribute(_sysVersion.name)],
           distinctOn: [SqlColumnAttribute(id)],
-          order: Sql.name(id) + RawSql(', "sys_version" DESC'),
+          order: Sql.name(id) + const RawSql(', "sys_version" DESC'),
         ),
       ),
       SqlCte(
         'src',
         SqlSelect(
           Sql.join([
-            RawSql('"win" JOIN '),
+            const RawSql('"win" JOIN '),
             _history,
-            RawSql(' ON '),
+            const RawSql(' ON '),
             _column(layout.historyId, _historyName),
-            RawSql(' = "win".'),
+            const RawSql(' = "win".'),
             Sql.name(id),
-            RawSql(' AND '),
+            const RawSql(' AND '),
             _column(_sysVersion, _historyName),
-            RawSql(' = "win"."sys_version"'),
+            const RawSql(' = "win"."sys_version"'),
           ]),
           [SqlWildcard(relation: _historyName)],
         ),
       ),
       SqlCte('up', _upsertCurrent('src', skipTombstones: true)),
       SqlCte('dc', _deleteCurrent('src', onlyTombstones: true)),
-    ], RawSql('SELECT count(*) FROM "win"'));
+    ], const RawSql('SELECT count(*) FROM "win"'));
   }
 
   /// Next time a schedule entry becomes due and the current database time:
   /// `SELECT <next>?, <now>`.
   Sql nextDue() => Sql.join([
-    RawSql('SELECT min("sys_from"), '),
+    const RawSql('SELECT min("sys_from"), '),
     _dbNow,
-    RawSql(' FROM '),
+    const RawSql(' FROM '),
     _schedule,
-    RawSql(' WHERE "sys_failed_at" IS NULL'),
+    const RawSql(' WHERE "sys_failed_at" IS NULL'),
   ]);
 
   /// Marks the due schedule entries of [id] as failed, so promotion skips
@@ -449,11 +453,11 @@ class RevisableStatements<TData extends DataObject<TData>> {
     _schedule,
     Sql.join([
       _column(layout.scheduleId),
-      RawSql(' = '),
+      const RawSql(' = '),
       _idParam(id),
-      RawSql(' AND "sys_from" <= '),
+      const RawSql(' AND "sys_from" <= '),
       _dbNow,
-      RawSql(' AND "sys_failed_at" IS NULL'),
+      const RawSql(' AND "sys_failed_at" IS NULL'),
     ]),
     {
       SqlTypedAttribute.of(RevisableLayout.sysFailedAt): _dbNow,
@@ -494,23 +498,24 @@ class RevisableStatements<TData extends DataObject<TData>> {
     );
 
     final scheduledTo = Sql.join([
-      RawSql('(SELECT min('),
+      const RawSql('(SELECT min('),
       _column(_sysFrom, _scheduleName),
-      RawSql(') FROM '),
+      const RawSql(') FROM '),
       _schedule,
-      RawSql(' WHERE '),
+      const RawSql(' WHERE '),
       _column(layout.scheduleId, _scheduleName),
-      RawSql(' = '),
+      const RawSql(' = '),
       _column(layout.currentId, _currentName),
-      RawSql(' AND '),
+      const RawSql(' AND '),
       _column(RevisableLayout.sysFailedAt, _scheduleName),
-      RawSql(' IS NULL) AS "sys_to"'),
+      const RawSql(' IS NULL) AS "sys_to"'),
     ]);
 
-    return SqlSelect(page.wrap() + RawSql(' AS ') + Sql.name(_currentName), [
-      SqlWildcard(relation: _currentName),
-      RawSqlAttribute(scheduledTo),
-    ], order: buildSortSql(sort, _currentFilterAttributes));
+    return SqlSelect(
+      page.wrap() + const RawSql(' AS ') + Sql.name(_currentName),
+      [SqlWildcard(relation: _currentName), RawSqlAttribute(scheduledTo)],
+      order: buildSortSql(sort, _currentFilterAttributes),
+    );
   }
 
   /// Ids of the current elements matching [filter], paged like
@@ -539,7 +544,7 @@ class RevisableStatements<TData extends DataObject<TData>> {
         _history,
         [
           ..._historyColumns(),
-          RawSqlAttribute(
+          const RawSqlAttribute(
             RawSql(
               'min("sys_from") OVER (ORDER BY "sys_version" ROWS BETWEEN 1 '
               'FOLLOWING AND UNBOUNDED FOLLOWING) AS "sys_to"',
@@ -550,7 +555,7 @@ class RevisableStatements<TData extends DataObject<TData>> {
           identityFilter(bean, id),
           _historyFilterAttributes,
         ),
-        order: RawSql('"sys_version" DESC'),
+        order: const RawSql('"sys_version" DESC'),
         offset: offset,
         limit: limit,
       );
@@ -562,23 +567,23 @@ class RevisableStatements<TData extends DataObject<TData>> {
       ..._historyColumns(),
       RawSqlAttribute(
         Sql.join([
-          RawSql('(SELECT min("n"."sys_from") FROM '),
+          const RawSql('(SELECT min("n"."sys_from") FROM '),
           _history,
-          RawSql(' AS "n" WHERE "n".'),
+          const RawSql(' AS "n" WHERE "n".'),
           Sql.name(layout.historyId.name),
-          RawSql(' = '),
+          const RawSql(' = '),
           _column(layout.historyId, _historyName),
-          RawSql(' AND "n"."sys_version" > '),
+          const RawSql(' AND "n"."sys_version" > '),
           _column(_sysVersion, _historyName),
-          RawSql(') AS "sys_to"'),
+          const RawSql(') AS "sys_to"'),
         ]),
       ),
     ],
     where: Sql.join([
       buildFilterSql(identityFilter(bean, id), _historyFilterAttributes)!,
-      RawSql(' AND '),
+      const RawSql(' AND '),
       _column(_sysVersion, _historyName),
-      RawSql(' = '),
+      const RawSql(' = '),
       ParameterSql(version, const PostgresqlInt()),
     ]),
   );
@@ -624,7 +629,7 @@ class RevisableStatements<TData extends DataObject<TData>> {
           _current,
           Sql.join([
             _column(layout.currentId, _currentName),
-            RawSql(' = '),
+            const RawSql(' = '),
             _column(layout.historyId, 'ins'),
           ]),
           {
@@ -664,27 +669,29 @@ class RevisableStatements<TData extends DataObject<TData>> {
     required SqlCte apply,
   }) {
     final head = Sql.join([
-      RawSql('(SELECT "sys_version", "sys_is_deleted" FROM '),
+      const RawSql('(SELECT "sys_version", "sys_is_deleted" FROM '),
       _history,
-      RawSql(' WHERE '),
+      const RawSql(' WHERE '),
       _column(layout.historyId, _historyName),
-      RawSql(' = '),
+      const RawSql(' = '),
       _column(layout.currentId, _currentName),
-      RawSql(' ORDER BY "sys_version" DESC LIMIT 1) AS "h"'),
+      const RawSql(' ORDER BY "sys_version" DESC LIMIT 1) AS "h"'),
     ]);
 
     final source = SqlSelect(
-      _current + RawSql(' CROSS JOIN LATERAL ') + head,
+      _current + const RawSql(' CROSS JOIN LATERAL ') + head,
       [
         SqlWildcard(relation: _currentName),
-        RawSqlAttribute(RawSql('"h"."sys_version" AS "sys_head_version"')),
+        const RawSqlAttribute(
+          RawSql('"h"."sys_version" AS "sys_head_version"'),
+        ),
       ],
       where: Sql.join([
         if (buildFilterSql(filter, _currentFilterAttributes) case final f?) ...[
           f.wrap(),
-          RawSql(' AND '),
+          const RawSql(' AND '),
         ],
-        RawSql('NOT "h"."sys_is_deleted"'),
+        const RawSql('NOT "h"."sys_is_deleted"'),
       ]),
     );
 
@@ -701,15 +708,15 @@ class RevisableStatements<TData extends DataObject<TData>> {
       _history,
       [for (final attribute in historyColumns) _column(attribute)],
       SqlSelect(Sql.name('src'), [
-        RawSqlAttribute(RawSql('"sys_head_version" + 1')),
+        const RawSqlAttribute(RawSql('"sys_head_version" + 1')),
         RawSqlAttribute(ParameterSql(creator, const PostgresqlString())),
-        RawSqlAttribute(_dbNow),
-        RawSqlAttribute(_dbNow),
+        const RawSqlAttribute(_dbNow),
+        const RawSqlAttribute(_dbNow),
         RawSqlAttribute(ParameterSql(isDeleted, const PostgresqlBool())),
         for (final attribute in layout.historyDataAttributes)
           RawSqlAttribute(valueOf(attribute) ?? _column(attribute)),
       ]),
-      returning: [SqlWildcard()],
+      returning: [const SqlWildcard()],
     );
 
     return SqlWith([
@@ -721,13 +728,13 @@ class RevisableStatements<TData extends DataObject<TData>> {
           _schedule,
           Sql.join([
             _column(layout.scheduleId, _scheduleName),
-            RawSql(' = '),
+            const RawSql(' = '),
             _column(layout.historyId, 'ins'),
           ]),
           using: Sql.name('ins'),
         ),
       ),
       apply,
-    ], RawSql('SELECT count(*) FROM "ins"'));
+    ], const RawSql('SELECT count(*) FROM "ins"'));
   }
 }

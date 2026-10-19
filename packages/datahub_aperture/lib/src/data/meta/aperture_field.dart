@@ -3,18 +3,10 @@ import 'package:meta/meta_meta.dart';
 
 /// Annotation for DataObject fields
 @Target({TargetKind.field})
-final class ApertureField extends MetaData {
-  final bool isDisplayField;
-  final bool readOnly;
-  final bool allowFilter;
-  final bool allowSearch;
-  final bool allowSort;
-
-  const ApertureField({
-    this.isDisplayField = false,
-    this.readOnly = false,
-    this.allowFilter = true,
-    this.allowSearch = true,
-    this.allowSort = true,
-  });
-}
+final class const ApertureField({
+  final bool isDisplayField = false,
+  final bool readOnly = false,
+  final bool allowFilter = true,
+  final bool allowSearch = true,
+  final bool allowSort = true,
+}) extends MetaData;

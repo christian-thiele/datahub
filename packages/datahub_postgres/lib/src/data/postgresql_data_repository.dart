@@ -93,7 +93,7 @@ mixin PostgresqlDataRepository<
 
     return await find(postgresql).runTransaction((context) async {
       final result = await dataRelation.select(context, [
-        AggregateExpression.count(),
+        const AggregateExpression.count(),
       ], filter: filter);
       return result.firstOrNull?.values.firstOrNull ?? 0;
     });
@@ -155,7 +155,7 @@ mixin PostgresqlDataRepository<
     return await find(postgresql).runTransaction((context) async {
       final result = await dataRelation.select(
         context,
-        [ValueExpression(1)],
+        [const ValueExpression(1)],
         filter: filter,
         limit: 1,
         forUpdate: locked,
@@ -186,8 +186,7 @@ mixin PostgresqlDataRepository<
 
   @override
   Future<R> atomic<R>(Future<R> Function() delegate) async {
-    return await find(
-      postgresql,
-    ).runTransaction((context) async => await delegate());
+    return await find(postgresql)
+        .runTransaction((context) async => await delegate());
   }
 }

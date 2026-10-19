@@ -14,62 +14,57 @@ import 'websocket_response.dart';
 /// itself and never reach children. All other requests are forwarded, and
 /// the CORS headers are added to their responses if the request origin is
 /// allowed.
-class CorsMiddleware extends ApiMiddleware {
+class const CorsMiddleware({
+  super.matcher,
+
   /// Origins allowed to access [routes], e.g. `https://example.com`.
   ///
   /// `*` allows any origin.
-  final Config<List<String>> allowedOrigins;
+  final Config<List<String>> allowedOrigins = const Config(
+    'cors.allowedOrigins',
+    defaultValue: ['*'],
+  ),
 
   /// Methods allowed for cross-origin requests.
   ///
   /// `*` allows any method.
-  final Config<List<String>> allowedMethods;
+  final Config<List<String>> allowedMethods = const Config(
+    'cors.allowedMethods',
+    defaultValue: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
+  ),
 
   /// Request headers allowed for cross-origin requests.
   ///
   /// `*` allows any header.
-  final Config<List<String>> allowedHeaders;
+  final Config<List<String>> allowedHeaders = const Config(
+    'cors.allowedHeaders',
+    defaultValue: ['*'],
+  ),
 
   /// Response headers exposed to scripts in addition to the
   /// CORS-safelisted response headers.
-  final Config<List<String>> exposedHeaders;
+  final Config<List<String>> exposedHeaders = const Config(
+    'cors.exposedHeaders',
+    defaultValue: [],
+  ),
 
   /// Whether cross-origin requests may include credentials, such as cookies
   /// or HTTP authentication.
   ///
   /// Browsers reject credentialed requests if any origin is allowed, so
   /// [allowedOrigins] must list the origins explicitly when this is enabled.
-  final Config<bool> allowCredentials;
+  final Config<bool> allowCredentials = const Config(
+    'cors.allowCredentials',
+    defaultValue: false,
+  ),
 
   /// How long browsers may cache preflight responses.
   ///
   /// Null leaves it to the browser default.
-  final Config<Duration?> maxAge;
-
-  const CorsMiddleware({
-    super.matcher,
-    this.allowedOrigins = const Config(
-      'cors.allowedOrigins',
-      defaultValue: ['*'],
-    ),
-    this.allowedMethods = const Config(
-      'cors.allowedMethods',
-      defaultValue: ['GET', 'HEAD', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    ),
-    this.allowedHeaders = const Config(
-      'cors.allowedHeaders',
-      defaultValue: ['*'],
-    ),
-    this.exposedHeaders = const Config('cors.exposedHeaders', defaultValue: []),
-    this.allowCredentials = const Config(
-      'cors.allowCredentials',
-      defaultValue: false,
-    ),
-    this.maxAge = const Config('cors.maxAge'),
-    required super.routes,
-    super.catchRequests = false,
-  });
-
+  final Config<Duration?> maxAge = const Config('cors.maxAge'),
+  required super.routes,
+  super.catchRequests = false,
+}) extends ApiMiddleware {
   @override
   Future<dynamic> onRequest(
     ApiRequest request,
@@ -161,13 +156,12 @@ class CorsMiddleware extends ApiMiddleware {
   }
 }
 
-class _CorsResponse extends ApiResponse {
-  final ApiResponse _inner;
-  final Map<String, List<String>> _headers;
-  final bool varyOrigin;
-
-  _CorsResponse(this._inner, this._headers, {required this.varyOrigin})
-    : super(_inner.statusCode);
+class _CorsResponse(
+  final ApiResponse _inner,
+  final Map<String, List<String>> _headers, {
+  required final bool varyOrigin,
+}) extends ApiResponse {
+  this : super(_inner.statusCode);
 
   @override
   Stream<List<int>> getData() => _inner.getData();

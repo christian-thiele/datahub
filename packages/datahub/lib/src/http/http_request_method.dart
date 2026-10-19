@@ -1,6 +1,6 @@
 import 'package:datahub/utils.dart';
 
-enum HttpRequestMethod {
+enum HttpRequestMethod() {
   get,
   post,
   put,

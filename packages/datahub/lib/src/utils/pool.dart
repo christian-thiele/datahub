@@ -5,28 +5,23 @@ import 'package:datahub/api.dart';
 import 'package:datahub/telemetry.dart';
 
 // TODO docs
-class Pool<T> {
-  final _items = <_PoolItem<T>>[];
-  final _taken = <_PoolItem<T>>{};
-  final _queue = <Completer<_PoolItem<T>>>[];
+class Pool<T>(
+  var int targetSize,
+  final FutureOr<T> Function() _createItem, {
+  final Future<void> Function(T)? onRemoveItem,
+  final FutureOr<bool> Function(T)? _checkIsLive,
+  final Duration checkIsLiveTimeout = const Duration(seconds: 10),
+  final FutureOr<void> Function(T)? _onReturn,
+  final Duration onReturnTimeout = const Duration(seconds: 10),
+  final Duration? maxLifetime,
 
-  final FutureOr<T> Function() _createItem;
-  final FutureOr<bool> Function(T)? _checkIsLive;
-  final FutureOr<void> Function(T)? _onReturn;
-  final Future<void> Function(T)? onRemoveItem;
-  final void Function()? onChange;
-
-  /// Number of items currently being created for reserved take() calls.
+  /// Maximum number of [take] requests waiting for an item at the same time.
   ///
-  /// Counted into [total] so that concurrent [take] calls cannot decide to
-  /// create more items than [targetSize] allows while creations are still
-  /// in flight.
-  int _creating = 0;
-
-  int targetSize;
-  final Duration? maxLifetime;
-  final Duration checkIsLiveTimeout;
-  final Duration onReturnTimeout;
+  /// When the pool is exhausted and the queue has reached this length,
+  /// further [take] calls fail immediately with a [PoolQueueLimitException]
+  /// instead of queueing up. This provides backpressure under overload
+  /// instead of unbounded memory growth. Null means unlimited.
+  final int? maxQueueLength,
 
   /// Interval for background maintenance: idle items that exceeded
   /// [maxLifetime] are evicted and, if [autoRefill] is set, the pool is
@@ -35,20 +30,24 @@ class Pool<T> {
   /// Maintenance only runs when [maxLifetime] is set or [autoRefill] is
   /// enabled. While the maintenance timer is active, the pool keeps the
   /// isolate alive until [dispose] is called.
-  final Duration maintenanceInterval;
+  final Duration maintenanceInterval = const Duration(seconds: 30),
 
   /// Whether background maintenance refills the pool up to [targetSize].
-  final bool autoRefill;
+  final bool autoRefill = false,
+  final void Function()? onChange,
+}) {
+  final _items = <_PoolItem<T>>[];
+  final _taken = <_PoolItem<T>>{};
+  final _queue = <Completer<_PoolItem<T>>>[];
+
+  /// Number of items currently being created for reserved take() calls.
+  ///
+  /// Counted into [total] so that concurrent [take] calls cannot decide to
+  /// create more items than [targetSize] allows while creations are still
+  /// in flight.
+  int _creating = 0;
 
   Timer? _maintenanceTimer;
-
-  /// Maximum number of [take] requests waiting for an item at the same time.
-  ///
-  /// When the pool is exhausted and the queue has reached this length,
-  /// further [take] calls fail immediately with a [PoolQueueLimitException]
-  /// instead of queueing up. This provides backpressure under overload
-  /// instead of unbounded memory growth. Null means unlimited.
-  final int? maxQueueLength;
 
   bool _disposed = false;
 
@@ -59,21 +58,7 @@ class Pool<T> {
   /// Whether [dispose] has been called.
   bool get isDisposed => _disposed;
 
-  Pool(
-    this.targetSize,
-    this._createItem, {
-    this.onRemoveItem,
-    FutureOr<bool> Function(T)? checkIsLive,
-    this.checkIsLiveTimeout = const Duration(seconds: 10),
-    FutureOr<void> Function(T)? onReturn,
-    this.onReturnTimeout = const Duration(seconds: 10),
-    this.maxLifetime,
-    this.maxQueueLength,
-    this.maintenanceInterval = const Duration(seconds: 30),
-    this.autoRefill = false,
-    this.onChange,
-  }) : _checkIsLive = checkIsLive,
-       _onReturn = onReturn {
+  this {
     if (maxLifetime != null || autoRefill) {
       _maintenanceTimer = Timer.periodic(
         maintenanceInterval,
@@ -506,10 +491,9 @@ class Pool<T> {
 ///
 /// This is a backpressure signal: the pool is overloaded and the caller
 /// should fail fast instead of adding more waiters.
-class PoolQueueLimitException extends ApiRequestException {
-  final int queueLimit;
-
-  PoolQueueLimitException(this.queueLimit) : super(503, null);
+class PoolQueueLimitException(final int queueLimit)
+    extends ApiRequestException {
+  this : super(503, null);
 
   @override
   String toString() =>
@@ -519,19 +503,16 @@ class PoolQueueLimitException extends ApiRequestException {
 /// Internal signal for queued waiters in [Pool.take]: capacity opened up
 /// (e.g. a concurrent item creation failed), retry taking instead of
 /// waiting for an item to be given back.
-class _RetryTake implements Exception {
-  const _RetryTake();
-}
+class const _RetryTake() implements Exception;
 
-class _PoolItem<T> {
-  final T item;
+class _PoolItem<T>(final T item) {
   final DateTime createTimestamp;
 
   /// Randomized factor (0.9 - 1.0) applied to the pool's max lifetime so
   /// that items created together do not all expire at the same moment.
   final double lifetimeJitter;
 
-  _PoolItem(this.item)
+  this
     : createTimestamp = DateTime.now(),
       lifetimeJitter = 0.9 + Random().nextDouble() * 0.1;
 

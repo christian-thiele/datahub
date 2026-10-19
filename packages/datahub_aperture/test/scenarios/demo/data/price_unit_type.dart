@@ -1,1 +1,8 @@
-enum PriceUnitType { piece, hour, day, month, flat, license }
+enum PriceUnitType() {
+  piece,
+  hour,
+  day,
+  month,
+  flat,
+  license,
+}

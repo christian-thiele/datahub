@@ -155,9 +155,9 @@ Sql? buildSortSql(
     flat
         .map((e) {
           return buildExpressionSql(e.expression, attributes) +
-              (e.ascending ? RawSql(' ASC') : RawSql(' DESC'));
+              (e.ascending ? const RawSql(' ASC') : const RawSql(' DESC'));
         })
-        .separatedBy(RawSql(', ')),
+        .separatedBy(const RawSql(', ')),
   );
 }
 
@@ -260,49 +260,50 @@ Sql _compareSql(
   final rightSql = buildExpressionSql(right, attributes, includeAlias: false);
 
   return switch ((leftType, type, rightType)) {
-    (_, CompareType.equals, PostgresqlNull()) => leftSql + RawSql(' IS NULL'),
+    (_, CompareType.equals, PostgresqlNull()) =>
+      leftSql + const RawSql(' IS NULL'),
     (_, CompareType.notEquals, PostgresqlNull()) =>
-      leftSql + RawSql(' IS NOT NULL'),
+      leftSql + const RawSql(' IS NOT NULL'),
     (PostgresqlString(), CompareType.contains, PostgresqlString()) => Sql.join([
       leftSql,
-      RawSql(' ~* '),
+      const RawSql(' ~* '),
       rightSql,
     ]),
     (PostgresqlString(), CompareType.isIn, PostgresqlString()) => Sql.join([
       rightSql,
-      RawSql(' ~* '),
+      const RawSql(' ~* '),
       leftSql,
     ]),
     (PostgresqlArray(), CompareType.contains, _) => Sql.join([
       rightSql,
-      RawSql(' = '),
+      const RawSql(' = '),
       Sql.function('ANY', [leftSql]),
     ]),
     (_, CompareType.isIn, PostgresqlArray()) => Sql.join([
       leftSql,
-      RawSql(' = '),
+      const RawSql(' = '),
       Sql.function('ANY', [rightSql]),
     ]),
     (PostgresqlJson(), CompareType.contains, PostgresqlArray()) => Sql.join([
       leftSql,
-      RawSql(' @> '),
+      const RawSql(' @> '),
       Sql.function('array_to_json', [rightSql]),
-      RawSql('::jsonb'),
+      const RawSql('::jsonb'),
     ]),
     (PostgresqlJson(), CompareType.contains, _) => Sql.join([
       leftSql,
-      RawSql(' @> '),
+      const RawSql(' @> '),
       rightSql,
     ]),
     (PostgresqlArray(), CompareType.isIn, PostgresqlJson()) => Sql.join([
       rightSql,
-      RawSql(' @> '),
+      const RawSql(' @> '),
       Sql.function('array_to_json', [leftSql]),
-      RawSql('::jsonb'),
+      const RawSql('::jsonb'),
     ]),
     (_, CompareType.isIn, PostgresqlJson()) => Sql.join([
       rightSql,
-      RawSql(' @> '),
+      const RawSql(' @> '),
       leftSql,
     ]),
     _ => Sql.join([

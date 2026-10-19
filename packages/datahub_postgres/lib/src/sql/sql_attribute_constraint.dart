@@ -2,28 +2,29 @@ import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/types.dart';
 
-class SqlAttributeConstraint {
-  final PostgresqlAttribute attribute;
-  final PostgresqlAttributeConstraint constraint;
-
-  SqlAttributeConstraint(this.attribute, this.constraint);
-
+class SqlAttributeConstraint(
+  final PostgresqlAttribute attribute,
+  final PostgresqlAttributeConstraint constraint,
+) {
   Sql toSql() {
     return switch (constraint) {
-      NotNullConstraint() => RawSql('NOT NULL'),
+      NotNullConstraint() => const RawSql('NOT NULL'),
       // an explicit DEFAULT replaces the built-in generation of auto keys
       PrimaryKeyConstraint(:final auto) => Sql.join([
-        RawSql('PRIMARY KEY'),
+        const RawSql('PRIMARY KEY'),
         if (auto && !attribute.hasConstraint<DefaultConstraint>()) ...[
           if (attribute.type is PostgresqlInt ||
               attribute.type is PostgresqlSerial)
-            RawSql(' GENERATED ALWAYS AS IDENTITY'),
+            const RawSql(' GENERATED ALWAYS AS IDENTITY'),
           if (attribute.type is PostgresqlString)
-            RawSql(' DEFAULT gen_random_uuid()'),
+            const RawSql(' DEFAULT gen_random_uuid()'),
         ],
       ]),
-      UniqueConstraint() => RawSql('UNIQUE'),
-      DefaultConstraint(:final value) => Sql.join([RawSql('DEFAULT '), value]),
+      UniqueConstraint() => const RawSql('UNIQUE'),
+      DefaultConstraint(:final value) => Sql.join([
+        const RawSql('DEFAULT '),
+        value,
+      ]),
     };
   }
 }

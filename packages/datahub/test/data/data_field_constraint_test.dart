@@ -1,9 +1,14 @@
 import 'package:datahub/data.dart';
 import 'package:test/test.dart';
 
-enum Status { open, closed }
+enum Status() {
+  open,
+  closed,
+}
 
-enum Other { value }
+enum Other() {
+  value,
+}
 
 /// Constraints are applied through [DataField.checkConstraints], which passes
 /// the field value as `dynamic`, so a null value of a nullable field reaches

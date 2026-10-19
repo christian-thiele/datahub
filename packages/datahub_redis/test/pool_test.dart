@@ -160,7 +160,7 @@ void main() {
     }, config: {...singleConnection, 'healthCheckInterval': 200});
 
     env.test('publishes pool metrics', (redis) async {
-      final samples = await Find<Telemetry>().find().scrapeMetrics();
+      final samples = await const Find<Telemetry>().find().scrapeMetrics();
       final names = samples.map((s) => s.name).toSet();
       expect(
         names,

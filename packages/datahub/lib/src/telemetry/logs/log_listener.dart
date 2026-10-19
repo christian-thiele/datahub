@@ -2,18 +2,18 @@ import 'dart:async';
 
 import 'package:datahub/datahub.dart';
 
-class LogListener {
+class LogListener({
+  /// Callback for when a log message is published from within the LogListeners
+  /// Zone.
+  required final void Function(LogMessage) onPublish,
+}) {
   static const _symbol = #datahub.logListener;
 
   static LogListener? get current => Zone.current[_symbol];
 
-  /// Callback for when a log message is published from within the LogListeners
-  /// Zone.
-  final void Function(LogMessage) onPublish;
-
   late final LogListener? parent;
 
-  LogListener({required this.onPublish}) {
+  this {
     parent = Zone.current[_symbol];
   }
 

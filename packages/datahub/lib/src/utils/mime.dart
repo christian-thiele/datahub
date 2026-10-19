@@ -1,12 +1,10 @@
-class Mime {
+class Mime._() {
   static const plainText = 'text/plain';
   static const html = 'text/html';
   static const octetStream = 'application/octet-stream';
   static const formData = 'application/x-www-form-urlencoded';
   static const json = 'application/json';
   static const datahubResourceStream = 'application/x-datahub-resource-stream';
-
-  Mime._();
 
   /// Detects the Mime-type from a content-type header.
   ///
@@ -24,11 +22,9 @@ class Mime {
   }
 
   static String? fromExtension(String extension) {
-    if (extension.startsWith('.')) {
-      extension = extension.substring(1);
-    }
-
-    return _extensionToMime[extension];
+    return _extensionToMime[extension.startsWith('.')
+        ? extension.substring(1)
+        : extension];
   }
 
   static String? getExtension(String mime) {
@@ -464,21 +460,17 @@ class Mime {
     'xo': 'application/vnd.olpc-sugar',
     'dd2': 'application/vnd.oma.dd2+xml',
     'oxt': 'application/vnd.openofficeorg.extension',
-    'pptx':
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     'sldx':
         'application/vnd.openxmlformats-officedocument.presentationml.slide',
-    'ppsx':
-        'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
+    'ppsx': 'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
     'potx':
         'application/vnd.openxmlformats-officedocument.presentationml.template',
     'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'xltx':
         'application/vnd.openxmlformats-officedocument.spreadsheetml.template',
-    'docx':
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-    'dotx':
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
+    'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'dotx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
     'mgp': 'application/vnd.osgeo.mapguide.package',
     'dp': 'application/vnd.osgi.dp',
     'esa': 'application/vnd.osgi.subsystem',

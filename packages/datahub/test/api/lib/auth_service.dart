@@ -1,23 +1,17 @@
 import 'package:datahub/datahub.dart';
 
-class TestSession implements Session {
+class TestSession(@override final String identity) implements Session {
   @override
   String get debugName => 'Test Session: $identity';
-
-  @override
-  final String identity;
-
-  TestSession(this.identity);
 }
 
-class AuthService implements Service {
-  const AuthService();
-
+class const AuthService() implements Service {
   @override
   ServiceInstance<AuthService> createInstance() => _AuthServiceInstance();
 }
 
-class _AuthServiceInstance extends ServiceInstance<AuthService>
+class _AuthServiceInstance()
+    extends ServiceInstance<AuthService>
     implements BasicAuthProvider {
   @override
   Future<TestSession> authenticateBasic(BasicAuth auth) async {

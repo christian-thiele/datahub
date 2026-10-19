@@ -1,8 +1,4 @@
-class SqlException implements Exception {
-  final String message;
-
-  SqlException(this.message);
-
+class SqlException(final String message) implements Exception {
   @override
   String toString() => message;
 }

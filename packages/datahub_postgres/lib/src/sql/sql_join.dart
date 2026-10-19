@@ -2,30 +2,34 @@ import 'package:datahub_postgres/src/sql/sql.dart';
 
 import 'sql_select.dart';
 
-enum SqlJoinType { left, right, inner, cross, full }
+enum SqlJoinType() {
+  left,
+  right,
+  inner,
+  cross,
+  full,
+}
 
-class SqlJoin with SqlBuilder {
-  final SqlSelectTarget left;
-  final SqlSelectTarget right;
-  final SqlJoinType type;
-  final Sql? on;
-
-  SqlJoin({
-    required this.left,
-    required this.right,
-    this.on,
-    this.type = SqlJoinType.inner,
-  });
-
+class SqlJoin({
+  required final SqlSelectTarget left,
+  required final SqlSelectTarget right,
+  final Sql? on,
+  final SqlJoinType type = SqlJoinType.inner,
+}) with SqlBuilder {
   @override
-  Sql toSql() =>
-      Sql.join([left, _joinSql(), right, if (on != null) RawSql(' ON '), ?on]);
+  Sql toSql() => Sql.join([
+    left,
+    _joinSql(),
+    right,
+    if (on != null) const RawSql(' ON '),
+    ?on,
+  ]);
 
   Sql _joinSql() => switch (type) {
-    SqlJoinType.left => RawSql(' LEFT JOIN '),
-    SqlJoinType.right => RawSql(' RIGHT JOIN '),
-    SqlJoinType.inner => RawSql(' INNER JOIN '),
-    SqlJoinType.cross => RawSql(' CROSS JOIN '),
-    SqlJoinType.full => RawSql(' FULL JOIN '),
+    SqlJoinType.left => const RawSql(' LEFT JOIN '),
+    SqlJoinType.right => const RawSql(' RIGHT JOIN '),
+    SqlJoinType.inner => const RawSql(' INNER JOIN '),
+    SqlJoinType.cross => const RawSql(' CROSS JOIN '),
+    SqlJoinType.full => const RawSql(' FULL JOIN '),
   };
 }

@@ -10,7 +10,7 @@ void main() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -21,16 +21,16 @@ void main() {
       ),
 
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           ResourceEndpoint(
             matcher: RoutePattern('/select'),
             get: (request) async {
-              final postgres = Find<Postgresql>().find();
+              final postgres = const Find<Postgresql>().find();
               final result = await postgres.useConnection((connection) async {
                 return await connection.runTransaction((context) async {
                   await Future.delayed(const Duration(seconds: 6));
-                  return await context.execute(RawSql('SELECT 1337;'));
+                  return await context.execute(const RawSql('SELECT 1337;'));
                 });
               });
 
@@ -41,7 +41,7 @@ void main() {
       ),
     ],
     () async {
-      final client = Find<Api>().find().connectHttp11();
+      final client = const Find<Api>().find().connectHttp11();
 
       final futures = [
         for (final _ in Iterable.generate(10))

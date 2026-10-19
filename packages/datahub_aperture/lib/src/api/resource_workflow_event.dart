@@ -4,22 +4,15 @@ part 'resource_workflow_event.g.dart';
 
 /// An event of the workflow of a resource.
 @Data()
-class ResourceWorkflowEvent extends $ResourceWorkflowEvent {
-  final WorkflowEvent event;
+class const ResourceWorkflowEvent({
+  required final WorkflowEvent event,
 
   /// Whether a worker is handling the event right now.
-  final bool running;
-
-  const ResourceWorkflowEvent({required this.event, required this.running});
-}
+  required final bool running,
+}) extends $ResourceWorkflowEvent;
 
 @Data()
-class ResourceWorkflowEventsResponse extends $ResourceWorkflowEventsResponse {
-  final bool hasNextPage;
-  final List<ResourceWorkflowEvent> data;
-
-  const ResourceWorkflowEventsResponse({
-    required this.hasNextPage,
-    required this.data,
-  });
-}
+class const ResourceWorkflowEventsResponse({
+  required final bool hasNextPage,
+  required final List<ResourceWorkflowEvent> data,
+}) extends $ResourceWorkflowEventsResponse;

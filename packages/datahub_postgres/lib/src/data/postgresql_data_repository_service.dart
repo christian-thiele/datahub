@@ -6,26 +6,23 @@ import 'package:datahub_postgres/services.dart';
 ///
 /// When access control or different behavior is required, use [PostgresqlDataRepository]
 /// as mixin for a [ServiceInstance] to override methods.
-class PostgresqlDataRepositoryService<TData extends DataObject<TData>>
-    implements Service {
-  final Find<Postgresql> postgresql;
-  final Config<String> schemaName;
-  final Config<String?> relationName;
-  final DataBean<TData> bean;
-
-  const PostgresqlDataRepositoryService({
-    required this.bean,
-    this.postgresql = const Find(),
-    this.schemaName = const Config('schemaName', defaultValue: 'public'),
-    this.relationName = const Config('relationName'),
-  });
-
+class const PostgresqlDataRepositoryService<TData extends DataObject<TData>>({
+  required final DataBean<TData> bean,
+  final Find<Postgresql> postgresql = const Find(),
+  final Config<String> schemaName = const Config(
+    'schemaName',
+    defaultValue: 'public',
+  ),
+  final Config<String?> relationName = const Config('relationName'),
+}) implements Service {
   @override
   ServiceInstance<PostgresqlDataRepositoryService> createInstance() =>
       _PostgresqlDataRepositoryServiceInstance<TData>();
 }
 
-class _PostgresqlDataRepositoryServiceInstance<TData extends DataObject<TData>>
+class _PostgresqlDataRepositoryServiceInstance<
+  TData extends DataObject<TData>
+>()
     extends ServiceInstance<PostgresqlDataRepositoryService<TData>>
     with
         PostgresqlDataRepository<

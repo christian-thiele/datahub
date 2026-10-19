@@ -9,7 +9,7 @@ import 'postgresql_connection.dart';
 import 'postgresql_context.dart';
 import 'postgresql_telemetry.dart';
 
-abstract interface class Postgresql {
+abstract interface class Postgresql() {
   Future<T> runTransaction<T>(
     Future<T> Function(PostgresqlContext context) delegate,
   );
@@ -35,25 +35,49 @@ abstract interface class Postgresql {
   Stream<String> listen(String channel);
 }
 
-class PostgresqlService implements Service {
-  final Config<bool> logStatements;
-
-  final Config<String> applicationName;
-  final Config<String> host;
-  final Config<int> port;
-  final Config<String> database;
-  final Config<String?> username;
-  final Config<String?> password;
-
-  final Config<Duration> timeout;
-  final Config<Duration> queryTimeout;
-  final Config<String> timeZone;
-  final Config<bool> useSsl;
-
-  final Config<int> targetPoolSize;
-  final Config<Duration> maxConnectionLifetime;
-  final Config<Duration> poolTimeout;
-  final Config<int> poolQueueLimit;
+class const PostgresqlService({
+  final Config<String> applicationName = const Config(
+    'serviceName',
+    defaultValue: 'DataHub',
+  ),
+  final Config<String> host = const Config('host', defaultValue: 'localhost'),
+  final Config<int> port = const Config('port', defaultValue: 5432),
+  final Config<String> database = const Config(
+    'database',
+    defaultValue: 'postgres',
+  ),
+  final Config<String?> username = const Config('username'),
+  final Config<String?> password = const Config('password'),
+  final Config<Duration> timeout = const Config(
+    'timeout',
+    defaultValue: Duration(seconds: 10),
+  ),
+  final Config<Duration> queryTimeout = const Config<Duration>(
+    'queryTimeout',
+    defaultValue: Duration(seconds: 30),
+  ),
+  final Config<String> timeZone = const Config('timeZone', defaultValue: 'UTC'),
+  final Config<bool> useSsl = const Config('useSsl', defaultValue: true),
+  final Config<bool> logStatements = const Config(
+    'logStatements',
+    defaultValue: false,
+  ),
+  final Config<int> targetPoolSize = const Config(
+    'targetPoolSize',
+    defaultValue: 3,
+  ),
+  final Config<Duration> maxConnectionLifetime = const Config(
+    'maxConnectionLifetime',
+    defaultValue: Duration(hours: 1),
+  ),
+  final Config<Duration> poolTimeout = const Config<Duration>(
+    'poolTimeout',
+    defaultValue: Duration(seconds: 5),
+  ),
+  final Config<int> poolQueueLimit = const Config<int>(
+    'poolQueueLimit',
+    defaultValue: 10,
+  ),
 
   /// Whether to reset the session state of a connection (via `DISCARD ALL`)
   /// before returning it to the connection pool.
@@ -61,74 +85,42 @@ class PostgresqlService implements Service {
   /// This prevents session state (session variables, temporary tables,
   /// advisory locks, ...) from leaking between unrelated consumers of the
   /// pool, at the cost of one extra round-trip per connection use.
-  final Config<bool> resetConnectionOnReturn;
+  final Config<bool> resetConnectionOnReturn = const Config<bool>(
+    'resetConnectionOnReturn',
+    defaultValue: true,
+  ),
 
   /// Interval for background maintenance of the connection pool.
   ///
   /// On every maintenance run, idle connections that exceeded
   /// [maxConnectionLifetime] are closed and the pool is refilled up to
   /// [targetPoolSize].
-  final Config<Duration> poolMaintenanceInterval;
-
-  final Config<bool> enableMetrics;
-  final Config<String> metricPrefix;
+  final Config<Duration> poolMaintenanceInterval = const Config<Duration>(
+    'poolMaintenanceInterval',
+    defaultValue: Duration(seconds: 30),
+  ),
+  final Config<bool> enableMetrics = const Config<bool>(
+    'enableMetrics',
+    defaultValue: true,
+  ),
+  final Config<String> metricPrefix = const Config<String>(
+    'metricPrefix',
+    defaultValue: 'postgresql',
+  ),
 
   /// Trace queries and transactions as spans, see [PostgresqlTelemetry].
-  final Config<bool> enableTracing;
-
-  const PostgresqlService({
-    this.applicationName = const Config('serviceName', defaultValue: 'DataHub'),
-    this.host = const Config('host', defaultValue: 'localhost'),
-    this.port = const Config('port', defaultValue: 5432),
-    this.database = const Config('database', defaultValue: 'postgres'),
-    this.username = const Config('username'),
-    this.password = const Config('password'),
-    this.timeout = const Config('timeout', defaultValue: Duration(seconds: 10)),
-    this.queryTimeout = const Config<Duration>(
-      'queryTimeout',
-      defaultValue: Duration(seconds: 30),
-    ),
-    this.timeZone = const Config('timeZone', defaultValue: 'UTC'),
-    this.useSsl = const Config('useSsl', defaultValue: true),
-    this.logStatements = const Config('logStatements', defaultValue: false),
-    this.targetPoolSize = const Config('targetPoolSize', defaultValue: 3),
-    this.maxConnectionLifetime = const Config(
-      'maxConnectionLifetime',
-      defaultValue: Duration(hours: 1),
-    ),
-    this.poolTimeout = const Config<Duration>(
-      'poolTimeout',
-      defaultValue: Duration(seconds: 5),
-    ),
-    this.poolQueueLimit = const Config<int>('poolQueueLimit', defaultValue: 10),
-    this.resetConnectionOnReturn = const Config<bool>(
-      'resetConnectionOnReturn',
-      defaultValue: true,
-    ),
-    this.poolMaintenanceInterval = const Config<Duration>(
-      'poolMaintenanceInterval',
-      defaultValue: Duration(seconds: 30),
-    ),
-    this.enableMetrics = const Config<bool>(
-      'enableMetrics',
-      defaultValue: true,
-    ),
-    this.metricPrefix = const Config<String>(
-      'metricPrefix',
-      defaultValue: 'postgresql',
-    ),
-    this.enableTracing = const Config<bool>(
-      'enableTracing',
-      defaultValue: true,
-    ),
-  });
-
+  final Config<bool> enableTracing = const Config<bool>(
+    'enableTracing',
+    defaultValue: true,
+  ),
+}) implements Service {
   @override
   ServiceInstance<PostgresqlService> createInstance() =>
       _PostgresqlServiceInstance();
 }
 
-class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
+class _PostgresqlServiceInstance()
+    extends ServiceInstance<PostgresqlService>
     with DatabaseConnectionManager<PostgresqlService, PostgresqlConnection>
     implements Postgresql {
   static const _listenerMaxBackoff = Duration(seconds: 30);
@@ -151,7 +143,7 @@ class _PostgresqlServiceInstance extends ServiceInstance<PostgresqlService>
     }
 
     return PostgresqlTelemetry(
-      telemetry: find(Find<Telemetry>()),
+      telemetry: find(const Find<Telemetry>()),
       metricPrefix: read(service.metricPrefix),
       enableMetrics: enableMetrics,
       enableTracing: enableTracing,

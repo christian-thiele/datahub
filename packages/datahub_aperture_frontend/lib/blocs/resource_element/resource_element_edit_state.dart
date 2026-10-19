@@ -7,7 +7,7 @@ sealed class ResourceElementEditState {
 final class ResourceElementEditLoading extends ResourceElementEditState {
   final bool _initial;
 
-  const ResourceElementEditLoading({bool initial = false}) : _initial = initial;
+  const ResourceElementEditLoading({this._initial = false});
 }
 
 final class ResourceElementEditValue extends ResourceElementEditState {

@@ -5,18 +5,15 @@ import 'package:buffer/buffer.dart';
 
 import 'geometry.dart';
 
-class MultiPoint extends Geometry {
-  final List<Point> points;
+class const MultiPoint(
+  int? srid,
+  final List<Point> points,
+  bool hasZ,
+  bool hasM,
+) extends Geometry {
+  this : super(srid, GeometryType.multiPoint, hasZ, hasM);
 
-  const MultiPoint(int? srid, this.points, bool hasZ, bool hasM)
-    : super(srid, GeometryType.multiPoint, hasZ, hasM);
-
-  factory MultiPoint.read(
-    int? srid,
-    ByteDataReader reader,
-    bool hasZ,
-    bool hasM,
-  ) {
+  factory read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
     final length = reader.readUint32();
     return MultiPoint(
       srid,

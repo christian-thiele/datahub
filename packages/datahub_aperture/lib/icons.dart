@@ -2,9 +2,7 @@
 
 library;
 
-class Icons {
-  const Icons._();
-
+class const Icons._() {
   static const ten_k = 0xe000;
   static const ten_k_sharp = 0xe700;
   static const ten_k_rounded = 0xf4df;

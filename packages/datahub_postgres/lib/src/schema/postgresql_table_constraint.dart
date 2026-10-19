@@ -1,21 +1,12 @@
 import 'postgresql_attribute.dart';
 
-sealed class PostgresqlTableConstraint {
-  const PostgresqlTableConstraint();
-}
+sealed class const PostgresqlTableConstraint();
 
-final class UniqueTableConstraint extends PostgresqlTableConstraint {
-  final List<PostgresqlAttribute> attributes;
-  final bool nullsNotDistinct;
+final class const UniqueTableConstraint({
+  required final List<PostgresqlAttribute> attributes,
+  final bool nullsNotDistinct = false,
+}) extends PostgresqlTableConstraint;
 
-  const UniqueTableConstraint({
-    required this.attributes,
-    this.nullsNotDistinct = false,
-  });
-}
-
-final class PrimaryKeyTableConstraint extends PostgresqlTableConstraint {
-  final List<PostgresqlAttribute> attributes;
-
-  const PrimaryKeyTableConstraint({required this.attributes});
-}
+final class const PrimaryKeyTableConstraint({
+  required final List<PostgresqlAttribute> attributes,
+}) extends PostgresqlTableConstraint;

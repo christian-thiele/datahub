@@ -7,7 +7,7 @@ const _otherOrigin = 'https://other.example';
 
 final _api = [
   ApiService(
-    port: Config.value(0),
+    port: const Config.value(0),
     routes: [
       CorsMiddleware(
         routes: [
@@ -37,7 +37,7 @@ final _api = [
 
 void main() {
   declareTest('CORS: any origin', _api, () async {
-    final client = Find<Api>().find().connectHttp11();
+    final client = const Find<Api>().find().connectHttp11();
 
     final response = await client.get(
       '/cors/test',
@@ -102,7 +102,7 @@ void main() {
       },
     },
     () async {
-      final client = Find<Api>().find().connectHttp11();
+      final client = const Find<Api>().find().connectHttp11();
 
       final allowed = await client.get(
         '/cors/test',

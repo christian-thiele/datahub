@@ -15,7 +15,7 @@ import 'redis_transaction.dart';
 /// await redis.set('greeting', 'hello', ttl: const Duration(minutes: 5));
 /// print(await redis.get('greeting'));
 /// ```
-abstract interface class Redis implements RedisCommands {
+abstract interface class Redis() implements RedisCommands {
   /// Provides a connection from the connection pool to [delegate].
   ///
   /// The connection is returned to the pool when [delegate] completes.

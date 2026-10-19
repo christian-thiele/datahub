@@ -2,7 +2,7 @@ import 'package:datahub/config.dart';
 
 import 'service_host.dart';
 
-sealed class TreeNode {
+sealed class TreeNode({List<TreeNode>? children}) {
   TreeNode? _parent;
 
   TreeNode? get parent => _parent;
@@ -12,7 +12,7 @@ sealed class TreeNode {
 
   Iterable<TreeNode> get children => _children;
 
-  TreeNode({List<TreeNode>? children}) {
+  this {
     children?.forEach(add);
   }
 
@@ -46,11 +46,8 @@ sealed class TreeNode {
   }
 }
 
-class ScopeTreeNode extends TreeNode {
-  final Scope scope;
-
-  ScopeTreeNode({required this.scope, super.children});
-
+class ScopeTreeNode({required final Scope scope, super.children})
+    extends TreeNode {
   @override
   ConfigPath _buildConfigPath() {
     if (scope.name case final name?) {
@@ -61,9 +58,8 @@ class ScopeTreeNode extends TreeNode {
   }
 }
 
-class ServiceTreeNode<T extends Service> extends TreeNode {
-  final T service;
-  ServiceInstance<T>? instance;
-
-  ServiceTreeNode({required this.service, super.children, this.instance});
-}
+class ServiceTreeNode<T extends Service>({
+  required final T service,
+  super.children,
+  var ServiceInstance<T>? instance,
+}) extends TreeNode;

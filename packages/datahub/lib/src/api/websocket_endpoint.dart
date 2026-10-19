@@ -11,28 +11,21 @@ import 'websocket_frame.dart';
 import 'websocket_response.dart';
 import 'websocket_session.dart';
 
-class WebsocketEndpoint extends ApiEndpoint {
+class const WebsocketEndpoint({
+  super.matcher,
+  required final void Function(WebsocketSession) onSession,
+
   /// Selects the subprotocol from the ones offered by the client.
   ///
   /// Returning null omits the `Sec-WebSocket-Protocol` response header
   /// (no subprotocol). A non-null return value must be one of the
   /// offered protocols. Throw an [ApiRequestException] to reject the
   /// connection.
-  final String? Function(List<String> protocols) chooseProtocol;
-  final void Function(WebsocketSession) onSession;
-  final Duration? heartbeatInterval;
-  final Duration heartbeatTimeout;
-  final int maxFrameSize;
-
-  const WebsocketEndpoint({
-    super.matcher,
-    required this.onSession,
-    this.chooseProtocol = _noProtocol,
-    this.heartbeatInterval,
-    this.heartbeatTimeout = const Duration(seconds: 30),
-    this.maxFrameSize = WebsocketFrameDecoder.defaultMaxFrameSize,
-  });
-
+  final String? Function(List<String> protocols) chooseProtocol = _noProtocol,
+  final Duration? heartbeatInterval,
+  final Duration heartbeatTimeout = const Duration(seconds: 30),
+  final int maxFrameSize = WebsocketFrameDecoder.defaultMaxFrameSize,
+}) extends ApiEndpoint {
   static String? _noProtocol(List<String> protocols) => null;
 
   /// Whether [header] contains [token] in any of its comma-separated

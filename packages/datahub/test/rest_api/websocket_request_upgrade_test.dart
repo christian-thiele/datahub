@@ -10,7 +10,7 @@ import 'package:web_socket/web_socket.dart';
 
 final testScenario = [
   ApiService(
-    port: Config.value(0),
+    port: const Config.value(0),
     routes: [
       WebsocketEndpoint(
         onSession: (session) async {
@@ -40,7 +40,7 @@ final testScenario = [
 void main() {
   declareTest('ApiService Upgrade Connection', testScenario, () async {
     final socket = await WebSocket.connect(
-      Uri(scheme: 'ws', host: 'localhost', port: Find<Api>().find().port),
+      Uri(scheme: 'ws', host: 'localhost', port: const Find<Api>().find().port),
       protocols: ['wrong-protocol', 'test-protocol'],
     );
 

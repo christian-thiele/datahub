@@ -7,28 +7,15 @@ import 'contact_type.dart' as ext;
 part 'person.g.dart';
 
 @Data()
-class Person extends $Person {
-  final int id;
-  final String firstName;
-  final String lastName;
-  final List<String> phone;
-  final List<String> email;
-  final DateTime? birthday;
-  final bool isBlocked;
-  final Uint8List picture;
-  final ext.ContactType? type;
-  final Map<String, ext.ContactType> contacts;
-
-  const Person({
-    this.id = 0,
-    required this.firstName,
-    required this.lastName,
-    required this.phone,
-    required this.email,
-    required this.birthday,
-    required this.isBlocked,
-    required this.picture,
-    required this.type,
-    this.contacts = const {},
-  });
-}
+class const Person({
+  final int id = 0,
+  required final String firstName,
+  required final String lastName,
+  required final List<String> phone,
+  required final List<String> email,
+  required final DateTime? birthday,
+  required final bool isBlocked,
+  required final Uint8List picture,
+  required final ext.ContactType? type,
+  final Map<String, ext.ContactType> contacts = const {},
+}) extends $Person;

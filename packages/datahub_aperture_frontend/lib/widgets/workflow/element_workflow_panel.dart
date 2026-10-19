@@ -292,9 +292,8 @@ class _Hint extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: Text(
         text,
-        style: Theme.of(context).textTheme.labelMedium?.copyWith(
-          color: ApertureColors.of(context).textMuted,
-        ),
+        style: Theme.of(context).textTheme.labelMedium
+            ?.copyWith(color: ApertureColors.of(context).textMuted),
       ),
     );
   }

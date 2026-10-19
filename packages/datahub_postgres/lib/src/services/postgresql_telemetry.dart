@@ -26,13 +26,13 @@ class PostgresqlTelemetry {
 
   bool get metricsEnabled => _metrics != null;
 
-  const PostgresqlTelemetry._disabled()
+  const new _disabled()
     : _telemetry = null,
       tracingEnabled = false,
       _attributes = const {},
       _metrics = null;
 
-  PostgresqlTelemetry({
+  new({
     required Telemetry telemetry,
     required String metricPrefix,
     required bool enableMetrics,
@@ -144,45 +144,36 @@ class PostgresqlTelemetry {
   }
 }
 
-class _Metrics {
-  final CounterMetric queries;
-  final HistogramMetric queryDuration;
-  final GaugeMetric poolTarget;
-  final GaugeMetric poolTotal;
-  final GaugeMetric poolAvailable;
-  final GaugeMetric poolInUse;
-  final HistogramMetric poolWait;
-
-  _Metrics(Telemetry t, String p)
-    : queries = t.counter(
-        '${p}_queries_total',
-        help: 'Queries sent to the PostgreSQL server.',
-        labels: {'status': PostgresqlTelemetry._status},
-      ),
-      queryDuration = t.histogram(
-        '${p}_query_duration_seconds',
-        help: 'Time from sending a query until its result was received.',
-        buckets: HistogramMetric.defaultDurationBuckets,
-      ),
-      poolTarget = t.gauge(
-        '${p}_pool_size_target',
-        help: 'Target number of pooled connections.',
-      ),
-      poolTotal = t.gauge(
-        '${p}_pool_size_total',
-        help: 'Number of open pooled connections.',
-      ),
-      poolAvailable = t.gauge(
-        '${p}_pool_size_available',
-        help: 'Number of idle pooled connections.',
-      ),
-      poolInUse = t.gauge(
-        '${p}_pool_size_in_use',
-        help: 'Number of pooled connections currently in use.',
-      ),
-      poolWait = t.histogram(
-        '${p}_pool_wait_seconds',
-        help: 'Time spent waiting for a connection from the pool.',
-        buckets: HistogramMetric.defaultDurationBuckets,
-      );
+class _Metrics(Telemetry t, String p) {
+  final CounterMetric queries = t.counter(
+    '${p}_queries_total',
+    help: 'Queries sent to the PostgreSQL server.',
+    labels: {'status': PostgresqlTelemetry._status},
+  );
+  final HistogramMetric queryDuration = t.histogram(
+    '${p}_query_duration_seconds',
+    help: 'Time from sending a query until its result was received.',
+    buckets: HistogramMetric.defaultDurationBuckets,
+  );
+  final GaugeMetric poolTarget = t.gauge(
+    '${p}_pool_size_target',
+    help: 'Target number of pooled connections.',
+  );
+  final GaugeMetric poolTotal = t.gauge(
+    '${p}_pool_size_total',
+    help: 'Number of open pooled connections.',
+  );
+  final GaugeMetric poolAvailable = t.gauge(
+    '${p}_pool_size_available',
+    help: 'Number of idle pooled connections.',
+  );
+  final GaugeMetric poolInUse = t.gauge(
+    '${p}_pool_size_in_use',
+    help: 'Number of pooled connections currently in use.',
+  );
+  final HistogramMetric poolWait = t.histogram(
+    '${p}_pool_wait_seconds',
+    help: 'Time spent waiting for a connection from the pool.',
+    buckets: HistogramMetric.defaultDurationBuckets,
+  );
 }

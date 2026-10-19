@@ -39,7 +39,13 @@ import 'sample_group.dart';
 /// advance (like routes or status codes), never for unbounded values like
 /// ids or paths. Values for labels that were not declared are dropped, see
 /// [MetricSeriesSet].
-class HistogramMetric extends Metric {
+class HistogramMetric(
+  super.name, {
+  required List<num> buckets,
+  super.help,
+  Map<String, List<String>>? labels,
+  Set<String>? labelNames,
+}) extends Metric {
   /// Bucket boundaries for durations in seconds, as recommended by the
   /// semantic conventions (e.g. for `http.server.request.duration`).
   static const defaultDurationBuckets = <num>[
@@ -59,34 +65,26 @@ class HistogramMetric extends Metric {
     10,
   ];
 
-  final List<num> _boundaries;
-  final MetricSeriesSet<_HistogramSeries> _series;
+  final List<num> _boundaries = List.unmodifiable(buckets);
+  final MetricSeriesSet<_HistogramSeries> _series = MetricSeriesSet(
+    name,
+    labels: labels,
+    labelNames: labelNames,
+    create: (labels) => _HistogramSeries(labels, buckets),
+  );
 
   /// A histogram with the given upper bucket boundaries (ascending).
-  HistogramMetric(
-    super.name, {
-    required List<num> buckets,
-    super.help,
-    Map<String, List<String>>? labels,
-    Set<String>? labelNames,
-  }) : assert(
-         [
-           for (var i = 1; i < buckets.length; i++) i,
-         ].every((i) => buckets[i - 1] < buckets[i]),
-         'Bucket boundaries must be ascending.',
-       ),
-       _boundaries = List.unmodifiable(buckets),
-       _series = MetricSeriesSet(
-         name,
-         labels: labels,
-         labelNames: labelNames,
-         create: (labels) => _HistogramSeries(labels, buckets),
-       ),
-       super(type: MetricType.histogram);
+  this
+    : assert(
+        [for (var i = 1; i < buckets.length; i++) i]
+            .every((i) => buckets[i - 1] < buckets[i]),
+        'Bucket boundaries must be ascending.',
+      ),
+      super(type: MetricType.histogram);
 
   /// A histogram with [count] buckets of [width], the first one ending at
   /// [start].
-  HistogramMetric.linear(
+  new linear(
     String name, {
     required num start,
     required num width,
@@ -104,7 +102,7 @@ class HistogramMetric extends Metric {
 
   /// A histogram with [count] buckets, the first one ending at [start] and
   /// each following one ending at [factor] times the previous end.
-  HistogramMetric.exponential(
+  new exponential(
     String name, {
     required num start,
     required num factor,
@@ -174,14 +172,10 @@ class HistogramMetric extends Metric {
   }
 }
 
-class _HistogramSeries {
-  final Map<String, String> labels;
-  final List<_Bucket> buckets;
+class _HistogramSeries(final Map<String, String> labels, List<num> boundaries) {
+  final List<_Bucket> buckets = [for (final b in boundaries) _Bucket(b)];
   num count = 0;
   num sum = 0;
-
-  _HistogramSeries(this.labels, List<num> boundaries)
-    : buckets = [for (final b in boundaries) _Bucket(b)];
 
   void observe(num value) {
     count++;
@@ -196,9 +190,6 @@ class _HistogramSeries {
   }
 }
 
-class _Bucket {
-  final num boundary;
+class _Bucket(final num boundary) {
   num value = 0;
-
-  _Bucket(this.boundary);
 }

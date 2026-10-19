@@ -187,9 +187,11 @@ Map<String, String>? editableFieldErrors(
   Object error,
   Iterable<ResourceField> fields,
 ) {
-  if (error case ApiRequestException(
-    data: {'fields': final Map<String, dynamic> errors},
-  ) when errors.isNotEmpty) {
+  if (error
+      case ApiRequestException(
+        data: {'fields': final Map<String, dynamic> errors},
+      )
+      when errors.isNotEmpty) {
     final messages = <String, String>{};
     for (final (path, pathMessages) in errors.tuples) {
       final id = fieldIdOf(path);

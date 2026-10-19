@@ -7,9 +7,9 @@ import 'package:test/test.dart';
 void main() {
   declareTest(
     'MemoryLockService resolves as LockProvider',
-    [MemoryLockService()],
+    [const MemoryLockService()],
     () async {
-      final provider = Find<LockProvider>().find();
+      final provider = const Find<LockProvider>().find();
       final result = await provider.runLocked('hello', (_) async => 'world');
       expect(result, equals('world'));
     },
@@ -218,11 +218,7 @@ void main() {
   });
 }
 
-class _Key {
-  final int id;
-
-  const _Key(this.id);
-
+class const _Key(final int id) {
   @override
   bool operator ==(Object other) => other is _Key && other.id == id;
 

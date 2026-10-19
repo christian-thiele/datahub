@@ -14,7 +14,7 @@ void main() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -25,13 +25,13 @@ void main() {
       PostgresqlDataRepositoryService(bean: $Person.bean),
     ],
     () async {
-      final postgres = Find<Postgresql>().find();
-      final repo = Find<DataRepository<Person>>().find();
+      final postgres = const Find<Postgresql>().find();
+      final repo = const Find<DataRepository<Person>>().find();
       await postgres.useConnection((connection) async {
         await connection.runTransaction((context) async {
           expect(await repo.count(), equals(0));
           await repo.create(
-            Person(
+            const Person(
               firstName: 'Something',
               lastName: 'Something Else',
               birthday: null,
@@ -78,7 +78,7 @@ void main() {
           );
 
           await repo.create(
-            Person(
+            const Person(
               firstName: 'Another',
               lastName: 'Person',
               birthday: null,
@@ -117,7 +117,7 @@ void main() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -128,7 +128,7 @@ void main() {
       PostgresqlDataRepositoryService(bean: $Person.bean),
     ],
     () async {
-      final repo = Find<DataRepository<Person>>().find();
+      final repo = const Find<DataRepository<Person>>().find();
 
       for (final firstName in ['Anna', 'Bert']) {
         await repo.create(

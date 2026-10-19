@@ -1,11 +1,7 @@
 /// Base exception for when things go wrong at runtime inside the
 /// DataHub API framework.
-class ApiException implements Exception {
-  final dynamic internal;
-  final String message;
-
-  const ApiException(this.message, [this.internal]);
-
+class const ApiException(final String message, [final dynamic internal])
+    implements Exception {
   @override
   String toString() {
     final buffer = StringBuffer(message);

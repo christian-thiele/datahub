@@ -26,7 +26,7 @@ import 'demo_seed.dart';
 /// Invoices move through a workflow (see [_invoiceSteps]), which Aperture
 /// shows on the invoices.
 void main(List<String> args) => runApp([
-  KeyService(),
+  const KeyService(),
   MemoryRepositoryService(bean: $Employee.bean),
   MemoryRepositoryService(bean: $Client.bean),
   MemoryRepositoryService(bean: $Contact.bean),
@@ -37,10 +37,10 @@ void main(List<String> args) => runApp([
   MemoryRepositoryService(bean: $SupportTicket.bean),
   MemoryRepositoryService(bean: $WorkflowEvent.bean),
   MemoryRepositoryService(bean: $WorkflowHistoryEntry.bean),
-  MemoryLockService<String>(),
+  const MemoryLockService<String>(),
   WorkflowService<Invoice, InvoiceStatus>(steps: _invoiceSteps),
-  DemoAuthService(),
-  TestAuthProvider(),
+  const DemoAuthService(),
+  const TestAuthProvider(),
   ApiService(
     routes: [
       // The frontend is served from another origin during development.
@@ -48,19 +48,29 @@ void main(List<String> args) => runApp([
         routes: [
           ApertureApi(
             title: const Config.value('ACME Backoffice'),
-            theme: ApertureTheme(color: 0xff0f766e),
+            theme: const ApertureTheme(color: 0xff0f766e),
             oidcIssuer: const Config.value(
               'http://localhost:8081/realms/local-oidc',
             ),
             oidcClientId: const Config.value('aperture'),
             resources: [
-              ApertureResource(repository: Find<DataRepository<Client>>()),
-              ApertureResource(repository: Find<DataRepository<Contact>>()),
-              ApertureResource(repository: Find<DataRepository<Project>>()),
-              ApertureResource(repository: Find<DataRepository<TimeEntry>>()),
-              ApertureResource(repository: Find<DataRepository<Invoice>>()),
+              const ApertureResource(
+                repository: Find<DataRepository<Client>>(),
+              ),
+              const ApertureResource(
+                repository: Find<DataRepository<Contact>>(),
+              ),
+              const ApertureResource(
+                repository: Find<DataRepository<Project>>(),
+              ),
+              const ApertureResource(
+                repository: Find<DataRepository<TimeEntry>>(),
+              ),
+              const ApertureResource(
+                repository: Find<DataRepository<Invoice>>(),
+              ),
               ApertureResource(
-                repository: Find<DataRepository<SupportTicket>>(),
+                repository: const Find<DataRepository<SupportTicket>>(),
                 actions: [
                   ApertureAction<ResolveTicket>(
                     bean: $ResolveTicket.bean,
@@ -69,7 +79,7 @@ void main(List<String> args) => runApp([
                 ],
               ),
               ApertureResource(
-                repository: Find<DataRepository<Product>>(),
+                repository: const Find<DataRepository<Product>>(),
                 actions: [
                   ApertureAction<RenewPriceAgreement>(
                     bean: $RenewPriceAgreement.bean,
@@ -77,7 +87,9 @@ void main(List<String> args) => runApp([
                   ),
                 ],
               ),
-              ApertureResource(repository: Find<DataRepository<Employee>>()),
+              const ApertureResource(
+                repository: Find<DataRepository<Employee>>(),
+              ),
             ],
             actions: [
               ApertureAction<SendPaymentReminders>(
@@ -90,7 +102,7 @@ void main(List<String> args) => runApp([
       ),
     ],
   ),
-  ServiceDelegate(initialize: seedDemoData),
+  const ServiceDelegate(initialize: seedDemoData),
 ], arguments: args);
 
 /// A sent invoice becomes overdue at its due date, which sends a payment
@@ -102,7 +114,7 @@ final _invoiceSteps = <WorkflowStep<Invoice, InvoiceStatus>>[
     _markOverdue,
     at: (invoice) => invoice.dueAt,
   ),
-  OnEnter(
+  const OnEnter(
     name: 'Send Reminder',
     InvoiceStatus.overdue,
     _sendReminder,
@@ -140,7 +152,7 @@ Future<Invoice> _sendReminder(StepContext<Invoice> step) async {
   // The first reminder of each invoice bounces, to show failed steps (and
   // retrying them) in Aperture.
   if (_bounced.add(invoice.id)) {
-    throw ApiException('The mail server rejected the reminder.');
+    throw const ApiException('The mail server rejected the reminder.');
   }
   return invoice.copyWith(remindersSent: invoice.remindersSent + 1);
 }
@@ -149,7 +161,7 @@ Future<BaseActionResult> _resolveTicket(
   String? ticketId,
   ResolveTicket params,
 ) async {
-  final repo = Find<DataRepository<SupportTicket>>().find();
+  final repo = const Find<DataRepository<SupportTicket>>().find();
   final ticket = await repo.readById(ticketId);
   if (ticket == null) {
     throw ApiRequestException.notFound('Ticket not found.');
@@ -180,7 +192,7 @@ Future<BaseActionResult> _sendPaymentReminders(
   String? _,
   SendPaymentReminders params,
 ) async {
-  final repo = Find<DataRepository<Invoice>>().find();
+  final repo = const Find<DataRepository<Invoice>>().find();
   final cutoff = DateTime.now().toUtc().subtract(
     Duration(days: params.minDaysOverdue),
   );
@@ -222,7 +234,7 @@ Future<BaseActionResult> _renewPriceAgreement(
   String? productId,
   RenewPriceAgreement params,
 ) async {
-  final repo = Find<DataRepository<Product>>().find();
+  final repo = const Find<DataRepository<Product>>().find();
   final product = await repo.readById(productId);
   if (product == null) {
     throw ApiRequestException.notFound('Price agreement not found.');

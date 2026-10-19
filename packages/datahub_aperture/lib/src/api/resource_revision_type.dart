@@ -1,1 +1,5 @@
-enum ResourceRevisionType { create, update, delete }
+enum ResourceRevisionType() {
+  create,
+  update,
+  delete,
+}

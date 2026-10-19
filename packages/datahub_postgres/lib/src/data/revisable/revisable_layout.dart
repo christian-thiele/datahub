@@ -19,7 +19,11 @@ import '../postgresql_data_attribute.dart';
 ///
 /// The element state at time `t` is the revision with the highest version
 /// whose `sys_from <= t`, or none if that revision is a tombstone.
-class RevisableLayout<TData extends DataObject<TData>> {
+class RevisableLayout<TData extends DataObject<TData>>({
+  required final DataBean<TData> bean,
+  required final String schemaName,
+  required final String baseName,
+}) {
   /// Current database time as UTC `timestamp`.
   // TODO rename to nowSql
   static const dbNow = RawSql("(statement_timestamp() AT TIME ZONE 'UTC')");
@@ -83,10 +87,6 @@ class RevisableLayout<TData extends DataObject<TData>> {
 
   static const _notNull = [NotNullConstraint()];
 
-  final DataBean<TData> bean;
-  final String schemaName;
-  final String baseName;
-
   late final bool idIsAuto;
 
   /// Custom id generator: the [DefaultConstraint] annotated on an auto id.
@@ -102,11 +102,7 @@ class RevisableLayout<TData extends DataObject<TData>> {
   late final PostgresqlDataAttribute currentId;
   late final PostgresqlAttribute scheduleId;
 
-  RevisableLayout({
-    required this.bean,
-    required this.schemaName,
-    required this.baseName,
-  }) {
+  this {
     final idField = bean.requireIdField;
     final idColumn = toNamingConvention(
       idField.name,
@@ -301,9 +297,9 @@ class RevisableLayout<TData extends DataObject<TData>> {
   Future<void> setup(PostgresqlContext db) async {
     await db.ensureSchema(schemaName);
     await db.execute(
-      RawSql('SELECT pg_advisory_xact_lock(hashtextextended(') +
+      const RawSql('SELECT pg_advisory_xact_lock(hashtextextended(') +
           Sql.text('datahub.revisable.ddl:$key') +
-          RawSql(', 0))'),
+          const RawSql(', 0))'),
     );
 
     if (idSequence case final sequence?) {
@@ -368,11 +364,11 @@ class RevisableLayout<TData extends DataObject<TData>> {
         // TODO index annotations
         await db.execute(
           Sql.join([
-            RawSql('CREATE INDEX IF NOT EXISTS '),
+            const RawSql('CREATE INDEX IF NOT EXISTS '),
             Sql.name(scheduleIndexName),
-            RawSql(' ON '),
+            const RawSql(' ON '),
             qualifiedName(scheduleName),
-            RawSql(' ("sys_from")'),
+            const RawSql(' ("sys_from")'),
           ]),
         );
         fillSchedule = true;
@@ -388,7 +384,8 @@ class RevisableLayout<TData extends DataObject<TData>> {
     if (fillCurrent || fillSchedule) {
       // one point in time for both, so no revision falls between them
       final now =
-          (await db.execute(RawSql('SELECT ') + dbNow)).first.first as DateTime;
+          (await db.execute(const RawSql('SELECT ') + dbNow)).first.first
+              as DateTime;
 
       if (fillCurrent) {
         await db.execute(_fillCurrentSql(now));
@@ -410,16 +407,16 @@ class RevisableLayout<TData extends DataObject<TData>> {
   ) async {
     final result = await db.execute(
       Sql.join([
-        RawSql(
+        const RawSql(
           'SELECT EXISTS (SELECT 1 FROM information_schema.columns '
           'WHERE table_schema = ',
         ),
         ParameterSql<String>(schemaName, const PostgresqlString()),
-        RawSql(' AND table_name = '),
+        const RawSql(' AND table_name = '),
         ParameterSql<String>(relation, const PostgresqlString()),
-        RawSql(' AND column_name = '),
+        const RawSql(' AND column_name = '),
         ParameterSql<String>(column, const PostgresqlString()),
-        RawSql(')'),
+        const RawSql(')'),
       ]),
     );
     return result.first.first as bool;
@@ -451,7 +448,7 @@ class RevisableLayout<TData extends DataObject<TData>> {
         break;
       case PostgresqlRelationKind.view:
         // RESTRICT: fails when other objects depend on the view
-        await db.execute(RawSql('DROP VIEW ') + qualifiedName(baseName));
+        await db.execute(const RawSql('DROP VIEW ') + qualifiedName(baseName));
       case final kind:
         throw SqlException(
           'Cannot migrate revisable repository "$schemaName"."$baseName": '
@@ -460,17 +457,17 @@ class RevisableLayout<TData extends DataObject<TData>> {
     }
 
     await db.execute(
-      RawSql('ALTER TABLE ') +
+      const RawSql('ALTER TABLE ') +
           qualifiedName(legacyRevisionName) +
-          RawSql(' RENAME TO ') +
+          const RawSql(' RENAME TO ') +
           Sql.name(historyName),
     );
 
     // sys_to is derived from later revisions when reading
     await db.execute(
-      RawSql('ALTER TABLE ') +
+      const RawSql('ALTER TABLE ') +
           qualifiedName(historyName) +
-          RawSql(' DROP COLUMN IF EXISTS "sys_to"'),
+          const RawSql(' DROP COLUMN IF EXISTS "sys_to"'),
     );
   }
 
@@ -485,18 +482,18 @@ class RevisableLayout<TData extends DataObject<TData>> {
       columns,
       SqlSelect(
         Sql.join([
-          RawSql('(SELECT DISTINCT ON ('),
+          const RawSql('(SELECT DISTINCT ON ('),
           Sql.name(historyId.name),
-          RawSql(') * FROM '),
+          const RawSql(') * FROM '),
           qualifiedName(historyName),
-          RawSql(' WHERE "sys_from" <= '),
+          const RawSql(' WHERE "sys_from" <= '),
           ParameterSql(now, const PostgresqlDateTime()),
-          RawSql(' ORDER BY '),
+          const RawSql(' ORDER BY '),
           Sql.name(historyId.name),
-          RawSql(', "sys_version" DESC) AS "cur"'),
+          const RawSql(', "sys_version" DESC) AS "cur"'),
         ]),
         columns,
-        where: RawSql('NOT "cur"."sys_is_deleted"'),
+        where: const RawSql('NOT "cur"."sys_is_deleted"'),
       ),
     );
   }
@@ -511,22 +508,22 @@ class RevisableLayout<TData extends DataObject<TData>> {
         SqlColumnAttribute(sysFrom.name),
       ],
       Sql.join([
-        RawSql('SELECT '),
+        const RawSql('SELECT '),
         id,
-        RawSql(', "sys_version", "sys_from" FROM (SELECT '),
+        const RawSql(', "sys_version", "sys_from" FROM (SELECT '),
         id,
-        RawSql(
+        const RawSql(
           ', "sys_version", "sys_from", min("sys_from") OVER (PARTITION BY ',
         ),
         id,
-        RawSql(
+        const RawSql(
           ' ORDER BY "sys_version" ROWS BETWEEN 1 FOLLOWING AND UNBOUNDED '
           'FOLLOWING) AS "sys_next" FROM ',
         ),
         qualifiedName(historyName),
-        RawSql(') AS "x" WHERE "x"."sys_from" > '),
+        const RawSql(') AS "x" WHERE "x"."sys_from" > '),
         ParameterSql(now, const PostgresqlDateTime()),
-        RawSql(
+        const RawSql(
           ' AND ("x"."sys_next" IS NULL OR "x"."sys_from" < "x"."sys_next")',
         ),
       ]),

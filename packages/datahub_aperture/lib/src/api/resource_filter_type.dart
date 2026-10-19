@@ -1,1 +1,7 @@
-enum ResourceFilterType { equals, notEquals, greaterThan, lessThan, contains }
+enum ResourceFilterType() {
+  equals,
+  notEquals,
+  greaterThan,
+  lessThan,
+  contains,
+}

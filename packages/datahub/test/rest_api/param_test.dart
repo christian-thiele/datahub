@@ -13,7 +13,7 @@ void main() {
 
 ApiRequest _request(String url) {
   final uri = Uri.parse(url);
-  return ApiRequest(uri, HttpRequestMethod.get, {}, {}, Stream.empty());
+  return ApiRequest(uri, HttpRequestMethod.get, {}, {}, const Stream.empty());
 }
 
 void _queryString() {
@@ -51,30 +51,27 @@ void _queryDateTime() {
   //expect(_request('http://localhost/?timestamp=2023-06-01T08%3A20%3A00.000').getParam<DateTime>('timestamp'), DateTime.utc(2023, 06, 01, 8, 20, 0).toUtc());
   //expect(_request('http://localhost/?timestamp=2023-06-01').getParam<DateTime>('timestamp'), DateTime.utc(2023, 06, 01));
   expect(
-    _request(
-      'http://localhost/?timestamp=1688546106000',
-    ).getParam<DateTime>('timestamp').toUtc(),
+    _request('http://localhost/?timestamp=1688546106000')
+        .getParam<DateTime>('timestamp')
+        .toUtc(),
     DateTime.utc(2023, 07, 05, 8, 35, 6),
   );
 }
 
 void _queryStringList() {
   expect(
-    _request(
-      'http://localhost/?list=first&list=second&list=third&other=other',
-    ).getParam<List<String>>('list'),
+    _request('http://localhost/?list=first&list=second&list=third&other=other')
+        .getParam<List<String>>('list'),
     ['first', 'second', 'third'],
   );
   expect(
-    _request(
-      'http://localhost/?list=first&list=second&list=third&other=other',
-    ).getParam<List<String>?>('list2'),
+    _request('http://localhost/?list=first&list=second&list=third&other=other')
+        .getParam<List<String>?>('list2'),
     null,
   );
   expect(
-    _request(
-      'http://localhost/?list=first&list=second&list=third&other=other',
-    ).getParam<List<String>?>('other'),
+    _request('http://localhost/?list=first&list=second&list=third&other=other')
+        .getParam<List<String>?>('other'),
     ['other'],
   );
 }
@@ -82,21 +79,18 @@ void _queryStringList() {
 void _queryIntList() {
   print('this');
   expect(
-    _request(
-      'http://localhost/?list=2&list=4&list=6&other=8',
-    ).getParam<List<int>>('list'),
+    _request('http://localhost/?list=2&list=4&list=6&other=8')
+        .getParam<List<int>>('list'),
     [2, 4, 6],
   );
   expect(
-    _request(
-      'http://localhost/?list=2&list=4&list=6&other=8',
-    ).getParam<List<int>?>('list2'),
+    _request('http://localhost/?list=2&list=4&list=6&other=8')
+        .getParam<List<int>?>('list2'),
     null,
   );
   expect(
-    _request(
-      'http://localhost/?list=2&list=4&list=6&other=8',
-    ).getParam<List<int>?>('other'),
+    _request('http://localhost/?list=2&list=4&list=6&other=8')
+        .getParam<List<int>?>('other'),
     [8],
   );
 }

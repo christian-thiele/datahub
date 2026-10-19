@@ -1,6 +1,7 @@
 import 'dart:async';
 
-class StreamListenHook<T> extends StreamTransformerBase<T, T> {
+class StreamListenHook<T>(final void Function() onListen)
+    extends StreamTransformerBase<T, T> {
   late final StreamSubscription _subscription;
   late final Stream<T> _source;
   late final _controller = StreamController<T>(
@@ -9,10 +10,6 @@ class StreamListenHook<T> extends StreamTransformerBase<T, T> {
     onResume: () => _subscription.resume(),
     onListen: _listen,
   );
-
-  final void Function() onListen;
-
-  StreamListenHook(this.onListen);
 
   @override
   Stream<T> bind(Stream<T> stream) {

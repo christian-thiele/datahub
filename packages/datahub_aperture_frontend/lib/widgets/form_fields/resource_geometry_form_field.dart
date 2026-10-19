@@ -41,11 +41,13 @@ class ResourceGeometryFormField extends StatelessWidget {
         decoration.counterText != null ||
         decoration.counter != null;
 
-    final border =
-        WidgetStateProperty.resolveAs<InputBorder?>(decoration.border, {
-          if (decoration.enabled == false) WidgetState.disabled,
-          if (hasError) WidgetState.error,
-        });
+    final border = WidgetStateProperty.resolveAs<InputBorder?>(
+      decoration.border,
+      {
+        if (decoration.enabled == false) WidgetState.disabled,
+        if (hasError) WidgetState.error,
+      },
+    );
     final borderRadius = switch (border) {
       OutlineInputBorder(:final borderRadius) => borderRadius,
       _ => BorderRadius.zero,

@@ -5,23 +5,18 @@ import 'package:datahub/scaffold.dart';
 
 import 'authentication_middleware.dart';
 
-abstract interface class TokenAuthProvider {
+abstract interface class TokenAuthProvider() {
   Future<Session> authenticate(TokenAuth auth);
 }
 
-class TokenAuthMiddleware extends AuthenticationMiddleware {
-  final Find<TokenAuthProvider> provider;
-  final Config<String> prefix;
-
-  const TokenAuthMiddleware({
-    super.matcher,
-    required this.provider,
-    this.prefix = const Config.value(''),
-    required super.routes,
-    super.catchRequests = false,
-    super.requireSession = true,
-  });
-
+class const TokenAuthMiddleware({
+  super.matcher,
+  required final Find<TokenAuthProvider> provider,
+  final Config<String> prefix = const Config.value(''),
+  required super.routes,
+  super.catchRequests = false,
+  super.requireSession = true,
+}) extends AuthenticationMiddleware {
   @override
   Future<Session?> authenticate(ApiRequest request) async {
     final auth = TokenAuth.fromRequest(request.headers, prefix: prefix.read());

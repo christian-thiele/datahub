@@ -13,19 +13,13 @@ import 'sample_group.dart';
 /// [Prometheus text-based format](https://prometheus.io/docs/instrumenting/exposition_formats/#text-based-format).
 ///
 /// Scrapes are not traced.
-class PrometheusExporter extends MetricsExporter {
+class PrometheusExporter({
+  required final String? address,
+  required final int port,
+  required final String path,
+  required super.onScrape,
+}) extends MetricsExporter {
   late final HttpServer _server;
-
-  final String? address;
-  final int port;
-  final String path;
-
-  PrometheusExporter({
-    required this.address,
-    required this.port,
-    required this.path,
-    required super.onScrape,
-  });
 
   @override
   Future<void> initialize() async {
@@ -96,7 +90,7 @@ class PrometheusExporter extends MetricsExporter {
         httpRequest.requestUri,
         io.HttpStatus.methodNotAllowed,
         {},
-        Stream.empty(),
+        const Stream.empty(),
       );
     }
 
@@ -105,7 +99,7 @@ class PrometheusExporter extends MetricsExporter {
         httpRequest.requestUri,
         io.HttpStatus.notFound,
         {},
-        Stream.empty(),
+        const Stream.empty(),
       );
     }
 
@@ -114,7 +108,12 @@ class PrometheusExporter extends MetricsExporter {
     } catch (e, stack) {
       log.error('Error while collecting metrics.', error: e, stack: stack);
 
-      return HttpResponse(httpRequest.requestUri, 500, {}, Stream.empty());
+      return HttpResponse(
+        httpRequest.requestUri,
+        500,
+        {},
+        const Stream.empty(),
+      );
     }
   }
 

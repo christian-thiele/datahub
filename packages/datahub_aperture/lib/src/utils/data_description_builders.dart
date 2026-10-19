@@ -85,9 +85,8 @@ String buildResourceId(ApertureResource res) => res.repository.find().bean.name;
 /// The element type identifies a workflow, so no configuration is needed.
 Workflow? findResourceWorkflow(ApertureResource res) {
   final name = res.repository.find().bean.name;
-  return Find<Workflow?>(
-    (workflow) => workflow?.describe().name == name,
-  ).find();
+  return Find<Workflow?>((workflow) => workflow?.describe().name == name)
+      .find();
 }
 
 ResourceWorkflow buildResourceWorkflowDescription(
@@ -148,7 +147,7 @@ ResourceField fieldDescription(
     lookup = ResourceFieldLookup(
       resourceId: relationBean.name,
       resourceFieldId: relationBean.requireIdField.name,
-      filter: ResourceRelationFilter(),
+      filter: const ResourceRelationFilter(),
     );
   } else {
     lookup = null;

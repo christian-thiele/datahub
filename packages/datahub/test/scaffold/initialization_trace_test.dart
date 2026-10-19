@@ -5,33 +5,29 @@ import 'package:test/test.dart';
 
 import '../telemetry/_fake_collector.dart';
 
-class _Host extends ServiceHost {
-  final List<Component> beforeTelemetry;
-  final List<Component> components;
-
-  _Host(this.components, {this.beforeTelemetry = const []});
-
+class _Host(
+  final List<Component> components, {
+  final List<Component> beforeTelemetry = const [],
+}) extends ServiceHost {
   @override
   Component buildRoot() => Scope(
     components: [
       ...beforeTelemetry,
-      TelemetryService(),
+      const TelemetryService(),
       Scope(components: components),
     ],
   );
 }
 
 /// Takes [_SlowService.duration] to initialize.
-class _SlowService implements Service {
+class const _SlowService() implements Service {
   static const duration = Duration(milliseconds: 50);
-
-  const _SlowService();
 
   @override
   ServiceInstance createInstance() => _SlowServiceInstance();
 }
 
-class _SlowServiceInstance extends ServiceInstance<_SlowService> {
+class _SlowServiceInstance() extends ServiceInstance<_SlowService> {
   @override
   Future<void> initialize() async {
     await super.initialize();
@@ -41,14 +37,12 @@ class _SlowServiceInstance extends ServiceInstance<_SlowService> {
 
 /// Registers a [_ChildService] and keeps the active span of its
 /// initialization.
-class _ParentService implements Service {
-  const _ParentService();
-
+class const _ParentService() implements Service {
   @override
   ServiceInstance createInstance() => _ParentServiceInstance();
 }
 
-class _ParentServiceInstance extends ServiceInstance<_ParentService> {
+class _ParentServiceInstance() extends ServiceInstance<_ParentService> {
   Span? span;
 
   @override
@@ -59,26 +53,21 @@ class _ParentServiceInstance extends ServiceInstance<_ParentService> {
   }
 }
 
-class _ChildService implements Service {
-  const _ChildService();
-
+class const _ChildService() implements Service {
   @override
   ServiceInstance createInstance() => _ChildServiceInstance();
 }
 
-class _ChildServiceInstance extends ServiceInstance<_ChildService>;
+class _ChildServiceInstance() extends ServiceInstance<_ChildService>;
 
 /// Fails to initialize, after passing its active span to [onSpan].
-class _FailingService implements Service {
-  final void Function(Span? span) onSpan;
-
-  const _FailingService(this.onSpan);
-
+class const _FailingService(final void Function(Span? span) onSpan)
+    implements Service {
   @override
   ServiceInstance createInstance() => _FailingServiceInstance();
 }
 
-class _FailingServiceInstance extends ServiceInstance<_FailingService> {
+class _FailingServiceInstance() extends ServiceInstance<_FailingService> {
   @override
   Future<void> initialize() async {
     await super.initialize();
@@ -111,7 +100,7 @@ Future<void> main() async {
 
     await host.initialize();
     final parentSpan = host
-        .findComponent(Find<_ParentServiceInstance>(), null)
+        .findComponent(const Find<_ParentServiceInstance>(), null)
         .span;
     // flushes the exporter
     await host.shutdown();

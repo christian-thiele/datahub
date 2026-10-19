@@ -5,7 +5,7 @@ import 'package:datahub/utils.dart';
 ///
 /// Call [release] once the protected work is done, or use
 /// [LockProviderExtension.runLocked] to have it released automatically.
-abstract interface class LockHandle {
+abstract interface class LockHandle() {
   /// Whether the handle still holds ownership of the lock.
   ///
   /// This turns false when released by calling [release] or when the
@@ -32,8 +32,8 @@ abstract interface class LockHandle {
 }
 
 /// A lock for a key could not be acquired.
-class ResourceLockedException extends ApiRequestException {
-  ResourceLockedException() : super(423, 'The resource is locked.');
+class ResourceLockedException() extends ApiRequestException {
+  this : super(423, 'The resource is locked.');
 }
 
 /// Provides exclusive locks identified by keys of type [T].
@@ -52,7 +52,7 @@ class ResourceLockedException extends ApiRequestException {
 /// **SHOULD** renew the lease automatically but can decide to do otherwise.
 /// An implementation **MUST** complete the [LockHandle.expired] future
 /// when a lock expires.
-abstract interface class LockProvider<T extends Object> {
+abstract interface class LockProvider<T extends Object>() {
   /// Requests an exclusive lock for [key].
   ///
   /// Returns a [LockHandle] if the lock was successfully acquired or throws

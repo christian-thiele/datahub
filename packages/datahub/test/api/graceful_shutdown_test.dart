@@ -10,7 +10,7 @@ void main() {
     final host = TestHost(
       components: [
         ApiService(
-          port: Config.value(0),
+          port: const Config.value(0),
           routes: [
             ApiEndpointDelegate(
               matcher: RoutePattern('/blocking'),
@@ -26,7 +26,7 @@ void main() {
     );
 
     await host.initialize();
-    final client = host.findComponent(Find<Api>(), null).connectHttp11();
+    final client = host.findComponent(const Find<Api>(), null).connectHttp11();
 
     // occupy the service with an active request
     final blocked = client.get('/blocking').thenGetJsonBody();

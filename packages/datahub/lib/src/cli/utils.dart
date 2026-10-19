@@ -121,7 +121,7 @@ String buildDockerArgs(List<String> args) {
   return buffer.toString();
 }
 
-class LineTransformer extends StreamTransformerBase<Uint8List, String> {
+class LineTransformer() extends StreamTransformerBase<Uint8List, String> {
   late final Stream<List<int>> _source;
   late final StreamSubscription _subscription;
   late final _controller = StreamController<String>(

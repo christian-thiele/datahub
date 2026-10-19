@@ -361,4 +361,4 @@ List<String?> _stringOrNullList(RedisReply reply) => [
 ];
 
 RedisException _null(RedisReply reply) =>
-    RedisException('Unexpected null reply.');
+    const RedisException('Unexpected null reply.');

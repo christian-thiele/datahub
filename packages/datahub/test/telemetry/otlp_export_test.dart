@@ -27,7 +27,7 @@ Future<void> main() async {
       },
     },
     () async {
-      final telemetry = Find<Telemetry>().find();
+      final telemetry = const Find<Telemetry>().find();
       late LocalSpan span;
       await telemetry.trace('work', (s) async {
         span = s;

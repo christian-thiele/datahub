@@ -5,7 +5,7 @@ import 'span.dart';
 /// Propagation of spans across processes according to
 /// [W3C Trace Context](https://www.w3.org/TR/trace-context/) (`traceparent`
 /// header).
-abstract final class TraceContext {
+abstract final class TraceContext() {
   static const traceparentHeader = 'traceparent';
 
   static final _traceparent = RegExp(

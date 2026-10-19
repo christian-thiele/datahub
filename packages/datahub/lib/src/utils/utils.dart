@@ -79,7 +79,7 @@ const Map<int, String> _statusCodes = {
 String getHttpStatus(int statusCode) =>
     _statusCodes[statusCode] ?? 'Unknown Status';
 
-String uuid() => Uuid().v1().toString();
+String uuid() => const Uuid().v1().toString();
 
 String addBase64Padding(String value) {
   final length = value.length;
@@ -100,9 +100,9 @@ Iterable<int> randomBytes(int length) {
 }
 
 String randomHexId(int parts) {
-  return randomBytes(
-    parts,
-  ).map((byte) => byte.toRadixString(16).padLeft(2, '0')).join(':');
+  return randomBytes(parts)
+      .map((byte) => byte.toRadixString(16).padLeft(2, '0'))
+      .join(':');
 }
 
 Iterable<Iterable<T>> cartesianProduct<T>(Iterable<Iterable<T>> lists) sync* {

@@ -1,19 +1,15 @@
 import 'package:datahub/http.dart';
+
 import 'api_request.dart';
 
-abstract interface class RouteMatcher {
-  const RouteMatcher();
-
+abstract interface class const RouteMatcher() {
   bool matches(ApiRequest request);
 
   Map<String, String> getRouteParams(ApiRequest request);
 }
 
-class AllOfRouteMatcher implements RouteMatcher {
-  final List<RouteMatcher> matchers;
-
-  const AllOfRouteMatcher({required this.matchers});
-
+class const AllOfRouteMatcher({required final List<RouteMatcher> matchers})
+    implements RouteMatcher {
   @override
   bool matches(ApiRequest request) =>
       matchers.every((matcher) => matcher.matches(request));
@@ -24,11 +20,8 @@ class AllOfRouteMatcher implements RouteMatcher {
   };
 }
 
-class AnyOfRouteMatcher implements RouteMatcher {
-  final List<RouteMatcher> matchers;
-
-  const AnyOfRouteMatcher({required this.matchers});
-
+class const AnyOfRouteMatcher({required final List<RouteMatcher> matchers})
+    implements RouteMatcher {
   @override
   bool matches(ApiRequest request) =>
       matchers.any((matcher) => matcher.matches(request));
@@ -40,9 +33,7 @@ class AnyOfRouteMatcher implements RouteMatcher {
   };
 }
 
-class AnyRouteMatcher implements RouteMatcher {
-  const AnyRouteMatcher();
-
+class const AnyRouteMatcher() implements RouteMatcher {
   @override
   bool matches(ApiRequest _) => true;
 
@@ -50,11 +41,8 @@ class AnyRouteMatcher implements RouteMatcher {
   Map<String, String> getRouteParams(ApiRequest request) => {};
 }
 
-class MethodRouteMatcher implements RouteMatcher {
-  final HttpRequestMethod method;
-
-  const MethodRouteMatcher({required this.method});
-
+class const MethodRouteMatcher({required final HttpRequestMethod method})
+    implements RouteMatcher {
   @override
   bool matches(ApiRequest request) => request.method == method;
 
@@ -62,12 +50,10 @@ class MethodRouteMatcher implements RouteMatcher {
   Map<String, String> getRouteParams(ApiRequest request) => {};
 }
 
-class HeaderRouteMatcher implements RouteMatcher {
-  final String header;
-  final String? value;
-
-  const HeaderRouteMatcher({required this.header, this.value});
-
+class const HeaderRouteMatcher({
+  required final String header,
+  final String? value,
+}) implements RouteMatcher {
   @override
   bool matches(ApiRequest request) {
     if (request.headers[header] case final headerValue?) {

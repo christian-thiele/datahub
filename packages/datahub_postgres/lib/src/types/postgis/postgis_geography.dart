@@ -2,10 +2,11 @@ import 'dart:typed_data';
 
 import 'package:datahub/data.dart';
 import 'package:postgres/postgres.dart' as pg;
+
 import '../postgresql_data_type.dart';
 
-class PostgisGeography extends PostgresqlDataType<Geometry> {
-  const PostgisGeography() : super('geography', const _PgGeometryType());
+class const PostgisGeography() extends PostgresqlDataType<Geometry> {
+  this : super('geography', const _PgGeometryType());
 
   @override
   dynamic encode(Geometry? value) => switch (value) {
@@ -30,8 +31,8 @@ class PostgisGeography extends PostgresqlDataType<Geometry> {
   }
 }
 
-class PostgisGeometry extends PostgresqlDataType<Geometry> {
-  const PostgisGeometry() : super('geometry', const _PgGeometryType());
+class const PostgisGeometry() extends PostgresqlDataType<Geometry> {
+  this : super('geometry', const _PgGeometryType());
 
   @override
   dynamic encode(Geometry? value) => switch (value) {
@@ -54,6 +55,6 @@ class PostgisGeometry extends PostgresqlDataType<Geometry> {
   }
 }
 
-class _PgGeometryType extends pg.Type<Geometry> {
-  const _PgGeometryType() : super(null);
+class const _PgGeometryType() extends pg.Type<Geometry> {
+  this : super(null);
 }

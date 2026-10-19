@@ -10,7 +10,7 @@ void main() {
     'Websocket Ping-Pong',
     [
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           WebsocketEndpoint(
             onSession: (session) {
@@ -24,7 +24,7 @@ void main() {
       ),
     ],
     () async {
-      final port = Find<Api>().find().port;
+      final port = const Find<Api>().find().port;
       final socket = await io.Socket.connect('localhost', port);
       final broadcastSocket = socket.asBroadcastStream();
 

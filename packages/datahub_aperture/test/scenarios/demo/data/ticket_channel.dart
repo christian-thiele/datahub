@@ -1,1 +1,6 @@
-enum TicketChannel { email, phone, portal, chat }
+enum TicketChannel() {
+  email,
+  phone,
+  portal,
+  chat,
+}

@@ -1,4 +1,4 @@
-abstract class HttpHeaders {
+abstract class HttpHeaders() {
   static const accept = 'accept';
   static const acceptCharset = 'accept-charset';
   static const acceptEncoding = 'accept-encoding';

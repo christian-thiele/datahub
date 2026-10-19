@@ -55,17 +55,14 @@ const _revisions = {
 /// Current state as returned by the legacy view, captured before migration.
 List<(int, int, String)>? _legacyCurrent;
 
-class LegacyLayoutSeeder implements Service {
-  final String view;
-
-  const LegacyLayoutSeeder(this.view);
-
+class const LegacyLayoutSeeder(final String view) implements Service {
   @override
   ServiceInstance<LegacyLayoutSeeder> createInstance() =>
       _LegacyLayoutSeederInstance();
 }
 
-class _LegacyLayoutSeederInstance extends ServiceInstance<LegacyLayoutSeeder> {
+class _LegacyLayoutSeederInstance()
+    extends ServiceInstance<LegacyLayoutSeeder> {
   @override
   Future<void> initialize() async {
     await super.initialize();
@@ -99,7 +96,9 @@ class _LegacyLayoutSeederInstance extends ServiceInstance<LegacyLayoutSeeder> {
 
       _legacyCurrent = [
         for (final row in await db.execute(
-          RawSql('SELECT id, sys_version, first_name FROM person ORDER BY id'),
+          const RawSql(
+            'SELECT id, sys_version, first_name FROM person ORDER BY id',
+          ),
         ))
           (row[0] as int, row[1] as int, row[2] as String),
       ];
@@ -123,7 +122,7 @@ void main() {
         PostgresqlRevisableRepositoryService(bean: $Person.bean),
       ],
       () async {
-        final repo = Find<RevisableDataRepository<Person>>().find();
+        final repo = const Find<RevisableDataRepository<Person>>().find();
 
         expect(_legacyCurrent, [
           (1, 0, 'P1-0'),
@@ -178,7 +177,7 @@ void main() {
           expect((await repo.revisableReadById(1))!.version, 1);
 
           final created = await repo.create(
-            Person(firstName: 'New', lastName: 'Person', birthday: null),
+            const Person(firstName: 'New', lastName: 'Person', birthday: null),
           );
           expect(created.id, 11);
 

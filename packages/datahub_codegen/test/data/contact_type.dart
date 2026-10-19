@@ -1,12 +1,7 @@
 import 'package:datahub/data.dart';
 
-enum ContactType implements DataEnum {
+enum ContactType(@override final String jsonValue) implements DataEnum {
   personal('personal-contact'),
   work('work-contact'),
-  other('other');
-
-  const ContactType(this.jsonValue);
-
-  @override
-  final String jsonValue;
+  other('other'),
 }

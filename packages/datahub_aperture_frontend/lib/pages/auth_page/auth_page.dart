@@ -29,9 +29,10 @@ class AuthPage extends StatelessWidget {
         child: BlocListener<AuthCubit, AuthState>(
           listener: (context, state) {
             if (state is AuthStateAuthorized) {
-              context.go(switch (GoRouter.of(
-                context,
-              ).state.uri.queryParameters) {
+              context.go(switch (GoRouter.of(context)
+                  .state
+                  .uri
+                  .queryParameters) {
                 {'redirect': final redirect} => redirect,
                 _ => '/',
               });

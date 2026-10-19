@@ -5,7 +5,7 @@ import 'package:pointycastle/export.dart';
 /// Keys for JWT validation are often fetched from JSON Web Key Sets (JWKS).
 /// Since key sets provide unique key-ids for every key, fetching the same key
 /// over and over is not necessary when validating keys from the same issuer.
-abstract interface class KeyCache {
+abstract interface class KeyCache() {
   /// Fetches the OAuth public key with id [kid] from [issuer].
   ///
   /// Keys are cached by default to avoid unnecessary requests.

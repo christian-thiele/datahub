@@ -2,34 +2,20 @@ import 'package:datahub/data.dart';
 import 'package:datahub_postgres/sql.dart';
 import 'package:datahub_postgres/types.dart';
 
-class PostgresqlRawExpression extends Expression {
-  final Sql sql;
+class const PostgresqlRawExpression(final Sql sql) extends Expression;
 
-  const PostgresqlRawExpression(this.sql);
-}
+class const PostgresqlCastExpression(
+  final Expression expression,
+  final PostgresqlDataType type,
+) extends Expression;
 
-class PostgresqlCastExpression extends Expression {
-  final Expression expression;
-  final PostgresqlDataType type;
+class const PostgresqlAliasExpression(
+  final String name,
+  final Expression expression,
+) extends Expression;
 
-  const PostgresqlCastExpression(this.expression, this.type);
-}
-
-class PostgresqlAliasExpression extends Expression {
-  final String name;
-  final Expression expression;
-
-  const PostgresqlAliasExpression(this.name, this.expression);
-}
-
-class PostgresqlFunctionExpression extends Expression {
-  final String name;
-  final PostgresqlDataType? returnType;
-  final List<Expression> arguments;
-
-  const PostgresqlFunctionExpression(
-    this.name,
-    this.arguments, [
-    this.returnType,
-  ]);
-}
+class const PostgresqlFunctionExpression(
+  final String name,
+  final List<Expression> arguments, [
+  final PostgresqlDataType? returnType,
+]) extends Expression;

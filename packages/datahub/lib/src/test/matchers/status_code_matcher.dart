@@ -3,11 +3,7 @@ import 'package:datahub/http.dart';
 import 'package:datahub/rest_client.dart';
 import 'package:test/expect.dart';
 
-class StatusCodeMatcher extends Matcher {
-  final Matcher statusCodeMatcher;
-
-  StatusCodeMatcher(this.statusCodeMatcher);
-
+class StatusCodeMatcher(final Matcher statusCodeMatcher) extends Matcher {
   @override
   Description describe(Description description) => description
       .add('is response with status code ')

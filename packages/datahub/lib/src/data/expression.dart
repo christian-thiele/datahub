@@ -1,7 +1,5 @@
-abstract class Expression {
-  const Expression();
-
-  factory Expression.dynamic(dynamic candidate) {
+abstract class const Expression() {
+  factory dynamic(dynamic candidate) {
     return switch (candidate) {
       Expression() => candidate,
       _ => ValueExpression(candidate),
@@ -9,8 +7,4 @@ abstract class Expression {
   }
 }
 
-class ValueExpression extends Expression {
-  final dynamic value;
-
-  const ValueExpression(this.value);
-}
+class const ValueExpression(final dynamic value) extends Expression;

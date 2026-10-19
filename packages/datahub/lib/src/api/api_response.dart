@@ -14,14 +14,10 @@ import '../http/http_response.dart';
 ///
 /// ApiResponse contains header information as well as the content data,
 /// as well as the logic to transform the data into response data sent via http.
-abstract class ApiResponse {
-  int statusCode;
-
+abstract class ApiResponse(var int statusCode) {
   Map<String, List<String>> getHeaders();
 
   Stream<List<int>> getData();
-
-  ApiResponse(this.statusCode);
 
   /// Automatically creates the corresponding ApiResponse implementation for
   /// [body].
@@ -29,7 +25,7 @@ abstract class ApiResponse {
   /// Allowed types for [body] are:
   /// null, [ApiResponse], [Uint8List], [ByteData], [File],
   /// Map&lt;String, dynamic&gt;, List&lt;dynamic&gt; and [TransferObject]
-  factory ApiResponse.dynamic(dynamic body, {int statusCode = 200}) {
+  factory dynamic(dynamic body, {int statusCode = 200}) {
     if (body == null) {
       return EmptyResponse(statusCode: statusCode);
     } else if (body is ApiResponse) {
@@ -58,11 +54,12 @@ abstract class ApiResponse {
       HttpResponse(requestUrl, statusCode, getHeaders(), getData());
 }
 
-enum ContentDisposition { inline, attachment }
+enum ContentDisposition() {
+  inline,
+  attachment,
+}
 
-abstract class _SynchronousResponse extends ApiResponse {
-  _SynchronousResponse(super.statusCode);
-
+abstract class _SynchronousResponse(super.statusCode) extends ApiResponse {
   @override
   Stream<List<int>> getData() {
     final bytes = getBytes();
@@ -72,16 +69,12 @@ abstract class _SynchronousResponse extends ApiResponse {
   List<int> getBytes();
 }
 
-class JsonResponse extends _SynchronousResponse {
-  final Object? _data;
-  final Map<String, dynamic>? _headers;
-
-  JsonResponse(
-    this._data, {
-    int statusCode = 200,
-    Map<String, dynamic>? headers,
-  }) : _headers = headers,
-       super(statusCode);
+class JsonResponse(
+  final Object? _data, {
+  int statusCode = 200,
+  final Map<String, dynamic>? _headers,
+}) extends _SynchronousResponse {
+  this : super(statusCode);
 
   @override
   List<int> getBytes() {
@@ -89,7 +82,7 @@ class JsonResponse extends _SynchronousResponse {
       return [];
     }
 
-    return utf8.encode(JsonEncoder().convert(_data));
+    return utf8.encode(const JsonEncoder().convert(_data));
   }
 
   @override
@@ -106,21 +99,13 @@ class TextResponse extends _SynchronousResponse {
   final String _contentType;
   final Map<String, dynamic>? _headers;
 
-  TextResponse.plain(
-    this._text, {
-    int statusCode = 200,
-    Map<String, dynamic>? headers,
-  }) : _contentType = '${Mime.plainText};charset=utf-8',
-       _headers = headers,
-       super(statusCode);
+  new plain(this._text, {int statusCode = 200, this._headers})
+    : _contentType = '${Mime.plainText};charset=utf-8',
+      super(statusCode);
 
-  TextResponse.html(
-    this._text, {
-    int statusCode = 200,
-    Map<String, dynamic>? headers,
-  }) : _contentType = '${Mime.html};charset=utf-8',
-       _headers = headers,
-       super(statusCode);
+  new html(this._text, {int statusCode = 200, this._headers})
+    : _contentType = '${Mime.html};charset=utf-8',
+      super(statusCode);
 
   @override
   List<int> getBytes() => utf8.encode(_text);
@@ -134,18 +119,13 @@ class TextResponse extends _SynchronousResponse {
   }
 }
 
-class RawResponse extends _SynchronousResponse {
-  final String contentType;
-  final Uint8List _data;
-  final Map<String, dynamic>? _headers;
-
-  RawResponse(
-    this._data, {
-    int statusCode = 200,
-    this.contentType = Mime.octetStream,
-    Map<String, dynamic>? headers,
-  }) : _headers = headers,
-       super(statusCode);
+class RawResponse(
+  final Uint8List _data, {
+  int statusCode = 200,
+  final String contentType = Mime.octetStream,
+  final Map<String, dynamic>? _headers,
+}) extends _SynchronousResponse {
+  this : super(statusCode);
 
   @override
   List<int> getBytes() => _data;
@@ -158,12 +138,11 @@ class RawResponse extends _SynchronousResponse {
   };
 }
 
-class EmptyResponse extends _SynchronousResponse {
-  final Map<String, dynamic>? _headers;
-
-  EmptyResponse({int statusCode = 200, Map<String, dynamic>? headers})
-    : _headers = headers,
-      super(statusCode);
+class EmptyResponse({
+  int statusCode = 200,
+  final Map<String, dynamic>? _headers,
+}) extends _SynchronousResponse {
+  this : super(statusCode);
 
   @override
   List<int> getBytes() => [];
@@ -172,24 +151,16 @@ class EmptyResponse extends _SynchronousResponse {
   Map<String, List<String>> getHeaders() => {...?_headers};
 }
 
-class ByteStreamResponse extends ApiResponse {
-  final String contentType;
-  final ContentDisposition disposition;
-  final String? fileName;
-  final Stream<List<int>> _dataStream;
-  final int? length;
-  final Map<String, dynamic>? _headers;
-
-  ByteStreamResponse(
-    this._dataStream,
-    this.length, {
-    int statusCode = 200,
-    this.contentType = 'application/octet-stream',
-    this.fileName,
-    this.disposition = ContentDisposition.inline,
-    Map<String, dynamic>? headers,
-  }) : _headers = headers,
-       super(statusCode);
+class ByteStreamResponse(
+  final Stream<List<int>> _dataStream,
+  final int? length, {
+  int statusCode = 200,
+  final String contentType = 'application/octet-stream',
+  final String? fileName,
+  final ContentDisposition disposition = ContentDisposition.inline,
+  final Map<String, dynamic>? _headers,
+}) extends ApiResponse {
+  this : super(statusCode);
 
   @override
   Stream<List<int>> getData() => _dataStream;
@@ -205,28 +176,28 @@ class ByteStreamResponse extends ApiResponse {
   };
 }
 
-class FileResponse extends ByteStreamResponse {
-  final io.File file;
-
-  FileResponse(
-    this.file, {
-    super.disposition = ContentDisposition.inline,
-    String? contentType,
-    super.headers,
-  }) : super(
-         file.openRead(),
-         file.lengthSync(),
-         fileName: p.basename(file.path),
-         contentType:
-             contentType ??
-             Mime.fromExtension(p.extension(file.path)) ??
-             Mime.octetStream,
-       );
+class FileResponse(
+  final io.File file, {
+  super.disposition = ContentDisposition.inline,
+  String? contentType,
+  super.headers,
+}) extends ByteStreamResponse {
+  this
+    : super(
+        file.openRead(),
+        file.lengthSync(),
+        fileName: p.basename(file.path),
+        contentType:
+            contentType ??
+            Mime.fromExtension(p.extension(file.path)) ??
+            Mime.octetStream,
+      );
 }
 
 //TODO nicer debug message
-class DebugResponse extends TextResponse {
-  DebugResponse(dynamic error, StackTrace stack, int statusCode)
+class DebugResponse(dynamic error, StackTrace stack, int statusCode)
+    extends TextResponse {
+  this
     : super.plain(
         'The following error occurred:\n$error\n$stack\n\nThis is a debug message. '
         'Messages like this will only be displayed in DEV mode.',
@@ -234,11 +205,7 @@ class DebugResponse extends TextResponse {
       );
 }
 
-class HeadResponse extends EmptyResponse {
-  final ApiResponse _inner;
-
-  HeadResponse(this._inner);
-
+class HeadResponse(final ApiResponse _inner) extends EmptyResponse {
   @override
   Map<String, List<String>> getHeaders() => _inner.getHeaders();
 }

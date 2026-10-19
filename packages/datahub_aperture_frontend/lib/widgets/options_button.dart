@@ -100,9 +100,8 @@ class OptionsButton extends StatelessWidget {
       return Material(
         color: onTap != null ? background : disabledBackground,
         child: DefaultTextStyle.merge(
-          style: Theme.of(
-            context,
-          ).textTheme.labelLarge?.copyWith(color: effectiveForeground),
+          style: Theme.of(context).textTheme.labelLarge
+              ?.copyWith(color: effectiveForeground),
           child: IconTheme(
             data: IconThemeData(color: effectiveForeground, size: 18),
             child: InkWell(

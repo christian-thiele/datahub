@@ -3,15 +3,13 @@ import 'package:datahub_postgres/types.dart';
 
 import 'sql_exception.dart';
 
-class _Sequence {
+class _Sequence() {
   var _value = 0;
 
   int get value => ++_value;
 }
 
-sealed class Sql {
-  const Sql();
-
+sealed class const Sql() {
   static const and = RawSql(' AND ');
   static const or = RawSql(' OR ');
 
@@ -22,7 +20,7 @@ sealed class Sql {
   static const greaterOrEqual = RawSql(' >= ');
   static const lessOrEqual = RawSql(' <= ');
 
-  factory Sql.join(Iterable<Sql> segments) {
+  factory join(Iterable<Sql> segments) {
     if (segments.isEmpty) {
       return RawSql.empty;
     }
@@ -38,23 +36,23 @@ sealed class Sql {
     return result;
   }
 
-  factory Sql.joinWrap(Iterable<Sql> segments) => Sql.join(segments).wrap();
+  factory joinWrap(Iterable<Sql> segments) => Sql.join(segments).wrap();
 
-  factory Sql.name(String name) => RawSql(escapeName(name));
+  factory name(String name) => RawSql(escapeName(name));
 
-  factory Sql.qualifiedName(Iterable<String> name) =>
+  factory qualifiedName(Iterable<String> name) =>
       RawSql(name.map(escapeName).join('.'));
 
-  factory Sql.text(String text) => RawSql(escapeText(text));
+  factory text(String text) => RawSql(escapeText(text));
 
-  factory Sql.function(String name, Iterable<Sql> args) =>
-      RawSql(name) + Sql.joinWrap(args.separatedBy(RawSql(', ')));
+  factory function(String name, Iterable<Sql> args) =>
+      RawSql(name) + Sql.joinWrap(args.separatedBy(const RawSql(', ')));
 
-  factory Sql.cast(Sql expression, PostgresqlDataType? type) =>
+  factory cast(Sql expression, PostgresqlDataType? type) =>
       type != null ? expression.wrap() + RawSql('::${type.name}') : expression;
 
-  factory Sql.alias(Sql expression, String name) =>
-      expression.wrap() + RawSql(' AS ') + Sql.name(name);
+  factory alias(Sql expression, String name) =>
+      expression.wrap() + const RawSql(' AS ') + Sql.name(name);
 
   Sql operator +(Sql other) => CombinedSql(this, other);
 
@@ -66,7 +64,7 @@ sealed class Sql {
 
   String toLiteralString();
 
-  Sql wrap() => Sql.join([RawSql('('), this, RawSql(')')]);
+  Sql wrap() => Sql.join([const RawSql('('), this, const RawSql(')')]);
 
   @override
   String toString() => _toSqlString(_Sequence());
@@ -102,7 +100,7 @@ sealed class Sql {
   }
 }
 
-abstract mixin class SqlBuilder implements Sql {
+abstract mixin class SqlBuilder() implements Sql {
   Sql toSql();
 
   @override
@@ -131,12 +129,7 @@ abstract mixin class SqlBuilder implements Sql {
   String toString() => _toSqlString(_Sequence());
 }
 
-class CombinedSql extends Sql {
-  final Sql left;
-  final Sql right;
-
-  const CombinedSql(this.left, this.right);
-
+class const CombinedSql(final Sql left, final Sql right) extends Sql {
   @override
   String toLiteralString() => left.toLiteralString() + right.toLiteralString();
 
@@ -157,35 +150,27 @@ class CombinedSql extends Sql {
       left._toSqlString(paramSeq) + right._toSqlString(paramSeq);
 }
 
-class RawSql extends Sql {
-  final String raw;
-
-  const RawSql(this.raw);
-
+class const RawSql(final String raw) extends Sql {
   static const empty = RawSql('');
 
   @override
   String toLiteralString() => raw;
 
   @override
-  Iterable<PostgresqlDataType> getParameterTypes() => Iterable.empty();
+  Iterable<PostgresqlDataType> getParameterTypes() => const Iterable.empty();
 
   @override
-  Iterable<dynamic> getParameters() => Iterable.empty();
+  Iterable<dynamic> getParameters() => const Iterable.empty();
 
   @override
-  Iterable<dynamic> getEncodedParameters() => Iterable.empty();
+  Iterable<dynamic> getEncodedParameters() => const Iterable.empty();
 
   @override
   String _toSqlString(_Sequence paramSeq) => raw;
 }
 
-class ParameterSql<T> extends Sql {
-  final T? value;
-  final PostgresqlDataType<T> type;
-
-  const ParameterSql(this.value, this.type);
-
+class const ParameterSql<T>(final T? value, final PostgresqlDataType<T> type)
+    extends Sql {
   @override
   String toLiteralString() => type.sqlLiteral(value).toLiteralString();
 

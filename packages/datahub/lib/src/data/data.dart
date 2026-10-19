@@ -11,14 +11,9 @@ import 'package:datahub/utils.dart';
 ///   ...
 /// }
 /// ```
-final class Data {
-  final NamingConvention defaultNamingConvention;
+final class const Data({
+  final NamingConvention defaultNamingConvention =
+      NamingConvention.lowerCamelCase,
+});
 
-  const Data({this.defaultNamingConvention = NamingConvention.lowerCamelCase});
-}
-
-final class JsonKey {
-  final String key;
-
-  const JsonKey(this.key);
-}
+final class const JsonKey(final String key);

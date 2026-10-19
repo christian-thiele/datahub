@@ -5,15 +5,11 @@ import 'package:boost/boost.dart';
 import 'http_headers.dart';
 import 'token_auth.dart';
 
-class BasicAuth implements TokenAuth {
-  @override
-  final String prefix;
-
-  final String username;
-  final String password;
-
-  BasicAuth(this.username, this.password, {this.prefix = 'Basic '});
-
+class BasicAuth(
+  final String username,
+  final String password, {
+  @override final String prefix = 'Basic ',
+}) implements TokenAuth {
   static BasicAuth? fromAuthorizationHeader(
     String token, {
     String prefix = 'Basic ',

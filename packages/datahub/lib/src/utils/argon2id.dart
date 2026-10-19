@@ -7,9 +7,7 @@ import 'package:cryptography/cryptography.dart' as cryptography;
 
 import 'api_exception.dart';
 
-abstract class Argon2Id {
-  const Argon2Id._();
-
+abstract class const Argon2Id._() {
   static Future<String> createEncodedHash(
     String password, {
     int p = 4,
@@ -45,12 +43,12 @@ abstract class Argon2Id {
   static Future<bool> verify(String password, String encodedHash) async {
     const prefix = '\$argon2id\$v=19\$';
     if (!encodedHash.startsWith(prefix)) {
-      throw ApiException('Invalid argon2id hash: Invalid format.');
+      throw const ApiException('Invalid argon2id hash: Invalid format.');
     }
 
     final parts = encodedHash.substring(prefix.length).split('\$');
     if (parts.length != 3) {
-      throw ApiException('Invalid argon2id hash: Invalid format.');
+      throw const ApiException('Invalid argon2id hash: Invalid format.');
     }
 
     final options = Map.fromEntries(
@@ -59,7 +57,7 @@ abstract class Argon2Id {
           [final String key, final String value]
               when int.tryParse(value) != null =>
             (key, int.parse(value)),
-          _ => throw ApiException(
+          _ => throw const ApiException(
             'Invalid argon2id hash: Could not parse arguments.',
           ),
         };
@@ -85,14 +83,14 @@ abstract class Argon2Id {
     try {
       salt = base64DecodeUnpadded(parts[1]);
     } catch (e) {
-      throw ApiException('Invalid argon2id hash: Could not parse salt.');
+      throw const ApiException('Invalid argon2id hash: Could not parse salt.');
     }
 
     final Uint8List hash;
     try {
       hash = base64DecodeUnpadded(parts[2]);
     } catch (e) {
-      throw ApiException('Invalid argon2id hash: Could not parse hash.');
+      throw const ApiException('Invalid argon2id hash: Could not parse hash.');
     }
 
     final result = await algorithm

@@ -13,21 +13,20 @@ import 'package:source_gen/source_gen.dart';
 Builder dataBuilder(BuilderOptions options) =>
     SharedPartBuilder([DataBuilder()], 'data');
 
-class MetaField {
-  final LibraryElement library;
-  final FieldElement element;
-  final FieldFormalParameterElement parameter;
-  final List<DartObject> constraints;
-  final List<DartObject> meta;
-  final String? defaultValueExpression;
-  final String key;
-
+class MetaField({
   /// The public name of the field.
   ///
   /// This is the name of the constructor parameter, which may differ from
   /// the name of the instance variable when using private named parameters.
-  final String name;
-
+  required final String name,
+  required final String key,
+  required final FieldElement element,
+  required final FieldFormalParameterElement parameter,
+  required final List<DartObject> constraints,
+  required final List<DartObject> meta,
+  required final String? defaultValueExpression,
+  required final LibraryElement library,
+}) {
   /// The name of the instance variable (may be private).
   String get fieldName => element.displayName;
 
@@ -49,17 +48,6 @@ class MetaField {
 
   String get prefixedTypeNameNullable => importPrefix + typeNameNullable;
 
-  MetaField({
-    required this.name,
-    required this.key,
-    required this.element,
-    required this.parameter,
-    required this.constraints,
-    required this.meta,
-    required this.defaultValueExpression,
-    required this.library,
-  });
-
   String buildEncodingStatement(String value) =>
       CodecHelper.encodingStatement(library, type, '\$\$codec', value);
 
@@ -67,10 +55,10 @@ class MetaField {
       CodecHelper.decodingStatement(library, type, '\$\$codec', value, name);
 }
 
-class DataBuilder extends Generator {
+class DataBuilder() extends Generator {
   @override
   FutureOr<String?> generate(LibraryReader library, BuildStep buildStep) async {
-    final dataChecker = TypeChecker.typeNamed(Data);
+    final dataChecker = const TypeChecker.typeNamed(Data);
     final dataClasses = library.classes.where(dataChecker.hasAnnotationOf);
     final ln = Writer();
     for (final dataClass in dataClasses) {
@@ -95,12 +83,12 @@ class DataBuilder extends Generator {
             key: fieldKey(param.field!, param.displayName, namingConvention),
             element: param.field!,
             parameter: param,
-            constraints: TypeChecker.typeNamed(
-              DataFieldConstraint,
-            ).annotationsOf(param.field!).toList(),
-            meta: TypeChecker.typeNamed(
-              MetaData,
-            ).annotationsOf(param.field!).toList(),
+            constraints: const TypeChecker.typeNamed(DataFieldConstraint)
+                .annotationsOf(param.field!)
+                .toList(),
+            meta: const TypeChecker.typeNamed(MetaData)
+                .annotationsOf(param.field!)
+                .toList(),
             defaultValueExpression: getDefaultValueExpression(param),
             library: param.field!.library,
           ),
@@ -111,7 +99,9 @@ class DataBuilder extends Generator {
           className,
           constructorName,
           fields,
-          TypeChecker.typeNamed(MetaData).annotationsOf(dataClass).toList(),
+          const TypeChecker.typeNamed(MetaData)
+              .annotationsOf(dataClass)
+              .toList(),
         ),
       );
     }
@@ -168,7 +158,8 @@ class DataBuilder extends Generator {
     );
     final encodingStatement = field.buildEncodingStatement('value');
 
-    if (TypeChecker.typeNamed(Data).hasAnnotationOf(field.type.element!)) {
+    if (const TypeChecker.typeNamed(Data)
+        .hasAnnotationOf(field.type.element!)) {
       ln('dataBean: () => ${field.importPrefix}\$${field.typeName}.bean,');
     } else if (field.type
         case ParameterizedType(
@@ -176,7 +167,7 @@ class DataBuilder extends Generator {
           typeArguments: [final type],
         )
         when type.element != null &&
-            TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
+            const TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
       ln(
         'dataBean: () => ${typeImportPrefix(type, field.library)}\$${type.element!.displayName}.bean,',
       );
@@ -186,7 +177,7 @@ class DataBuilder extends Generator {
           typeArguments: [..., final type],
         )
         when type.element != null &&
-            TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
+            const TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
       ln(
         'dataBean: () => ${typeImportPrefix(type, field.library)}\$${type.element!.displayName}.bean,',
       );
@@ -206,20 +197,24 @@ class DataBuilder extends Generator {
       constraintInvocations.add(
         'EnumConstraint(values: ${field.importPrefix}${field.typeName}.values)',
       );
-    } else if (field.type case ParameterizedType(
-      isDartCoreList: true,
-      typeArguments: [final DartType type],
-    ) when type.element is EnumElement) {
+    } else if (field.type
+        case ParameterizedType(
+          isDartCoreList: true,
+          typeArguments: [final DartType type],
+        )
+        when type.element is EnumElement) {
       final typeName =
           typeImportPrefix(type, field.library) +
           typeExpression(type, field.library);
       constraintInvocations.add(
         'ElementConstraint(constraint: EnumConstraint(values: $typeName.values))',
       );
-    } else if (field.type case ParameterizedType(
-      isDartCoreMap: true,
-      typeArguments: [..., final DartType type],
-    ) when type.element is EnumElement) {
+    } else if (field.type
+        case ParameterizedType(
+          isDartCoreMap: true,
+          typeArguments: [..., final DartType type],
+        )
+        when type.element is EnumElement) {
       final typeName =
           typeImportPrefix(type, field.library) +
           typeExpression(type, field.library);
@@ -406,7 +401,7 @@ class DataBuilder extends Generator {
     String name,
     NamingConvention defaultNamingConvention,
   ) {
-    final checker = TypeChecker.typeNamed(JsonKey);
+    final checker = const TypeChecker.typeNamed(JsonKey);
     if (checker.firstAnnotationOf(field) case final annotation?) {
       return annotation.getField('key')!.toStringValue()!;
     }

@@ -1,4 +1,4 @@
-enum ResourceFieldType {
+enum ResourceFieldType() {
   string,
   stringEnum,
   int,

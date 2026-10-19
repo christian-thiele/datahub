@@ -1,12 +1,8 @@
 import 'package:boost/boost.dart';
 import 'package:datahub/http.dart';
 
-class TokenAuth extends HttpAuth {
-  final String prefix;
-  final String token;
-
-  TokenAuth(this.token, {this.prefix = 'Bearer '});
-
+class TokenAuth(final String token, {final String prefix = 'Bearer '})
+    extends HttpAuth {
   static TokenAuth? fromAuthorizationHeader(
     String token, {
     String prefix = 'Bearer ',

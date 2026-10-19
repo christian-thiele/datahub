@@ -3,13 +3,13 @@ import 'package:datahub/auth.dart';
 import 'package:datahub/config.dart';
 import 'package:datahub/scaffold.dart';
 
-class OidcSession implements Session {
+class OidcSession({
+  required final String identityProvider,
+  required final String clientId,
+  required final Jwt authenticationToken,
+}) implements Session {
   @override
   String get debugName => 'oidc-session';
-
-  final String identityProvider;
-  final String clientId;
-  final Jwt authenticationToken;
 
   @override
   String get identity =>
@@ -17,32 +17,21 @@ class OidcSession implements Session {
       (throw ApiRequestException.unauthorized(
         'Invalid authentication token (missing subject).',
       ));
-
-  OidcSession({
-    required this.identityProvider,
-    required this.clientId,
-    required this.authenticationToken,
-  });
 }
 
-class OidcAuthMiddleware extends AuthenticationMiddleware {
-  final Config<String> identityProvider;
-  final Config<String> audience;
-  final Config<String> clientId;
-  final Config<String?> clientSecret;
-
+class OidcAuthMiddleware({
+  final Config<String> identityProvider = const Config(
+    'oidcAuth.identityProvider',
+  ),
+  final Config<String> audience = const Config('oidcAuth.audience'),
+  final Config<String> clientId = const Config('oidcAuth.clientId'),
+  final Config<String?> clientSecret = const Config('oidcAuth.clientSecret'),
+  super.matcher,
+  required super.routes,
+  super.catchRequests = false,
+  super.requireSession = true,
+}) extends AuthenticationMiddleware {
   OidcConfiguration? configuration;
-
-  OidcAuthMiddleware({
-    this.identityProvider = const Config('oidcAuth.identityProvider'),
-    this.audience = const Config('oidcAuth.audience'),
-    this.clientId = const Config('oidcAuth.clientId'),
-    this.clientSecret = const Config('oidcAuth.clientSecret'),
-    super.matcher,
-    required super.routes,
-    super.catchRequests = false,
-    super.requireSession = true,
-  });
 
   @override
   Future<OidcSession?> authenticate(ApiRequest request) async {

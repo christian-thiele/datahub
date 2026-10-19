@@ -7,15 +7,14 @@ import 'package:datahub_aperture/services.dart';
 import 'package:test/test.dart';
 
 /// Stands in for the Google Map Tiles API and records the requests it gets.
-class _FakeGoogle {
-  final io.HttpServer server;
+class _FakeGoogle._(final io.HttpServer server) {
   final requests = <Uri>[];
   final bodies = <Map<String, dynamic>>[];
   int status = 200;
   int sessionCounter = 0;
   DateTime expiry = DateTime.now().add(const Duration(days: 14));
 
-  _FakeGoogle._(this.server) {
+  this {
     server.listen((request) async {
       requests.add(request.uri);
       bodies.add(

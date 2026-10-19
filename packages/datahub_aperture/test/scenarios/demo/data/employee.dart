@@ -18,77 +18,40 @@ part 'employee.g.dart';
 @ApertureRelation<Project>()
 @ApertureRelation<TimeEntry>()
 @ApertureRelation<SupportTicket>()
-class Employee extends $Employee {
-  const Employee({
-    this.id = 0,
-    required this.personnelNumber,
-    required this.firstName,
-    required this.lastName,
-    required this.email,
-    required this.jobTitle,
-    required this.department,
-    required this.hiredAt,
-    required this.hourlyCostRate,
-    this.weeklyHours = 40,
-    this.skills = const [],
-    this.languages = const ['en'],
-    this.managerId,
-    this.remote = false,
-    this.active = true,
-  });
-
-  @Id(auto: true)
-  final int id;
-
+class const Employee({
+  @Id(auto: true) final int id = 0,
   @ApertureField(isDisplayField: true, readOnly: true)
   @Meta(name: 'Personnel No.')
   @RegExpConstraint(expression: r'^E\d{4}$')
-  final String personnelNumber;
-
+  required final String personnelNumber,
   @ApertureField(isDisplayField: true)
   @MaxLengthConstraint(length: 50)
-  final String firstName;
-
+  required final String firstName,
   @ApertureField(isDisplayField: true)
   @MaxLengthConstraint(length: 50)
-  final String lastName;
-
+  required final String lastName,
   @Meta(name: 'E-mail')
   @RegExpConstraint(expression: r'^[\w.+-]+@[\w-]+(\.[\w-]+)+$')
-  final String email;
-
+  required final String email,
   @ApertureField(isDisplayField: true)
   @Meta(name: 'Job title')
-  final String jobTitle;
-
-  final Department department;
-
-  @Meta(name: 'Hired')
-  final DateTime hiredAt;
-
+  required final String jobTitle,
+  required final Department department,
+  @Meta(name: 'Hired') required final DateTime hiredAt,
   @Meta(
     name: 'Hourly cost rate',
     description: 'Internal cost per hour in EUR, used for margin reports.',
   )
   @RangeConstraint(min: 0, max: 500)
-  final double hourlyCostRate;
-
+  required final double hourlyCostRate,
   @Meta(name: 'Weekly hours')
   @RangeConstraint(min: 0, max: 48)
-  final int weeklyHours;
-
-  final List<String> skills;
-
+  final int weeklyHours = 40,
+  final List<String> skills = const [],
   @Meta(description: 'Spoken languages (ISO 639-1).')
   @ElementConstraint(constraint: RegExpConstraint(expression: r'^[a-z]{2}$'))
-  final List<String> languages;
-
-  @Meta(name: 'Reports to')
-  @RelationId<Employee>()
-  final int? managerId;
-
-  @Meta(name: 'Fully remote')
-  final bool remote;
-
-  final bool active;
-}
+  final List<String> languages = const ['en'],
+  @Meta(name: 'Reports to') @RelationId<Employee>() final int? managerId,
+  @Meta(name: 'Fully remote') final bool remote = false,
+  final bool active = true,
+}) extends $Employee;

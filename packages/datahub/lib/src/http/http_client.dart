@@ -14,12 +14,8 @@ import 'http_request.dart';
 import 'http_response.dart';
 import 'utils.dart';
 
-abstract class HttpClient {
-  final Uri address;
-
+abstract class HttpClient(final Uri address) {
   bool get isHttp2;
-
-  HttpClient(this.address);
 
   static HttpClient http11(
     Uri address, {
@@ -78,7 +74,7 @@ abstract class HttpClient {
   /// client spans, which is propagated to the server via the `traceparent`
   /// header. Status codes >= 400 fail the span.
   Future<HttpResponse> request(HttpRequest httpRequest) async {
-    final telemetry = Context.maybeOfZone()?.find(Find<Telemetry?>());
+    final telemetry = Context.maybeOfZone()?.find(const Find<Telemetry?>());
     if (telemetry == null) {
       return await send(httpRequest);
     }
@@ -128,13 +124,11 @@ abstract class HttpClient {
   Future<void> close();
 }
 
-class _Http11Client extends HttpClient {
+class _Http11Client(super.address, final io.SecurityContext? securityContext)
+    extends HttpClient {
   final _client = http.Client();
-  final io.SecurityContext? securityContext;
   @override
   final bool isHttp2 = false;
-
-  _Http11Client(super.address, this.securityContext);
 
   @override
   Future<HttpResponse> send(HttpRequest httpRequest) async {
@@ -173,11 +167,13 @@ class _Http11Client extends HttpClient {
   }
 }
 
-class _Http2Client extends HttpClient {
-  final io.SecurityContext? securityContext;
-  final bool Function(io.X509Certificate certificate)? onBadCertificate;
-  final Duration? timeout;
-  io.SecureSocket? initialSocket;
+class _Http2Client(
+  super.address,
+  final io.SecurityContext? securityContext,
+  final bool Function(io.X509Certificate certificate)? onBadCertificate,
+  final Duration? timeout,
+  var io.SecureSocket? initialSocket,
+) extends HttpClient {
   Future<void> Function()? _disconnect;
 
   late final _connection = Lazy<http2.ClientTransportConnection>(
@@ -188,14 +184,6 @@ class _Http2Client extends HttpClient {
 
   @override
   final bool isHttp2 = true;
-
-  _Http2Client(
-    super.address,
-    this.securityContext,
-    this.onBadCertificate,
-    this.timeout,
-    this.initialSocket,
-  );
 
   Future<http2.ClientTransportConnection> _connect() async {
     final useSSL = address.scheme == 'https';
@@ -219,7 +207,7 @@ class _Http2Client extends HttpClient {
 
       final connection = http2.ClientTransportConnection.viaSocket(
         secureSocket,
-        settings: http2.ClientSettings(allowServerPushes: false),
+        settings: const http2.ClientSettings(allowServerPushes: false),
       );
 
       _disconnect = () async {
@@ -237,7 +225,7 @@ class _Http2Client extends HttpClient {
 
       final connection = http2.ClientTransportConnection.viaSocket(
         socket,
-        settings: http2.ClientSettings(allowServerPushes: false),
+        settings: const http2.ClientSettings(allowServerPushes: false),
       );
 
       _disconnect = () async {

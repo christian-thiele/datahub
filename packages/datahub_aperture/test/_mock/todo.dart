@@ -6,20 +6,12 @@ part 'todo.g.dart';
 
 @Data()
 @Meta(icon: Icons.checklist)
-class Todo extends $Todo {
-  @Id(auto: true)
-  final int id;
+class const Todo({
+  @Id(auto: true) final int id = 0,
   @MinLengthConstraint(length: 1)
   @MaxLengthConstraint(length: 255)
   @ApertureField(isDisplayField: true)
-  final String title;
-  final String description;
-  final DateTime? dueDate;
-
-  const Todo({
-    this.id = 0,
-    required this.title,
-    required this.description,
-    required this.dueDate,
-  });
-}
+  required final String title,
+  required final String description,
+  required final DateTime? dueDate,
+}) extends $Todo;

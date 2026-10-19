@@ -3,17 +3,11 @@ import 'package:datahub/datahub.dart';
 part 'slideshow.g.dart';
 
 @Data()
-class Slideshow extends $Slideshow {
-  final String author;
-  final String date;
-  final String title;
-
-  const Slideshow({
-    required this.author,
-    required this.date,
-    required this.title,
-  });
-
+class const Slideshow({
+  required final String author,
+  required final String date,
+  required final String title,
+}) extends $Slideshow {
   @override
   bool operator ==(Object other) {
     return other is Slideshow &&

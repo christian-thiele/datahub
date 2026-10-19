@@ -5,8 +5,5 @@ import 'slideshow.dart';
 part 'example_object.g.dart';
 
 @Data()
-class ExampleObject extends $ExampleObject {
-  final Slideshow slideshow;
-
-  const ExampleObject({required this.slideshow});
-}
+class const ExampleObject({required final Slideshow slideshow})
+    extends $ExampleObject;

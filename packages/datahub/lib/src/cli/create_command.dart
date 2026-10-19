@@ -12,8 +12,8 @@ import 'resources/hello_world/hello_world_service.dart';
 import 'resources/readme.dart';
 import 'utils.dart';
 
-class CreateCommand extends CliCommand {
-  CreateCommand() {
+class CreateCommand() extends CliCommand {
+  this {
     argParser.addFlag(
       'force',
       abbr: 'f',

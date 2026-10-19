@@ -68,7 +68,7 @@ void main() {
     'Header values over HTTP/1.1 and HTTP/2',
     [
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           ApiEndpointDelegate(
             matcher: RoutePattern('/headers'),
@@ -84,7 +84,7 @@ void main() {
       ),
     ],
     () async {
-      final api = Find<Api>().find();
+      final api = const Find<Api>().find();
       for (final client in [api.connectHttp11(), api.connectHttp2()]) {
         final response = await client.post('/headers', {'a': 1});
 

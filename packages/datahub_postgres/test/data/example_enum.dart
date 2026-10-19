@@ -1,1 +1,5 @@
-enum ExampleEnum { something, orSomethingElse, thirdOption }
+enum ExampleEnum() {
+  something,
+  orSomethingElse,
+  thirdOption,
+}

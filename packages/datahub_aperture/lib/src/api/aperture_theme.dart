@@ -5,9 +5,5 @@ import 'package:datahub/data.dart';
 part 'aperture_theme.g.dart';
 
 @Data()
-class ApertureTheme extends $ApertureTheme {
-  final int color;
-  final Uint8List? logo;
-
-  const ApertureTheme({this.color = 0xff295bf0, this.logo});
-}
+class const ApertureTheme({final int color = 0xff295bf0, final Uint8List? logo})
+    extends $ApertureTheme;

@@ -13,7 +13,7 @@ import 'api_response.dart';
 import 'api_route.dart';
 import 'request_logger.dart';
 
-abstract interface class Api {
+abstract interface class Api() {
   late final io.InternetAddress address;
   late final int port;
 }
@@ -22,10 +22,9 @@ abstract interface class Api {
 ///
 /// The ApiService uses the datahub [HTTPServer], therefore supports
 /// HTTP 1.1 and HTTP 2 connections.
-class ApiService implements Service {
-  final Find<Telemetry> telemetry;
-  final Config<String?> address;
-  final Config<int> port;
+class const ApiService({
+  final Config<String?> address = const Config('address'),
+  final Config<int> port = const Config('port', defaultValue: 8080),
 
   /// Maximum number of requests served concurrently.
   ///
@@ -33,7 +32,9 @@ class ApiService implements Service {
   /// immediately with `503 Service Unavailable` instead of being handled.
   /// This provides overload protection through backpressure. Null means
   /// unlimited.
-  final Config<int?> concurrentRequestLimit;
+  final Config<int?> concurrentRequestLimit = const Config(
+    'concurrentRequestLimit',
+  ),
 
   /// Maximum duration to wait for active requests to complete when the
   /// service is disposed.
@@ -41,10 +42,18 @@ class ApiService implements Service {
   /// During shutdown, no new requests are accepted and requests currently
   /// being served are given this much time to complete. Connections that
   /// are still active after the timeout are closed forcefully.
-  final Config<Duration> shutdownTimeout;
-
-  final Config<bool> enableMetrics;
-  final Config<String> metricPrefix;
+  final Config<Duration> shutdownTimeout = const Config<Duration>(
+    'shutdownTimeout',
+    defaultValue: Duration(seconds: 30),
+  ),
+  final Config<bool> enableMetrics = const Config<bool>(
+    'enableMetrics',
+    defaultValue: true,
+  ),
+  final Config<String> metricPrefix = const Config<String>(
+    'metricPrefix',
+    defaultValue: 'api',
+  ),
 
   /// Whether requests are traced.
   ///
@@ -53,7 +62,10 @@ class ApiService implements Service {
   /// span is named after the method and the route (e.g.
   /// `GET /orders/{id}`) and has the attributes of the semantic conventions
   /// for HTTP server spans.
-  final Config<bool> enableTracing;
+  final Config<bool> enableTracing = const Config<bool>(
+    'enableTracing',
+    defaultValue: true,
+  ),
 
   /// Whether requests and responses are logged at trace level.
   ///
@@ -66,13 +78,19 @@ class ApiService implements Service {
   ///
   /// Credentials in headers and query parameters are redacted, but bodies
   /// are logged as they are and may contain sensitive data.
-  final Config<bool> logRequests;
+  final Config<bool> logRequests = const Config<bool>(
+    'logRequests',
+    defaultValue: false,
+  ),
 
   /// Maximum number of bytes logged per request and response body when
   /// [logRequests] is enabled. Longer bodies are truncated.
   ///
   /// Set to 0 to log body sizes only.
-  final Config<int> logRequestsBodyLimit;
+  final Config<int> logRequestsBodyLimit = const Config<int>(
+    'logRequestsBodyLimit',
+    defaultValue: 1024,
+  ),
 
   /// Names of headers whose values are redacted when [logRequests] is
   /// enabled, e.g. custom credential headers. Matched case-insensitively.
@@ -80,50 +98,20 @@ class ApiService implements Service {
   /// These are redacted in addition to `authorization`,
   /// `proxy-authorization`, `cookie`, `set-cookie` and `x-api-key`, which are
   /// always redacted.
-  final Config<List<String>> logRequestsRedactedHeaders;
-
-  final List<ApiNode> routes;
-  final io.SecurityContext? securityContext;
-
-  const ApiService({
-    this.address = const Config('address'),
-    this.port = const Config('port', defaultValue: 8080),
-    this.concurrentRequestLimit = const Config('concurrentRequestLimit'),
-    this.shutdownTimeout = const Config<Duration>(
-      'shutdownTimeout',
-      defaultValue: Duration(seconds: 30),
-    ),
-    this.enableMetrics = const Config<bool>(
-      'enableMetrics',
-      defaultValue: true,
-    ),
-    this.metricPrefix = const Config<String>(
-      'metricPrefix',
-      defaultValue: 'api',
-    ),
-    this.enableTracing = const Config<bool>(
-      'enableTracing',
-      defaultValue: true,
-    ),
-    this.logRequests = const Config<bool>('logRequests', defaultValue: false),
-    this.logRequestsBodyLimit = const Config<int>(
-      'logRequestsBodyLimit',
-      defaultValue: 1024,
-    ),
-    this.logRequestsRedactedHeaders = const Config<List<String>>(
-      'logRequestsRedactedHeaders',
-      defaultValue: [],
-    ),
-    required this.routes,
-    this.securityContext,
-    this.telemetry = const Find(),
-  });
-
+  final Config<List<String>> logRequestsRedactedHeaders =
+      const Config<List<String>>(
+        'logRequestsRedactedHeaders',
+        defaultValue: [],
+      ),
+  required final List<ApiNode> routes,
+  final io.SecurityContext? securityContext,
+  final Find<Telemetry> telemetry = const Find(),
+}) implements Service {
   @override
   ServiceInstance<ApiService> createInstance() => _ApiServiceInstance();
 }
 
-class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
+class _ApiServiceInstance() extends ServiceInstance<ApiService> implements Api {
   late final HttpServer _server;
   late final List<ApiRoute> _routes;
   late final int? _concurrentRequestLimit;
@@ -343,9 +331,9 @@ class _ApiServiceInstance extends ServiceInstance<ApiService> implements Api {
           500,
         ).toHttpResponse(httpRequest.requestUri);
       } else {
-        return ApiRequestException.internalError(
-          'Internal Server Error',
-        ).toResponse().toHttpResponse(httpRequest.requestUri);
+        return ApiRequestException.internalError('Internal Server Error')
+            .toResponse()
+            .toHttpResponse(httpRequest.requestUri);
       }
     }
   }

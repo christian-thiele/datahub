@@ -12,7 +12,7 @@ Future<num?> _metric(
   String name, [
   Map<String, String> labels = const {},
 ]) async {
-  final groups = await Find<Telemetry>().find().scrapeMetrics();
+  final groups = await const Find<Telemetry>().find().scrapeMetrics();
   for (final sample in groups.expand((g) => g.samples)) {
     if (sample.name == name && equals(labels).matches(sample.labels, {})) {
       return sample.value;
@@ -143,7 +143,7 @@ void main() {
     }, config: {'targetPoolSize': 1, 'poolQueueLimit': 1});
 
     env.test('tracks locks', (redis) async {
-      final locks = Find<LockProvider<String>>().find();
+      final locks = const Find<LockProvider<String>>().find();
       final handle = await locks.acquireLock('job');
       expect(await _metric('redis_locks_acquired_total'), equals(1));
       expect(await _metric('redis_locks_held'), equals(1));
@@ -167,11 +167,9 @@ void main() {
       expect(await _metric('redis_subscriptions'), equals(1));
       await eventually(
         () async =>
-            (await redis.execute([
-              'PUBSUB',
-              'NUMSUB',
-              'news',
-            ])).asList![1].asInt ==
+            (await redis.execute(['PUBSUB', 'NUMSUB', 'news']))
+                .asList![1]
+                .asInt ==
             1,
       );
 
@@ -202,7 +200,7 @@ void main() {
 
     env.test('traces commands as client spans', (redis) async {
       final spans = <LocalSpan>[];
-      final subscription = Find<Telemetry>().find().endedSpans.listen(
+      final subscription = const Find<Telemetry>().find().endedSpans.listen(
         spans.add,
       );
 
@@ -251,7 +249,7 @@ void main() {
       await redis.useConnection((connection) => connection.get('a'));
       await redis.scan().toList();
 
-      final locks = Find<LockProvider<String>>().find();
+      final locks = const Find<LockProvider<String>>().find();
       final handle = await locks.acquireLock('job');
       // contention is an expected outcome, not a failure of the acquisition
       expect(await locks.tryAcquireLock('job'), isNull);

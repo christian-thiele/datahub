@@ -1,30 +1,22 @@
 part of 'service_host.dart';
 
-abstract interface class Session {
+abstract interface class Session() {
   String get debugName;
 
   /// Returns a unique identifier of the user / account.
   String get identity;
 }
 
-final class Context {
+final class Context._({
+  required final ServiceRegistry _registry,
+  required final TreeNode _scope,
+  required final Environment environment,
+  required final List<Session> sessions,
+  required final String debugName,
+}) {
   static const _symbol = #datahub.context;
-  final String debugName;
   final Context? parent;
-  final ServiceRegistry _registry;
-  final TreeNode _scope;
-  final Environment environment;
-  final List<Session> sessions;
-
-  Context._({
-    required ServiceRegistry registry,
-    required TreeNode scope,
-    required this.environment,
-    required this.sessions,
-    required this.debugName,
-  }) : _registry = registry,
-       _scope = scope,
-       parent = maybeOfZone();
+  this : parent = maybeOfZone();
 
   static Context? maybeOfZone() {
     if (Zone.current[_symbol] case final Context context) {
@@ -36,7 +28,9 @@ final class Context {
 
   static Context ofZone() {
     return maybeOfZone() ??
-        (throw ApiException('Context.ofZone called outside of context zone.'));
+        (throw const ApiException(
+          'Context.ofZone called outside of context zone.',
+        ));
   }
 
   static T zoneFind<T>(Find<T> finder) => Context.ofZone().find<T>(finder);
@@ -76,7 +70,10 @@ final class Context {
       zoneValues: {_symbol: this},
       zoneSpecification: ZoneSpecification(
         print: (Zone self, ZoneDelegate parent, Zone zone, String line) {
-          final telemetry = _registry.findComponent(Find<Telemetry?>(), _scope);
+          final telemetry = _registry.findComponent(
+            const Find<Telemetry?>(),
+            _scope,
+          );
           if (telemetry == null) {
             parent.print(zone, line);
             return;

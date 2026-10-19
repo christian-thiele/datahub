@@ -8,20 +8,23 @@ import 'package:datahub_redis/src/protocol/resp_parser.dart';
 /// Handles a command received by [FakeRedisServer].
 ///
 /// Returns the raw RESP response to write, or null to not respond.
-typedef FakeCommandHandler =
-    String? Function(List<String> command, FakeClient client);
+typedef FakeCommandHandler = String? Function(
+  List<String> command,
+  FakeClient client,
+);
 
 /// Minimal in-process server that parses RESP commands and lets tests decide
 /// what to respond, to provoke situations a real server does not produce.
-class FakeRedisServer {
-  final ServerSocket _server;
-  final FakeCommandHandler handler;
+class FakeRedisServer._(
+  final ServerSocket _server,
+  final FakeCommandHandler handler,
+) {
   final clients = <FakeClient>[];
 
   /// All commands received, in order.
   final commands = <List<String>>[];
 
-  FakeRedisServer._(this._server, this.handler) {
+  this {
     _server.listen((socket) => clients.add(FakeClient._(socket, this)));
   }
 
@@ -48,9 +51,7 @@ class FakeRedisServer {
   }
 }
 
-class FakeClient {
-  final Socket socket;
-  final FakeRedisServer _server;
+class FakeClient._(final Socket socket, final FakeRedisServer _server) {
   final _parser = RespParser();
 
   /// Number of data chunks received from the client.
@@ -59,7 +60,7 @@ class FakeClient {
   /// Whether data was received that is not RESP (e.g. a TLS handshake).
   var receivedGarbage = false;
 
-  FakeClient._(this.socket, this._server) {
+  this {
     socket.listen(_onData, onError: (_) {}, cancelOnError: true);
     socket.done.ignore();
   }

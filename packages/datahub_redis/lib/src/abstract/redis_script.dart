@@ -16,13 +16,11 @@ import 'package:crypto/crypto.dart';
 ///   return nil
 /// ''');
 /// ```
-class RedisScript {
-  static final _digests = Expando<String>();
-
+class const RedisScript(
   /// The Lua source code of the script.
-  final String source;
-
-  const RedisScript(this.source);
+  final String source,
+) {
+  static final _digests = Expando<String>();
 
   /// The SHA1 digest that identifies the script on the server.
   String get sha1Digest =>

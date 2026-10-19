@@ -56,9 +56,8 @@ class RevisableBeanRequiresIdRule extends AnalysisRule {
     RuleContext context,
   ) {
     final visitor = _RevisableRepositoryVisitor((node, dataClass) {
-      final hasId = _instanceFields(
-        dataClass,
-      ).any((field) => _isIdField(field) && _isSupportedIdType(field.type));
+      final hasId = _instanceFields(dataClass)
+          .any((field) => _isIdField(field) && _isSupportedIdType(field.type));
 
       if (!hasId) {
         reportAtNode(node, arguments: [dataClass.name ?? 'the data class']);

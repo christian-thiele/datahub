@@ -5,11 +5,7 @@ import 'database_context.dart';
 ///
 /// A [DatabaseConnection] is acquired by using a [DatabaseConnectionService].
 /// TODO more docs
-abstract class DatabaseConnection {
-  final DatabaseConnectionManager adapter;
-
-  DatabaseConnection(this.adapter);
-
+abstract class DatabaseConnection(final DatabaseConnectionManager adapter) {
   /// True if this connection is still open and can be used.
   ///
   /// If false, connection is invalid and cannot be used anymore and

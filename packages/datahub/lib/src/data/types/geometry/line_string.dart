@@ -5,18 +5,15 @@ import 'package:buffer/buffer.dart';
 
 import 'geometry.dart';
 
-class LineString extends Geometry {
-  final List<Point> points;
+class const LineString(
+  int? srid,
+  final List<Point> points,
+  bool hasZ,
+  bool hasM,
+) extends Geometry {
+  this : super(srid, GeometryType.lineString, hasZ, hasM);
 
-  const LineString(int? srid, this.points, bool hasZ, bool hasM)
-    : super(srid, GeometryType.lineString, hasZ, hasM);
-
-  factory LineString.read(
-    int? srid,
-    ByteDataReader reader,
-    bool hasZ,
-    bool hasM,
-  ) {
+  factory read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
     final length = reader.readUint32();
     return LineString(
       srid,

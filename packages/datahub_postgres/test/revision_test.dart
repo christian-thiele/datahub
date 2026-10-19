@@ -6,14 +6,9 @@ import 'package:test/test.dart';
 import 'data/city.dart';
 import 'data/person.dart';
 
-class TestSession implements Session {
+class TestSession(@override final String identity) implements Session {
   @override
   String get debugName => 'test/$identity';
-
-  @override
-  final String identity;
-
-  TestSession(this.identity);
 }
 
 void main() {
@@ -25,7 +20,7 @@ void main() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -36,8 +31,9 @@ void main() {
       PostgresqlRevisableRepositoryService(bean: $Person.bean),
     ],
     () async {
-      final dataRepo = Find<DataRepository<Person>>().find();
-      final revisableRepo = Find<RevisableDataRepository<Person>>().find();
+      final dataRepo = const Find<DataRepository<Person>>().find();
+      final revisableRepo = const Find<RevisableDataRepository<Person>>()
+          .find();
 
       await Context.ofZone().withSession(TestSession('test-user'), () async {
         expect(await dataRepo.count(), equals(0));
@@ -171,7 +167,7 @@ void main() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -183,8 +179,9 @@ void main() {
     ],
     () async {
       await Context.ofZone().withSession(TestSession('test-user'), () async {
-        final dataRepo = Find<DataRepository<Person>>().find();
-        final revisableRepo = Find<RevisableDataRepository<Person>>().find();
+        final dataRepo = const Find<DataRepository<Person>>().find();
+        final revisableRepo = const Find<RevisableDataRepository<Person>>()
+            .find();
 
         await dataRepo.atomic(() async {
           expect(await dataRepo.count(), equals(0));
@@ -292,7 +289,7 @@ void main() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -304,26 +301,29 @@ void main() {
     ],
     () async {
       await Context.ofZone().withSession(TestSession('test-user'), () async {
-        final dataRepo = Find<DataRepository<City>>().find();
-        final revisableRepo = Find<RevisableDataRepository<City>>().find();
+        final dataRepo = const Find<DataRepository<City>>().find();
+        final revisableRepo = const Find<RevisableDataRepository<City>>()
+            .find();
 
         expect(await dataRepo.count(), equals(0));
         expect(await revisableRepo.readRevisionsById('berlin'), hasLength(0));
 
         final created = await dataRepo.create(
-          City(id: 'berlin', name: 'Berlin', zip: '12345'),
+          const City(id: 'berlin', name: 'Berlin', zip: '12345'),
         );
         expect(await dataRepo.count(), equals(1));
         await expectLater(() async {
           await dataRepo.create(
-            City(id: 'berlin', name: 'Berlin', zip: '12345'),
+            const City(id: 'berlin', name: 'Berlin', zip: '12345'),
           );
         }, throwsA(isA<RevisableInconsistencyException>()));
 
         await dataRepo.deleteById(created.id);
         expect(await dataRepo.count(), equals(0));
 
-        await dataRepo.create(City(id: 'berlin', name: 'Berlin', zip: '12345'));
+        await dataRepo.create(
+          const City(id: 'berlin', name: 'Berlin', zip: '12345'),
+        );
         expect(await dataRepo.count(), equals(1));
 
         await dataRepo.deleteById(created.id);
@@ -340,7 +340,7 @@ void main() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -351,17 +351,17 @@ void main() {
       PostgresqlRevisableRepositoryService(bean: $City.bean),
     ],
     () async {
-      final dataRepo = Find<DataRepository<City>>().find();
+      final dataRepo = const Find<DataRepository<City>>().find();
       await Context.ofZone().withSession(TestSession('test-user'), () async {
         await dataRepo.atomic(() async {
           expect(await dataRepo.count(), equals(0));
           final created = await dataRepo.create(
-            City(id: 'berlin', name: 'Berlin', zip: '12345'),
+            const City(id: 'berlin', name: 'Berlin', zip: '12345'),
           );
           expect(await dataRepo.count(), equals(1));
           await expectLater(() async {
             await dataRepo.create(
-              City(id: 'berlin', name: 'Berlin', zip: '12345'),
+              const City(id: 'berlin', name: 'Berlin', zip: '12345'),
             );
           }, throwsA(isA<RevisableInconsistencyException>()));
 
@@ -369,7 +369,7 @@ void main() {
           expect(await dataRepo.count(), equals(0));
 
           await dataRepo.create(
-            City(id: 'berlin', name: 'Berlin', zip: '12345'),
+            const City(id: 'berlin', name: 'Berlin', zip: '12345'),
           );
           expect(await dataRepo.count(), equals(1));
         });
@@ -385,7 +385,7 @@ void _regressionTests() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -396,13 +396,13 @@ void _regressionTests() {
       PostgresqlRevisableRepositoryService(bean: $Person.bean),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<Person>>().find();
+      final repo = const Find<RevisableDataRepository<Person>>().find();
       await Context.ofZone().withSession(TestSession('test-user'), () async {
         final a = await repo.create(
-          Person(firstName: 'A', lastName: 'Lustig', birthday: null),
+          const Person(firstName: 'A', lastName: 'Lustig', birthday: null),
         );
         await repo.create(
-          Person(firstName: 'B', lastName: 'Lustig', birthday: null),
+          const Person(firstName: 'B', lastName: 'Lustig', birthday: null),
         );
         await repo.updateById(a.copyWith(isSpecial: true));
 
@@ -421,7 +421,7 @@ void _regressionTests() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -431,20 +431,20 @@ void _regressionTests() {
       ),
       PostgresqlRevisableRepositoryService(
         bean: $Person.bean,
-        relationName: Config.value('people'),
+        relationName: const Config.value('people'),
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<Person>>().find();
+      final repo = const Find<RevisableDataRepository<Person>>().find();
       await Context.ofZone().withSession(TestSession('test-user'), () async {
         await repo.create(
-          Person(firstName: 'A', lastName: 'Lustig', birthday: null),
+          const Person(firstName: 'A', lastName: 'Lustig', birthday: null),
         );
       });
 
-      final relations = await Find<Postgresql>().find().runTransaction(
+      final relations = await const Find<Postgresql>().find().runTransaction(
         (db) => db.execute(
-          RawSql(
+          const RawSql(
             "SELECT relname FROM pg_class WHERE relname LIKE 'people%' "
             "AND relkind IN ('r', 'S') ORDER BY relname",
           ),

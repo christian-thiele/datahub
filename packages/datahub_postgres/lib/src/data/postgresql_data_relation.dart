@@ -7,7 +7,7 @@ import 'package:datahub_postgres/services.dart';
 import 'package:datahub_postgres/sql.dart';
 import 'package:postgres/postgres.dart' as pg;
 
-sealed class PostgresqlDataRelation<DataType extends DataObject> {
+sealed class PostgresqlDataRelation<DataType extends DataObject>() {
   PostgresqlRelation get relation;
 
   DataBean<DataType> get bean;
@@ -47,7 +47,7 @@ sealed class PostgresqlDataRelation<DataType extends DataObject> {
             ? Sql.join(
                 group
                     .map((e) => buildExpressionSql(e, relationAttributes))
-                    .separatedBy(RawSql(', ')),
+                    .separatedBy(const RawSql(', ')),
               )
             : null,
         order: buildSortSql(sort, relationAttributes),
@@ -235,18 +235,11 @@ class PostgresqlDataTable<DataType extends DataObject>
   ///
   /// Only attributes of type [PostgresqlDataAttribute] are mapped to fields
   /// of [bean], other attributes of [table] are ignored by data operations.
-  PostgresqlDataTable.fromTable({
-    required this.bean,
-    required PostgresqlTable table,
-  }) {
+  new fromTable({required this.bean, required PostgresqlTable table}) {
     relation = table;
   }
 
-  PostgresqlDataTable({
-    String? name,
-    required String schemaName,
-    required this.bean,
-  }) {
+  new({String? name, required String schemaName, required this.bean}) {
     relation = PostgresqlTable(
       schemaName: schemaName,
       name:
@@ -260,20 +253,16 @@ class PostgresqlDataTable<DataType extends DataObject>
   }
 }
 
-class PostgresqlDataView<DataType extends DataObject<DataType>>
-    extends PostgresqlDataRelation<DataType> {
+class PostgresqlDataView<DataType extends DataObject<DataType>>({
+  String? name,
+  required String schemaName,
+  @override required final DataBean<DataType> bean,
+  required SqlSelect select,
+}) extends PostgresqlDataRelation<DataType> {
   @override
   late final PostgresqlView relation;
 
-  @override
-  final DataBean<DataType> bean;
-
-  PostgresqlDataView({
-    String? name,
-    required String schemaName,
-    required this.bean,
-    required SqlSelect select,
-  }) {
+  this {
     relation = PostgresqlView(
       schemaName: schemaName,
       name:

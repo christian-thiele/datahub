@@ -1,9 +1,7 @@
 part of 'service_host.dart';
 
-class Scope implements Component {
+class Scope({
   /// Config prefix for every [Config] path below this scope.
-  final String? name;
-  final List<Component> components;
-
-  Scope({this.name, required this.components});
-}
+  final String? name,
+  required final List<Component> components,
+}) implements Component;

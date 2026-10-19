@@ -1,4 +1,4 @@
-enum Department {
+enum Department() {
   management,
   engineering,
   design,

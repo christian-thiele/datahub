@@ -9,11 +9,11 @@ import 'contact_type.dart';
 void main() {
   group('Primary constructors', () {
     test('named declaring parameters encode / decode', () {
-      final contact = Contact(
+      final contact = const Contact(
         name: 'Peter Testmann',
         email: 'peter@test.com',
         type: ContactType.work,
-        tags: const ['friend'],
+        tags: ['friend'],
         note: 'some note',
       );
 
@@ -56,7 +56,7 @@ void main() {
     });
 
     test('copyWith with private named parameter', () {
-      final contact = Contact(
+      final contact = const Contact(
         name: 'Peter',
         email: 'peter@test.com',
         type: ContactType.personal,

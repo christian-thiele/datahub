@@ -4,74 +4,58 @@ import 'package:datahub_postgres/types.dart';
 import 'sql.dart';
 import 'sql_attribute.dart';
 
-abstract class SqlSelectTarget with SqlBuilder {
-  const SqlSelectTarget();
-
+abstract class const SqlSelectTarget() with SqlBuilder {
   String get name;
 
   @override
   Sql toSql();
 }
 
-class SqlNestedSelect extends SqlSelectTarget {
+class const SqlNestedSelect({
+  @override required final String name,
+  required final SqlSelect select,
+}) extends SqlSelectTarget {
   @override
-  final String name;
-  final SqlSelect select;
-
-  const SqlNestedSelect({required this.name, required this.select});
-
-  @override
-  Sql toSql() => Sql.join([select.toSql().wrap(), RawSql(' '), Sql.name(name)]);
+  Sql toSql() =>
+      Sql.join([select.toSql().wrap(), const RawSql(' '), Sql.name(name)]);
 }
 
-class SqlSelect with SqlBuilder {
-  final Sql from;
-  final List<SqlAttribute> attributes;
-  final List<SqlAttribute> distinctOn;
-  final Sql? where;
-  final Sql? group;
-  final Sql? order;
-  final int limit;
-  final int offset;
+class const SqlSelect(
+  final Sql from,
+  final List<SqlAttribute> attributes, {
+  final List<SqlAttribute> distinctOn = const <SqlAttribute>[],
+  final Sql? where,
+  final Sql? group,
+  final Sql? order,
+  final int limit = -1,
+  final int offset = 0,
 
   /// Locks the selected rows for update until the transaction ends.
-  final bool forUpdate;
+  final bool forUpdate = false,
 
   /// With [forUpdate]: skips rows locked by other transactions instead of
   /// waiting for them.
-  final bool skipLocked;
-
-  const SqlSelect(
-    this.from,
-    this.attributes, {
-    this.distinctOn = const <SqlAttribute>[],
-    this.where,
-    this.group,
-    this.order,
-    this.limit = -1,
-    this.offset = 0,
-    this.forUpdate = false,
-    this.skipLocked = false,
-  });
-
+  final bool skipLocked = false,
+}) with SqlBuilder {
   @override
   Sql toSql() {
     return Sql.join([
-      RawSql('SELECT '),
+      const RawSql('SELECT '),
       if (distinctOn.isNotEmpty) ...[
-        RawSql('DISTINCT ON ('),
-        ...distinctOn.cast<Sql>().separatedBy(RawSql(', ')),
-        RawSql(') '),
+        const RawSql('DISTINCT ON ('),
+        ...distinctOn.cast<Sql>().separatedBy(const RawSql(', ')),
+        const RawSql(') '),
       ],
-      ...attributes.cast<Sql>().separatedBy(RawSql(', ')),
-      RawSql(' FROM '),
+      ...attributes.cast<Sql>().separatedBy(const RawSql(', ')),
+      const RawSql(' FROM '),
       from,
-      if (where case final where?) RawSql(' WHERE ') + where,
-      if (group case final group?) RawSql(' GROUP BY ') + group,
-      if (order case final order?) RawSql(' ORDER BY ') + order,
+      if (where case final where?) const RawSql(' WHERE ') + where,
+      if (group case final group?) const RawSql(' GROUP BY ') + group,
+      if (order case final order?) const RawSql(' ORDER BY ') + order,
       if (offset != 0)
-        RawSql(' OFFSET ') + ParameterSql(offset, PostgresqlInt()),
-      if (limit != -1) RawSql(' LIMIT ') + ParameterSql(limit, PostgresqlInt()),
+        const RawSql(' OFFSET ') + ParameterSql(offset, const PostgresqlInt()),
+      if (limit != -1)
+        const RawSql(' LIMIT ') + ParameterSql(limit, const PostgresqlInt()),
       if (forUpdate)
         RawSql(skipLocked ? ' FOR UPDATE SKIP LOCKED' : ' FOR UPDATE'),
     ]);

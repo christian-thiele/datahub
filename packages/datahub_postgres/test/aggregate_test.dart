@@ -10,7 +10,7 @@ final _environment = ComposeEnvironment.fromFile(
   'test/single-postgres.docker-compose.yml',
 );
 
-PostgresqlService _postgresService() => PostgresqlService(
+PostgresqlService _postgresService() => const PostgresqlService(
   host: Config('test.services.postgres.host'),
   port: Config('test.services.postgres.5432'),
   database: Config.value('datahub_postgres'),
@@ -24,9 +24,9 @@ PostgresqlDataRelation _relationOf(DataRepository repo) =>
 
 Future<void> _createSales(DataRepository<Sale> repo) async {
   for (final sale in [
-    Sale(region: 'north', quantity: 2, price: 10.0),
-    Sale(region: 'north', quantity: 4, price: 20.0),
-    Sale(region: 'south', quantity: 5, price: 7.5),
+    const Sale(region: 'north', quantity: 2, price: 10.0),
+    const Sale(region: 'north', quantity: 4, price: 20.0),
+    const Sale(region: 'south', quantity: 5, price: 7.5),
   ]) {
     await repo.create(sale);
   }
@@ -38,8 +38,8 @@ void main() {
     environment: _environment,
     [_postgresService(), PostgresqlDataRepositoryService(bean: $Sale.bean)],
     () async {
-      final postgres = Find<Postgresql>().find();
-      final repo = Find<DataRepository<Sale>>().find();
+      final postgres = const Find<Postgresql>().find();
+      final repo = const Find<DataRepository<Sale>>().find();
       final relation = _relationOf(repo);
 
       await _createSales(repo);
@@ -116,15 +116,15 @@ void main() {
     environment: _environment,
     [_postgresService(), PostgresqlDataRepositoryService(bean: $Sale.bean)],
     () async {
-      final postgres = Find<Postgresql>().find();
-      final repo = Find<DataRepository<Sale>>().find();
+      final postgres = const Find<Postgresql>().find();
+      final repo = const Find<DataRepository<Sale>>().find();
       final relation = _relationOf(repo);
 
       await _createSales(repo);
 
       await postgres.runTransaction((context) async {
         final result = await relation.select(context, [
-          PostgresqlAliasExpression('count', const AggregateExpression.count()),
+          const PostgresqlAliasExpression('count', AggregateExpression.count()),
           PostgresqlAliasExpression('sum_quantity', $Sale.$quantity.sum()),
           PostgresqlAliasExpression('min_quantity', $Sale.$quantity.min()),
           PostgresqlAliasExpression('max_quantity', $Sale.$quantity.max()),
@@ -161,8 +161,8 @@ void main() {
     environment: _environment,
     [_postgresService(), PostgresqlDataRepositoryService(bean: $Person.bean)],
     () async {
-      final postgres = Find<Postgresql>().find();
-      final repo = Find<DataRepository<Person>>().find();
+      final postgres = const Find<Postgresql>().find();
+      final repo = const Find<DataRepository<Person>>().find();
       final relation = _relationOf(repo);
 
       for (final person in [
@@ -172,7 +172,7 @@ void main() {
           birthday: DateTime.utc(1990, 5),
         ),
         Person(firstName: 'Anna', lastName: 'A', birthday: DateTime.utc(1985)),
-        Person(firstName: 'Bert', lastName: 'B', birthday: null),
+        const Person(firstName: 'Bert', lastName: 'B', birthday: null),
       ]) {
         await repo.create(person);
       }
@@ -207,7 +207,7 @@ void main() {
       await postgres.runTransaction((context) async {
         // COUNT(field) only counts non-null values, COUNT(*) counts all rows
         final result = await relation.select(context, [
-          PostgresqlAliasExpression('all', const AggregateExpression.count()),
+          const PostgresqlAliasExpression('all', AggregateExpression.count()),
           PostgresqlAliasExpression(
             'with_birthday',
             AggregateExpression(AggregateType.count, $Person.$birthday),
@@ -223,8 +223,8 @@ void main() {
     environment: _environment,
     [_postgresService(), PostgresqlDataRepositoryService(bean: $Sale.bean)],
     () async {
-      final postgres = Find<Postgresql>().find();
-      final repo = Find<DataRepository<Sale>>().find();
+      final postgres = const Find<Postgresql>().find();
+      final repo = const Find<DataRepository<Sale>>().find();
       final relation = _relationOf(repo);
 
       await _createSales(repo);

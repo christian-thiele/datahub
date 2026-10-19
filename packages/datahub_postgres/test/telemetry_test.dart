@@ -9,7 +9,7 @@ Future<num?> _metric(
   String name, [
   Map<String, String> labels = const {},
 ]) async {
-  final groups = await Find<Telemetry>().find().scrapeMetrics();
+  final groups = await const Find<Telemetry>().find().scrapeMetrics();
   for (final sample in groups.expand((g) => g.samples)) {
     if (sample.name == name && equals(labels).matches(sample.labels, {})) {
       return sample.value;
@@ -25,7 +25,7 @@ void main() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -36,17 +36,17 @@ void main() {
     ],
     () async {
       final spans = <LocalSpan>[];
-      final subscription = Find<Telemetry>().find().endedSpans.listen(
+      final subscription = const Find<Telemetry>().find().endedSpans.listen(
         spans.add,
       );
-      final postgres = Find<Postgresql>().find();
+      final postgres = const Find<Postgresql>().find();
 
       await postgres.runTransaction(
-        (context) => context.execute(RawSql('SELECT 1337;')),
+        (context) => context.execute(const RawSql('SELECT 1337;')),
       );
       await expectLater(
         postgres.runTransaction(
-          (context) => context.execute(RawSql('SELECT * FROM missing;')),
+          (context) => context.execute(const RawSql('SELECT * FROM missing;')),
         ),
         throwsA(anything),
       );

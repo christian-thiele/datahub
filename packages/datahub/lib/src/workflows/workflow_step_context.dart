@@ -3,12 +3,12 @@ import 'package:datahub/data.dart';
 import 'workflow.dart';
 
 /// What a step handler knows about the execution it is part of.
-class StepContext<T extends DataObject> {
+class const StepContext<T extends DataObject>({
   /// The element as it was read while holding its lock.
-  final T element;
+  required final T element,
 
   /// Number of this attempt, starting at 1.
-  final int attempt;
+  required final int attempt,
 
   /// Identifies the event the step handles.
   ///
@@ -16,39 +16,29 @@ class StepContext<T extends DataObject> {
   /// idempotency key for calls to external systems. A step may run more than
   /// once for the same event (when it fails, or when the process crashes
   /// before the result is persisted), so these calls **MUST** be idempotent.
-  final String idempotencyKey;
+  required final String idempotencyKey,
 
   /// Completes when the lock protecting [element] expired.
   ///
   /// The step result is discarded from then on, so long running handlers
   /// **SHOULD** stop their work when this completes.
-  final Future<void> lockExpired;
+  required final Future<void> lockExpired,
 
   /// The workflow the step belongs to, for example to start elements or send
   /// signals from a step. (A workflow service can not `Find` itself, so its
   /// steps can not look it up.)
-  final Workflow<T> workflow;
-
-  const StepContext({
-    required this.element,
-    required this.attempt,
-    required this.idempotencyKey,
-    required this.lockExpired,
-    required this.workflow,
-  });
-}
+  required final Workflow<T> workflow,
+});
 
 /// The context of an `OnSignal` step.
-class SignalStepContext<T extends DataObject, TSignal extends DataObject>
-    extends StepContext<T> {
-  final TSignal signal;
-
-  const SignalStepContext({
-    required super.element,
-    required super.attempt,
-    required super.idempotencyKey,
-    required super.lockExpired,
-    required super.workflow,
-    required this.signal,
-  });
-}
+class const SignalStepContext<
+  T extends DataObject,
+  TSignal extends DataObject
+>({
+  required super.element,
+  required super.attempt,
+  required super.idempotencyKey,
+  required super.lockExpired,
+  required super.workflow,
+  required final TSignal signal,
+}) extends StepContext<T>;

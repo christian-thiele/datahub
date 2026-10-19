@@ -27,9 +27,8 @@ class GroupDecoration extends StatelessWidget {
       children: [
         if (decoration.label != null || onAddPressed != null)
           DefaultTextStyle.merge(
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: isError ? colors.error : null,
-            ),
+            style: Theme.of(context).textTheme.titleSmall
+                ?.copyWith(color: isError ? colors.error : null),
             child: Row(
               children: [
                 ?decoration.label,
@@ -52,9 +51,8 @@ class GroupDecoration extends StatelessWidget {
         if (errorText != null)
           Text(
             errorText,
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: colors.error),
+            style: Theme.of(context).textTheme.bodySmall
+                ?.copyWith(color: colors.error),
           ),
       ],
     );

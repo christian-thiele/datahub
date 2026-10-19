@@ -5,19 +5,12 @@ import 'package:postgres/postgres.dart' as pg;
 import 'abstract/database_context.dart';
 import 'postgresql_telemetry.dart';
 
-class PostgresqlContext extends DatabaseContext {
-  final pg.Session _session;
-  final bool logStatements;
-  final String id;
-  final PostgresqlTelemetry telemetry;
-
-  const PostgresqlContext(
-    this.id,
-    this._session,
-    this.logStatements, [
-    this.telemetry = PostgresqlTelemetry.disabled,
-  ]);
-
+class const PostgresqlContext(
+  final String id,
+  final pg.Session _session,
+  final bool logStatements, [
+  final PostgresqlTelemetry telemetry = PostgresqlTelemetry.disabled,
+]) extends DatabaseContext {
   /// Executes [sql] with its values inlined (simple query mode).
   ///
   /// The query text contains the values, so it is only added to the span if
@@ -69,7 +62,7 @@ class PostgresqlContext extends DatabaseContext {
 
   Future<void> ensureSchema(String schemaName) async {
     final schemaResult = await execute(
-      SqlSelect(SqlQualifiedRelation('information_schema', 'schemata'), [
+      const SqlSelect(SqlQualifiedRelation('information_schema', 'schemata'), [
         SqlColumnAttribute('schema_name'),
       ]),
     );

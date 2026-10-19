@@ -10,13 +10,11 @@ import 'package:datahub_postgres/src/types/type_decode_exception.dart';
 import 'package:datahub_postgres/src/types/types.dart';
 import 'package:postgres/postgres.dart' as pg;
 
-abstract class PostgresqlDataType<T> {
-  final String name;
-  final pg.Type pgType;
-
+abstract class const PostgresqlDataType<T>(
+  final String name,
+  final pg.Type pgType,
+) {
   TypeCheck<T> get type => TypeCheck<T>();
-
-  const PostgresqlDataType(this.name, this.pgType);
 
   dynamic encode(T? value) => value;
 
@@ -44,15 +42,16 @@ abstract class PostgresqlDataType<T> {
     List<bool>() => RawSql('\'{${value.join(',')}}\'::boolean[]'),
     Map<String, dynamic>() || List<dynamic>() => Sql.join([
       Sql.text(jsonEncode(const JsonDataCodec().encodeDynamic(value))),
-      RawSql('::jsonb'),
+      const RawSql('::jsonb'),
     ]),
-    DataObject() => Sql.text(jsonEncode(value.toJson())) + RawSql('::jsonb'),
+    DataObject() =>
+      Sql.text(jsonEncode(value.toJson())) + const RawSql('::jsonb'),
     Geometry() => Sql.function('ST_GeogFromWKB', [
-      RawSql('\'\\x') +
+      const RawSql('\'\\x') +
           RawSql(value.toEWKB().toHexString()) +
-          RawSql('\'::bytea'),
+          const RawSql('\'::bytea'),
     ]),
-    null => RawSql('NULL'),
+    null => const RawSql('NULL'),
     _ => throw Exception(
       'Cannot provide SQL literal for value of type ${value.runtimeType}.',
     ),

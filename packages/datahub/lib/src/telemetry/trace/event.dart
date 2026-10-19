@@ -2,25 +2,20 @@ import 'dart:convert';
 
 import 'package:datahub/api.dart';
 
-class Event {
-  final String name;
-  final Map<String, Object?> attributes;
-  final DateTime timestamp;
-
-  Event({
-    required this.name,
-    required this.attributes,
-    required this.timestamp,
-  });
-}
+class Event({
+  required final String name,
+  required final Map<String, Object?> attributes,
+  required final DateTime timestamp,
+});
 
 /// An exception recorded on a span, according to the semantic conventions
 /// for exceptions (event name `exception`).
-class ExceptionEvent extends Event {
-  final Object error;
-  final StackTrace? stack;
-
-  ExceptionEvent({required this.error, this.stack, required super.timestamp})
+class ExceptionEvent({
+  required final Object error,
+  final StackTrace? stack,
+  required super.timestamp,
+}) extends Event {
+  this
     : super(
         name: 'exception',
         attributes: {

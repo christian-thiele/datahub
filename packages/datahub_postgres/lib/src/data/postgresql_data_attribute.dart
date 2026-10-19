@@ -3,23 +3,19 @@ import 'package:datahub/utils.dart';
 import 'package:datahub_postgres/schema.dart';
 import 'package:datahub_postgres/types.dart';
 
-class PostgresqlDataAttribute extends PostgresqlAttribute {
-  final DataField field;
-
-  PostgresqlDataAttribute({
-    required this.field,
-    required super.name,
-    required super.type,
-    super.constraints,
-  });
-
+class PostgresqlDataAttribute({
+  required final DataField field,
+  required super.name,
+  required super.type,
+  super.constraints,
+}) extends PostgresqlAttribute {
   /// Builds a column definition for [field].
   ///
   /// [PostgresqlAttributeConstraint] annotations on the field are applied
   /// as given. Additionally a [PrimaryKeyConstraint] is derived from an [Id]
   /// annotation and a [NotNullConstraint] from a non-nullable field type,
   /// unless a constraint of the same kind is already annotated explicitly.
-  factory PostgresqlDataAttribute.fromField(DataField field) {
+  factory fromField(DataField field) {
     final type = PostgresqlDataType.findForDataField(field);
     final annotated = field
         .allMetaOfType<PostgresqlAttributeConstraint>()

@@ -6,29 +6,23 @@ import 'package:test/test.dart';
 
 /// A host that builds an arbitrary component tree, in particular one without a
 /// [TelemetryService].
-class BareHost extends ServiceHost {
-  final Component root;
-
-  BareHost(this.root);
-
+class BareHost(final Component root) extends ServiceHost {
   @override
   Component buildRoot() => root;
 }
 
-class BoomException implements Exception {
+class BoomException() implements Exception {
   @override
   String toString() => 'BoomException: service could not start';
 }
 
 /// A service that fails during initialization.
-class FailingService implements Service {
-  const FailingService();
-
+class const FailingService() implements Service {
   @override
   ServiceInstance createInstance() => FailingServiceInstance();
 }
 
-class FailingServiceInstance extends ServiceInstance<FailingService> {
+class FailingServiceInstance() extends ServiceInstance<FailingService> {
   @override
   Future<void> initialize() async {
     await super.initialize();
@@ -37,14 +31,12 @@ class FailingServiceInstance extends ServiceInstance<FailingService> {
 }
 
 /// A service that logs during initialization.
-class LoggingService implements Service {
-  const LoggingService();
-
+class const LoggingService() implements Service {
   @override
   ServiceInstance createInstance() => LoggingServiceInstance();
 }
 
-class LoggingServiceInstance extends ServiceInstance<LoggingService> {
+class LoggingServiceInstance() extends ServiceInstance<LoggingService> {
   @override
   Future<void> initialize() async {
     log.warn('a warning with no telemetry to publish to');

@@ -5,7 +5,7 @@ sealed class ConfigurationState;
 final class ConfigurationLoading extends ConfigurationState {
   final bool _initial;
 
-  ConfigurationLoading({bool initial = false}) : _initial = initial;
+  ConfigurationLoading({this._initial = false});
 }
 
 final class ConfigurationValue extends ConfigurationState {

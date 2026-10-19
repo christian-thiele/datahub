@@ -1,13 +1,12 @@
 import 'dart:async';
 import 'dart:collection';
 
-class StreamBatchListener<T> {
-  final Stream<T> stream;
+class StreamBatchListener<T>(final Stream<T> stream) {
   final _queue = Queue<_Event<T>>();
   final _completerQueue = Queue<Completer<_Event<T>>>();
   late final StreamSubscription _subscription;
 
-  StreamBatchListener(this.stream) {
+  this {
     _subscription = stream.listen(
       (e) {
         _add(_DataEvent(e));
@@ -51,19 +50,11 @@ class StreamBatchListener<T> {
   void cancel() => _subscription.cancel();
 }
 
-abstract class _Event<T>;
+abstract class _Event<T>();
 
-class _DataEvent<T> extends _Event<T> {
-  final T data;
+class _DataEvent<T>(final T data) extends _Event<T>;
 
-  _DataEvent(this.data);
-}
+class _ErrorEvent<T>(final dynamic error, final StackTrace stack)
+    extends _Event<T>;
 
-class _ErrorEvent<T> extends _Event<T> {
-  final dynamic error;
-  final StackTrace stack;
-
-  _ErrorEvent(this.error, this.stack);
-}
-
-class _DoneEvent<T> extends _Event<T>;
+class _DoneEvent<T>() extends _Event<T>;

@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 void main() {
   declareTest('Test default metrics', [], () async {
-    final instrumentation = Find<Telemetry>().find();
+    final instrumentation = const Find<Telemetry>().find();
     final metrics = await instrumentation.scrapeMetrics();
     expect(metrics, isNotEmpty);
     expect(
@@ -24,7 +24,7 @@ void main() {
   });
 
   declareTest('Test counter metrics', [], () async {
-    final instrumentation = Find<Telemetry>().find();
+    final instrumentation = const Find<Telemetry>().find();
     final counter = instrumentation.counter('some_value');
     for (var i = 0; i < 3; i++) {
       counter.inc();
@@ -44,7 +44,7 @@ void main() {
   });
 
   declareTest('Test counter metrics with labels', [], () async {
-    final instrumentation = Find<Telemetry>().find();
+    final instrumentation = const Find<Telemetry>().find();
     final counter = instrumentation.counter(
       'some_value',
       labels: {
@@ -130,7 +130,7 @@ void main() {
   });
 
   declareTest('Test gauge metrics', [], () async {
-    final instrumentation = Find<Telemetry>().find();
+    final instrumentation = const Find<Telemetry>().find();
     final gauge = instrumentation.gauge('some_value');
     for (var i = 0; i < 3; i++) {
       gauge.inc();
@@ -151,7 +151,7 @@ void main() {
   });
 
   declareTest('Test gauge metrics with labels', [], () async {
-    final instrumentation = Find<Telemetry>().find();
+    final instrumentation = const Find<Telemetry>().find();
     final gauge = instrumentation.gauge(
       'some_value',
       labels: {
@@ -232,7 +232,7 @@ void main() {
   });
 
   declareTest('Test histogram metrics without labels', [], () async {
-    final instrumentation = Find<Telemetry>().find();
+    final instrumentation = const Find<Telemetry>().find();
     final histogram = instrumentation.linearHistogram(
       'some_duration',
       start: 1,
@@ -254,7 +254,7 @@ void main() {
   });
 
   declareTest('Test histogram metrics with labels', [], () async {
-    final instrumentation = Find<Telemetry>().find();
+    final instrumentation = const Find<Telemetry>().find();
     final histogram = instrumentation.exponentialHistogram(
       'labeled_duration',
       start: 1,
@@ -294,7 +294,7 @@ void main() {
   });
 
   declareTest('Test histogram metrics with label names', [], () async {
-    final telemetry = Find<Telemetry>().find();
+    final telemetry = const Find<Telemetry>().find();
     final histogram = telemetry.exponentialHistogram(
       'named_duration',
       start: 1,
@@ -332,7 +332,7 @@ void main() {
     'Test undeclared labels are dropped with one warning',
     [],
     () async {
-      final telemetry = Find<Telemetry>().find();
+      final telemetry = const Find<Telemetry>().find();
       final counter = telemetry.counter(
         'dropping_total',
         labels: {
@@ -365,7 +365,7 @@ void main() {
   );
 
   declareTest('Test counters and gauges with label names', [], () async {
-    final telemetry = Find<Telemetry>().find();
+    final telemetry = const Find<Telemetry>().find();
     final counter = telemetry.counter('named_total', labelNames: {'route'});
     final gauge = telemetry.gauge('named_gauge', labelNames: {'route'});
 
@@ -383,7 +383,7 @@ void main() {
   });
 
   declareTest('Test async collectors are scraped', [], () async {
-    final telemetry = Find<Telemetry>().find();
+    final telemetry = const Find<Telemetry>().find();
     final collector = _SlowCollector();
     telemetry.registerCollector(collector);
 
@@ -406,7 +406,7 @@ void main() {
   });
 
   declareTest('Test histogram with explicit buckets', [], () async {
-    final telemetry = Find<Telemetry>().find();
+    final telemetry = const Find<Telemetry>().find();
     final histogram = telemetry.histogram(
       'explicit_seconds',
       buckets: HistogramMetric.defaultDurationBuckets,
@@ -442,7 +442,7 @@ Future<List<MetricSample>> _samplesOf(Telemetry telemetry, String name) async {
       .toList();
 }
 
-class _SlowCollector extends AsyncMetricCollector {
+class _SlowCollector() extends AsyncMetricCollector {
   final metric = GaugeMetric('slow_value');
 
   @override

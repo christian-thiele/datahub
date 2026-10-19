@@ -4,26 +4,16 @@ import '../utils/api_request_exception.dart';
 import 'api_request.dart';
 import 'api_route.dart';
 
-class ResourceEndpoint extends ApiEndpoint {
-  final RequestHandler? get;
-  final RequestHandler? post;
-  final RequestHandler? patch;
-  final RequestHandler? put;
-  final RequestHandler? delete;
-  final RequestHandler? options;
-  final RequestHandler? head;
-
-  const ResourceEndpoint({
-    super.matcher,
-    this.get,
-    this.post,
-    this.patch,
-    this.put,
-    this.delete,
-    this.options,
-    this.head,
-  });
-
+class const ResourceEndpoint({
+  super.matcher,
+  final RequestHandler? get,
+  final RequestHandler? post,
+  final RequestHandler? patch,
+  final RequestHandler? put,
+  final RequestHandler? delete,
+  final RequestHandler? options,
+  final RequestHandler? head,
+}) extends ApiEndpoint {
   @override
   Future<dynamic> onRequest(ApiRequest request) async {
     final handler = switch (request.method) {

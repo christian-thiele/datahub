@@ -2,11 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-class FakeStdout implements Stdout {
-  final StringBuffer buffer;
-
-  FakeStdout(this.buffer);
-
+class FakeStdout(final StringBuffer buffer) implements Stdout {
   @override
   void writeln([Object? obj = ""]) {
     buffer.writeln(obj);

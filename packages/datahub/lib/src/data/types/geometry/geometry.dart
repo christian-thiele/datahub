@@ -30,14 +30,12 @@ const wkbSRID = 0x20000000;
 /// SRId of the WGS 84 (latitude / longitude) spacial reference system.
 const wgs84 = 4326;
 
-abstract class Geometry {
-  final int? srid;
-  final GeometryType type;
-  final bool hasZ;
-  final bool hasM;
-
-  const Geometry(this.srid, this.type, this.hasZ, this.hasM);
-
+abstract class const Geometry(
+  final int? srid,
+  final GeometryType type,
+  final bool hasZ,
+  final bool hasM,
+) {
   static Geometry parseEWKB(Uint8List bytes) {
     final reader = ByteDataReader(endian: ByteOrder.read(bytes.first).endian);
     reader.add(bytes);

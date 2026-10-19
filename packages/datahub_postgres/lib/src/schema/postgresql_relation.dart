@@ -6,7 +6,7 @@ import 'package:datahub_postgres/types.dart';
 import 'postgresql_attribute.dart';
 import 'postgresql_table_constraint.dart';
 
-enum PostgresqlRelationKind {
+enum PostgresqlRelationKind() {
   table,
   partitionedTable,
   view,
@@ -17,17 +17,11 @@ enum PostgresqlRelationKind {
   bool get isTable => this == table || this == partitionedTable;
 }
 
-sealed class PostgresqlRelation {
-  final String schemaName;
-  final String name;
-  final List<PostgresqlAttribute> attributes;
-
-  const PostgresqlRelation({
-    required this.schemaName,
-    required this.name,
-    required this.attributes,
-  });
-
+sealed class const PostgresqlRelation({
+  required final String schemaName,
+  required final String name,
+  required final List<PostgresqlAttribute> attributes,
+}) {
   Future<void> ensureRelation(PostgresqlContext context);
 
   /// Returns the kind of the relation [name] in [schemaName] or null, if no
@@ -42,13 +36,13 @@ sealed class PostgresqlRelation {
   ) async {
     final result = await context.execute(
       Sql.join([
-        RawSql(
+        const RawSql(
           'SELECT c.relkind::text FROM pg_catalog.pg_class c '
           'JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace '
           'WHERE n.nspname = ',
         ),
         ParameterSql<String>(schemaName, const PostgresqlString()),
-        RawSql(' AND c.relname = '),
+        const RawSql(' AND c.relname = '),
         ParameterSql<String>(name, const PostgresqlString()),
       ]),
     );
@@ -85,16 +79,12 @@ sealed class PostgresqlRelation {
   }
 }
 
-class PostgresqlTable extends PostgresqlRelation {
-  final List<PostgresqlTableConstraint> constraints;
-
-  const PostgresqlTable({
-    required super.schemaName,
-    required super.name,
-    required super.attributes,
-    this.constraints = const [],
-  });
-
+class const PostgresqlTable({
+  required super.schemaName,
+  required super.name,
+  required super.attributes,
+  final List<PostgresqlTableConstraint> constraints = const [],
+}) extends PostgresqlRelation {
   @override
   Future<void> ensureRelation(PostgresqlContext context) async {
     await context.ensureSchema(schemaName);
@@ -108,16 +98,12 @@ class PostgresqlTable extends PostgresqlRelation {
   }
 }
 
-class PostgresqlView extends PostgresqlRelation {
-  final SqlSelect select;
-
-  const PostgresqlView({
-    required super.schemaName,
-    required super.name,
-    required this.select,
-    required super.attributes,
-  });
-
+class const PostgresqlView({
+  required super.schemaName,
+  required super.name,
+  required final SqlSelect select,
+  required super.attributes,
+}) extends PostgresqlRelation {
   @override
   Future<void> ensureRelation(PostgresqlContext context) async {
     await context.ensureSchema(schemaName);
@@ -133,9 +119,9 @@ class PostgresqlView extends PostgresqlRelation {
   }
 }
 
-class PostgresqlSequence extends PostgresqlRelation {
-  PostgresqlSequence({required super.schemaName, required super.name})
-    : super(attributes: const []);
+class PostgresqlSequence({required super.schemaName, required super.name})
+    extends PostgresqlRelation {
+  this : super(attributes: const []);
 
   @override
   Future<void> ensureRelation(PostgresqlContext context) async {

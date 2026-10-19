@@ -16,10 +16,10 @@ final class ResourceLoading extends ResourceState {
   final bool _initial;
 
   const ResourceLoading({
-    bool initial = false,
+    this._initial = false,
     required super.filter,
     required super.paging,
-  }) : _initial = initial;
+  });
 }
 
 final class ResourceValue extends ResourceState {

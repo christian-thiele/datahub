@@ -10,7 +10,7 @@ final _environment = ComposeEnvironment.fromFile(
   'test/single-postgres.docker-compose.yml',
 );
 
-PostgresqlService _postgresService() => PostgresqlService(
+PostgresqlService _postgresService() => const PostgresqlService(
   host: Config('test.services.postgres.host'),
   port: Config('test.services.postgres.5432'),
   database: Config.value('datahub_postgres'),
@@ -25,10 +25,10 @@ PostgresqlDataRelation<T> _relationOf<T extends DataObject<T>>(
 
 Future<void> _createSales(DataRepository<Sale> repo) async {
   for (final sale in [
-    Sale(region: 'north', quantity: 2, price: 10.0),
-    Sale(region: 'north', quantity: 4, price: 20.0),
-    Sale(region: 'north', quantity: 4, price: 5.0),
-    Sale(region: 'south', quantity: 5, price: 7.5),
+    const Sale(region: 'north', quantity: 2, price: 10.0),
+    const Sale(region: 'north', quantity: 4, price: 20.0),
+    const Sale(region: 'north', quantity: 4, price: 5.0),
+    const Sale(region: 'south', quantity: 5, price: 7.5),
   ]) {
     await repo.create(sale);
   }
@@ -40,8 +40,8 @@ void main() {
     environment: _environment,
     [_postgresService(), PostgresqlDataRepositoryService(bean: $Sale.bean)],
     () async {
-      final postgres = Find<Postgresql>().find();
-      final repo = Find<DataRepository<Sale>>().find();
+      final postgres = const Find<Postgresql>().find();
+      final repo = const Find<DataRepository<Sale>>().find();
       final relation = _relationOf(repo);
 
       await _createSales(repo);
@@ -78,8 +78,8 @@ void main() {
     environment: _environment,
     [_postgresService(), PostgresqlDataRepositoryService(bean: $Sale.bean)],
     () async {
-      final postgres = Find<Postgresql>().find();
-      final repo = Find<DataRepository<Sale>>().find();
+      final postgres = const Find<Postgresql>().find();
+      final repo = const Find<DataRepository<Sale>>().find();
       final relation = _relationOf(repo);
 
       await _createSales(repo);
@@ -117,15 +117,15 @@ void main() {
       PostgresqlDataRepositoryService(bean: $City.bean),
     ],
     () async {
-      final postgres = Find<Postgresql>().find();
-      final saleRepo = Find<DataRepository<Sale>>().find();
-      final cityRepo = Find<DataRepository<City>>().find();
+      final postgres = const Find<Postgresql>().find();
+      final saleRepo = const Find<DataRepository<Sale>>().find();
+      final cityRepo = const Find<DataRepository<City>>().find();
       final sales = _relationOf(saleRepo);
       final cities = _relationOf(cityRepo);
 
       await _createSales(saleRepo);
-      await cityRepo.create(City(id: 'n', name: 'north', zip: '1000'));
-      await cityRepo.create(City(id: 's', name: 'south', zip: '2000'));
+      await cityRepo.create(const City(id: 'n', name: 'north', zip: '1000'));
+      await cityRepo.create(const City(id: 's', name: 'south', zip: '2000'));
 
       await postgres.runTransaction((context) async {
         // distinct on a field of the right relation

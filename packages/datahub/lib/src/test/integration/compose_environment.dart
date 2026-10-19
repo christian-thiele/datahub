@@ -5,25 +5,14 @@ import 'package:boost/boost.dart';
 import 'package:datahub/utils.dart';
 import 'package:yaml/yaml.dart';
 
-class ServicePort {
-  final String name;
-  final int containerPort;
-  final int hostPort;
+class const ServicePort({
+  required final String name,
+  required final int containerPort,
+  required final int hostPort,
+});
 
-  const ServicePort({
-    required this.name,
-    required this.containerPort,
-    required this.hostPort,
-  });
-}
-
-class ComposeEnvironment {
-  final String compose;
-
-  const ComposeEnvironment({required this.compose});
-
-  ComposeEnvironment.fromFile(String path)
-    : this(compose: io.File(path).readAsStringSync());
+class const ComposeEnvironment({required final String compose}) {
+  new fromFile(String path) : this(compose: io.File(path).readAsStringSync());
 
   static Future<void>? _reapFuture;
 
@@ -211,17 +200,11 @@ class ComposeEnvironment {
   }
 }
 
-class ComposeEnvironmentInstance {
-  final ComposeEnvironment composeEnvironment;
-  final String projectId;
-  final List<ServicePort> servicePorts;
-
-  ComposeEnvironmentInstance({
-    required this.composeEnvironment,
-    required this.projectId,
-    required this.servicePorts,
-  });
-
+class ComposeEnvironmentInstance({
+  required final ComposeEnvironment composeEnvironment,
+  required final String projectId,
+  required final List<ServicePort> servicePorts,
+}) {
   Map<String, dynamic> buildConfiguration({List<(String, String)>? remap}) {
     final servicesConfig = <String, Map<String, dynamic>>{};
 

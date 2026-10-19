@@ -7,7 +7,7 @@ const _dollar = 36;
 const _asterisk = 42;
 
 /// Encodes commands as RESP arrays of bulk strings.
-abstract final class RespEncoder {
+abstract final class RespEncoder() {
   /// Encodes [command] into a RESP request.
   ///
   /// Supported argument types are [String] (UTF-8), [int], [double] and

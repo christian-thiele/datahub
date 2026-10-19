@@ -26,21 +26,20 @@ import 'sample_group.dart';
 /// Labels are declared either with all of their values ([labels]) or by name
 /// only ([labelNames]), see [MetricSeriesSet]. Values for labels that were
 /// not declared are dropped.
-class GaugeMetric extends Metric {
-  final MetricSeriesSet<GaugeSeries> _series;
+class GaugeMetric(
+  super.name, {
+  super.help,
+  Map<String, List<String>>? labels,
+  Set<String>? labelNames,
+}) extends Metric {
+  final MetricSeriesSet<GaugeSeries> _series = MetricSeriesSet(
+    name,
+    labels: labels,
+    labelNames: labelNames,
+    create: GaugeSeries.new,
+  );
 
-  GaugeMetric(
-    super.name, {
-    super.help,
-    Map<String, List<String>>? labels,
-    Set<String>? labelNames,
-  }) : _series = MetricSeriesSet(
-         name,
-         labels: labels,
-         labelNames: labelNames,
-         create: GaugeSeries.new,
-       ),
-       super(type: MetricType.gauge);
+  this : super(type: MetricType.gauge);
 
   @override
   SampleGroup collect() {
@@ -90,11 +89,8 @@ class GaugeMetric extends Metric {
   };
 }
 
-class GaugeSeries {
-  final Map<String, String> labels;
+class GaugeSeries(final Map<String, String> labels) {
   num _value = 0;
-
-  GaugeSeries(this.labels);
 
   void inc() => ++_value;
 

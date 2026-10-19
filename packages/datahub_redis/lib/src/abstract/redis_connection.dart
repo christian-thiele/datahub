@@ -15,7 +15,7 @@ import 'redis_transaction.dart';
 /// When a command times out, its reply could arrive at any later point and
 /// be mistaken for the reply of another command. The connection is closed in
 /// that case and all pending commands fail.
-abstract interface class RedisConnection implements RedisCommands {
+abstract interface class RedisConnection() implements RedisCommands {
   /// Whether the connection is still open.
   bool get isOpen;
 

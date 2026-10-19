@@ -31,9 +31,8 @@ void main() {
     });
 
     test('falls back to the defaults of missing parameters', () {
-      final parameters = _action(
-        $SendPaymentReminders.bean,
-      ).decodeParameters(<String, dynamic>{});
+      final parameters = _action($SendPaymentReminders.bean)
+          .decodeParameters(<String, dynamic>{});
 
       expect(parameters.minDaysOverdue, 7);
     });
@@ -50,9 +49,9 @@ void main() {
 
     test('fails for parameters that violate constraints', () {
       expect(
-        () => _action(
-          $ResolveTicket.bean,
-        ).decodeParameters({'resolution': 'Done.'}),
+        () =>
+            _action($ResolveTicket.bean)
+                .decodeParameters({'resolution': 'Done.'}),
         throwsA(
           isA<ValidationException>().having(
             (e) => e.violatedConstraints.keys.map((f) => f.name),
@@ -67,7 +66,7 @@ void main() {
   group('results', () {
     List<Component> components(ApertureActionHandler<ResolveTicket> handler) =>
         [
-          KeyService(),
+          const KeyService(),
           const DemoAuthService(issuer: Config.value(_issuer)),
           const TestAuthProvider(),
           MemoryRepositoryService(bean: $Order.bean),
@@ -79,7 +78,7 @@ void main() {
                 oidcIssuer: const Config.value(_issuer),
                 resources: [
                   ApertureResource(
-                    repository: Find<DataRepository<Todo>>(),
+                    repository: const Find<DataRepository<Todo>>(),
                     actions: [
                       ApertureAction<ResolveTicket>(
                         bean: $ResolveTicket.bean,
@@ -104,9 +103,7 @@ void main() {
       const parameters = {'resolution': 'Replaced the router.'};
       return client
           .post(
-            elementId == null
-                ? '/api/actions/ResolveTicket'
-                : '/api/resources/Todo/elements/{elementId}/actions/ResolveTicket',
+            elementId == null ? '/api/actions/ResolveTicket' : '/api/resources/Todo/elements/{elementId}/actions/ResolveTicket',
             parameters,
             urlParams: {'elementId': ?elementId},
           )

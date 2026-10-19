@@ -7,30 +7,25 @@ import 'postgresql_revisable_repository.dart';
 ///
 /// When access control or different behavior is required, use [PostgresqlRevisableRepository]
 /// as mixin for a [ServiceInstance] to override methods.
-class PostgresqlRevisableRepositoryService<TData extends DataObject<TData>>
-    implements Service {
-  final Find<Postgresql> postgresql;
-  final Config<String> schemaName;
-  final Config<String?> relationName;
-  final Config<Duration> schedulePollInterval;
-  final Config<int> promotionBatchSize;
-  final DataBean<TData> bean;
-
-  const PostgresqlRevisableRepositoryService({
-    required this.bean,
-    this.postgresql = const Find(),
-    this.schemaName = const Config('schemaName', defaultValue: 'public'),
-    this.relationName = const Config('relationName'),
-    this.schedulePollInterval = const Config(
-      'schedulePollInterval',
-      defaultValue: Duration(seconds: 30),
-    ),
-    this.promotionBatchSize = const Config(
-      'promotionBatchSize',
-      defaultValue: 500,
-    ),
-  });
-
+class const PostgresqlRevisableRepositoryService<
+  TData extends DataObject<TData>
+>({
+  required final DataBean<TData> bean,
+  final Find<Postgresql> postgresql = const Find(),
+  final Config<String> schemaName = const Config(
+    'schemaName',
+    defaultValue: 'public',
+  ),
+  final Config<String?> relationName = const Config('relationName'),
+  final Config<Duration> schedulePollInterval = const Config(
+    'schedulePollInterval',
+    defaultValue: Duration(seconds: 30),
+  ),
+  final Config<int> promotionBatchSize = const Config(
+    'promotionBatchSize',
+    defaultValue: 500,
+  ),
+}) implements Service {
   @override
   ServiceInstance<PostgresqlRevisableRepositoryService> createInstance() =>
       _PostgresqlRevisableRepositoryServiceInstance<TData>();
@@ -38,7 +33,7 @@ class PostgresqlRevisableRepositoryService<TData extends DataObject<TData>>
 
 class _PostgresqlRevisableRepositoryServiceInstance<
   TData extends DataObject<TData>
->
+>()
     extends ServiceInstance<PostgresqlRevisableRepositoryService<TData>>
     with
         PostgresqlRevisableRepository<

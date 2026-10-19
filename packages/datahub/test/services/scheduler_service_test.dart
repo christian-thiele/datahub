@@ -14,7 +14,7 @@ Future<void> _record(ScheduleContext run) async =>
 List<ScheduleContext> _runsOf(String name) => _runs[name] ?? const [];
 
 DataRepository<ScheduleRecord> get _records =>
-    Find<DataRepository<ScheduleRecord>>().find();
+    const Find<DataRepository<ScheduleRecord>>().find();
 
 /// Shared components, so schedules run once per time across instances.
 List<Component> _shared({List<ScheduleRecord> records = const []}) => [
@@ -32,7 +32,7 @@ Component _instance(
   name: 'instance-$index',
   components: [
     SchedulerService(
-      pollInterval: Config.value(const Duration(milliseconds: 50)),
+      pollInterval: const Config.value(Duration(milliseconds: 50)),
       worker: Config.value(worker),
     ),
     ...schedules,
@@ -139,10 +139,10 @@ void main() {
   declareTest(
     'runs a schedule from the components at its times',
     [
-      Schedule.every(
+      const Schedule.every(
         'tick',
         _record,
-        interval: const Duration(milliseconds: 100),
+        interval: Duration(milliseconds: 100),
       ),
     ],
     () async {
@@ -161,11 +161,11 @@ void main() {
     [
       ServiceDelegate(
         initialize: () async {
-          final scheduler = Find<Scheduler>().find();
-          final schedule = Schedule.every(
+          final scheduler = const Find<Scheduler>().find();
+          final schedule = const Schedule.every(
             'registered',
             _record,
-            interval: const Duration(milliseconds: 100),
+            interval: Duration(milliseconds: 100),
           );
           scheduler.registerSchedule(schedule);
           expect(
@@ -189,10 +189,10 @@ void main() {
       ..._shared(),
       for (var i = 0; i < 3; i++)
         _instance(i, [
-          Schedule.every(
+          const Schedule.every(
             'shared',
             _record,
-            interval: const Duration(milliseconds: 150),
+            interval: Duration(milliseconds: 150),
           ),
         ]),
     ],
@@ -213,10 +213,10 @@ void main() {
       const _YieldingRecordRepository(),
       for (var i = 0; i < 3; i++)
         _instance(i, [
-          Schedule.every(
+          const Schedule.every(
             'claimed',
             _record,
-            interval: const Duration(milliseconds: 150),
+            interval: Duration(milliseconds: 150),
           ),
         ]),
     ],
@@ -236,10 +236,10 @@ void main() {
         records: [ScheduleRecord(id: 'missed', nextRunAt: missed)],
       ),
       _instance(0, [
-        Schedule.every(
+        const Schedule.every(
           'missed',
           _record,
-          interval: const Duration(minutes: 10),
+          interval: Duration(minutes: 10),
         ),
       ]),
     ],
@@ -282,10 +282,10 @@ void main() {
     [
       ..._shared(),
       _instance(0, [
-        Schedule.every(
+        const Schedule.every(
           'idle',
           _record,
-          interval: const Duration(milliseconds: 50),
+          interval: Duration(milliseconds: 50),
         ),
       ], worker: false),
     ],
@@ -317,7 +317,7 @@ void main() {
       final message = jsonDecode(record.lastMessages.first) as Map;
       expect(message['msg'], 'Fetching rates.');
 
-      final failed = Find<Telemetry>()
+      final failed = const Find<Telemetry>()
           .find()
           .counter('scheduler_runs_total')
           .collect()
@@ -333,16 +333,16 @@ void main() {
 
   declareTest(
     'runs a schedule now on request',
-    [Schedule.monthly('billing', _record)],
+    [const Schedule.monthly('billing', _record)],
     () async {
       await Future.delayed(const Duration(milliseconds: 200));
       expect(_runsOf('billing'), isEmpty);
 
-      await Find<Scheduler>().find().runNow('billing');
+      await const Find<Scheduler>().find().runNow('billing');
       await _eventually(() => _runsOf('billing').isNotEmpty, reason: 'a run');
 
       await expectLater(
-        Find<Scheduler>().find().runNow('unknown'),
+        const Find<Scheduler>().find().runNow('unknown'),
         throwsA(isA<ApiRequestException>()),
       );
     },
@@ -351,15 +351,13 @@ void main() {
 
 /// An in-memory `DataRepository<ScheduleRecord>` that yields on every call,
 /// like a database. Each call itself is atomic.
-class _YieldingRecordRepository implements Service {
-  const _YieldingRecordRepository();
-
+class const _YieldingRecordRepository() implements Service {
   @override
   ServiceInstance<_YieldingRecordRepository> createInstance() =>
       _YieldingRecordRepositoryInstance();
 }
 
-class _YieldingRecordRepositoryInstance
+class _YieldingRecordRepositoryInstance()
     extends ServiceInstance<_YieldingRecordRepository>
     implements DataRepository<ScheduleRecord> {
   final _records = <String, ScheduleRecord>{};
@@ -373,7 +371,7 @@ class _YieldingRecordRepositoryInstance
   Future<ScheduleRecord> create(ScheduleRecord element) async {
     await _yield();
     if (_records.containsKey(element.id)) {
-      throw ApiException('Duplicate id.');
+      throw const ApiException('Duplicate id.');
     }
     return _records[element.id] = element;
   }

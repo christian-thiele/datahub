@@ -109,12 +109,15 @@ void _encodeDateTime() {
 
 void _encodeDuration() {
   expect(
-    codec.encodeDuration(Duration(days: 50)),
-    equals(Duration(days: 50).inMilliseconds),
+    codec.encodeDuration(const Duration(days: 50)),
+    equals(const Duration(days: 50).inMilliseconds),
   );
   expect(
-    codec.encodeNullable<Duration>(Duration(seconds: 12), codec.encodeDuration),
-    equals(Duration(seconds: 12).inMilliseconds),
+    codec.encodeNullable<Duration>(
+      const Duration(seconds: 12),
+      codec.encodeDuration,
+    ),
+    equals(const Duration(seconds: 12).inMilliseconds),
   );
   expect(
     codec.encodeNullable<Duration>(null, codec.encodeDuration),
@@ -598,20 +601,20 @@ void _decodeDateTime() {
 
 void _decodeDuration() {
   expect(
-    codec.decodeDuration(Duration(seconds: 50).inMilliseconds),
-    equals(Duration(seconds: 50)),
+    codec.decodeDuration(const Duration(seconds: 50).inMilliseconds),
+    equals(const Duration(seconds: 50)),
   );
   expect(
-    codec.decodeDuration(Duration(days: 100).inMilliseconds),
-    equals(Duration(days: 100)),
+    codec.decodeDuration(const Duration(days: 100).inMilliseconds),
+    equals(const Duration(days: 100)),
   );
   expect(
-    codec.decodeTyped<Duration?>(Duration(seconds: 50).inMilliseconds),
-    equals(Duration(seconds: 50)),
+    codec.decodeTyped<Duration?>(const Duration(seconds: 50).inMilliseconds),
+    equals(const Duration(seconds: 50)),
   );
   expect(
-    codec.decodeTyped<Duration?>(Duration(days: 100).inMilliseconds),
-    equals(Duration(days: 100)),
+    codec.decodeTyped<Duration?>(const Duration(days: 100).inMilliseconds),
+    equals(const Duration(days: 100)),
   );
   expect(
     codec.decodeNullable<Duration>(null, codec.decodeDuration),

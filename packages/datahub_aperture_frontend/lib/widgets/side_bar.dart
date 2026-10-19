@@ -150,10 +150,8 @@ class _SectionHeader extends StatelessWidget {
             Expanded(
               child: Text(
                 title.toUpperCase(),
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  letterSpacing: 0.8,
-                  fontWeight: FontWeight.w600,
-                ),
+                style: Theme.of(context).textTheme.labelSmall
+                    ?.copyWith(letterSpacing: 0.8, fontWeight: FontWeight.w600),
               ),
             ),
             ?action,

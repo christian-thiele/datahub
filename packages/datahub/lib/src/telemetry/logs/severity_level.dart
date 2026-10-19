@@ -5,20 +5,14 @@ import '../../data/data_enum.dart';
 ///
 /// [jsonValue] (e.g. `warn`) is used in config values (`telemetry.logLevel`)
 /// and in stored log messages, [severityText] (e.g. `WARN`) in log output.
-enum SeverityLevel implements DataEnum {
+enum SeverityLevel(final int severityNumber, @override final String jsonValue)
+    implements DataEnum {
   trace(1, 'trace'),
   debug(5, 'debug'),
   info(9, 'info'),
   warning(13, 'warn'),
   error(17, 'error'),
   fatal(21, 'fatal');
-
-  final int severityNumber;
-
-  @override
-  final String jsonValue;
-
-  const SeverityLevel(this.severityNumber, this.jsonValue);
 
   /// The OpenTelemetry short name, e.g. `WARN`.
   String get severityText => jsonValue.toUpperCase();

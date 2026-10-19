@@ -22,7 +22,14 @@ typedef HttpRequestHandler = Future<HttpResponse> Function(HttpRequest);
 /// is false or there is no [Telemetry]), which continues the trace of the
 /// caller if the request has a `traceparent` header. Handlers can add to
 /// this span (e.g. `http.route`) via [Tracer.currentSpan].
-class HttpServer {
+class HttpServer(
+  final dynamic _serverSocket,
+  final HttpRequestHandler requestHandler,
+  final void Function(dynamic error, StackTrace stack) onSocketError,
+  final void Function(dynamic error, StackTrace stack) onProtocolError,
+  final void Function(dynamic error, StackTrace stack) onStreamError, {
+  final bool enableTracing = true,
+}) {
   static const _knownMethods = {
     'CONNECT',
     'DELETE',
@@ -35,13 +42,6 @@ class HttpServer {
     'TRACE',
   };
 
-  final dynamic _serverSocket;
-  final HttpRequestHandler requestHandler;
-  final void Function(dynamic error, StackTrace stack) onSocketError;
-  final void Function(dynamic error, StackTrace stack) onProtocolError;
-  final void Function(dynamic error, StackTrace stack) onStreamError;
-  final bool enableTracing;
-
   late final _http1Adapter = ServerSocketAdapter(
     _serverSocket.address,
     _serverSocket.port,
@@ -53,14 +53,7 @@ class HttpServer {
   final _http2Finishing = <Future<void>>[];
   bool _stopped = false;
 
-  HttpServer(
-    this._serverSocket,
-    this.requestHandler,
-    this.onSocketError,
-    this.onProtocolError,
-    this.onStreamError, {
-    this.enableTracing = true,
-  }) {
+  this {
     if (_serverSocket is! io.ServerSocket &&
         _serverSocket is! io.SecureServerSocket) {
       throw Exception('No server socket.');
@@ -135,7 +128,7 @@ class HttpServer {
     required Future<void> Function(LocalSpan? span) handle,
   }) async {
     final telemetry = enableTracing
-        ? Context.maybeOfZone()?.find(Find<Telemetry?>())
+        ? Context.maybeOfZone()?.find(const Find<Telemetry?>())
         : null;
     if (telemetry == null) {
       return await handle(null);
@@ -338,7 +331,9 @@ class HttpServer {
       if (response is UpgradeHttpResponse) {
         // websockets over HTTP/2 require extended CONNECT (RFC 8441),
         // which is not implemented
-        throw ApiException('Connection upgrade is not supported over HTTP/2.');
+        throw const ApiException(
+          'Connection upgrade is not supported over HTTP/2.',
+        );
       }
 
       final headers = [

@@ -51,23 +51,16 @@ const _monthNames = [
   'December',
 ];
 
-class _ClientContext {
-  final ClientFixture fixture;
-  final Client client;
-  final List<ProjectTemplate> templates;
-  final DateTime? churnDate;
-  final double paymentReliability;
+class _ClientContext(
+  final ClientFixture fixture,
+  final Client client,
+  final List<ProjectTemplate> templates,
+  final DateTime? churnDate,
+  final double paymentReliability,
+) {
   final contacts = <Contact>[];
   final products = <String, Product>{};
   final projects = <_ProjectPlan>[];
-
-  _ClientContext(
-    this.fixture,
-    this.client,
-    this.templates,
-    this.churnDate,
-    this.paymentReliability,
-  );
 
   double get taxRate => client.addressCountry == 'DE' ? 0.19 : 0.0;
 
@@ -88,37 +81,22 @@ class _ClientContext {
       contacts.where((c) => c.type == ContactType.financial).firstOrNull;
 }
 
-class _ProjectPlan {
-  final _ClientContext ctx;
-  final ProjectTemplate template;
-  final BillingType billing;
-  final DateTime start;
-  final DateTime? end;
-  final ProjectStatus status;
-  final DateTime? pausedSince;
-  final int hours;
-  final double budget;
-  final double? monthlyFee;
-  final int lead;
-  final List<int> team;
-  final Priority priority;
+class _ProjectPlan({
+  required final _ClientContext ctx,
+  required final ProjectTemplate template,
+  required final BillingType billing,
+  required final DateTime start,
+  required final DateTime? end,
+  required final ProjectStatus status,
+  required final DateTime? pausedSince,
+  required final int hours,
+  required final double budget,
+  required final double? monthlyFee,
+  required final int lead,
+  required final List<int> team,
+  required final Priority priority,
+}) {
   late final Project project;
-
-  _ProjectPlan({
-    required this.ctx,
-    required this.template,
-    required this.billing,
-    required this.start,
-    required this.end,
-    required this.status,
-    required this.pausedSince,
-    required this.hours,
-    required this.budget,
-    required this.monthlyFee,
-    required this.lead,
-    required this.team,
-    required this.priority,
-  });
 
   bool get isBooking =>
       status == ProjectStatus.active ||
@@ -127,36 +105,21 @@ class _ProjectPlan {
       status == ProjectStatus.cancelled;
 }
 
-class _InvoicePlan {
-  final _ClientContext ctx;
-  final _ProjectPlan? project;
-  final DateTime issuedAt;
-  final DateTime? periodStart;
-  final DateTime? periodEnd;
-  final List<InvoiceLine> lines;
+class _InvoicePlan(
+  final _ClientContext ctx,
+  final _ProjectPlan? project,
+  final DateTime issuedAt,
+  final List<InvoiceLine> lines, {
+  final DateTime? periodStart,
+  final DateTime? periodEnd,
+});
 
-  _InvoicePlan(
-    this.ctx,
-    this.project,
-    this.issuedAt,
-    this.lines, {
-    this.periodStart,
-    this.periodEnd,
-  });
-}
-
-class _DemoSeeder {
-  final math.Random r;
-  final DateTime now;
-  final DateTime today;
+class _DemoSeeder(final math.Random r, final DateTime now) {
+  final DateTime today = DateTime.utc(now.year, now.month, now.day);
 
   /// Time entries are generated in detail from this date on.
   /// Everything before is summarized (e.g. in invoices only).
-  final DateTime windowStart;
-
-  _DemoSeeder(this.r, this.now)
-    : today = DateTime.utc(now.year, now.month, now.day),
-      windowStart = DateTime.utc(now.year, now.month - 5, 1);
+  final DateTime windowStart = DateTime.utc(now.year, now.month - 5, 1);
 
   final employees = <Employee>[];
   final clients = <_ClientContext>[];
@@ -180,7 +143,7 @@ class _DemoSeeder {
   // --- employees -----------------------------------------------------------
 
   Future<void> _createEmployees() async {
-    final repo = Find<DataRepository<Employee>>().find();
+    final repo = const Find<DataRepository<Employee>>().find();
     for (final (i, f) in employeeFixtures.indexed) {
       employees.add(
         await repo.create(
@@ -208,7 +171,7 @@ class _DemoSeeder {
   // --- clients -------------------------------------------------------------
 
   Future<void> _createClients() async {
-    final repo = Find<DataRepository<Client>>().find();
+    final repo = const Find<DataRepository<Client>>().find();
     for (final (i, f) in clientFixtures.indexed) {
       final currency = countryCurrency[f.country] ?? 'EUR';
       final accountManager = switch (f.tier) {
@@ -300,7 +263,7 @@ class _DemoSeeder {
   // --- contacts ------------------------------------------------------------
 
   Future<void> _createContacts() async {
-    final repo = Find<DataRepository<Contact>>().find();
+    final repo = const Find<DataRepository<Contact>>().find();
     for (final ctx in clients) {
       final f = ctx.fixture;
       final count = switch (f.tier) {
@@ -516,7 +479,7 @@ class _DemoSeeder {
   }
 
   Future<void> _createProjects() async {
-    final repo = Find<DataRepository<Project>>().find();
+    final repo = const Find<DataRepository<Project>>().find();
     final sequence = <int, int>{};
     for (final p in projects) {
       final year = p.start.year;
@@ -567,7 +530,7 @@ class _DemoSeeder {
   // --- products ------------------------------------------------------------
 
   Future<void> _createProducts() async {
-    final repo = Find<DataRepository<Product>>().find();
+    final repo = const Find<DataRepository<Product>>().find();
     final catalogByCode = {for (final c in catalog) c.code: c};
 
     for (final ctx in clients) {
@@ -758,7 +721,7 @@ class _DemoSeeder {
   }
 
   Future<void> _createTimeEntries() async {
-    final repo = Find<DataRepository<TimeEntry>>().find();
+    final repo = const Find<DataRepository<TimeEntry>>().find();
     for (final entry in timeEntries) {
       await repo.create(entry);
     }
@@ -1038,7 +1001,7 @@ class _DemoSeeder {
 
   Future<void> _createInvoices(List<_InvoicePlan> plans) async {
     // Started, so that sent invoices become overdue at their due date.
-    final workflow = Find<Workflow<Invoice>>().find();
+    final workflow = const Find<Workflow<Invoice>>().find();
     final sequence = <int, int>{};
 
     for (final plan in plans) {
@@ -1150,7 +1113,7 @@ class _DemoSeeder {
   // --- tickets -------------------------------------------------------------
 
   Future<void> _createTickets() async {
-    final repo = Find<DataRepository<SupportTicket>>().find();
+    final repo = const Find<DataRepository<SupportTicket>>().find();
     final tickets = <SupportTicket>[];
 
     for (final ctx in clients) {

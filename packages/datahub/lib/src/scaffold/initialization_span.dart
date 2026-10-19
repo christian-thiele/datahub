@@ -24,11 +24,9 @@ class _InitializationSpan {
 
   LocalSpan? _span;
 
-  _InitializationSpan.root(this.name)
-    : parent = null,
-      _callerSpan = Tracer.currentSpan;
+  new root(this.name) : parent = null, _callerSpan = Tracer.currentSpan;
 
-  _InitializationSpan(this.name, {required _InitializationSpan this.parent})
+  new(this.name, {required _InitializationSpan this.parent})
     : _callerSpan = null;
 
   _InitializationSpan get _root => parent?._root ?? this;

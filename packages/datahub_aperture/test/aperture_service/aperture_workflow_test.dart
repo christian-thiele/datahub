@@ -31,7 +31,7 @@ List<OrderStep> _steps({
   OrderHandler deliver = _deliver,
   Duration deliverAfter = Duration.zero,
 }) => [
-  OnEnter(OrderState.placed, _pack),
+  const OnEnter(OrderState.placed, _pack),
   OnSignal(
     $ShipOrder.bean,
     accept: [OrderState.packed],
@@ -47,7 +47,7 @@ List<OrderStep> _steps({
 ];
 
 List<Component> _components(List<OrderStep> steps, {bool history = true}) => [
-  KeyService(),
+  const KeyService(),
   const DemoAuthService(issuer: Config.value(_issuer)),
   const TestAuthProvider(),
   MemoryRepositoryService(bean: $Order.bean),
@@ -60,11 +60,11 @@ List<Component> _components(List<OrderStep> steps, {bool history = true}) => [
     pollInterval: const Config.value(Duration(milliseconds: 20)),
     heartbeatInterval: const Config.value(Duration(milliseconds: 50)),
   ),
-  ApiService(
-    port: const Config.value(_apiPort),
+  const ApiService(
+    port: Config.value(_apiPort),
     routes: [
       ApertureApi(
-        oidcIssuer: const Config.value(_issuer),
+        oidcIssuer: Config.value(_issuer),
         resources: [
           ApertureResource(repository: Find<DataRepository<Order>>()),
           ApertureResource(repository: Find<DataRepository<Todo>>()),
@@ -74,7 +74,7 @@ List<Component> _components(List<OrderStep> steps, {bool history = true}) => [
   ),
 ];
 
-DataRepository<Order> get _orders => Find<DataRepository<Order>>().find();
+DataRepository<Order> get _orders => const Find<DataRepository<Order>>().find();
 
 Future<RestClient> _signIn() =>
     signInToAperture(issuer: _issuer, apiPort: _apiPort);
@@ -355,7 +355,7 @@ void main() {
           }
         });
         final client = await _signIn();
-        await Find<Workflow<Order>>().find().start(
+        await const Find<Workflow<Order>>().find().start(
           const Order(id: 'o-1', customer: 'ACME', state: OrderState.shipped),
         );
         await deliveryStarted.future;
@@ -387,7 +387,7 @@ void main() {
       _components(_steps(deliverAfter: const Duration(hours: 1))),
       () async {
         final client = await _signIn();
-        final workflow = Find<Workflow<Order>>().find();
+        final workflow = const Find<Workflow<Order>>().find();
         for (final id in ['o-1', 'o-2', 'o-3']) {
           await workflow.start(
             Order(id: id, customer: 'ACME', state: OrderState.shipped),
@@ -424,7 +424,7 @@ void main() {
       _components(_steps(deliverAfter: const Duration(hours: 1))),
       () async {
         final client = await _signIn();
-        await Find<Workflow<Order>>().find().start(
+        await const Find<Workflow<Order>>().find().start(
           const Order(id: 'o-1', customer: 'ACME', state: OrderState.shipped),
         );
         final pending = (await _events(client, elementId: 'o-1')).data.single;
@@ -455,7 +455,7 @@ void main() {
       ),
       () async {
         final client = await _signIn();
-        await Find<Workflow<Order>>().find().start(
+        await const Find<Workflow<Order>>().find().start(
           const Order(id: 'o-1', customer: 'ACME', state: OrderState.shipped),
         );
         await _eventually(
@@ -495,7 +495,7 @@ void main() {
       _components(_steps()),
       () async {
         final client = await _signIn();
-        await Find<Workflow<Order>>().find().start(
+        await const Find<Workflow<Order>>().find().start(
           const Order(id: 'o-1', customer: 'ACME'),
         );
         await _eventually(

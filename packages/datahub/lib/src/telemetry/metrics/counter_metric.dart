@@ -29,21 +29,20 @@ import 'sample_group.dart';
 /// not declared are dropped.
 ///
 /// For exposing a value that can decrease, use a [GaugeMetric] instead.
-class CounterMetric extends Metric {
-  final MetricSeriesSet<_CounterSeries> _series;
+class CounterMetric(
+  super.name, {
+  super.help,
+  Map<String, List<String>>? labels,
+  Set<String>? labelNames,
+}) extends Metric {
+  final MetricSeriesSet<_CounterSeries> _series = MetricSeriesSet(
+    name,
+    labels: labels,
+    labelNames: labelNames,
+    create: _CounterSeries.new,
+  );
 
-  CounterMetric(
-    super.name, {
-    super.help,
-    Map<String, List<String>>? labels,
-    Set<String>? labelNames,
-  }) : _series = MetricSeriesSet(
-         name,
-         labels: labels,
-         labelNames: labelNames,
-         create: _CounterSeries.new,
-       ),
-       super(type: MetricType.counter);
+  this : super(type: MetricType.counter);
 
   @override
   SampleGroup collect() {
@@ -63,11 +62,8 @@ class CounterMetric extends Metric {
       _series.find(labels)?.incBy(val);
 }
 
-class _CounterSeries {
-  final Map<String, String> labels;
+class _CounterSeries(final Map<String, String> labels) {
   num _value = 0;
-
-  _CounterSeries(this.labels);
 
   void inc() => ++_value;
 

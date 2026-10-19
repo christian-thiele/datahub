@@ -5,7 +5,7 @@ import 'package:test/test.dart';
 
 import 'utils/redis_test_utils.dart';
 
-LockProvider<String> _locks() => Find<LockProvider<String>>().find();
+LockProvider<String> _locks() => const Find<LockProvider<String>>().find();
 
 void main() {
   redisGroup('Redis locks', (env) {

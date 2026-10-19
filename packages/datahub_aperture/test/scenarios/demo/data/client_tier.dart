@@ -1,1 +1,7 @@
-enum ClientTier { prospect, bronze, silver, gold, platinum }
+enum ClientTier() {
+  prospect,
+  bronze,
+  silver,
+  gold,
+  platinum,
+}

@@ -1,11 +1,11 @@
 part of 'service_host.dart';
 
-abstract interface class Service implements Component {
+abstract interface class Service() implements Component {
   ServiceInstance createInstance();
 }
 
 @optionalTypeArgs
-abstract class ServiceInstance<TService extends Service> {
+abstract class ServiceInstance<TService extends Service>() {
   late final TService service;
   late final ServiceRegistry registry;
   late final Context context;

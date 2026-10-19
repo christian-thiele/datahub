@@ -3,8 +3,8 @@ import 'dart:io';
 
 import 'package:args/command_runner.dart';
 
-abstract class CliCommand extends Command<void> {
-  CliCommand() {
+abstract class CliCommand() extends Command<void> {
+  this {
     argParser.addFlag(
       'verbose',
       abbr: 'v',

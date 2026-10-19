@@ -1,15 +1,15 @@
 import 'base_id.dart';
 
-class TraceId extends BaseId {
+class const TraceId(super.id) extends BaseId {
   static const length = 16;
 
-  const TraceId(super.id)
+  this
     : assert(
         id.length == length,
         'Invalid TraceId length. Id must have a length of $length.',
       );
 
-  factory TraceId.generate() => TraceId(BaseId.generateBytes(length));
+  factory generate() => TraceId(BaseId.generateBytes(length));
 
   /// Parses the hex representation of a trace id, see [hexId].
   ///

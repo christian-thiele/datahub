@@ -8,8 +8,9 @@ part 'resource_action_state.dart';
 
 /// Runs an action (or sends a signal) with its parameters. Returns what the
 /// action responded with, null for signals.
-typedef ActionRunner =
-    Future<ResourceActionResult?> Function(Map<String, dynamic> parameters);
+typedef ActionRunner = Future<ResourceActionResult?> Function(
+  Map<String, dynamic> parameters,
+);
 
 /// Asks for the parameters of [action] and runs it with [run].
 class ResourceActionCubit extends Cubit<ResourceActionState> {
@@ -20,10 +21,9 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
   /// meant for.
   ResourceActionCubit({
     required this.action,
-    required ActionRunner run,
+    required this._run,
     Map<String, dynamic> initialValues = const {},
-  }) : _run = run,
-       super(
+  }) : super(
          action.parameterFields.isEmpty
              ? const ResourceActionLoading()
              : ResourceActionEditing(

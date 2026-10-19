@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+
 import 'package:datahub/config.dart';
 import 'package:datahub/scaffold.dart';
 import 'package:datahub/services.dart';
@@ -13,40 +14,35 @@ import 'integration/compose_environment.dart';
 
 part 'test_runner_service.dart';
 
-class TestHost extends ServiceHost {
-  final List<Component> components;
-  final FutureOr<void> Function() testBody;
-
-  TestHost({
-    required this.components,
-    required this.testBody,
-    super.environmentVariables,
-  });
-
+class TestHost({
+  required final List<Component> components,
+  required final FutureOr<void> Function() testBody,
+  super.environmentVariables,
+}) extends ServiceHost {
   @override
   Component buildRoot() {
     return Scope(
       components: [
         Scope(
           components: [
-            TelemetryService(
+            const TelemetryService(
               logStdoutFormat: Config(
                 'telemetry.logStdoutFormat',
                 defaultValue: LogBodyFormat.message,
                 values: LogBodyFormat.values,
               ),
-              logLevel: const Config<SeverityLevel>(
+              logLevel: Config<SeverityLevel>(
                 'telemetry.logLevel',
                 defaultValue: SeverityLevel.info,
                 values: SeverityLevel.values,
               ),
             ),
-            KeyService(),
-            SchedulerService(),
+            const KeyService(),
+            const SchedulerService(),
           ],
         ),
         Scope(components: components),
-        Scope(components: [TestRunnerService()]),
+        Scope(components: [const TestRunnerService()]),
       ],
     );
   }
@@ -110,7 +106,7 @@ void declareTest(
     dart_test.test(
       name,
       () async => await host!
-          .findComponent(Find<_TestRunnerServiceInstance>(), null)
+          .findComponent(const Find<_TestRunnerServiceInstance>(), null)
           .runTest(body),
       timeout: timeout,
       skip: skip,

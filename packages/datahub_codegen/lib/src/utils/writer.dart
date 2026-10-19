@@ -1,4 +1,4 @@
-class Writer {
+class Writer() {
   final buffer = StringBuffer();
 
   void w(dynamic text) => buffer.write(text);

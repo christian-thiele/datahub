@@ -14,7 +14,13 @@ import 'tracer.dart';
 /// * [producer] / [consumer]: creating / processing a message or a stored
 ///   event, e.g. a workflow step
 /// * [internal]: everything else
-enum SpanType { internal, server, client, producer, consumer }
+enum SpanType() {
+  internal,
+  server,
+  client,
+  producer,
+  consumer,
+}
 
 /// The context of a span that is propagated to its children: trace id, span
 /// id and trace flags.
@@ -36,7 +42,7 @@ class Span {
   /// Whether this span was created in another process.
   final bool isRemote;
 
-  Span({
+  new({
     required this.traceId,
     required this.parentSpanId,
     required this.spanId,
@@ -45,7 +51,7 @@ class Span {
   });
 
   /// The context of a span created in another process.
-  Span.remote({
+  new remote({
     required this.traceId,
     required this.spanId,
     this.traceFlags = flagSampled,
@@ -64,11 +70,16 @@ class Span {
 /// A span is handed to the exporter when it starts, so it is visible even if
 /// it never ends (e.g. when the service crashes), and again when it ends if
 /// it was exported while running. Changes after [end] are ignored.
-class LocalSpan extends Span {
-  final Tracer tracer;
-  final Span? parent;
-  final SpanType? type;
-  String _name;
+class LocalSpan({
+  required final Tracer tracer,
+  required super.traceId,
+  required super.spanId,
+  required final Span? parent,
+  required var String _name,
+  required final Map<String, Object?> _attributes,
+  required final SpanType? type,
+  super.traceFlags,
+}) extends Span {
   bool _hasError = false;
   String? _errorDescription;
 
@@ -76,7 +87,6 @@ class LocalSpan extends Span {
   DateTime? _startTimestamp;
   DateTime? _endTimestamp;
 
-  final Map<String, Object?> _attributes;
   final _events = <Event>[];
 
   String get name => _name;
@@ -98,18 +108,7 @@ class LocalSpan extends Span {
   /// Describes why the operation failed, if [hasError].
   String? get errorDescription => _errorDescription;
 
-  LocalSpan({
-    required this.tracer,
-    required super.traceId,
-    required super.spanId,
-    required this.parent,
-    required String name,
-    required Map<String, Object?> attributes,
-    required this.type,
-    super.traceFlags,
-  }) : _name = name,
-       _attributes = attributes,
-       super(parentSpanId: parent?.spanId);
+  this : super(parentSpanId: parent?.spanId);
 
   /// Starts the span at [timestamp], which defaults to now. Calling [start]
   /// again has no effect.

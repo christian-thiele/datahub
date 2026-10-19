@@ -99,10 +99,9 @@ final class PrimaryConstructorConversion {
     required this.constructor,
     required this.isConst,
     required this.inferInjectionTypes,
-    required Map<FieldFormalParameter, _Field> parameters,
-    required List<_Field> fields,
-  }) : _parameters = parameters,
-       _fields = fields;
+    required this._parameters,
+    required this._fields,
+  });
 
   /// Plans the conversion of [declaration], or returns `null` when it cannot
   /// be converted mechanically.

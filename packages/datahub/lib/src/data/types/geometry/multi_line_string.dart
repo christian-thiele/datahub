@@ -5,18 +5,15 @@ import 'package:buffer/buffer.dart';
 
 import 'geometry.dart';
 
-class MultiLineString extends Geometry {
-  final List<LineString> lineStrings;
+class const MultiLineString(
+  int? srid,
+  final List<LineString> lineStrings,
+  bool hasZ,
+  bool hasM,
+) extends Geometry {
+  this : super(srid, GeometryType.multiLineString, hasZ, hasM);
 
-  const MultiLineString(int? srid, this.lineStrings, bool hasZ, bool hasM)
-    : super(srid, GeometryType.multiLineString, hasZ, hasM);
-
-  factory MultiLineString.read(
-    int? srid,
-    ByteDataReader reader,
-    bool hasZ,
-    bool hasM,
-  ) {
+  factory read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
     final length = reader.readUint32();
     return MultiLineString(
       srid,

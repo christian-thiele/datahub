@@ -7,9 +7,7 @@ import 'package:source_gen/source_gen.dart';
 import 'types.dart';
 import 'writer.dart';
 
-class CodecHelper {
-  const CodecHelper._();
-
+class const CodecHelper._() {
   static String encodingFunction(
     LibraryElement library,
     DartType type,
@@ -24,7 +22,7 @@ class CodecHelper {
       throw Exception('Invalid type for encoding: $type');
     }
 
-    if (TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
+    if (const TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
       return '(v) => v.toJson()';
     }
 
@@ -61,7 +59,7 @@ class CodecHelper {
       return '(v, {String? name}) => ${decodingStatement(library, type, codec, 'v', 'name', nonNull: nonNull)}';
     }
 
-    if (TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
+    if (const TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
       final dataDeclarationName = typeExpression(type, library);
       final typeName = dataDeclarationName.startsWith('\$')
           ? dataDeclarationName.substring(1)
@@ -87,7 +85,7 @@ class CodecHelper {
       throw Exception('Invalid type for encoding: $type');
     }
 
-    if (TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
+    if (const TypeChecker.typeNamed(Data).hasAnnotationOf(type.element!)) {
       return '$value.toJson()';
     }
 

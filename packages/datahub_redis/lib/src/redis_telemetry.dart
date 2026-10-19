@@ -43,14 +43,14 @@ class RedisTelemetry {
 
   bool get metricsEnabled => _metrics != null;
 
-  const RedisTelemetry._disabled()
+  const new _disabled()
     : _telemetry = null,
       tracingEnabled = false,
       host = '',
       port = 0,
       _metrics = null;
 
-  RedisTelemetry({
+  new({
     required Telemetry telemetry,
     required String metricPrefix,
     required bool enableMetrics,
@@ -254,152 +254,124 @@ class RedisTelemetry {
   void scriptCacheMiss() => _metrics?.scriptCacheMisses.inc();
 }
 
-class _Metrics {
-  final CounterMetric commands;
-  final HistogramMetric commandDuration;
-  final CounterMetric commandTimeouts;
-  final CounterMetric errors;
-  final GaugeMetric poolTarget;
-  final GaugeMetric poolTotal;
-  final GaugeMetric poolAvailable;
-  final GaugeMetric poolInUse;
-  final HistogramMetric poolWait;
-  final CounterMetric poolRejected;
-  final CounterMetric connectionsOpened;
-  final CounterMetric connectionsClosed;
-  final CounterMetric healthCheckFailures;
-  final CounterMetric locksAcquired;
-  final CounterMetric locksContended;
-  final HistogramMetric lockWait;
-  final HistogramMetric lockHold;
-  final GaugeMetric locksHeld;
-  final CounterMetric lockRenewalFailures;
-  final CounterMetric locksLost;
-  final GaugeMetric subscriberConnected;
-  final GaugeMetric subscriptions;
-  final CounterMetric subscriberReconnects;
-  final CounterMetric messagesReceived;
-  final CounterMetric scriptCacheMisses;
-
-  _Metrics(Telemetry t, String p)
-    : commands = t.counter(
-        '${p}_commands_total',
-        help: 'Commands sent to the Redis server.',
-        labels: {
-          'command_class': commandClasses,
-          'status': RedisTelemetry._commandStatus,
-        },
-      ),
-      commandDuration = t.exponentialHistogram(
-        '${p}_command_duration_seconds',
-        help: 'Time from sending a command until its reply was processed.',
-        start: 0.0005,
-        factor: 2,
-        count: 14,
-        labels: {'command_class': commandClasses},
-      ),
-      commandTimeouts = t.counter(
-        '${p}_command_timeouts_total',
-        help: 'Commands that timed out, which closes their connection.',
-      ),
-      errors = t.counter(
-        '${p}_errors_total',
-        help: 'Failed Redis operations by kind of error.',
-        labels: {'kind': RedisTelemetry._errorKinds},
-      ),
-      poolTarget = t.gauge(
-        '${p}_pool_size_target',
-        help: 'Target number of pooled connections.',
-      ),
-      poolTotal = t.gauge(
-        '${p}_pool_size_total',
-        help: 'Number of open pooled connections.',
-      ),
-      poolAvailable = t.gauge(
-        '${p}_pool_size_available',
-        help: 'Number of idle pooled connections.',
-      ),
-      poolInUse = t.gauge(
-        '${p}_pool_size_in_use',
-        help: 'Number of pooled connections currently in use.',
-      ),
-      poolWait = t.exponentialHistogram(
-        '${p}_pool_wait_seconds',
-        help: 'Time spent waiting for a connection from the pool.',
-        start: 0.0005,
-        factor: 2,
-        count: 14,
-      ),
-      poolRejected = t.counter(
-        '${p}_pool_rejected_total',
-        help: 'Requests rejected because the pool queue limit was reached.',
-      ),
-      connectionsOpened = t.counter(
-        '${p}_connections_opened_total',
-        help: 'Connections opened to the Redis server.',
-      ),
-      connectionsClosed = t.counter(
-        '${p}_connections_closed_total',
-        help: 'Connections closed, by reason.',
-        labels: {'reason': RedisTelemetry._closeKinds},
-      ),
-      healthCheckFailures = t.counter(
-        '${p}_health_check_failures_total',
-        help: 'Pooled connections that failed their health check.',
-      ),
-      locksAcquired = t.counter(
-        '${p}_locks_acquired_total',
-        help: 'Locks acquired.',
-      ),
-      locksContended = t.counter(
-        '${p}_locks_contended_total',
-        help: 'Lock acquisitions that found the lock held by someone else.',
-      ),
-      lockWait = t.exponentialHistogram(
-        '${p}_lock_wait_seconds',
-        help: 'Time spent acquiring a lock.',
-        start: 0.001,
-        factor: 4,
-        count: 10,
-      ),
-      lockHold = t.exponentialHistogram(
-        '${p}_lock_hold_seconds',
-        help: 'Time locks were held before they were released or lost.',
-        start: 0.1,
-        factor: 4,
-        count: 10,
-      ),
-      locksHeld = t.gauge(
-        '${p}_locks_held',
-        help: 'Locks currently held by this service.',
-      ),
-      lockRenewalFailures = t.counter(
-        '${p}_lock_renewal_failures_total',
-        help: 'Failed attempts to renew the lease of a lock.',
-      ),
-      locksLost = t.counter(
-        '${p}_locks_lost_total',
-        help: 'Locks that expired or were taken over before being released.',
-      ),
-      subscriberConnected = t.gauge(
-        '${p}_subscriber_connected',
-        help: '1 while the Pub/Sub connection is established, otherwise 0.',
-      ),
-      subscriptions = t.gauge(
-        '${p}_subscriptions',
-        help: 'Subscribed channels and patterns.',
-      ),
-      subscriberReconnects = t.counter(
-        '${p}_subscriber_reconnects_total',
-        help: 'Times the Pub/Sub connection was lost and re-established.',
-      ),
-      messagesReceived = t.counter(
-        '${p}_pubsub_messages_received_total',
-        help: 'Pub/Sub messages received.',
-      ),
-      scriptCacheMisses = t.counter(
-        '${p}_script_cache_misses_total',
-        help:
-            'Script invocations that had to send the script source (NOSCRIPT).',
-      );
+class _Metrics(Telemetry t, String p) {
+  final CounterMetric commands = t.counter(
+    '${p}_commands_total',
+    help: 'Commands sent to the Redis server.',
+    labels: {
+      'command_class': commandClasses,
+      'status': RedisTelemetry._commandStatus,
+    },
+  );
+  final HistogramMetric commandDuration = t.exponentialHistogram(
+    '${p}_command_duration_seconds',
+    help: 'Time from sending a command until its reply was processed.',
+    start: 0.0005,
+    factor: 2,
+    count: 14,
+    labels: {'command_class': commandClasses},
+  );
+  final CounterMetric commandTimeouts = t.counter(
+    '${p}_command_timeouts_total',
+    help: 'Commands that timed out, which closes their connection.',
+  );
+  final CounterMetric errors = t.counter(
+    '${p}_errors_total',
+    help: 'Failed Redis operations by kind of error.',
+    labels: {'kind': RedisTelemetry._errorKinds},
+  );
+  final GaugeMetric poolTarget = t.gauge(
+    '${p}_pool_size_target',
+    help: 'Target number of pooled connections.',
+  );
+  final GaugeMetric poolTotal = t.gauge(
+    '${p}_pool_size_total',
+    help: 'Number of open pooled connections.',
+  );
+  final GaugeMetric poolAvailable = t.gauge(
+    '${p}_pool_size_available',
+    help: 'Number of idle pooled connections.',
+  );
+  final GaugeMetric poolInUse = t.gauge(
+    '${p}_pool_size_in_use',
+    help: 'Number of pooled connections currently in use.',
+  );
+  final HistogramMetric poolWait = t.exponentialHistogram(
+    '${p}_pool_wait_seconds',
+    help: 'Time spent waiting for a connection from the pool.',
+    start: 0.0005,
+    factor: 2,
+    count: 14,
+  );
+  final CounterMetric poolRejected = t.counter(
+    '${p}_pool_rejected_total',
+    help: 'Requests rejected because the pool queue limit was reached.',
+  );
+  final CounterMetric connectionsOpened = t.counter(
+    '${p}_connections_opened_total',
+    help: 'Connections opened to the Redis server.',
+  );
+  final CounterMetric connectionsClosed = t.counter(
+    '${p}_connections_closed_total',
+    help: 'Connections closed, by reason.',
+    labels: {'reason': RedisTelemetry._closeKinds},
+  );
+  final CounterMetric healthCheckFailures = t.counter(
+    '${p}_health_check_failures_total',
+    help: 'Pooled connections that failed their health check.',
+  );
+  final CounterMetric locksAcquired = t.counter(
+    '${p}_locks_acquired_total',
+    help: 'Locks acquired.',
+  );
+  final CounterMetric locksContended = t.counter(
+    '${p}_locks_contended_total',
+    help: 'Lock acquisitions that found the lock held by someone else.',
+  );
+  final HistogramMetric lockWait = t.exponentialHistogram(
+    '${p}_lock_wait_seconds',
+    help: 'Time spent acquiring a lock.',
+    start: 0.001,
+    factor: 4,
+    count: 10,
+  );
+  final HistogramMetric lockHold = t.exponentialHistogram(
+    '${p}_lock_hold_seconds',
+    help: 'Time locks were held before they were released or lost.',
+    start: 0.1,
+    factor: 4,
+    count: 10,
+  );
+  final GaugeMetric locksHeld = t.gauge(
+    '${p}_locks_held',
+    help: 'Locks currently held by this service.',
+  );
+  final CounterMetric lockRenewalFailures = t.counter(
+    '${p}_lock_renewal_failures_total',
+    help: 'Failed attempts to renew the lease of a lock.',
+  );
+  final CounterMetric locksLost = t.counter(
+    '${p}_locks_lost_total',
+    help: 'Locks that expired or were taken over before being released.',
+  );
+  final GaugeMetric subscriberConnected = t.gauge(
+    '${p}_subscriber_connected',
+    help: '1 while the Pub/Sub connection is established, otherwise 0.',
+  );
+  final GaugeMetric subscriptions = t.gauge(
+    '${p}_subscriptions',
+    help: 'Subscribed channels and patterns.',
+  );
+  final CounterMetric subscriberReconnects = t.counter(
+    '${p}_subscriber_reconnects_total',
+    help: 'Times the Pub/Sub connection was lost and re-established.',
+  );
+  final CounterMetric messagesReceived = t.counter(
+    '${p}_pubsub_messages_received_total',
+    help: 'Pub/Sub messages received.',
+  );
+  final CounterMetric scriptCacheMisses = t.counter(
+    '${p}_script_cache_misses_total',
+    help: 'Script invocations that had to send the script source (NOSCRIPT).',
+  );
 }

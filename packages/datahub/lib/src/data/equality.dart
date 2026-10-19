@@ -1,7 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:datahub/data.dart';
 
-class DataObjectEquality implements Equality<Object?> {
+class const DataObjectEquality() implements Equality<Object?> {
   /// Compares the values of data fields: collections deeply, [DateTime]s by
   /// instant.
   ///
@@ -10,8 +10,6 @@ class DataObjectEquality implements Equality<Object?> {
   static const fieldEquality = DeepCollectionEquality(
     DateTimeInstantEquality(),
   );
-
-  const DataObjectEquality();
 
   @override
   bool equals(Object? e1, Object? e2) {
@@ -44,9 +42,7 @@ class DataObjectEquality implements Equality<Object?> {
 }
 
 /// Compares [DateTime] values by instant, ignoring their time zone.
-class DateTimeInstantEquality implements Equality<Object?> {
-  const DateTimeInstantEquality();
-
+class const DateTimeInstantEquality() implements Equality<Object?> {
   @override
   bool equals(Object? e1, Object? e2) {
     if (e1 is DateTime) {

@@ -17,15 +17,15 @@ import '../telemetry_internal.dart';
 /// more than [maxBufferSize] items are buffered, the oldest are dropped.
 /// Failures are logged once until exporting succeeds again, and only to
 /// stdout (see [TelemetryInternal]).
-abstract class OtlpBatchExporter<T> {
+abstract class OtlpBatchExporter<T>({
   /// Name of the signal for diagnostics, e.g. `traces`.
-  final String signal;
-  final Duration exportInterval;
-  final Duration exportIntervalJitter;
-  final Duration exportTimeout;
-  final int maxBatchSize;
-  final int maxBufferSize;
-
+  required final String signal,
+  required final Duration exportInterval,
+  required final Duration exportIntervalJitter,
+  final Duration exportTimeout = const Duration(seconds: 30),
+  final int maxBatchSize = 512,
+  final int maxBufferSize = 100000,
+}) {
   final _buffer = ListQueue<T>();
   final _semaphore = Semaphore();
   Timer? _timer;
@@ -33,22 +33,16 @@ abstract class OtlpBatchExporter<T> {
   bool _dropping = false;
   bool _stopped = false;
 
-  OtlpBatchExporter({
-    required this.signal,
-    required this.exportInterval,
-    required this.exportIntervalJitter,
-    this.exportTimeout = const Duration(seconds: 30),
-    this.maxBatchSize = 512,
-    this.maxBufferSize = 100000,
-  }) : assert(maxBatchSize > 0, 'maxBatchSize must be > 0'),
-       assert(
-         maxBufferSize >= maxBatchSize,
-         'maxBufferSize must be >= maxBatchSize',
-       ),
-       assert(
-         exportInterval > Duration.zero,
-         'exportInterval must be > Duration.zero',
-       );
+  this
+    : assert(maxBatchSize > 0, 'maxBatchSize must be > 0'),
+      assert(
+        maxBufferSize >= maxBatchSize,
+        'maxBufferSize must be >= maxBatchSize',
+      ),
+      assert(
+        exportInterval > Duration.zero,
+        'exportInterval must be > Duration.zero',
+      );
 
   /// Number of buffered items.
   int get buffered => _buffer.length;

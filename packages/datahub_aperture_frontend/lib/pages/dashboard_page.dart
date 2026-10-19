@@ -109,9 +109,9 @@ class _GradientTitle extends StatelessWidget {
             baseline: TextBaseline.alphabetic,
             child: ShaderMask(
               blendMode: BlendMode.srcIn,
-              shaderCallback: ApertureColors.of(
-                context,
-              ).brandGradient.createShader,
+              shaderCallback: ApertureColors.of(context)
+                  .brandGradient
+                  .createShader,
               child: Text(highlight, style: style),
             ),
           ),
@@ -134,10 +134,8 @@ class _SectionTitle extends StatelessWidget {
       padding: const EdgeInsets.only(bottom: 12),
       child: Text(
         title.toUpperCase(),
-        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-          letterSpacing: 0.8,
-          fontWeight: FontWeight.w600,
-        ),
+        style: Theme.of(context).textTheme.labelSmall
+            ?.copyWith(letterSpacing: 0.8, fontWeight: FontWeight.w600),
       ),
     );
   }

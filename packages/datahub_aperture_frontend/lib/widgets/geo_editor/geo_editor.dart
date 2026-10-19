@@ -540,9 +540,8 @@ class _GeoAttribution extends StatelessWidget {
               text,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: Theme.of(
-                context,
-              ).textTheme.labelSmall?.copyWith(color: colors.onSurface),
+              style: Theme.of(context).textTheme.labelSmall
+                  ?.copyWith(color: colors.onSurface),
             ),
           ),
         ),

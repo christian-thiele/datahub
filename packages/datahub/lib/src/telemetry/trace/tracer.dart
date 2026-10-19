@@ -8,34 +8,19 @@ import '../trace_id.dart';
 import 'span.dart';
 import 'trace_exporter.dart';
 
-class Tracer implements TelemetryScope {
+class Tracer({
+  @override required final String name,
+  @override required final String? version,
+  required final bool enableDartTimeline,
+  @override required final Map<String, dynamic> attributes,
+  required final TraceExporter _exporter,
+  final void Function(LocalSpan span)? _onEnd,
+}) implements TelemetryScope {
   /// Zone key of the active span, shared by all tracers so spans of
   /// different tracers (and logs) see the same parent.
   static const _activeSpanKey = #datahub.telemetry.activeSpan;
 
-  @override
-  final String name;
-  @override
-  final String? version;
-  @override
-  final Map<String, dynamic> attributes;
-
   late final String key = buildKey(name, version);
-
-  final bool enableDartTimeline;
-
-  final TraceExporter _exporter;
-  final void Function(LocalSpan span)? _onEnd;
-
-  Tracer({
-    required this.name,
-    required this.version,
-    required this.enableDartTimeline,
-    required this.attributes,
-    required TraceExporter exporter,
-    void Function(LocalSpan span)? onEnd,
-  }) : _exporter = exporter,
-       _onEnd = onEnd;
 
   static String buildKey(String name, String? version) =>
       version == null ? name : '$name@$version';

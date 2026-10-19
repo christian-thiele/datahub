@@ -3,25 +3,18 @@ import 'package:meta/meta_meta.dart';
 import '../types/geometry/geometry.dart';
 
 @Target({TargetKind.field})
-abstract class DataFieldConstraint<FieldType> {
-  final String _name;
-
+abstract class const DataFieldConstraint<FieldType>({
+  required final String _name,
+}) {
   String get name => _name;
-
-  const DataFieldConstraint({required String name}) : _name = name;
 
   bool check(FieldType value);
 }
 
-class MinLengthConstraint<FieldType extends String?>
-    extends DataFieldConstraint<FieldType> {
-  final int length;
-
-  const MinLengthConstraint({
-    required this.length,
-    super.name = 'default.min-length',
-  });
-
+class const MinLengthConstraint<FieldType extends String?>({
+  required final int length,
+  super.name = 'default.min-length',
+}) extends DataFieldConstraint<FieldType> {
   @override
   bool check(FieldType value) {
     if (value == null) {
@@ -35,15 +28,10 @@ class MinLengthConstraint<FieldType extends String?>
   String toString() => 'Text length must be >= $length';
 }
 
-class MaxLengthConstraint<FieldType extends String?>
-    extends DataFieldConstraint<FieldType> {
-  final int length;
-
-  const MaxLengthConstraint({
-    required this.length,
-    super.name = 'default.max-length',
-  });
-
+class const MaxLengthConstraint<FieldType extends String?>({
+  required final int length,
+  super.name = 'default.max-length',
+}) extends DataFieldConstraint<FieldType> {
   @override
   bool check(FieldType value) {
     if (value == null) {
@@ -57,17 +45,11 @@ class MaxLengthConstraint<FieldType extends String?>
   String toString() => 'Text length must be <= $length';
 }
 
-class RangeConstraint<FieldType extends num?>
-    extends DataFieldConstraint<FieldType> {
-  final num min;
-  final num max;
-
-  const RangeConstraint({
-    required this.min,
-    required this.max,
-    super.name = 'default.range',
-  });
-
+class const RangeConstraint<FieldType extends num?>({
+  required final num min,
+  required final num max,
+  super.name = 'default.range',
+}) extends DataFieldConstraint<FieldType> {
   @override
   bool check(FieldType value) {
     if (value == null) {
@@ -78,15 +60,10 @@ class RangeConstraint<FieldType extends num?>
   }
 }
 
-class RegExpConstraint<FieldType extends String?>
-    extends DataFieldConstraint<FieldType> {
-  final String expression;
-
-  const RegExpConstraint({
-    required this.expression,
-    super.name = 'default.regexp',
-  });
-
+class const RegExpConstraint<FieldType extends String?>({
+  required final String expression,
+  super.name = 'default.regexp',
+}) extends DataFieldConstraint<FieldType> {
   @override
   bool check(FieldType value) {
     if (value == null) {
@@ -97,12 +74,10 @@ class RegExpConstraint<FieldType extends String?>
   }
 }
 
-class EnumConstraint<FieldType extends Enum?>
-    extends DataFieldConstraint<FieldType> {
-  final List<Enum> values;
-
-  const EnumConstraint({required this.values, super.name = 'default.enum'});
-
+class const EnumConstraint<FieldType extends Enum?>({
+  required final List<Enum> values,
+  super.name = 'default.enum',
+}) extends DataFieldConstraint<FieldType> {
   @override
   bool check(FieldType value) {
     if (value == null) {
@@ -113,15 +88,10 @@ class EnumConstraint<FieldType extends Enum?>
   }
 }
 
-class GeometryTypeConstraint<FieldType extends Geometry?>
-    extends DataFieldConstraint<FieldType> {
-  final GeometryType type;
-
-  const GeometryTypeConstraint({
-    required this.type,
-    super.name = 'default.geometry-type',
-  });
-
+class const GeometryTypeConstraint<FieldType extends Geometry?>({
+  required final GeometryType type,
+  super.name = 'default.geometry-type',
+}) extends DataFieldConstraint<FieldType> {
   @override
   bool check(FieldType value) {
     if (value == null) {
@@ -133,11 +103,10 @@ class GeometryTypeConstraint<FieldType extends Geometry?>
 }
 
 /// Applies [constraint] to every element of a list field.
-class ElementConstraint<E> extends DataFieldConstraint<List<E>?> {
-  final DataFieldConstraint<E> constraint;
-
-  const ElementConstraint({required this.constraint})
-    : super(name: 'default.element');
+class const ElementConstraint<E>({
+  required final DataFieldConstraint<E> constraint,
+}) extends DataFieldConstraint<List<E>?> {
+  this : super(name: 'default.element');
 
   @override
   String get name => 'default.element.${constraint.name}';
@@ -159,11 +128,10 @@ class ElementConstraint<E> extends DataFieldConstraint<List<E>?> {
 }
 
 /// Applies [constraint] to every value of a map field.
-class MapValueConstraint<V> extends DataFieldConstraint<Map<dynamic, V>?> {
-  final DataFieldConstraint<V> constraint;
-
-  const MapValueConstraint({required this.constraint})
-    : super(name: 'default.value');
+class const MapValueConstraint<V>({
+  required final DataFieldConstraint<V> constraint,
+}) extends DataFieldConstraint<Map<dynamic, V>?> {
+  this : super(name: 'default.value');
 
   @override
   String get name => 'default.value.${constraint.name}';

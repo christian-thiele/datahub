@@ -2,16 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:typed_data';
 
-enum WebsocketOpcode {
+enum WebsocketOpcode(final int value) {
   continuation(0x0),
   text(0x1),
   binary(0x2),
   close(0x8),
   ping(0x9),
   pong(0xA);
-
-  final int value;
-  const WebsocketOpcode(this.value);
 
   /// Whether this is a control frame opcode (close, ping, pong).
   bool get isControl => (value & 0x8) != 0;
@@ -36,21 +33,19 @@ enum WebsocketOpcode {
 /// [closeCode] is the websocket close code that should be sent to the
 /// peer when failing the connection (usually 1002 protocol error or
 /// 1009 message too big).
-class WebsocketProtocolException implements Exception {
-  final String message;
-  final int closeCode;
-
-  WebsocketProtocolException(this.message, [this.closeCode = 1002]);
-
+class WebsocketProtocolException(
+  final String message, [
+  final int closeCode = 1002,
+]) implements Exception {
   @override
   String toString() => 'WebsocketProtocolException: $message';
 }
 
-class WebsocketFrame {
-  final bool fin;
-  final WebsocketOpcode opcode;
-  final Uint8List payload;
-
+class WebsocketFrame(
+  final WebsocketOpcode opcode,
+  final Uint8List payload, {
+  final bool fin = true,
+}) {
   String get text => utf8.decode(payload);
 
   /// Close code carried by a close frame, if any.
@@ -64,21 +59,19 @@ class WebsocketFrame {
       ? utf8.decode(payload.sublist(2), allowMalformed: true)
       : null;
 
-  WebsocketFrame(this.opcode, this.payload, {this.fin = true});
-
-  WebsocketFrame.text(String text, {bool fin = true})
+  new text(String text, {bool fin = true})
     : this(WebsocketOpcode.text, utf8.encode(text), fin: fin);
 
-  WebsocketFrame.binary(Uint8List data, {bool fin = true})
+  new binary(Uint8List data, {bool fin = true})
     : this(WebsocketOpcode.binary, data, fin: fin);
 
-  WebsocketFrame.ping([Uint8List? data])
+  new ping([Uint8List? data])
     : this(WebsocketOpcode.ping, data ?? Uint8List(0));
 
-  WebsocketFrame.pong([Uint8List? data])
+  new pong([Uint8List? data])
     : this(WebsocketOpcode.pong, data ?? Uint8List(0));
 
-  WebsocketFrame.close([int? code, String? reason])
+  new close([int? code, String? reason])
     : this(WebsocketOpcode.close, _encodeClosePayload(code, reason));
 
   static Uint8List _encodeClosePayload(int? code, String? reason) {
@@ -106,23 +99,17 @@ class WebsocketFrame {
   }
 }
 
-class WebsocketFrameDecoder
-    extends StreamTransformerBase<Uint8List, WebsocketFrame> {
-  /// 16 MiB
-  static const defaultMaxFrameSize = 0x1000000;
-
+class const WebsocketFrameDecoder({
   /// Maximum accepted payload size of a single frame. Larger frames fail
   /// the connection with close code 1009 (message too big).
-  final int maxFrameSize;
+  final int maxFrameSize = defaultMaxFrameSize,
 
   /// Whether frames are required to be masked (RFC 6455 section 5.1
   /// requires this for client-to-server frames).
-  final bool requireMask;
-
-  const WebsocketFrameDecoder({
-    this.maxFrameSize = defaultMaxFrameSize,
-    this.requireMask = true,
-  });
+  final bool requireMask = true,
+}) extends StreamTransformerBase<Uint8List, WebsocketFrame> {
+  /// 16 MiB
+  static const defaultMaxFrameSize = 0x1000000;
 
   @override
   Stream<WebsocketFrame> bind(Stream<Uint8List> stream) {
@@ -276,10 +263,8 @@ class WebsocketFrameDecoder
   }
 }
 
-class WebsocketFrameEncoder
+class const WebsocketFrameEncoder()
     extends StreamTransformerBase<WebsocketFrame, Uint8List> {
-  const WebsocketFrameEncoder();
-
   @override
   Stream<Uint8List> bind(Stream<WebsocketFrame> stream) {
     return stream.map(encodeFrame);

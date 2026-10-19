@@ -11,22 +11,14 @@ import 'missing_id_field_error.dart';
 import 'validation_exception.dart';
 
 /// Contains all "static" properties of a [DataObject].
-final class DataBean<T extends DataObject> {
-  final String name;
-  final List<MetaData> meta;
-  final List<DataField<T, dynamic>> fields;
-  final T Function(Map<String, dynamic>) fromValues;
-  final Decoder<T> fromJson;
-
+final class const DataBean<T extends DataObject>({
+  required final String name,
+  required final List<DataField<T, dynamic>> fields,
+  required final T Function(Map<String, dynamic>) fromValues,
+  required final Decoder<T> fromJson,
+  final List<MetaData> meta = const [],
+}) {
   TypeCheck<T> get type => TypeCheck<T>();
-
-  const DataBean({
-    required this.name,
-    required this.fields,
-    required this.fromValues,
-    required this.fromJson,
-    this.meta = const [],
-  });
 
   /// Compares [DataObject]s by field value and returns the difference.
   ///

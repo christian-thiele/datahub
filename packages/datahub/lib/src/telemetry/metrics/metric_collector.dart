@@ -3,24 +3,24 @@ import 'package:datahub/scaffold.dart';
 import '../telemetry_service.dart';
 import 'sample_group.dart';
 
-sealed class MetricCollector {
+sealed class MetricCollector() {
   void register();
 }
 
-abstract class SyncMetricCollector extends MetricCollector {
+abstract class SyncMetricCollector() extends MetricCollector {
   SampleGroup collect();
 
   @override
   void register() {
-    Find<Telemetry>().find().registerCollector(this);
+    const Find<Telemetry>().find().registerCollector(this);
   }
 }
 
-abstract class AsyncMetricCollector extends MetricCollector {
+abstract class AsyncMetricCollector() extends MetricCollector {
   Future<SampleGroup> collect();
 
   @override
   void register() {
-    Find<Telemetry>().find().registerCollector(this);
+    const Find<Telemetry>().find().registerCollector(this);
   }
 }

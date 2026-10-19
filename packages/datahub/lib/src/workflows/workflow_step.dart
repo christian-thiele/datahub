@@ -14,13 +14,12 @@ import 'workflow_step_context.dart';
 /// When the handler throws, the step is retried according to [retry]. When all
 /// attempts failed, the element is moved to [failureState] if set, or the
 /// event is parked otherwise (see `WorkflowEvent`).
-sealed class WorkflowStep<T extends DataObject, TState extends Enum> {
-  final String? _name;
-
-  final RetryPolicy retry;
+sealed class const WorkflowStep<T extends DataObject, TState extends Enum>({
+  final String? _name,
+  final RetryPolicy retry = const RetryPolicy(),
 
   /// State an element is moved to when all attempts failed.
-  final TState? failureState;
+  final TState? failureState,
 
   /// Maximum time the handler may run.
   ///
@@ -28,15 +27,8 @@ sealed class WorkflowStep<T extends DataObject, TState extends Enum> {
   /// elements that are locked forever by a hanging handler. Dart can not
   /// cancel a running future, so a timed out handler may still finish in the
   /// background, its result is discarded.
-  final Duration timeout;
-
-  const WorkflowStep({
-    String? name,
-    this.retry = const RetryPolicy(),
-    this.failureState,
-    this.timeout = const Duration(minutes: 5),
-  }) : _name = name;
-
+  final Duration timeout = const Duration(minutes: 5),
+}) {
   /// Identifies the step in logs and in the stored events of the workflow.
   ///
   /// Defaults to a name derived from what triggers the step. Pending events of
@@ -72,30 +64,20 @@ sealed class WorkflowStep<T extends DataObject, TState extends Enum> {
 ///
 /// The handler may leave the element in [state], the step does not run again
 /// for it until the element enters [state] again.
-final class OnEnter<T extends DataObject, TState extends Enum>
-    extends WorkflowStep<T, TState> {
-  final TState state;
-
-  final Duration after;
+final class const OnEnter<T extends DataObject, TState extends Enum>(
+  final TState state,
+  final Future<T> Function(StepContext<T> context) handle, {
+  super.name,
+  final Duration after = Duration.zero,
 
   /// The time the step runs at, taken from the element when it enters [state].
   /// Changing the element afterwards does not move it. A time in the past (or
   /// null) runs the step right away. Can not be combined with [after].
-  final DateTime? Function(T element)? at;
-
-  final Future<T> Function(StepContext<T> context) handle;
-
-  const OnEnter(
-    this.state,
-    this.handle, {
-    super.name,
-    this.after = Duration.zero,
-    this.at,
-    super.retry,
-    super.failureState,
-    super.timeout,
-  });
-
+  final DateTime? Function(T element)? at,
+  super.retry,
+  super.failureState,
+  super.timeout,
+}) extends WorkflowStep<T, TState> {
   @override
   String get _defaultName => switch ((at, after)) {
     (_?, _) => '${state.name} at',
@@ -127,40 +109,31 @@ final class OnEnter<T extends DataObject, TState extends Enum>
 ///     handle: (step) async =>
 ///         step.element.copyWith(state: InvoiceState.paid)),
 /// ```
-final class OnSignal<
+final class const OnSignal<
   T extends DataObject,
   TState extends Enum,
   TSignal extends DataObject
->
-    extends WorkflowStep<T, TState> {
+>(
   /// The bean of the signal, which is used to store and restore it.
   /// It also determines [TSignal], which has to implement
   /// `WorkflowSignal<T>` (see [isSignalForElement]).
-  final DataBean<TSignal> signalBean;
+  final DataBean<TSignal> signalBean, {
 
   /// States in which the step accepts its signal. Must not be empty.
-  final List<TState> accept;
+  required final List<TState> accept,
 
   /// The id of the element a signal is meant for.
-  final Object Function(TSignal signal) target;
+  required final Object Function(TSignal signal) target,
+  required final Future<T> Function(SignalStepContext<T, TSignal> context)
+  handle,
+  super.name,
 
   /// Time after which a signal that was not applied is given up.
-  final Duration expireAfter;
-
-  final Future<T> Function(SignalStepContext<T, TSignal> context) handle;
-
-  const OnSignal(
-    this.signalBean, {
-    required this.accept,
-    required this.target,
-    required this.handle,
-    super.name,
-    this.expireAfter = const Duration(days: 1),
-    super.retry,
-    super.failureState,
-    super.timeout,
-  });
-
+  final Duration expireAfter = const Duration(days: 1),
+  super.retry,
+  super.failureState,
+  super.timeout,
+}) extends WorkflowStep<T, TState> {
   @override
   String get _defaultName => signalBean.name;
 

@@ -1,11 +1,9 @@
 import 'package:datahub/datahub.dart';
 
-class LoadClient {
-  final RestClient client;
-  Future<RestResponse> Function() request;
-
-  LoadClient(this.client, this.request);
-
+class LoadClient(
+  final RestClient client,
+  var Future<RestResponse> Function() request,
+) {
   Future<void> run(int rate, Duration duration) async {
     final requestCount = duration.inSeconds * rate;
     final requests = <Future>[];

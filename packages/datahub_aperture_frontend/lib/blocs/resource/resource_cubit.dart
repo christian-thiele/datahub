@@ -216,9 +216,8 @@ class ResourceCubit extends Cubit<ResourceState> {
   }
 
   void previousPage() {
-    if (state case ResourceValue(
-      paging: Paging(:final offset, :final pageSize),
-    ) when offset > 0) {
+    if (state case ResourceValue(paging: Paging(:final offset, :final pageSize))
+        when offset > 0) {
       _pageTo(offset - pageSize, pageSize);
     }
   }

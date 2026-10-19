@@ -4,7 +4,7 @@ import 'trace_exporter.dart';
 /// [TraceExporter] implementation that discards traces.
 ///
 /// This is used as fallback.
-class DiscardTraceExporter extends TraceExporter {
+class DiscardTraceExporter() extends TraceExporter {
   @override
   void onStart(LocalSpan span) {
     // discard

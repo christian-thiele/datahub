@@ -16,11 +16,7 @@ const _asterisk = 42;
 ///
 /// The stream cannot be resynchronized after a protocol error, so the
 /// connection has to be closed.
-class RespProtocolException implements Exception {
-  final String message;
-
-  const RespProtocolException(this.message);
-
+class const RespProtocolException(final String message) implements Exception {
   @override
   String toString() => 'RespProtocolException: $message';
 }
@@ -36,7 +32,7 @@ class RespProtocolException implements Exception {
 /// later, so large replies are processed in linear time. Bulk strings are
 /// copied out of the receive buffer, so a reply never keeps a socket chunk
 /// alive.
-class RespParser {
+class RespParser() {
   /// Upper bound for bulk string lengths, Redis' own `proto-max-bulk-len`
   /// default. Larger lengths can only result from a corrupt stream.
   static const maxBulkLength = 512 * 1024 * 1024;
@@ -211,7 +207,7 @@ class RespParser {
           throw RespProtocolException('Invalid array length $length.');
         }
         if (length == 0) {
-          return RedisArray(<RedisReply>[]);
+          return const RedisArray(<RedisReply>[]);
         }
         return _ArrayFrame(length);
 
@@ -287,9 +283,6 @@ class RespParser {
   }
 }
 
-class _ArrayFrame {
-  final int length;
+class _ArrayFrame(final int length) {
   final items = <RedisReply>[];
-
-  _ArrayFrame(this.length);
 }

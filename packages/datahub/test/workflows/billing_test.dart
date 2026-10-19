@@ -11,64 +11,44 @@ part 'billing_test.g.dart';
 
 /// Costs of a user that still have to be invoiced.
 @Data()
-class Position extends $Position {
-  @Id(auto: true)
-  final String id;
-  final String userId;
-  final int amount;
-  final DateTime date;
+class const Position({
+  @Id(auto: true) final String id = '',
+  required final String userId,
+  required final int amount,
+  required final DateTime date,
 
   /// The invoice the position was billed with.
-  final String? invoiceId;
+  final String? invoiceId,
+}) extends $Position;
 
-  const Position({
-    this.id = '',
-    required this.userId,
-    required this.amount,
-    required this.date,
-    this.invoiceId,
-  });
+enum PeriodState() {
+  open,
+  closed,
 }
 
-enum PeriodState { open, closed }
-
 @Data()
-class BillingPeriod extends $BillingPeriod {
+class const BillingPeriod({
   /// `p<index>`, like `2026-11` for months.
-  @Id()
-  final String id;
-  final int index;
-  final DateTime end;
-  final PeriodState state;
+  @Id() required final String id,
+  required final int index,
+  required final DateTime end,
+  final PeriodState state = PeriodState.open,
+}) extends $BillingPeriod;
 
-  const BillingPeriod({
-    required this.id,
-    required this.index,
-    required this.end,
-    this.state = PeriodState.open,
-  });
+enum BillingInvoiceState() {
+  created,
+  assigned,
 }
-
-enum BillingInvoiceState { created, assigned }
 
 @Data()
-class BillingInvoice extends $BillingInvoice {
+class const BillingInvoice({
   /// `<user>/<period>`, so starting it again does nothing.
-  @Id()
-  final String id;
-  final String userId;
-  final DateTime periodEnd;
-  final int total;
-  final BillingInvoiceState state;
-
-  const BillingInvoice({
-    required this.id,
-    required this.userId,
-    required this.periodEnd,
-    this.total = 0,
-    this.state = BillingInvoiceState.created,
-  });
-}
+  @Id() required final String id,
+  required final String userId,
+  required final DateTime periodEnd,
+  final int total = 0,
+  final BillingInvoiceState state = BillingInvoiceState.created,
+}) extends $BillingInvoice;
 
 const _periodLength = Duration(milliseconds: 400);
 
@@ -76,13 +56,13 @@ BillingPeriod _period(int index, DateTime end) =>
     BillingPeriod(id: 'p$index', index: index, end: end);
 
 DataRepository<Position> get _positions =>
-    Find<DataRepository<Position>>().find();
+    const Find<DataRepository<Position>>().find();
 DataRepository<BillingInvoice> get _invoices =>
-    Find<DataRepository<BillingInvoice>>().find();
+    const Find<DataRepository<BillingInvoice>>().find();
 Workflow<BillingPeriod> get _periodWorkflow =>
-    Find<Workflow<BillingPeriod>>().find();
+    const Find<Workflow<BillingPeriod>>().find();
 Workflow<BillingInvoice> get _invoiceWorkflow =>
-    Find<Workflow<BillingInvoice>>().find();
+    const Find<Workflow<BillingInvoice>>().find();
 
 /// Calls of the steps, by element id.
 final _closeCalls = <String, int>{};
@@ -168,11 +148,11 @@ List<Component> _components({int instances = 1}) => [
               ),
             ),
           ],
-          pollInterval: Config.value(const Duration(seconds: 10)),
+          pollInterval: const Config.value(Duration(seconds: 10)),
         ),
-        WorkflowService<BillingInvoice, BillingInvoiceState>(
+        const WorkflowService<BillingInvoice, BillingInvoiceState>(
           steps: [OnEnter(BillingInvoiceState.created, _assignPositions)],
-          pollInterval: Config.value(const Duration(seconds: 10)),
+          pollInterval: Config.value(Duration(seconds: 10)),
         ),
       ],
     ),

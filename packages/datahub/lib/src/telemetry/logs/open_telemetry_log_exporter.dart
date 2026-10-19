@@ -12,23 +12,19 @@ import 'log_message.dart';
 ///
 /// Labels are exported as attributes, the error and stack trace as
 /// `exception.*` attributes, and the span of the message as trace context.
-class OpenTelemetryLogExporter extends OtlpBatchExporter<LogMessage>
-    implements LogExporter {
-  final Map<String, Object?> resourceAttributes;
-  final TelemetryScope scope;
-  final otel.LogsServiceClient _client;
+class OpenTelemetryLogExporter({
+  required ClientChannel channel,
+  required super.exportInterval,
+  required super.exportIntervalJitter,
+  required final TelemetryScope scope,
+  super.exportTimeout,
+  super.maxBatchSize,
+  super.maxBufferSize,
+  final Map<String, Object?> resourceAttributes = const {},
+}) extends OtlpBatchExporter<LogMessage> implements LogExporter {
+  final otel.LogsServiceClient _client = otel.LogsServiceClient(channel);
 
-  OpenTelemetryLogExporter({
-    required ClientChannel channel,
-    required super.exportInterval,
-    required super.exportIntervalJitter,
-    required this.scope,
-    super.exportTimeout,
-    super.maxBatchSize,
-    super.maxBufferSize,
-    this.resourceAttributes = const {},
-  }) : _client = otel.LogsServiceClient(channel),
-       super(signal: 'logs');
+  this : super(signal: 'logs');
 
   @override
   Future<void> initialize() async => start();

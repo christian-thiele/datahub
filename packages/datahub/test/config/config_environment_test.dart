@@ -267,8 +267,8 @@ void main() {
       'injects environment variables into \$env references',
       [],
       () {
-        expect(Config<String>('db.password').read(), 'from-test-env');
-        expect(Config<int>('db.port', defaultValue: 1).read(), 5432);
+        expect(const Config<String>('db.password').read(), 'from-test-env');
+        expect(const Config<int>('db.port', defaultValue: 1).read(), 5432);
       },
       config: const {
         'db': {'password': r'$env.DB_PASSWORD', 'port': r'$env.DB_PORT'},
@@ -284,7 +284,7 @@ void main() {
       [],
       () {
         expect(
-          Config<String>('db.password', defaultValue: 'fallback').read(),
+          const Config<String>('db.password', defaultValue: 'fallback').read(),
           'fallback',
         );
       },

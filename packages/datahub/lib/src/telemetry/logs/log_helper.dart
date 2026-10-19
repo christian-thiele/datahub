@@ -7,9 +7,7 @@ import 'severity_level.dart';
 
 const LogHelper log = LogHelper._();
 
-final class LogHelper {
-  const LogHelper._();
-
+final class const LogHelper._() {
   void call(
     String line, {
     SeverityLevel level = SeverityLevel.debug,
@@ -17,7 +15,7 @@ final class LogHelper {
     StackTrace? stack,
     Map<String, String> labels = const {},
   }) {
-    final telemetry = Context.maybeOfZone()?.find(Find<Telemetry?>());
+    final telemetry = Context.maybeOfZone()?.find(const Find<Telemetry?>());
 
     if (telemetry == null) {
       print(line);

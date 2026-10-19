@@ -18,11 +18,11 @@ void main() {
       _table,
       {SqlTypedAttribute.of(_id): 1, SqlTypedAttribute.of(_name): 'a'},
       onConflict: SqlOnConflict.doUpdate(
-        [SqlColumnAttribute('id')],
-        {SqlColumnAttribute('name'): SqlOnConflict.excluded(_name)},
-        where: RawSql('"item"."id" > 0'),
+        [const SqlColumnAttribute('id')],
+        {const SqlColumnAttribute('name'): SqlOnConflict.excluded(_name)},
+        where: const RawSql('"item"."id" > 0'),
       ),
-      returning: [SqlWildcard()],
+      returning: [const SqlWildcard()],
     );
 
     expect(
@@ -48,12 +48,12 @@ void main() {
     expect(
       SqlInsertSelect(
         _table,
-        [SqlColumnAttribute('id'), SqlColumnAttribute('name')],
+        [const SqlColumnAttribute('id'), const SqlColumnAttribute('name')],
         SqlSelect(Sql.name('src'), [
-          SqlColumnAttribute('id', relation: 'src'),
-          RawSqlAttribute(ParameterSql('b', const PostgresqlString())),
+          const SqlColumnAttribute('id', relation: 'src'),
+          const RawSqlAttribute(ParameterSql('b', PostgresqlString())),
         ]),
-        returning: [SqlColumnAttribute('id')],
+        returning: [const SqlColumnAttribute('id')],
       ).toString(),
       'INSERT INTO "public"."item" ("id", "name") SELECT "src"."id", '
       '\$1::varchar FROM "src" RETURNING "id"',
@@ -64,9 +64,9 @@ void main() {
     expect(
       SqlDelete(
         _table,
-        RawSql('"item"."id" = "src"."id"'),
+        const RawSql('"item"."id" = "src"."id"'),
         using: Sql.name('src'),
-        returning: [SqlColumnAttribute('id')],
+        returning: [const SqlColumnAttribute('id')],
       ).toString(),
       'DELETE FROM "public"."item" USING "src" WHERE "item"."id" = "src"."id" '
       'RETURNING "id"',
@@ -75,8 +75,8 @@ void main() {
 
   test('Update from', () {
     expect(
-      SqlUpdate(_table, RawSql('"item"."id" = "src"."id"'), {
-        SqlTypedAttribute.of(_name, relation: 'item'): SqlColumnAttribute(
+      SqlUpdate(_table, const RawSql('"item"."id" = "src"."id"'), {
+        SqlTypedAttribute.of(_name, relation: 'item'): const SqlColumnAttribute(
           'name',
           relation: 'src',
         ),
@@ -94,11 +94,11 @@ void main() {
         SqlInsert(
           _table,
           {SqlTypedAttribute.of(_id): 1},
-          returning: [SqlWildcard()],
+          returning: [const SqlWildcard()],
         ),
       ),
-      SqlCte('del', SqlDelete(_table, RawSql('"id" = 2'))),
-    ], SqlSelect(Sql.name('ins'), [SqlWildcard()]));
+      SqlCte('del', SqlDelete(_table, const RawSql('"id" = 2'))),
+    ], SqlSelect(Sql.name('ins'), [const SqlWildcard()]));
 
     expect(
       sql.toString(),
@@ -110,7 +110,7 @@ void main() {
 
   test('Nested select is wrapped', () {
     expect(
-      SqlNestedSelect(
+      const SqlNestedSelect(
         name: 'sub',
         select: SqlSelect(_table, [SqlWildcard()]),
       ).toString(),
@@ -120,14 +120,14 @@ void main() {
 
   test('Select without distinct on', () {
     expect(
-      SqlSelect(_table, [SqlColumnAttribute('id')]).toString(),
+      const SqlSelect(_table, [SqlColumnAttribute('id')]).toString(),
       'SELECT "id" FROM "public"."item"',
     );
   });
 
   test('Select for update', () {
     expect(
-      SqlSelect(
+      const SqlSelect(
         _table,
         [SqlColumnAttribute('id')],
         limit: 1,
@@ -136,7 +136,7 @@ void main() {
       'SELECT "id" FROM "public"."item" LIMIT \$1::bigint FOR UPDATE',
     );
     expect(
-      SqlSelect(
+      const SqlSelect(
         _table,
         [SqlColumnAttribute('id')],
         forUpdate: true,
@@ -145,7 +145,7 @@ void main() {
       'SELECT "id" FROM "public"."item" FOR UPDATE SKIP LOCKED',
     );
     expect(
-      SqlSelect(_table, [
+      const SqlSelect(_table, [
         SqlColumnAttribute('id'),
       ], skipLocked: true).toString(),
       'SELECT "id" FROM "public"."item"',
@@ -154,7 +154,7 @@ void main() {
 
   test('Select distinct on single attribute', () {
     expect(
-      SqlSelect(
+      const SqlSelect(
         _table,
         [SqlColumnAttribute('id'), SqlColumnAttribute('name')],
         distinctOn: [SqlColumnAttribute('name')],
@@ -168,12 +168,12 @@ void main() {
   test('Select distinct on multiple attributes', () {
     final sql = SqlSelect(
       _table,
-      [SqlWildcard()],
+      [const SqlWildcard()],
       distinctOn: [
-        SqlColumnAttribute('name'),
-        RawSqlAttribute(ParameterSql(1, const PostgresqlInt())),
+        const SqlColumnAttribute('name'),
+        const RawSqlAttribute(ParameterSql(1, PostgresqlInt())),
       ],
-      where: RawSql('"id" > ') + ParameterSql(0, const PostgresqlInt()),
+      where: const RawSql('"id" > ') + const ParameterSql(0, PostgresqlInt()),
     );
 
     expect(

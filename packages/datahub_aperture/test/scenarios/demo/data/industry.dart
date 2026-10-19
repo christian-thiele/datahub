@@ -1,4 +1,4 @@
-enum Industry {
+enum Industry() {
   software,
   manufacturing,
   retail,

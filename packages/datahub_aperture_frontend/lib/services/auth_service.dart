@@ -85,11 +85,9 @@ class AuthService {
     await _lock.runLocked(() async {
       final prefs = await _prefs.get();
       try {
-        if (prefs.getStringList(_authStateKey) case [
-          final sState,
-          final verifier,
-          final redirectUrl,
-        ] when sState == state) {
+        if (prefs.getStringList(_authStateKey)
+            case [final sState, final verifier, final redirectUrl]
+            when sState == state) {
           final token = _currentAuth = await _oidcClient!.getToken(
             code,
             verifier,

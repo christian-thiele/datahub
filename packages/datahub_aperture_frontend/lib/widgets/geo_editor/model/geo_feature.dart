@@ -14,7 +14,7 @@ enum GeoFeatureKind {
   line(data.GeometryType.lineString, data.GeometryType.multiLineString),
   polygon(data.GeometryType.polygon, data.GeometryType.multiPolygon);
 
-  const GeoFeatureKind(this.singleType, this.multiType);
+  GeoFeatureKind(this.singleType, this.multiType);
 
   final data.GeometryType singleType;
   final data.GeometryType multiType;

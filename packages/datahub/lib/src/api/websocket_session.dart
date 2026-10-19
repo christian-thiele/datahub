@@ -16,14 +16,17 @@ import 'package:datahub/datahub.dart';
 /// [close] performs the closing handshake: it flushes pending outgoing
 /// frames, sends a close frame and awaits the peer's acknowledgement
 /// (up to a grace period) before dropping the TCP connection.
-class WebsocketSession implements StreamSink<WebsocketFrame> {
+class WebsocketSession({
+  required final ApiRequest initialRequest,
+  required final String acceptKey,
+  required final String? protocol,
+  required final io.Socket socket,
+  Duration? heartbeatInterval,
+  Duration heartbeatTimeout = const Duration(seconds: 30),
+  int maxFrameSize = WebsocketFrameDecoder.defaultMaxFrameSize,
+}) implements StreamSink<WebsocketFrame> {
   static const _closeGracePeriod = Duration(seconds: 5);
   static const _encoder = WebsocketFrameEncoder();
-
-  final ApiRequest initialRequest;
-  final String acceptKey;
-  final String? protocol;
-  final io.Socket socket;
 
   final _sinkController = StreamController<WebsocketFrame>();
   final _streamController = StreamController<WebsocketFrame>();
@@ -38,20 +41,12 @@ class WebsocketSession implements StreamSink<WebsocketFrame> {
   Future<void>? _closeFuture;
 
   final _tracer = Context.maybeOfZone()
-      ?.find(Find<Telemetry?>())
+      ?.find(const Find<Telemetry?>())
       ?.getDefaultTracer();
 
   late final LocalSpan? _span;
 
-  WebsocketSession({
-    required this.initialRequest,
-    required this.acceptKey,
-    required this.protocol,
-    required this.socket,
-    Duration? heartbeatInterval,
-    Duration heartbeatTimeout = const Duration(seconds: 30),
-    int maxFrameSize = WebsocketFrameDecoder.defaultMaxFrameSize,
-  }) {
+  this {
     // lives as long as the connection, a child of the span of the upgrade
     // request
     _span = _tracer?.startSpan(

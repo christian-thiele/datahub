@@ -14,7 +14,7 @@ import 'workflow_step.dart';
 /// See:
 ///   - [OnEnter]
 ///   - [OnSignal]
-abstract interface class Workflow<T extends DataObject> {
+abstract interface class Workflow<T extends DataObject>() {
   /// Stores [element] and starts its workflow in the state it has.
   ///
   /// Elements have to be started to move through the workflow. An element that

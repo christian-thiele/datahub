@@ -4,7 +4,7 @@ import 'package:grpc/grpc.dart' as grpc;
 import 'package:test/test.dart';
 
 /// An OpenTelemetry collector that keeps what it receives.
-class FakeCollector {
+class FakeCollector() {
   final traces = <otel.ExportTraceServiceRequest>[];
   final logs = <otel.ExportLogsServiceRequest>[];
   late final server = grpc.Server.create(
@@ -29,11 +29,8 @@ class FakeCollector {
   }
 }
 
-class _TraceService extends otel.TraceServiceBase {
-  final FakeCollector collector;
-
-  _TraceService(this.collector);
-
+class _TraceService(final FakeCollector collector)
+    extends otel.TraceServiceBase {
   @override
   Future<otel.ExportTraceServiceResponse> export(
     grpc.ServiceCall call,
@@ -44,11 +41,7 @@ class _TraceService extends otel.TraceServiceBase {
   }
 }
 
-class _LogsService extends otel.LogsServiceBase {
-  final FakeCollector collector;
-
-  _LogsService(this.collector);
-
+class _LogsService(final FakeCollector collector) extends otel.LogsServiceBase {
   @override
   Future<otel.ExportLogsServiceResponse> export(
     grpc.ServiceCall call,

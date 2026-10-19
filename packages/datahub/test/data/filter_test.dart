@@ -4,21 +4,13 @@ import 'package:datahub/data.dart';
 import 'package:test/test.dart';
 
 /// A minimal DataObject for testing filter evaluation.
-class Person with DataObject<Person> {
-  final String name;
-  final int age;
-  final String? email;
-  final DateTime createdAt;
-  final List<String> tags;
-
-  const Person({
-    required this.name,
-    required this.age,
-    this.email,
-    required this.createdAt,
-    this.tags = const [],
-  });
-
+class const Person({
+  required final String name,
+  required final int age,
+  final String? email,
+  required final DateTime createdAt,
+  final List<String> tags = const [],
+}) with DataObject<Person> {
   static final $name = DataField<Person, String>(
     name: 'name',
     valueOf: (p) => p.name,
@@ -142,7 +134,7 @@ void main() {
       expect(
         FilterGroup([
           FilterGroup([Filter.nothing, a], true),
-          FilterGroup([Filter.nothing, Filter.nothing], false),
+          const FilterGroup([Filter.nothing, Filter.nothing], false),
         ], false).isNothing,
         isTrue,
       );
@@ -398,7 +390,7 @@ void main() {
           t,
         ], false),
         FilterGroup([
-          FilterGroup([n, n], false),
+          const FilterGroup([n, n], false),
           t,
         ], true),
         FilterGroup([

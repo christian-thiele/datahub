@@ -3,18 +3,16 @@ import 'dart:async';
 import 'package:boost/boost.dart';
 import 'package:datahub/datahub.dart';
 
-class MemoryRepositoryService<T extends DataObject<T>> implements Service {
-  final DataBean<T> bean;
-  final List<T>? initialData;
-
-  const MemoryRepositoryService({required this.bean, this.initialData});
-
+class const MemoryRepositoryService<T extends DataObject<T>>({
+  required final DataBean<T> bean,
+  final List<T>? initialData,
+}) implements Service {
   @override
   ServiceInstance<Service> createInstance() =>
       _MemoryRepositoryServiceInstance<T>();
 }
 
-class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
+class _MemoryRepositoryServiceInstance<T extends DataObject<T>>()
     extends ServiceInstance<MemoryRepositoryService<T>>
     implements DataRepository<T> {
   @override
@@ -54,7 +52,7 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
     }
 
     if (_map.containsKey(id)) {
-      throw ApiException('Duplicate id in MemoryRepository.');
+      throw const ApiException('Duplicate id in MemoryRepository.');
     }
 
     _map[id] = service.bean.fromValues({
@@ -158,7 +156,9 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>
     if (bean.requireIdField.type.isExact<int>()) {
       return switch (id) {
         int() => id,
-        _ => int.tryParse(id.toString()) ?? (throw ApiException('Invalid id.')),
+        _ =>
+          int.tryParse(id.toString()) ??
+              (throw const ApiException('Invalid id.')),
       };
     } else {
       return id.toString();

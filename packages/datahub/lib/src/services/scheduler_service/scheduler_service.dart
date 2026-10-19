@@ -11,7 +11,7 @@ import 'schedule.dart';
 import 'schedule_record.dart';
 
 /// Runs [Schedule]s, provided by the built-in [SchedulerService].
-abstract interface class Scheduler {
+abstract interface class Scheduler() {
   /// Adds [schedule], for example from the `initialize` of a service. Throws
   /// an [ApiError] if a schedule with the same name was added already.
   ///
@@ -46,51 +46,43 @@ abstract interface class Scheduler {
 /// `datahub.scheduler.schedule`. Metrics: `<metricPrefix>_runs_total`
 /// (`schedule`, `outcome`), `<metricPrefix>_run_duration_seconds` and
 /// `<metricPrefix>_lateness_seconds` (`schedule`).
-class SchedulerService implements Service {
-  final Find<Telemetry> telemetry;
-  final Find<DataRepository<ScheduleRecord>?> recordRepository;
-  final Find<LockProvider<String>?> lockProvider;
+class const SchedulerService({
+  final Find<Telemetry> telemetry = const Find(),
+  final Find<DataRepository<ScheduleRecord>?> recordRepository = const Find(),
+  final Find<LockProvider<String>?> lockProvider = const Find(),
 
   /// Whether this instance runs schedules.
-  final Config<bool> worker;
+  final Config<bool> worker = const Config(
+    'scheduler.worker',
+    defaultValue: true,
+  ),
 
   /// Time between two checks of the schedules, for changes made by other
   /// instances. Runs themselves start at their time.
-  final Config<Duration> pollInterval;
-
-  final Config<bool> enableMetrics;
-  final Config<bool> enableTracing;
-  final Config<String> metricPrefix;
-
-  const SchedulerService({
-    this.telemetry = const Find(),
-    this.recordRepository = const Find(),
-    this.lockProvider = const Find(),
-    this.worker = const Config('scheduler.worker', defaultValue: true),
-    this.pollInterval = const Config(
-      'scheduler.pollInterval',
-      defaultValue: Duration(seconds: 10),
-    ),
-    this.enableMetrics = const Config(
-      'scheduler.enableMetrics',
-      defaultValue: true,
-    ),
-    this.enableTracing = const Config(
-      'scheduler.enableTracing',
-      defaultValue: true,
-    ),
-    this.metricPrefix = const Config(
-      'scheduler.metricPrefix',
-      defaultValue: 'scheduler',
-    ),
-  });
-
+  final Config<Duration> pollInterval = const Config(
+    'scheduler.pollInterval',
+    defaultValue: Duration(seconds: 10),
+  ),
+  final Config<bool> enableMetrics = const Config(
+    'scheduler.enableMetrics',
+    defaultValue: true,
+  ),
+  final Config<bool> enableTracing = const Config(
+    'scheduler.enableTracing',
+    defaultValue: true,
+  ),
+  final Config<String> metricPrefix = const Config(
+    'scheduler.metricPrefix',
+    defaultValue: 'scheduler',
+  ),
+}) implements Service {
   @override
   ServiceInstance<SchedulerService> createInstance() =>
       _SchedulerServiceInstance();
 }
 
-class _SchedulerServiceInstance extends ServiceInstance<SchedulerService>
+class _SchedulerServiceInstance()
+    extends ServiceInstance<SchedulerService>
     implements Scheduler {
   static const _maxMessages = 1000;
 
@@ -405,7 +397,7 @@ class _SchedulerServiceInstance extends ServiceInstance<SchedulerService>
 
 /// Where the schedule records are kept: the shared repository, or memory
 /// (local to this instance) if there is none.
-abstract class _RecordStore {
+abstract class _RecordStore() {
   Future<ScheduleRecord?> read(String name);
 
   Future<List<ScheduleRecord>> readAll();
@@ -426,11 +418,8 @@ abstract class _RecordStore {
   );
 }
 
-class _RepositoryRecordStore implements _RecordStore {
-  final DataRepository<ScheduleRecord> repository;
-
-  _RepositoryRecordStore(this.repository);
-
+class _RepositoryRecordStore(final DataRepository<ScheduleRecord> repository)
+    implements _RecordStore {
   @override
   Future<ScheduleRecord?> read(String name) => repository.readById(name);
 
@@ -466,7 +455,7 @@ class _RepositoryRecordStore implements _RecordStore {
   );
 }
 
-class _MemoryRecordStore implements _RecordStore {
+class _MemoryRecordStore() implements _RecordStore {
   final _records = <String, ScheduleRecord>{};
 
   @override
@@ -513,41 +502,36 @@ class _MemoryRecordStore implements _RecordStore {
 }
 
 /// Spans and metrics of the scheduler.
-class _SchedulerTelemetry {
-  final Telemetry? _tracing;
-  final CounterMetric? _runs;
-  final HistogramMetric? _duration;
-  final HistogramMetric? _lateness;
-
-  _SchedulerTelemetry(
-    Telemetry telemetry, {
-    required bool enableMetrics,
-    required bool enableTracing,
-    required String prefix,
-  }) : _tracing = enableTracing ? telemetry : null,
-       _runs = enableMetrics
-           ? telemetry.counter(
-               '${prefix}_runs_total',
-               labelNames: {'schedule', 'outcome'},
-               help: 'Number of scheduled runs by outcome.',
-             )
-           : null,
-       _duration = enableMetrics
-           ? telemetry.histogram(
-               '${prefix}_run_duration_seconds',
-               buckets: HistogramMetric.defaultDurationBuckets,
-               labelNames: {'schedule'},
-               help: 'Time a scheduled run took.',
-             )
-           : null,
-       _lateness = enableMetrics
-           ? telemetry.histogram(
-               '${prefix}_lateness_seconds',
-               buckets: HistogramMetric.defaultDurationBuckets,
-               labelNames: {'schedule'},
-               help: 'Time between the scheduled time of a run and its start.',
-             )
-           : null;
+class _SchedulerTelemetry(
+  Telemetry telemetry, {
+  required bool enableMetrics,
+  required bool enableTracing,
+  required String prefix,
+}) {
+  final Telemetry? _tracing = enableTracing ? telemetry : null;
+  final CounterMetric? _runs = enableMetrics
+      ? telemetry.counter(
+          '${prefix}_runs_total',
+          labelNames: {'schedule', 'outcome'},
+          help: 'Number of scheduled runs by outcome.',
+        )
+      : null;
+  final HistogramMetric? _duration = enableMetrics
+      ? telemetry.histogram(
+          '${prefix}_run_duration_seconds',
+          buckets: HistogramMetric.defaultDurationBuckets,
+          labelNames: {'schedule'},
+          help: 'Time a scheduled run took.',
+        )
+      : null;
+  final HistogramMetric? _lateness = enableMetrics
+      ? telemetry.histogram(
+          '${prefix}_lateness_seconds',
+          buckets: HistogramMetric.defaultDurationBuckets,
+          labelNames: {'schedule'},
+          help: 'Time between the scheduled time of a run and its start.',
+        )
+      : null;
 
   Future<void> trace(
     String name,

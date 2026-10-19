@@ -3,12 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 
-class DetachedSocket extends Stream<Uint8List> implements Socket {
-  final Stream<Uint8List> _incoming;
-  final Socket _socket;
-
-  DetachedSocket(this._socket, this._incoming);
-
+class DetachedSocket(final Socket _socket, final Stream<Uint8List> _incoming)
+    extends Stream<Uint8List>
+    implements Socket {
   @override
   StreamSubscription<Uint8List> listen(
     void Function(Uint8List event)? onData, {

@@ -81,8 +81,8 @@ void main() {
           ),
           OidcAuthMiddleware(
             identityProvider: Config.value(idp),
-            audience: Config.value('datahub-test'),
-            clientId: Config.value('datahub-test'),
+            audience: const Config.value('datahub-test'),
+            clientId: const Config.value('datahub-test'),
             requireSession: false,
             routes: [
               ResourceEndpoint(

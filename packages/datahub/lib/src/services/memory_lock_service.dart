@@ -5,15 +5,13 @@ import 'package:datahub/abstract.dart';
 import 'package:datahub/scaffold.dart';
 
 /// Local in-memory, per-instance implementation of [LockProvider].
-class MemoryLockService<T extends Object> implements Service {
-  const MemoryLockService();
-
+class const MemoryLockService<T extends Object>() implements Service {
   @override
   ServiceInstance<MemoryLockService<T>> createInstance() =>
       _MemoryLockServiceInstance<T>();
 }
 
-class _MemoryLockServiceInstance<T extends Object>
+class _MemoryLockServiceInstance<T extends Object>()
     extends ServiceInstance<MemoryLockService<T>>
     implements LockProvider<T> {
   /// Locked keys and their waiters in FIFO order.
@@ -73,11 +71,9 @@ class _MemoryLockServiceInstance<T extends Object>
   }
 }
 
-class _MemoryLockHandle implements LockHandle {
-  final void Function() _release;
+class _MemoryLockHandle._(final void Function() _release)
+    implements LockHandle {
   bool _isReleased = false;
-
-  _MemoryLockHandle._(this._release);
 
   @override
   bool get isValid => !_isReleased;

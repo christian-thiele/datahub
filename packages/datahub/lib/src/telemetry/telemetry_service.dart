@@ -87,7 +87,7 @@ import 'trace/tracer.dart';
 /// * `openTelemetryExporter.exportLogs`: Export logs (default true)
 /// * `dartTimelineExporter.enable`: Report spans as `TimelineTask`s to the
 ///   Dart developer timeline (default true)
-abstract interface class Telemetry {
+abstract interface class Telemetry() {
   /// Writes a [LogMessage] to the log exporters and [LogListener]s.
   void publishLog(LogMessage message);
 
@@ -219,103 +219,82 @@ abstract interface class Telemetry {
   Tracer getDefaultTracer();
 }
 
-class TelemetryService implements Service {
-  final Config<String> serviceName;
-  final Config<String?> serviceVersion;
-
-  final Config<SeverityLevel> logLevel;
-  final Config<LogBodyFormat> logStdoutFormat;
-
-  final Config<bool> enablePrometheusExporter;
-  final Config<String?> prometheusExporterAddress;
-  final Config<int> prometheusExporterPort;
-  final Config<String> prometheusExporterPath;
-
-  final Config<bool> enableOtelExporter;
-  final Config<String?> otelCollectorHost;
-  final Config<int> otelCollectorPort;
-  final Config<bool> otelUseTls;
-  final Config<Duration> otelExportInterval;
-  final Config<Duration> otelExportIntervalJitter;
-  final Config<bool> otelExportTraces;
-  final Config<bool> otelExportLogs;
-
-  final Config<bool> enableDartTimeline;
-
-  const TelemetryService({
-    this.serviceName = const Config<String>(
-      'telemetry.serviceName',
-      defaultValue: 'DataHub',
-    ),
-    this.serviceVersion = const Config<String?>('telemetry.serviceVersion'),
-    this.logLevel = const Config<SeverityLevel>(
-      'telemetry.logLevel',
-      defaultValue: SeverityLevel.debug,
-      values: SeverityLevel.values,
-    ),
-    this.logStdoutFormat = const Config(
-      'telemetry.logStdoutFormat',
-      defaultValue: LogBodyFormat.logfmt,
-      values: LogBodyFormat.values,
-    ),
-    this.enablePrometheusExporter = const Config<bool>(
-      'telemetry.prometheusExporter.enable',
-      defaultValue: false,
-    ),
-    this.prometheusExporterAddress = const Config<String?>(
-      'telemetry.prometheusExporter.address',
-    ),
-    this.prometheusExporterPort = const Config<int>(
-      'telemetry.prometheusExporter.port',
-      defaultValue: 9090,
-    ),
-    this.prometheusExporterPath = const Config<String>(
-      'telemetry.prometheusExporter.path',
-      defaultValue: '/metrics',
-    ),
-    this.enableOtelExporter = const Config<bool>(
-      'telemetry.openTelemetryExporter.enable',
-      defaultValue: false,
-    ),
-    this.otelCollectorHost = const Config<String?>(
-      'telemetry.openTelemetryExporter.host',
-    ),
-    this.otelCollectorPort = const Config<int>(
-      'telemetry.openTelemetryExporter.port',
-      defaultValue: 4317,
-    ),
-    this.otelUseTls = const Config<bool>(
-      'telemetry.openTelemetryExporter.useTls',
-      defaultValue: false,
-    ),
-    this.otelExportInterval = const Config<Duration>(
-      'telemetry.openTelemetryExporter.exportInterval',
-      defaultValue: Duration(seconds: 5),
-    ),
-    this.otelExportIntervalJitter = const Config<Duration>(
-      'telemetry.openTelemetryExporter.exportIntervalJitter',
-      defaultValue: Duration(seconds: 2),
-    ),
-    this.otelExportTraces = const Config<bool>(
-      'telemetry.openTelemetryExporter.exportTraces',
-      defaultValue: true,
-    ),
-    this.otelExportLogs = const Config<bool>(
-      'telemetry.openTelemetryExporter.exportLogs',
-      defaultValue: true,
-    ),
-    this.enableDartTimeline = const Config<bool>(
-      'telemetry.dartTimelineExporter.enable',
-      defaultValue: true,
-    ),
-  });
-
+class const TelemetryService({
+  final Config<String> serviceName = const Config<String>(
+    'telemetry.serviceName',
+    defaultValue: 'DataHub',
+  ),
+  final Config<String?> serviceVersion = const Config<String?>(
+    'telemetry.serviceVersion',
+  ),
+  final Config<SeverityLevel> logLevel = const Config<SeverityLevel>(
+    'telemetry.logLevel',
+    defaultValue: SeverityLevel.debug,
+    values: SeverityLevel.values,
+  ),
+  final Config<LogBodyFormat> logStdoutFormat = const Config(
+    'telemetry.logStdoutFormat',
+    defaultValue: LogBodyFormat.logfmt,
+    values: LogBodyFormat.values,
+  ),
+  final Config<bool> enablePrometheusExporter = const Config<bool>(
+    'telemetry.prometheusExporter.enable',
+    defaultValue: false,
+  ),
+  final Config<String?> prometheusExporterAddress = const Config<String?>(
+    'telemetry.prometheusExporter.address',
+  ),
+  final Config<int> prometheusExporterPort = const Config<int>(
+    'telemetry.prometheusExporter.port',
+    defaultValue: 9090,
+  ),
+  final Config<String> prometheusExporterPath = const Config<String>(
+    'telemetry.prometheusExporter.path',
+    defaultValue: '/metrics',
+  ),
+  final Config<bool> enableOtelExporter = const Config<bool>(
+    'telemetry.openTelemetryExporter.enable',
+    defaultValue: false,
+  ),
+  final Config<String?> otelCollectorHost = const Config<String?>(
+    'telemetry.openTelemetryExporter.host',
+  ),
+  final Config<int> otelCollectorPort = const Config<int>(
+    'telemetry.openTelemetryExporter.port',
+    defaultValue: 4317,
+  ),
+  final Config<bool> otelUseTls = const Config<bool>(
+    'telemetry.openTelemetryExporter.useTls',
+    defaultValue: false,
+  ),
+  final Config<Duration> otelExportInterval = const Config<Duration>(
+    'telemetry.openTelemetryExporter.exportInterval',
+    defaultValue: Duration(seconds: 5),
+  ),
+  final Config<Duration> otelExportIntervalJitter = const Config<Duration>(
+    'telemetry.openTelemetryExporter.exportIntervalJitter',
+    defaultValue: Duration(seconds: 2),
+  ),
+  final Config<bool> otelExportTraces = const Config<bool>(
+    'telemetry.openTelemetryExporter.exportTraces',
+    defaultValue: true,
+  ),
+  final Config<bool> otelExportLogs = const Config<bool>(
+    'telemetry.openTelemetryExporter.exportLogs',
+    defaultValue: true,
+  ),
+  final Config<bool> enableDartTimeline = const Config<bool>(
+    'telemetry.dartTimelineExporter.enable',
+    defaultValue: true,
+  ),
+}) implements Service {
   @override
   ServiceInstance<TelemetryService> createInstance() =>
       _TelemetryServiceInstance();
 }
 
-class _TelemetryServiceInstance extends ServiceInstance<TelemetryService>
+class _TelemetryServiceInstance()
+    extends ServiceInstance<TelemetryService>
     implements Telemetry {
   late final SeverityLevel _logLevel;
   late final LogExporter _stdoutExporter;

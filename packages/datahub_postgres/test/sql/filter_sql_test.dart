@@ -39,29 +39,35 @@ void main() {
     expect(
       _fl(
         $ArraysData.bean,
-        ValueExpression('my-string').isIn($ArraysData.$stringArray),
+        const ValueExpression('my-string').isIn($ArraysData.$stringArray),
       ),
       ''''my-string' = ANY("arrays_data"."string_array")''',
     );
     expect(
-      _fl($ArraysData.bean, ValueExpression(5).isIn($ArraysData.$intArray)),
+      _fl(
+        $ArraysData.bean,
+        const ValueExpression(5).isIn($ArraysData.$intArray),
+      ),
       '''5 = ANY("arrays_data"."int_array")''',
     );
     expect(
       _fl(
         $ArraysData.bean,
-        ValueExpression(7.3).isIn($ArraysData.$doubleArray),
+        const ValueExpression(7.3).isIn($ArraysData.$doubleArray),
       ),
       '''7.3 = ANY("arrays_data"."double_array")''',
     );
     expect(
-      _fl($ArraysData.bean, ValueExpression(true).isIn($ArraysData.$boolArray)),
+      _fl(
+        $ArraysData.bean,
+        const ValueExpression(true).isIn($ArraysData.$boolArray),
+      ),
       '''true = ANY("arrays_data"."bool_array")''',
     );
     expect(
       _fl(
         $ArraysData.bean,
-        ValueExpression('something').isIn($ArraysData.$enumArray),
+        const ValueExpression('something').isIn($ArraysData.$enumArray),
       ),
       ''''something' = ANY("arrays_data"."enum_array")''',
     );
@@ -127,7 +133,7 @@ void main() {
     expect(
       _fl(
         $ArraysData.bean,
-        ValueExpression([
+        const ValueExpression([
           {'prop': 'val'},
         ]).isIn($ArraysData.$jsonList),
       ),
@@ -136,21 +142,21 @@ void main() {
     expect(
       _fl(
         $ArraysData.bean,
-        ValueExpression({'prop': 'val'}).isIn($ArraysData.$jsonList),
+        const ValueExpression({'prop': 'val'}).isIn($ArraysData.$jsonList),
       ),
       '''"arrays_data"."json_list" @> '{"prop":"val"}'::jsonb''',
     );
     expect(
       _fl(
         $ArraysData.bean,
-        ValueExpression({'prop': 'val'}).isIn($ArraysData.$jsonMap),
+        const ValueExpression({'prop': 'val'}).isIn($ArraysData.$jsonMap),
       ),
       '''"arrays_data"."json_map" @> '{"prop":"val"}'::jsonb''',
     );
     expect(
       _fl(
         $ArraysData.bean,
-        ValueExpression([123, 456]).isIn($ArraysData.$jsonMap),
+        const ValueExpression([123, 456]).isIn($ArraysData.$jsonMap),
       ),
       '''"arrays_data"."json_map" @> array_to_json('{123,456}'::int[])::jsonb''',
     );

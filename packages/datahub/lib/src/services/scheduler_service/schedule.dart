@@ -6,18 +6,16 @@ import 'package:datahub/utils.dart';
 import 'scheduler_service.dart';
 
 /// What a scheduled callback knows about its run.
-class ScheduleContext {
+class const ScheduleContext({
   /// The name of the schedule.
-  final String name;
+  required final String name,
 
   /// The time the run was scheduled for (UTC).
   ///
   /// Runs that were missed while no instance was running are made up for with
   /// a single, late run; this is the latest missed time then.
-  final DateTime scheduledFor;
-
-  const ScheduleContext({required this.name, required this.scheduledFor});
-
+  required final DateTime scheduledFor,
+}) {
   /// Identifies the run, for calls that must not be repeated.
   String get idempotencyKey => '$name/${scheduledFor.toIso8601String()}';
 }
@@ -39,21 +37,18 @@ typedef ScheduleCallback = Future<void> Function(ScheduleContext run);
 ///   Schedule.monthly('billing', startBilling, day: 1),
 /// ]);
 /// ```
-abstract class Schedule implements Service {
+abstract class const Schedule._(
   /// Identifies the schedule across instances, must be unique.
-  final String name;
-
-  final ScheduleCallback run;
+  final String name,
+  final ScheduleCallback run, {
 
   /// Maximum time a run may take. A run that is due while the previous run
   /// still runs waits for it.
-  final Duration timeout;
-
-  const Schedule._(this.name, this.run, {required this.timeout});
-
+  required final Duration timeout,
+}) implements Service {
   /// Runs every [interval]. The times are aligned to the epoch (for example
   /// every 10 minutes at :00, :10, :20 ...), so all instances agree on them.
-  const factory Schedule.every(
+  const factory every(
     String name,
     ScheduleCallback run, {
     required Duration interval,
@@ -61,7 +56,7 @@ abstract class Schedule implements Service {
   }) = _EverySchedule;
 
   /// Runs every day at [hour]:[minute] UTC.
-  const factory Schedule.daily(
+  const factory daily(
     String name,
     ScheduleCallback run, {
     int hour,
@@ -71,7 +66,7 @@ abstract class Schedule implements Service {
 
   /// Runs every month on [day] at [hour]:[minute] UTC. Days after the end of
   /// a month mean its last day.
-  const factory Schedule.monthly(
+  const factory monthly(
     String name,
     ScheduleCallback run, {
     int day,
@@ -94,7 +89,7 @@ abstract class Schedule implements Service {
   ServiceInstance<Schedule> createInstance() => _ScheduleInstance();
 }
 
-class _ScheduleInstance extends ServiceInstance<Schedule> {
+class _ScheduleInstance() extends ServiceInstance<Schedule> {
   @override
   Future<void> initialize() async {
     await super.initialize();
@@ -104,15 +99,13 @@ class _ScheduleInstance extends ServiceInstance<Schedule> {
 
 const _defaultTimeout = Duration(minutes: 30);
 
-final class _EverySchedule extends Schedule {
-  final Duration interval;
-
-  const _EverySchedule(
-    super.name,
-    super.run, {
-    required this.interval,
-    super.timeout = _defaultTimeout,
-  }) : super._();
+final class const _EverySchedule(
+  super.name,
+  super.run, {
+  required final Duration interval,
+  super.timeout = _defaultTimeout,
+}) extends Schedule {
+  this : super._();
 
   @override
   DateTime nextAfter(DateTime time) {
@@ -133,17 +126,14 @@ final class _EverySchedule extends Schedule {
   }
 }
 
-final class _DailySchedule extends Schedule {
-  final int hour;
-  final int minute;
-
-  const _DailySchedule(
-    super.name,
-    super.run, {
-    this.hour = 0,
-    this.minute = 0,
-    super.timeout = _defaultTimeout,
-  }) : super._();
+final class const _DailySchedule(
+  super.name,
+  super.run, {
+  final int hour = 0,
+  final int minute = 0,
+  super.timeout = _defaultTimeout,
+}) extends Schedule {
+  this : super._();
 
   @override
   DateTime nextAfter(DateTime time) {
@@ -161,19 +151,15 @@ final class _DailySchedule extends Schedule {
   }
 }
 
-final class _MonthlySchedule extends Schedule {
-  final int day;
-  final int hour;
-  final int minute;
-
-  const _MonthlySchedule(
-    super.name,
-    super.run, {
-    this.day = 1,
-    this.hour = 0,
-    this.minute = 0,
-    super.timeout = _defaultTimeout,
-  }) : super._();
+final class const _MonthlySchedule(
+  super.name,
+  super.run, {
+  final int day = 1,
+  final int hour = 0,
+  final int minute = 0,
+  super.timeout = _defaultTimeout,
+}) extends Schedule {
+  this : super._();
 
   @override
   DateTime nextAfter(DateTime time) {

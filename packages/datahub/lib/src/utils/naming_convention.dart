@@ -1,4 +1,4 @@
-enum NamingConvention {
+enum NamingConvention() {
   /// no formatting applied
   none,
 
@@ -13,8 +13,6 @@ enum NamingConvention {
 
   /// lower camel case => lowerCamelCase
   lowerCamelCase;
-
-  const NamingConvention();
 
   /// Convenience method for using [toNamingConvention].
   String convert(String input) => toNamingConvention(input, this);

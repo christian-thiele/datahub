@@ -110,9 +110,8 @@ class _Painter extends CustomPainter {
     );
     path.close();
 
-    final rotated = Path.from(
-      path,
-    ).transform(Matrix4.rotationZ(pi / 3).storage);
+    final rotated = Path.from(path)
+        .transform(Matrix4.rotationZ(pi / 3).storage);
 
     final diff = Path.combine(PathOperation.difference, path, rotated);
 
@@ -246,9 +245,8 @@ class _LogoPainter extends CustomPainter {
     );
     path.close();
 
-    final rotated = Path.from(
-      path,
-    ).transform(Matrix4.rotationZ(pi / 3).storage);
+    final rotated = Path.from(path)
+        .transform(Matrix4.rotationZ(pi / 3).storage);
 
     final diff = Path.combine(PathOperation.difference, path, rotated);
 

@@ -6,21 +6,13 @@ import 'package:datahub/data.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/utils.dart';
 
-class ApiRequest {
-  final Uri uri;
-  final HttpRequestMethod method;
-  final Map<String, List<String>> headers;
-  final Map<String, String> routeParams;
-  final Stream<List<int>> bodyData;
-
-  ApiRequest(
-    this.uri,
-    this.method,
-    this.headers,
-    this.routeParams,
-    this.bodyData,
-  );
-
+class ApiRequest(
+  final Uri uri,
+  final HttpRequestMethod method,
+  final Map<String, List<String>> headers,
+  final Map<String, String> routeParams,
+  final Stream<List<int>> bodyData,
+) {
   Map<String, List<String>> get queryParams => uri.queryParametersAll;
 
   /// Returns a [Uint8List] of the body data.
@@ -42,7 +34,8 @@ class ApiRequest {
   /// [bodyData] stream instead.
   Future<Map<String, dynamic>> getJsonBody() async {
     try {
-      return JsonDecoder().convert(await getTextBody()) as Map<String, dynamic>;
+      return const JsonDecoder().convert(await getTextBody())
+          as Map<String, dynamic>;
     } catch (_) {
       throw ApiRequestException.badRequest('Invalid body data.');
     }
@@ -54,7 +47,7 @@ class ApiRequest {
   /// [bodyData] stream instead.
   Future<List> getJsonListBody() async {
     try {
-      return JsonDecoder().convert(await getTextBody()) as List;
+      return const JsonDecoder().convert(await getTextBody()) as List;
     } catch (_) {
       throw ApiRequestException.badRequest('Invalid body data.');
     }
@@ -82,7 +75,7 @@ class ApiRequest {
         return bodyData as T;
       } else if (T == dynamic) {
         return jsonDecode(await getTextBody());
-      } else if (TypeCheck<void>().isSubtypeOf<T>()) {
+      } else if (const TypeCheck<void>().isSubtypeOf<T>()) {
         return null as T;
       }
     } on CodecException catch (e) {

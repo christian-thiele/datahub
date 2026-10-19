@@ -7,12 +7,10 @@ import 'package:datahub/data.dart';
 import 'package:datahub/http.dart';
 import 'package:datahub/utils.dart';
 
-class RestResponse implements HttpResponse {
+class RestResponse(final HttpResponse _httpResponse) implements HttpResponse {
   static final Finalizer<HttpResponse> _finalizer = Finalizer(
     (response) => response.bodyData.drain(),
   );
-
-  final HttpResponse _httpResponse;
 
   @override
   Map<String, List<String>> get headers => _httpResponse.headers;
@@ -42,7 +40,7 @@ class RestResponse implements HttpResponse {
   @override
   Encoding get charset => _httpResponse.charset ?? utf8;
 
-  RestResponse(this._httpResponse) {
+  this {
     _finalizer.attach(this, _httpResponse, detach: this);
   }
 
@@ -75,7 +73,7 @@ class RestResponse implements HttpResponse {
       return bodyData as T;
     } else if (T == dynamic) {
       return jsonDecode(await getTextBody());
-    } else if (TypeCheck<void>().isSubtypeOf<T>()) {
+    } else if (const TypeCheck<void>().isSubtypeOf<T>()) {
       return null as T;
     }
 

@@ -6,7 +6,7 @@ import 'package:test/expect.dart';
 
 final middlewareImplicit = [
   ApiService(
-    port: Config.value(0),
+    port: const Config.value(0),
     routes: [
       ApiMiddlewareDelegate(
         routes: [
@@ -37,7 +37,7 @@ final middlewareImplicit = [
 
 final middlewareExplicit = [
   ApiService(
-    port: Config.value(0),
+    port: const Config.value(0),
     routes: [
       ApiMiddlewareDelegate(
         matcher: RoutePattern('/middleware/*'),
@@ -93,7 +93,7 @@ void main() {
 }
 
 FutureOr<void> _runTestCommon() async {
-  final client = Find<Api>().find().connectHttp11();
+  final client = const Find<Api>().find().connectHttp11();
 
   expect(await client.get('/test').thenGetJsonBody(), equals({'result': 'ok'}));
   expect(
@@ -157,7 +157,7 @@ FutureOr<void> _runTestCommon() async {
 }
 
 Future<void> _runTestImplicit() async {
-  final client = Find<Api>().find().connectHttp11();
+  final client = const Find<Api>().find().connectHttp11();
 
   expect(
     () => client.get('/middleware/nothing').thenGetJsonBody(),
@@ -168,7 +168,7 @@ Future<void> _runTestImplicit() async {
 }
 
 Future<void> _runTestExplicit() async {
-  final client = Find<Api>().find().connectHttp11();
+  final client = const Find<Api>().find().connectHttp11();
 
   expect(
     () => client.get('/middleware/nothing').thenGetJsonBody(),

@@ -33,29 +33,33 @@ import 'redis_subscriber.dart';
 /// Locks are exclusive across all instances using the same Redis server (and
 /// database-independent [lockPrefix]). They are not safe against failover to
 /// a replica that did not receive the lock key yet.
-class RedisService implements Service {
+class const RedisService({
   /// Client name reported to the server (`CLIENT SETNAME`). Whitespace is
   /// replaced by `-`.
-  final Config<String> clientName;
-
-  final Config<String> host;
-  final Config<int> port;
+  final Config<String> clientName = const Config(
+    'serviceName',
+    defaultValue: 'DataHub',
+  ),
+  final Config<String> host = const Config('host', defaultValue: 'localhost'),
+  final Config<int> port = const Config('port', defaultValue: 6379),
 
   /// User for authentication (Redis 6 ACL). Only used if [password] is set,
   /// the default user is used if null.
-  final Config<String?> username;
+  final Config<String?> username = const Config('username'),
 
   /// Password for authentication. Authentication is skipped if null.
-  final Config<String?> password;
+  final Config<String?> password = const Config('password'),
 
   /// Database index selected on every connection.
-  final Config<int> database;
-
-  final Config<bool> useTls;
+  final Config<int> database = const Config('database', defaultValue: 0),
+  final Config<bool> useTls = const Config('useTls', defaultValue: false),
 
   /// Timeout for establishing a connection, including TLS handshake and
   /// authentication.
-  final Config<Duration> timeout;
+  final Config<Duration> timeout = const Config(
+    'timeout',
+    defaultValue: Duration(seconds: 10),
+  ),
 
   /// Default timeout for a single command.
   ///
@@ -63,13 +67,24 @@ class RedisService implements Service {
   /// reply could otherwise be taken for the reply of another command.
   /// Blocking commands like `BLPOP` need a longer timeout passed to
   /// [RedisCommands.execute].
-  final Config<Duration> commandTimeout;
-
-  final Config<int> targetPoolSize;
-  final Config<Duration> maxConnectionLifetime;
+  final Config<Duration> commandTimeout = const Config<Duration>(
+    'commandTimeout',
+    defaultValue: Duration(seconds: 10),
+  ),
+  final Config<int> targetPoolSize = const Config(
+    'targetPoolSize',
+    defaultValue: 4,
+  ),
+  final Config<Duration> maxConnectionLifetime = const Config(
+    'maxConnectionLifetime',
+    defaultValue: Duration(hours: 1),
+  ),
 
   /// Maximum time to wait for a connection from the pool.
-  final Config<Duration> poolTimeout;
+  final Config<Duration> poolTimeout = const Config<Duration>(
+    'poolTimeout',
+    defaultValue: Duration(seconds: 5),
+  ),
 
   /// Maximum number of requests waiting for a connection from the pool,
   /// further requests fail with [PoolQueueLimitException].
@@ -78,14 +93,20 @@ class RedisService implements Service {
   /// concurrent commands (e.g. `Future.wait` over many keys) queue up here.
   /// For bulk operations, pipeline the commands on a single connection with
   /// [Redis.useConnection] instead.
-  final Config<int> poolQueueLimit;
+  final Config<int> poolQueueLimit = const Config<int>(
+    'poolQueueLimit',
+    defaultValue: 1000,
+  ),
 
   /// Interval for background maintenance of the connection pool.
   ///
   /// On every maintenance run, idle connections that exceeded
   /// [maxConnectionLifetime] are closed and the pool is refilled up to
   /// [targetPoolSize].
-  final Config<Duration> poolMaintenanceInterval;
+  final Config<Duration> poolMaintenanceInterval = const Config<Duration>(
+    'poolMaintenanceInterval',
+    defaultValue: Duration(seconds: 30),
+  ),
 
   /// Pooled connections that were idle for longer than this are checked with
   /// `PING` before they are used, and the Pub/Sub connection is pinged in
@@ -93,94 +114,56 @@ class RedisService implements Service {
   ///
   /// This detects connections that died silently, for example when dropped
   /// by a NAT gateway or a load balancer, before a command is sent on them.
-  final Config<Duration> healthCheckInterval;
+  final Config<Duration> healthCheckInterval = const Config<Duration>(
+    'healthCheckInterval',
+    defaultValue: Duration(seconds: 30),
+  ),
 
   /// Prefix of the Redis keys (and Pub/Sub channels) used for locks.
-  final Config<String> lockPrefix;
+  final Config<String> lockPrefix = const Config<String>(
+    'lockPrefix',
+    defaultValue: 'datahub:lock:',
+  ),
 
   /// Time after which a lock expires unless it is renewed by its holder.
-  final Config<Duration> lockLeaseDuration;
+  final Config<Duration> lockLeaseDuration = const Config<Duration>(
+    'lockLeaseDuration',
+    defaultValue: Duration(seconds: 30),
+  ),
 
   /// Interval in which a waiting acquirer retries to acquire a lock, in case
   /// no release notification is received.
-  final Config<Duration> lockRetryInterval;
+  final Config<Duration> lockRetryInterval = const Config<Duration>(
+    'lockRetryInterval',
+    defaultValue: Duration(milliseconds: 500),
+  ),
 
   /// Publish metrics about commands, the connection pool, locks and Pub/Sub.
-  final Config<bool> enableMetrics;
-  final Config<String> metricPrefix;
+  final Config<bool> enableMetrics = const Config<bool>(
+    'enableMetrics',
+    defaultValue: true,
+  ),
+  final Config<String> metricPrefix = const Config<String>(
+    'metricPrefix',
+    defaultValue: 'redis',
+  ),
 
   /// Trace every command, transaction, connection setup, pool checkout and
   /// lock acquisition as span.
   ///
   /// Busy services create many spans, which can displace other spans if
   /// the exporter buffer is full. Disable tracing for those.
-  final Config<bool> enableTracing;
-
-  const RedisService({
-    this.clientName = const Config('serviceName', defaultValue: 'DataHub'),
-    this.host = const Config('host', defaultValue: 'localhost'),
-    this.port = const Config('port', defaultValue: 6379),
-    this.username = const Config('username'),
-    this.password = const Config('password'),
-    this.database = const Config('database', defaultValue: 0),
-    this.useTls = const Config('useTls', defaultValue: false),
-    this.timeout = const Config('timeout', defaultValue: Duration(seconds: 10)),
-    this.commandTimeout = const Config<Duration>(
-      'commandTimeout',
-      defaultValue: Duration(seconds: 10),
-    ),
-    this.targetPoolSize = const Config('targetPoolSize', defaultValue: 4),
-    this.maxConnectionLifetime = const Config(
-      'maxConnectionLifetime',
-      defaultValue: Duration(hours: 1),
-    ),
-    this.poolTimeout = const Config<Duration>(
-      'poolTimeout',
-      defaultValue: Duration(seconds: 5),
-    ),
-    this.poolQueueLimit = const Config<int>(
-      'poolQueueLimit',
-      defaultValue: 1000,
-    ),
-    this.poolMaintenanceInterval = const Config<Duration>(
-      'poolMaintenanceInterval',
-      defaultValue: Duration(seconds: 30),
-    ),
-    this.healthCheckInterval = const Config<Duration>(
-      'healthCheckInterval',
-      defaultValue: Duration(seconds: 30),
-    ),
-    this.lockPrefix = const Config<String>(
-      'lockPrefix',
-      defaultValue: 'datahub:lock:',
-    ),
-    this.lockLeaseDuration = const Config<Duration>(
-      'lockLeaseDuration',
-      defaultValue: Duration(seconds: 30),
-    ),
-    this.lockRetryInterval = const Config<Duration>(
-      'lockRetryInterval',
-      defaultValue: Duration(milliseconds: 500),
-    ),
-    this.enableMetrics = const Config<bool>(
-      'enableMetrics',
-      defaultValue: true,
-    ),
-    this.metricPrefix = const Config<String>(
-      'metricPrefix',
-      defaultValue: 'redis',
-    ),
-    this.enableTracing = const Config<bool>(
-      'enableTracing',
-      defaultValue: true,
-    ),
-  });
-
+  final Config<bool> enableTracing = const Config<bool>(
+    'enableTracing',
+    defaultValue: true,
+  ),
+}) implements Service {
   @override
   ServiceInstance<RedisService> createInstance() => _RedisServiceInstance();
 }
 
-class _RedisServiceInstance extends ServiceInstance<RedisService>
+class _RedisServiceInstance()
+    extends ServiceInstance<RedisService>
     with RedisCommands
     implements Redis, LockProvider<String> {
   /// Zone value key for the connection bound by [useConnection].
@@ -237,7 +220,7 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
     final enableTracing = read(service.enableTracing);
     if (enableMetrics || enableTracing) {
       _telemetry = RedisTelemetry(
-        telemetry: find(Find<Telemetry>()),
+        telemetry: find(const Find<Telemetry>()),
         metricPrefix: read(service.metricPrefix),
         enableMetrics: enableMetrics,
         enableTracing: enableTracing,
@@ -574,20 +557,14 @@ class _RedisServiceInstance extends ServiceInstance<RedisService>
   }
 }
 
-class _ConnectionBinding {
-  final RedisSocketConnection connection;
+class _ConnectionBinding(final RedisSocketConnection connection) {
   var active = true;
-
-  _ConnectionBinding(this.connection);
 }
 
 /// Pooled commands that ignore connections bound by
 /// [_RedisServiceInstance.useConnection], used for lock management.
-class _UnboundCommands with RedisCommands {
-  final _RedisServiceInstance _service;
-
-  _UnboundCommands(this._service);
-
+class _UnboundCommands(final _RedisServiceInstance _service)
+    with RedisCommands {
   @override
   Future<T> sendCommand<T>(
     List<Object> command,

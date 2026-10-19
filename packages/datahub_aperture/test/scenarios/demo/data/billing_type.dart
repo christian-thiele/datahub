@@ -1,1 +1,5 @@
-enum BillingType { timeAndMaterial, fixedPrice, retainer }
+enum BillingType() {
+  timeAndMaterial,
+  fixedPrice,
+  retainer,
+}

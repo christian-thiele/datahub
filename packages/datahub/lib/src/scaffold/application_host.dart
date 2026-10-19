@@ -9,20 +9,14 @@ import 'package:rxdart/rxdart.dart';
 
 import 'service_host.dart';
 
-class ApplicationHost extends ServiceHost {
-  final List<String> arguments;
-  final List<Component> components;
-  final Map<String, dynamic> initialConfig;
-
+class ApplicationHost({
+  required final List<Component> components,
+  required final List<String> arguments,
+  required final Map<String, dynamic> initialConfig,
+  super.environmentVariables,
+}) extends ServiceHost {
   Completer? _runCompleter;
   StreamSubscription? _signalSubscription;
-
-  ApplicationHost({
-    required this.components,
-    required this.arguments,
-    required this.initialConfig,
-    super.environmentVariables,
-  });
 
   Future<void> run() async {
     final stopwatch = Stopwatch()..start();
@@ -39,7 +33,7 @@ class ApplicationHost extends ServiceHost {
     await initialize();
 
     stopwatch.stop();
-    findComponent(Find<Telemetry?>(), null)?.publishLog(
+    findComponent(const Find<Telemetry?>(), null)?.publishLog(
       LogMessage(
         timestamp: DateTime.timestamp(),
         line: 'Initialized in ${stopwatch.elapsedMilliseconds}ms.',
@@ -57,7 +51,7 @@ class ApplicationHost extends ServiceHost {
       _parseArguments();
       await super.initialize();
     } else {
-      throw ApiException('ServiceHost already initialized.');
+      throw const ApiException('ServiceHost already initialized.');
     }
   }
 
@@ -73,7 +67,11 @@ class ApplicationHost extends ServiceHost {
     return Scope(
       components: [
         Scope(
-          components: [TelemetryService(), KeyService(), SchedulerService()],
+          components: [
+            const TelemetryService(),
+            const KeyService(),
+            const SchedulerService(),
+          ],
         ),
         Scope(components: components),
       ],
@@ -153,7 +151,7 @@ class ApplicationHost extends ServiceHost {
 
   void _onSignal(ProcessSignal signal) {
     if (state == ServiceHostState.initialized) {
-      findComponent(Find<Telemetry?>(), null)?.publishLog(
+      findComponent(const Find<Telemetry?>(), null)?.publishLog(
         LogMessage(
           timestamp: DateTime.timestamp(),
           line: 'Received ${signal.name}: Shutting down application.',
@@ -162,7 +160,7 @@ class ApplicationHost extends ServiceHost {
       );
       shutdown();
     } else {
-      findComponent(Find<Telemetry?>(), null)?.publishLog(
+      findComponent(const Find<Telemetry?>(), null)?.publishLog(
         LogMessage(
           timestamp: DateTime.timestamp(),
           line: 'Received ${signal.name}: Force killing application.',

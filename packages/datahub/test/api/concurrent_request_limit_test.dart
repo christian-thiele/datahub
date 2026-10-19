@@ -11,8 +11,8 @@ void main() {
     'Concurrent request limit',
     [
       ApiService(
-        port: Config.value(0),
-        concurrentRequestLimit: Config.value(2),
+        port: const Config.value(0),
+        concurrentRequestLimit: const Config.value(2),
         routes: [
           ApiEndpointDelegate(
             matcher: RoutePattern('/blocking'),
@@ -25,8 +25,8 @@ void main() {
       ),
     ],
     () async {
-      final client = Find<Api>().find().connectHttp11();
-      final telemetry = Find<Telemetry>().find();
+      final client = const Find<Api>().find().connectHttp11();
+      final telemetry = const Find<Telemetry>().find();
 
       Future<num> scrapeMetric(String name) async {
         final groups = await telemetry.scrapeMetrics();

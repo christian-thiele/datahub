@@ -1,18 +1,16 @@
 import 'package:datahub/datahub.dart';
 
-class ServiceDelegate implements Service {
-  final Future<void> Function()? initialize;
-  final Future<void> Function()? dispose;
-  final Future<void> Function()? postInitialize;
-
-  const ServiceDelegate({this.initialize, this.dispose, this.postInitialize});
-
+class const ServiceDelegate({
+  final Future<void> Function()? initialize,
+  final Future<void> Function()? dispose,
+  final Future<void> Function()? postInitialize,
+}) implements Service {
   @override
   ServiceInstance<ServiceDelegate> createInstance() =>
       _ServiceDelegateInstance();
 }
 
-class _ServiceDelegateInstance extends ServiceInstance<ServiceDelegate> {
+class _ServiceDelegateInstance() extends ServiceInstance<ServiceDelegate> {
   @override
   Future<void> initialize() async {
     await super.initialize();

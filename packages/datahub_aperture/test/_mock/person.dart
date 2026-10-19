@@ -8,33 +8,20 @@ part 'person.g.dart';
 @Meta(icon: Icons.person)
 @ApertureRelation<Person>()
 @ApertureMeta(titleTemplate: '{{ firstName }} {{ lastName }}')
-class Person extends $Person {
-  @Id(auto: true)
-  final int id;
+class const Person({
+  @Id(auto: true) final int id = 0,
   @ApertureField(isDisplayField: true)
   @MinLengthConstraint(length: 3)
   @MaxLengthConstraint(length: 30)
-  final String firstName;
+  required final String firstName,
   @ApertureField(isDisplayField: true)
   @MinLengthConstraint(length: 3)
-  final String lastName;
+  required final String lastName,
   @ApertureField(isDisplayField: true)
   @ElementConstraint(constraint: RegExpConstraint(expression: '^[^\\s]*\$'))
-  final List<String> nicknames;
+  required final List<String> nicknames,
   @RegExpConstraint(expression: '[\\w-.]+ \\d+\\w*')
-  final String address;
-  final Geometry homeLocation;
-
-  @RelationId<Person>()
-  final int? parentId;
-
-  const Person({
-    this.id = 0,
-    required this.firstName,
-    required this.lastName,
-    required this.nicknames,
-    required this.address,
-    required this.homeLocation,
-    this.parentId,
-  });
-}
+  required final String address,
+  required final Geometry homeLocation,
+  @RelationId<Person>() final int? parentId,
+}) extends $Person;

@@ -25,7 +25,10 @@ ResourceField _describe<T>(
   const [],
 );
 
-enum ExampleEnum { one, two }
+enum ExampleEnum() {
+  one,
+  two,
+}
 
 void main() {
   group('fieldDescription', () {

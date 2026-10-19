@@ -19,74 +19,34 @@ part 'project.g.dart';
 @ApertureRelation<TimeEntry>()
 @ApertureRelation<Invoice>()
 @ApertureRelation<SupportTicket>()
-class Project extends $Project {
-  const Project({
-    this.id = 0,
-    required this.code,
-    required this.name,
-    this.description,
-    required this.clientId,
-    this.projectLeadId,
-    this.status = ProjectStatus.planned,
-    this.priority = Priority.normal,
-    required this.billingType,
-    required this.startDate,
-    this.endDate,
-    required this.budget,
-    this.estimatedHours,
-    this.technologies = const [],
-    this.links = const {},
-  });
-
-  @Id(auto: true)
-  final int id;
-
+class const Project({
+  @Id(auto: true) final int id = 0,
   @ApertureField(isDisplayField: true, readOnly: true)
   @RegExpConstraint(expression: r'^P-\d{4}-\d{3}$')
-  final String code;
-
+  required final String code,
   @ApertureField(isDisplayField: true)
   @MaxLengthConstraint(length: 120)
-  final String name;
-
+  required final String name,
   @ApertureField(allowFilter: false, allowSort: false)
   @MaxLengthConstraint(length: 4000)
-  final String? description;
-
-  @Meta(name: 'Client')
-  @RelationId<Client>()
-  final int clientId;
-
-  @Meta(name: 'Project lead')
-  @RelationId<Employee>()
-  final int? projectLeadId;
-
+  final String? description,
+  @Meta(name: 'Client') @RelationId<Client>() required final int clientId,
+  @Meta(name: 'Project lead') @RelationId<Employee>() final int? projectLeadId,
   @ApertureField(isDisplayField: true)
-  final ProjectStatus status;
-
-  final Priority priority;
-
-  @Meta(name: 'Billing')
-  final BillingType billingType;
-
-  @Meta(name: 'Start')
-  final DateTime startDate;
-
+  final ProjectStatus status = ProjectStatus.planned,
+  final Priority priority = Priority.normal,
+  @Meta(name: 'Billing') required final BillingType billingType,
+  @Meta(name: 'Start') required final DateTime startDate,
   @Meta(name: 'End', description: 'Planned or actual end date.')
-  final DateTime? endDate;
-
+  final DateTime? endDate,
   @Meta(description: 'Total budget in client currency (net).')
   @RangeConstraint(min: 0, max: 100000000)
-  final double budget;
-
+  required final double budget,
   @Meta(name: 'Estimated hours')
   @RangeConstraint(min: 0, max: 100000)
-  final int? estimatedHours;
-
-  @Meta(name: 'Tech stack')
-  final List<String> technologies;
-
+  final int? estimatedHours,
+  @Meta(name: 'Tech stack') final List<String> technologies = const [],
   @ApertureField(allowFilter: false, allowSearch: false, allowSort: false)
   @Meta(description: 'External links, e.g. repository, board, staging.')
-  final Map<String, dynamic> links;
-}
+  final Map<String, dynamic> links = const {},
+}) extends $Project;

@@ -1,10 +1,6 @@
 part of 'service_host.dart';
 
-class Find<T> {
-  final Test<T> test;
-
-  const Find([this.test = always]);
-
+class const Find<T>([final Test<T> test = always]) {
   bool isCandidate(ServiceInstance service) =>
       service is T && test(service as T);
 

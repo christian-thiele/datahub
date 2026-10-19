@@ -6,7 +6,7 @@ import 'span.dart';
 /// exporter may export a span while it is still running, so it is visible
 /// even if it never ends (e.g. when the service crashes), but must then
 /// export it again once it ended.
-abstract class TraceExporter {
+abstract class TraceExporter() {
   Future<void> initialize();
 
   void onStart(LocalSpan span);

@@ -15,11 +15,11 @@ void main() {
       testPostgresqlService(),
       PostgresqlRevisableRepositoryService(
         bean: $City.bean,
-        schedulePollInterval: Config.value(const Duration(minutes: 5)),
+        schedulePollInterval: const Config.value(Duration(minutes: 5)),
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
 
       await asUser(() async {
         for (final (id, zip) in [
@@ -35,14 +35,14 @@ void main() {
         final due = DateTime.now().add(const Duration(seconds: 2));
         // pending update of a matched element: superseded by updateAll
         await repo.updateById(
-          City(id: 'b', name: 'B-scheduled', zip: '1'),
+          const City(id: 'b', name: 'B-scheduled', zip: '1'),
           from: due,
         );
         // pending delete of a matched element: skipped by updateAll
         await repo.deleteById('c', from: due);
         // pending update of an unmatched element: still applied
         await repo.updateById(
-          City(id: 'e', name: 'E-scheduled', zip: '2'),
+          const City(id: 'e', name: 'E-scheduled', zip: '2'),
           from: due,
         );
 
@@ -65,9 +65,8 @@ void main() {
         expect((await repo.readById('d'))!.name, 'Updated');
         expect((await repo.revisableReadById('e'))!.version, 0);
         expect(
-          (await repo.readRevisionsById(
-            'b',
-          )).map((e) => (e.version, e.data.name)),
+          (await repo.readRevisionsById('b'))
+              .map((e) => (e.version, e.data.name)),
           [(2, 'Updated'), (1, 'B-scheduled'), (0, 'B')],
         );
         await expectConsistent('city');
@@ -130,7 +129,7 @@ void main() {
       PostgresqlRevisableRepositoryService(bean: $City.bean),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
 
       await asUser(() async {
         for (final (id, zip) in [('a', '1'), ('b', '1'), ('c', '2')]) {
@@ -163,7 +162,7 @@ void main() {
         expect(await repo.deleteAll(filter: Filter.empty), 1);
         expect(await repo.deleteAll(filter: Filter.empty), 0);
 
-        await repo.create(City(id: 'a', name: 'A again', zip: '1'));
+        await repo.create(const City(id: 'a', name: 'A again', zip: '1'));
         expect((await repo.revisableReadById('a'))!.version, 2);
         await expectConsistent('city');
       });
@@ -178,9 +177,9 @@ void main() {
       PostgresqlRevisableRepositoryService(bean: $City.bean),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
-      final promoter = Find<PostgresqlRevisableRepository<Service, City>>()
-          .find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
+      final promoter =
+          const Find<PostgresqlRevisableRepository<Service, City>>().find();
 
       await asUser(() async {
         final ids = [for (var i = 0; i < 20; i++) 'c$i'];
@@ -188,7 +187,7 @@ void main() {
           await repo.create(City(id: id, name: id, zip: '1'));
         }
         await repo.updateById(
-          City(id: 'c0', name: 'scheduled', zip: '1'),
+          const City(id: 'c0', name: 'scheduled', zip: '1'),
           from: DateTime.now().add(const Duration(milliseconds: 100)),
         );
         await Future<void>.delayed(const Duration(milliseconds: 150));
@@ -203,9 +202,8 @@ void main() {
         expect(results.whereType<bool>(), everyElement(isTrue));
 
         for (final id in ids) {
-          final versions = (await repo.readRevisionsById(
-            id,
-          )).map((e) => e.version);
+          final versions = (await repo.readRevisionsById(id))
+              .map((e) => e.version);
           expect(versions, [for (var v = versions.first; v >= 0; v--) v]);
         }
 
@@ -224,7 +222,7 @@ void main() {
       PostgresqlRevisableRepositoryService(bean: $Person.bean),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<Person>>().find();
+      final repo = const Find<RevisableDataRepository<Person>>().find();
 
       await sqlScript('''
         INSERT INTO person_history

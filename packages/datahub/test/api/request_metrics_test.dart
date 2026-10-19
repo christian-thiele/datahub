@@ -4,7 +4,7 @@ import 'package:test/test.dart';
 
 /// Counts of the request duration histogram, with their labels.
 Future<List<Map<String, Object>>> _requestCounts() async {
-  final groups = await Find<Telemetry>().find().scrapeMetrics();
+  final groups = await const Find<Telemetry>().find().scrapeMetrics();
   return groups
       .where((g) => g.name == 'api_request_duration_seconds')
       .expand((g) => g.samples)
@@ -32,7 +32,7 @@ void main() {
     'Request duration metric',
     [
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           ApiEndpointDelegate(
             matcher: RoutePattern('/orders/{id}'),
@@ -49,7 +49,7 @@ void main() {
       ),
     ],
     () async {
-      final client = Find<Api>().find().connectHttp11();
+      final client = const Find<Api>().find().connectHttp11();
       for (final path in [
         '/orders/1',
         '/orders/2',
@@ -79,8 +79,8 @@ void main() {
     'Request duration metric for rejected requests',
     [
       ApiService(
-        port: Config.value(0),
-        concurrentRequestLimit: Config.value(0),
+        port: const Config.value(0),
+        concurrentRequestLimit: const Config.value(0),
         routes: [
           ApiEndpointDelegate(
             matcher: RoutePattern('/orders/{id}'),
@@ -90,7 +90,7 @@ void main() {
       ),
     ],
     () async {
-      await Find<Api>().find().connectHttp11().get(
+      await const Find<Api>().find().connectHttp11().get(
         '/orders/1',
         throwOnError: false,
       );

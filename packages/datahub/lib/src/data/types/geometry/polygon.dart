@@ -5,13 +5,15 @@ import 'package:buffer/buffer.dart';
 
 import 'geometry.dart';
 
-class Polygon extends Geometry {
-  final List<LineString> rings;
+class const Polygon(
+  int? srid,
+  final List<LineString> rings,
+  bool hasZ,
+  bool hasM,
+) extends Geometry {
+  this : super(srid, GeometryType.polygon, hasZ, hasM);
 
-  const Polygon(int? srid, this.rings, bool hasZ, bool hasM)
-    : super(srid, GeometryType.polygon, hasZ, hasM);
-
-  factory Polygon.read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
+  factory read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
     final length = reader.readUint32();
     return Polygon(
       srid,

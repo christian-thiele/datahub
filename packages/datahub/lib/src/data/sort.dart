@@ -1,10 +1,8 @@
 import 'expression.dart';
 
 /// Representing sort arguments in a uniform, abstract way.
-sealed class Sort {
+sealed class const Sort() {
   bool get isEmpty;
-
-  const Sort();
 
   static const Sort empty = EmptySort();
 
@@ -31,12 +29,10 @@ sealed class Sort {
   List<ExpressionSort> expand();
 }
 
-final class ExpressionSort extends Sort {
-  final Expression expression;
-  final bool ascending;
-
-  const ExpressionSort(this.expression, this.ascending);
-
+final class const ExpressionSort(
+  final Expression expression,
+  final bool ascending,
+) extends Sort {
   @override
   bool get isEmpty => false;
 
@@ -47,11 +43,7 @@ final class ExpressionSort extends Sort {
   List<ExpressionSort> expand() => [this];
 }
 
-final class SortGroup extends Sort {
-  final List<Sort> sorts;
-
-  const SortGroup(this.sorts);
-
+final class const SortGroup(final List<Sort> sorts) extends Sort {
   @override
   Sort reduce() {
     // Sort keys are order sensitive, so flattening must preserve their order.
@@ -76,9 +68,7 @@ final class SortGroup extends Sort {
       sorts.expand((element) => element.expand()).toList();
 }
 
-final class EmptySort extends Sort {
-  const EmptySort();
-
+final class const EmptySort() extends Sort {
   @override
   bool get isEmpty => true;
 

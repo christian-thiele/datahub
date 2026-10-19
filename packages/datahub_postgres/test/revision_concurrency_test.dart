@@ -20,14 +20,14 @@ void main() {
       PostgresqlRevisableRepositoryService(bean: $City.bean),
     ],
     () async {
-      final persons = Find<RevisableDataRepository<Person>>().find();
-      final cities = Find<RevisableDataRepository<City>>().find();
+      final persons = const Find<RevisableDataRepository<Person>>().find();
+      final cities = const Find<RevisableDataRepository<City>>().find();
 
       await asUser(() async {
         // concurrent updates of one element are serialized, versions stay
         // gap-free and no update fails
         final peter = await persons.create(
-          Person(firstName: 'Peter', lastName: 'Lustig', birthday: null),
+          const Person(firstName: 'Peter', lastName: 'Lustig', birthday: null),
         );
         final updated = await Future.wait([
           for (var i = 0; i < 20; i++)
@@ -77,9 +77,9 @@ void main() {
       PostgresqlRevisableRepositoryService(bean: $City.bean),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
-      final promoter = Find<PostgresqlRevisableRepository<Service, City>>()
-          .find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
+      final promoter =
+          const Find<PostgresqlRevisableRepository<Service, City>>().find();
       final random = Random(42);
 
       await asUser(() async {
@@ -149,7 +149,7 @@ void main() {
       PostgresqlRevisableRepositoryService(bean: $Person.bean),
     ],
     () async {
-      final persons = Find<RevisableDataRepository<Person>>().find();
+      final persons = const Find<RevisableDataRepository<Person>>().find();
       final byId = Sort.asc($Person.$id);
 
       await asUser(() async {
@@ -285,7 +285,7 @@ void main() {
       PostgresqlDataRepositoryService(bean: $City.bean),
     ],
     () async {
-      final cities = Find<DataRepository<City>>().find();
+      final cities = const Find<DataRepository<City>>().find();
       final byId = Sort.asc($City.$id);
       final ids = [for (var i = 0; i < 5; i++) 'c$i'];
       for (final id in ids) {
@@ -298,7 +298,9 @@ void main() {
       var written = false;
       final writing = () async {
         await lockTaken.future;
-        return await cities.updateById(City(id: 'c0', name: 'x', zip: '1'));
+        return await cities.updateById(
+          const City(id: 'c0', name: 'x', zip: '1'),
+        );
       }().whenComplete(() => written = true);
       final reading = cities.atomic(() async {
         final read = await cities.readById('c0', locked: true);

@@ -7,18 +7,15 @@ import 'package:datahub_aperture/utils.dart';
 /// Returns what the user sees once the action is done: null for a plain
 /// confirmation, an [ActionResult] for a message (and data) or a
 /// [RedirectActionResult] to open an element instead.
-typedef ApertureActionHandler<TParameters> =
-    Future<BaseActionResult?> Function(
-      String? elementId,
-      TParameters parameters,
-    );
+typedef ApertureActionHandler<TParameters> = Future<BaseActionResult?> Function(
+  String? elementId,
+  TParameters parameters,
+);
 
-class ApertureAction<TParameters extends DataObject> {
-  final DataBean<TParameters> bean;
-  final ApertureActionHandler<TParameters> handler;
-
-  const ApertureAction({required this.bean, required this.handler});
-
+class const ApertureAction<TParameters extends DataObject>({
+  required final DataBean<TParameters> bean,
+  required final ApertureActionHandler<TParameters> handler,
+}) {
   ResourceAction buildDescription(Iterable<DataBean> beans) =>
       buildResourceActionDescription(this, beans);
 
@@ -33,30 +30,24 @@ class ApertureAction<TParameters extends DataObject> {
 }
 
 /// What an [ApertureActionHandler] responds with.
-sealed class BaseActionResult {
-  const BaseActionResult();
-}
+sealed class const BaseActionResult();
 
 /// Shows [message] to the user, as a success or a failure, along with
 /// structured [data] if given.
 ///
 /// An action that fails because of a bad request should rather throw an
 /// [ApiRequestException].
-class ActionResult extends BaseActionResult {
-  final bool success;
-  final String message;
+class const ActionResult({
+  final bool success = true,
+  required final String message,
 
   /// Shown as key-value pairs, nested values as JSON.
-  final Map<String, dynamic>? data;
-
-  const ActionResult({this.success = true, required this.message, this.data});
-}
+  final Map<String, dynamic>? data,
+}) extends BaseActionResult;
 
 /// Opens the element [id] of the resource of [bean], for example one the
 /// action created.
-class RedirectActionResult extends BaseActionResult {
-  final DataBean bean;
-  final String id;
-
-  const RedirectActionResult({required this.bean, required this.id});
-}
+class const RedirectActionResult({
+  required final DataBean bean,
+  required final String id,
+}) extends BaseActionResult;

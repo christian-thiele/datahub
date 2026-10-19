@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:datahub/datahub.dart';
 import 'package:path/path.dart' as p;
 import 'package:yaml/yaml.dart';
 
-class Configuration {
+class Configuration({Map<String, String>? environmentVariables}) {
   static const _codec = JsonDataCodec();
 
   /// The reserved first segment of a reference that reads the process
@@ -18,7 +19,8 @@ class Configuration {
   final _diagnosedPaths = <String>{};
 
   /// The environment variables that `$env.NAME` references resolve against.
-  final Map<String, String> _environmentVariables;
+  final Map<String, String> _environmentVariables =
+      environmentVariables ?? Platform.environment;
 
   Environment? _environment;
 
@@ -27,8 +29,7 @@ class Configuration {
   /// [environmentVariables] is what `$env.NAME` references read from and
   /// defaults to the process environment. Pass a map to make configuration
   /// that depends on the environment testable.
-  Configuration({Map<String, String>? environmentVariables})
-    : _environmentVariables = environmentVariables ?? Platform.environment;
+  this;
 
   /// The environment this application runs in.
   ///

@@ -153,9 +153,9 @@ mixin PostgresqlRevisableRepository<
       if (_layout.idIsAuto &&
           type > 0 &&
           (givenId == null ||
-              !((await db.execute(
-                    _statements.hasRevisions(givenId),
-                  )).first.first
+              !((await db.execute(_statements.hasRevisions(givenId)))
+                      .first
+                      .first
                   as bool))) {
         // new element: nobody else can know the new id, no lock required
         final row = (await db.execute(_statements.allocateId())).first;
@@ -174,11 +174,11 @@ mixin PostgresqlRevisableRepository<
       }
 
       if (type < 1 && (head?.isDeleted ?? true)) {
-        throw RevisableInconsistencyException('Element does not exist.');
+        throw const RevisableInconsistencyException('Element does not exist.');
       }
 
       if (type > 0 && !(head?.isDeleted ?? true)) {
-        throw RevisableInconsistencyException('Element already exists.');
+        throw const RevisableInconsistencyException('Element already exists.');
       }
 
       final scheduledFrom = from != null && from.isAfter(now) ? from : null;
@@ -396,7 +396,7 @@ mixin PostgresqlRevisableRepository<
 
     return await find(postgresql).runTransaction((db) async {
       final result = await dataRelation.select(db, [
-        AggregateExpression.count(),
+        const AggregateExpression.count(),
       ], filter: filter);
       return result.firstOrNull?.values.firstOrNull ?? 0;
     });
@@ -450,7 +450,7 @@ mixin PostgresqlRevisableRepository<
 
       final result = await dataRelation.select(
         db,
-        [ValueExpression(1)],
+        [const ValueExpression(1)],
         filter: matching,
         limit: 1,
         forUpdate: locked,
@@ -517,9 +517,8 @@ mixin PostgresqlRevisableRepository<
 
   @override
   Future<R> atomic<R>(Future<R> Function() delegate) async {
-    return await find(
-      postgresql,
-    ).runTransaction((context) async => await delegate());
+    return await find(postgresql)
+        .runTransaction((context) async => await delegate());
   }
 
   String _requireIdentity() {

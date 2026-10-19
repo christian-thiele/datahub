@@ -1,38 +1,30 @@
 import 'package:boost/boost.dart';
 import 'package:datahub_postgres/datahub_postgres.dart';
 
-class SqlUpdate with SqlBuilder {
-  final SqlQualifiedRelation relation;
-  final Sql? where;
-  final Map<SqlTypedAttribute, dynamic> values;
-  final Sql? from;
-  final List<SqlAttribute> returning;
-
-  SqlUpdate(
-    this.relation,
-    this.where,
-    this.values, {
-    this.from,
-    this.returning = const [],
-  });
-
+class SqlUpdate(
+  final SqlQualifiedRelation relation,
+  final Sql? where,
+  final Map<SqlTypedAttribute, dynamic> values, {
+  final Sql? from,
+  final List<SqlAttribute> returning = const [],
+}) with SqlBuilder {
   @override
   Sql toSql() => Sql.join([
-    RawSql('UPDATE '),
+    const RawSql('UPDATE '),
     relation.toSql(),
-    RawSql(' SET '),
+    const RawSql(' SET '),
     for (final (idx, (key, value)) in values.tuples.indexed) ...[
-      if (idx > 0) RawSql(', '),
+      if (idx > 0) const RawSql(', '),
       key.toSqlUnqualified(),
-      RawSql(' = '),
+      const RawSql(' = '),
       switch (value) {
         Sql() => value,
         _ => ParameterSql(value, key.type),
       },
     ],
-    if (from case final from?) RawSql(' FROM ') + from,
-    if (where case final where?) RawSql(' WHERE ') + where,
-    if (returning.isNotEmpty) RawSql(' RETURNING '),
-    ...returning.cast<Sql>().separatedBy(RawSql(', ')),
+    if (from case final from?) const RawSql(' FROM ') + from,
+    if (where case final where?) const RawSql(' WHERE ') + where,
+    if (returning.isNotEmpty) const RawSql(' RETURNING '),
+    ...returning.cast<Sql>().separatedBy(const RawSql(', ')),
   ]);
 }

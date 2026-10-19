@@ -128,7 +128,7 @@ void main() {
 
   group('writes the encoding of PostGIS', () {
     test('Point with an SRID', () {
-      expect(_hex(Point(wgs84, 1, 2).toEWKB()), _pointEwkb);
+      expect(_hex(const Point(wgs84, 1, 2).toEWKB()), _pointEwkb);
     });
 
     test('LineString', () {
@@ -174,21 +174,21 @@ void main() {
     });
 
     test('Point with a Z value', () {
-      expect(_hex(Point(null, 1, 2, 3).toEWKB()), _pointZWkb);
+      expect(_hex(const Point(null, 1, 2, 3).toEWKB()), _pointZWkb);
     });
   });
 
   group('round trips', () {
     final geometries = <String, Geometry>{
-      'Point': Point(wgs84, 1, 2),
-      'Point ZM': Point(wgs84, 1, 2, 3, 4),
-      'LineString': LineString(
+      'Point': const Point(wgs84, 1, 2),
+      'Point ZM': const Point(wgs84, 1, 2, 3, 4),
+      'LineString': const LineString(
         wgs84,
         [Point(wgs84, 1, 2), Point(wgs84, 3, 4)],
         false,
         false,
       ),
-      'Polygon with a hole': Polygon(
+      'Polygon with a hole': const Polygon(
         wgs84,
         [
           LineString(
@@ -217,13 +217,13 @@ void main() {
         false,
         false,
       ),
-      'MultiPoint': MultiPoint(
+      'MultiPoint': const MultiPoint(
         wgs84,
         [Point(wgs84, 1, 2), Point(wgs84, 3, 4)],
         false,
         false,
       ),
-      'MultiLineString': MultiLineString(
+      'MultiLineString': const MultiLineString(
         wgs84,
         [
           LineString(
@@ -236,7 +236,7 @@ void main() {
         false,
         false,
       ),
-      'MultiPolygon': MultiPolygon(
+      'MultiPolygon': const MultiPolygon(
         wgs84,
         [
           Polygon(
@@ -296,7 +296,7 @@ void main() {
     });
 
     test('nested GeometryCollection', () {
-      final collection = GeometryCollection(
+      final collection = const GeometryCollection(
         wgs84,
         [
           Point(wgs84, 1, 2),
@@ -310,7 +310,7 @@ void main() {
     });
 
     test('big endian', () {
-      final collection = GeometryCollection(
+      final collection = const GeometryCollection(
         wgs84,
         [
           Point(wgs84, 1, 2),

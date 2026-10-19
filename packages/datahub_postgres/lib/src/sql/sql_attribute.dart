@@ -3,32 +3,21 @@ import 'package:datahub_postgres/types.dart';
 
 import 'sql.dart';
 
-abstract class SqlAttribute with SqlBuilder {
-  const SqlAttribute();
-
+abstract class const SqlAttribute() with SqlBuilder {
   @override
   Sql toSql();
 
   Sql toSqlUnqualified();
 }
 
-abstract class SqlTypedAttribute extends SqlAttribute {
-  final PostgresqlDataType type;
-
-  const SqlTypedAttribute(this.type);
-
-  factory SqlTypedAttribute.of(
-    PostgresqlAttribute attribute, {
-    String? relation,
-  }) = SqlTypedColumnAttribute.of;
+abstract class const SqlTypedAttribute(final PostgresqlDataType type)
+    extends SqlAttribute {
+  factory of(PostgresqlAttribute attribute, {String? relation}) =
+      SqlTypedColumnAttribute.of;
 }
 
-class SqlColumnAttribute extends SqlAttribute {
-  final String? relation;
-  final String name;
-
-  const SqlColumnAttribute(this.name, {this.relation});
-
+class const SqlColumnAttribute(final String name, {final String? relation})
+    extends SqlAttribute {
   @override
   Sql toSql() => Sql.qualifiedName([?relation, name]);
 
@@ -36,28 +25,20 @@ class SqlColumnAttribute extends SqlAttribute {
   Sql toSqlUnqualified() => Sql.name(name);
 }
 
-class SqlTypedColumnAttribute extends SqlColumnAttribute
-    implements SqlTypedAttribute {
-  @override
-  final PostgresqlDataType type;
-
-  const SqlTypedColumnAttribute(super.name, this.type, {super.relation});
-
-  factory SqlTypedColumnAttribute.of(
-    PostgresqlAttribute attribute, {
-    String? relation,
-  }) => SqlTypedColumnAttribute(
-    attribute.name,
-    attribute.type,
-    relation: relation,
-  );
+class const SqlTypedColumnAttribute(
+  super.name,
+  @override final PostgresqlDataType type, {
+  super.relation,
+}) extends SqlColumnAttribute implements SqlTypedAttribute {
+  factory of(PostgresqlAttribute attribute, {String? relation}) =>
+      SqlTypedColumnAttribute(
+        attribute.name,
+        attribute.type,
+        relation: relation,
+      );
 }
 
-class RawSqlAttribute extends SqlAttribute {
-  final Sql sql;
-
-  const RawSqlAttribute(this.sql);
-
+class const RawSqlAttribute(final Sql sql) extends SqlAttribute {
   @override
   Sql toSql() => sql;
 
@@ -65,15 +46,11 @@ class RawSqlAttribute extends SqlAttribute {
   Sql toSqlUnqualified() => sql;
 }
 
-class SqlWildcard extends SqlAttribute {
-  final String? relation;
-
-  const SqlWildcard({this.relation});
-
+class const SqlWildcard({final String? relation}) extends SqlAttribute {
   @override
   Sql toSql() {
     if (relation case final relation?) {
-      return Sql.name(relation) + RawSql('.*');
+      return Sql.name(relation) + const RawSql('.*');
     } else {
       return const RawSql('*');
     }
@@ -83,16 +60,16 @@ class SqlWildcard extends SqlAttribute {
   Sql toSqlUnqualified() => const RawSql('*');
 }
 
-class SqlAliasedAttribute extends SqlAttribute {
-  final String alias;
-  final SqlAttribute attribute;
-
-  SqlAliasedAttribute(this.alias, this.attribute);
+class SqlAliasedAttribute(final String alias, final SqlAttribute attribute)
+    extends SqlAttribute {
+  @override
+  Sql toSql() =>
+      Sql.join([attribute.toSql(), const RawSql(' AS '), Sql.name(alias)]);
 
   @override
-  Sql toSql() => Sql.join([attribute.toSql(), RawSql(' AS '), Sql.name(alias)]);
-
-  @override
-  Sql toSqlUnqualified() =>
-      Sql.join([attribute.toSqlUnqualified(), RawSql(' AS '), Sql.name(alias)]);
+  Sql toSqlUnqualified() => Sql.join([
+    attribute.toSqlUnqualified(),
+    const RawSql(' AS '),
+    Sql.name(alias),
+  ]);
 }

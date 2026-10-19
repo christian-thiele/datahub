@@ -105,9 +105,9 @@ String? _title(WidgetTester tester) =>
 bool _isValueHidden(WidgetTester tester) =>
     _field(tester).style?.color == Colors.transparent;
 
-IconData? _linkIcon(WidgetTester tester) => switch (_field(
-  tester,
-).decoration?.suffixIcon) {
+IconData? _linkIcon(WidgetTester tester) => switch (_field(tester)
+    .decoration
+    ?.suffixIcon) {
   Icon(:final icon) ||
   Tooltip(child: Icon(:final icon)) ||
   Material(child: Padding(child: InkWell(child: Icon(:final icon)))) => icon,

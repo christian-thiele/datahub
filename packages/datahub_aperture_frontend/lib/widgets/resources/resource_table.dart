@@ -29,9 +29,8 @@ class ResourceTable extends StatelessWidget {
                   padding: const EdgeInsets.all(8.0),
                   child: Text(
                     field.name,
-                    style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.labelMedium
+                        ?.copyWith(fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

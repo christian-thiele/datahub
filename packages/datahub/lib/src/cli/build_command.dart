@@ -5,8 +5,8 @@ import 'cli_command.dart';
 import 'steps.dart';
 import 'utils.dart';
 
-class BuildCommand extends CliCommand {
-  BuildCommand() {
+class BuildCommand() extends CliCommand {
+  this {
     argParser.addFlag('debug', abbr: 'd', help: 'Build a debug image.');
     argParser.addFlag(
       'codegen',

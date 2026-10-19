@@ -18,7 +18,7 @@ List<Component> _components({
   bool allowUpdate = true,
   bool allowDelete = true,
 }) => [
-  KeyService(),
+  const KeyService(),
   const DemoAuthService(issuer: Config.value(_issuer)),
   const TestAuthProvider(),
   MemoryRepositoryService(bean: $Todo.bean),
@@ -29,7 +29,7 @@ List<Component> _components({
         oidcIssuer: const Config.value(_issuer),
         resources: [
           ApertureResource(
-            repository: Find<DataRepository<Todo>>(),
+            repository: const Find<DataRepository<Todo>>(),
             allowCreate: allowCreate,
             allowUpdate: allowUpdate,
             allowDelete: allowDelete,
@@ -40,7 +40,7 @@ List<Component> _components({
   ),
 ];
 
-DataRepository<Todo> get _todos => Find<DataRepository<Todo>>().find();
+DataRepository<Todo> get _todos => const Find<DataRepository<Todo>>().find();
 
 Future<RestClient> _signIn() =>
     signInToAperture(issuer: _issuer, apiPort: _apiPort);

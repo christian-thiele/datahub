@@ -6,8 +6,8 @@ import 'package:datahub/src/cli/steps.dart';
 import 'cli_command.dart';
 import 'utils.dart';
 
-class TestCommand extends CliCommand {
-  TestCommand() {
+class TestCommand() extends CliCommand {
+  this {
     argParser.addFlag(
       'build',
       defaultsTo: true,
@@ -51,8 +51,7 @@ class TestCommand extends CliCommand {
     argParser.addOption(
       'warmup',
       defaultsTo: '5',
-      help:
-          'Amount of time (in seconds) to wait for compose environment to warm up before starting tests.',
+      help: 'Amount of time (in seconds) to wait for compose environment to warm up before starting tests.',
     );
   }
 
@@ -154,14 +153,13 @@ class TestCommand extends CliCommand {
   }
 }
 
-class Test {
-  final int id;
-  final String name;
-  final bool? success;
-  final StringBuffer log;
-
-  Test(this.id, this.name, [this.success, StringBuffer? log])
-    : log = log ?? StringBuffer();
+class Test(
+  final int id,
+  final String name, [
+  final bool? success,
+  StringBuffer? log,
+]) {
+  final StringBuffer log = log ?? StringBuffer();
 
   Test done(bool success) => Test(id, name, success, log);
 }

@@ -15,14 +15,19 @@ part 'initialization_span.dart';
 part 'scope.dart';
 part 'service.dart';
 
-enum ServiceHostState { uninitialized, initializing, initialized, shutdown }
+enum ServiceHostState() {
+  uninitialized,
+  initializing,
+  initialized,
+  shutdown,
+}
 
-abstract class ServiceHost implements ServiceRegistry {
+abstract class ServiceHost({Map<String, String>? environmentVariables})
+    implements ServiceRegistry {
   final _postInitializationCallbacks = <(FutureOr<void> Function(), Context)>[];
-  final Configuration configuration;
-
-  ServiceHost({Map<String, String>? environmentVariables})
-    : configuration = Configuration(environmentVariables: environmentVariables);
+  final Configuration configuration = Configuration(
+    environmentVariables: environmentVariables,
+  );
 
   TreeNode? _root;
 
@@ -169,7 +174,7 @@ abstract class ServiceHost implements ServiceRegistry {
       _state = ServiceHostState.initialized;
       _runPostInitializationCallbacks();
     } else {
-      throw ApiException('ServiceHost already initialized.');
+      throw const ApiException('ServiceHost already initialized.');
     }
   }
 
@@ -180,7 +185,7 @@ abstract class ServiceHost implements ServiceRegistry {
       _root = null;
       _state = ServiceHostState.uninitialized;
     } else {
-      throw ApiException('ServiceHost not initialized.');
+      throw const ApiException('ServiceHost not initialized.');
     }
   }
 
@@ -225,9 +230,8 @@ abstract class ServiceHost implements ServiceRegistry {
   @override
   T findComponent<T>(Find<T> finder, TreeNode? scope) {
     TreeNode? search(TreeNode node, Find<T> finder) {
-      if (node case ServiceTreeNode(
-        :final instance?,
-      ) when finder.isCandidate(instance)) {
+      if (node case ServiceTreeNode(:final instance?)
+          when finder.isCandidate(instance)) {
         return node;
       }
 
@@ -279,7 +283,7 @@ abstract class ServiceHost implements ServiceRegistry {
       if (null is T) {
         return null as T;
       } else {
-        throw ApiException('Component tree not initialized.');
+        throw const ApiException('Component tree not initialized.');
       }
     }
   }

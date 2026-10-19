@@ -157,20 +157,18 @@ DataField<_Item, F> _field<F>(String name, F Function(_Item) valueOf) =>
       fromJson: (value, {String? name}) => value as F,
     );
 
-class _Item with DataObject<_Item> {
+class _Item({
+  final List<Object?>? list,
+  final Map<String, Object?>? map,
+  final DateTime? date,
+  final String name = '',
+}) with DataObject<_Item> {
   static final _fields = <DataField<_Item, dynamic>>[
     _field<List<Object?>?>('list', (o) => o.list),
     _field<Map<String, Object?>?>('map', (o) => o.map),
     _field<DateTime?>('date', (o) => o.date),
     _field<String>('name', (o) => o.name),
   ];
-
-  final List<Object?>? list;
-  final Map<String, Object?>? map;
-  final DateTime? date;
-  final String name;
-
-  _Item({this.list, this.map, this.date, this.name = ''});
 
   @override
   String get $$name => 'Item';
@@ -182,7 +180,7 @@ class _Item with DataObject<_Item> {
   Map<String, dynamic> toJson() => {};
 }
 
-class _Other with DataObject<_Other> {
+class _Other() with DataObject<_Other> {
   @override
   String get $$name => 'Other';
 

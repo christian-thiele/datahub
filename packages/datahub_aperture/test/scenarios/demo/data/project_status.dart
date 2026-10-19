@@ -1,1 +1,7 @@
-enum ProjectStatus { planned, active, onHold, completed, cancelled }
+enum ProjectStatus() {
+  planned,
+  active,
+  onHold,
+  completed,
+  cancelled,
+}

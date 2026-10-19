@@ -31,7 +31,7 @@ Future<void> _testAuto() async {
 
 Future<void> _testClient(HttpClient httpClient) async {
   final response = await httpClient.request(
-    HttpRequest(HttpRequestMethod.get, website, {}, Stream.empty()),
+    HttpRequest(HttpRequestMethod.get, website, {}, const Stream.empty()),
   );
 
   final encoding = getEncodingFromHeaders(response.headers) ?? utf8;

@@ -6,31 +6,16 @@ import 'aperture_theme.dart';
 part 'aperture_bootstrap.g.dart';
 
 @Data()
-class ApertureBootstrap extends $ApertureBootstrap {
-  final String version;
-
-  final String title;
-
-  final ApertureTheme theme;
-  final Environment environment;
+class const ApertureBootstrap({
+  required final String version,
+  required final String title,
+  required final ApertureTheme theme,
+  required final Environment environment,
 
   /// The tile server for maps, `null` if maps should be shown without tiles.
-  final ApertureMapTiles? mapTiles;
-
-  final String oidcIssuer;
-  final List<String> oidcScopes;
-  final String? oidcClientId;
-  final String? oidcClientSecret;
-
-  const ApertureBootstrap({
-    required this.version,
-    required this.title,
-    required this.theme,
-    required this.environment,
-    required this.mapTiles,
-    required this.oidcIssuer,
-    required this.oidcScopes,
-    required this.oidcClientId,
-    required this.oidcClientSecret,
-  });
-}
+  required final ApertureMapTiles? mapTiles,
+  required final String oidcIssuer,
+  required final List<String> oidcScopes,
+  required final String? oidcClientId,
+  required final String? oidcClientSecret,
+}) extends $ApertureBootstrap;

@@ -12,7 +12,7 @@ void main() {
     'Mainthred Overload',
     [
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           ResourceEndpoint(
             get: (request) async {
@@ -27,7 +27,7 @@ void main() {
       ),
     ],
     () async {
-      final apiPort = Context.zoneFind(Find<Api>()).port;
+      final apiPort = Context.zoneFind(const Find<Api>()).port;
       await Isolate.run(() async {
         final client = await RestClient.connect(
           Uri(scheme: 'http', host: '127.0.0.1', port: apiPort),
@@ -35,10 +35,10 @@ void main() {
         await LoadClient(
           client,
           () => client.get('/'),
-        ).run(100, Duration(seconds: 10));
+        ).run(100, const Duration(seconds: 10));
       });
     },
-    timeout: Timeout(Duration(seconds: 15)),
+    timeout: const Timeout(Duration(seconds: 15)),
     skip: true,
   );
 }

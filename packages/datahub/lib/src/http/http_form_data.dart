@@ -1,8 +1,4 @@
-class HttpFormData {
-  final Map<String, String> data;
-
-  HttpFormData(this.data);
-
+class HttpFormData(final Map<String, String> data) {
   @override
   String toString() {
     return data.entries

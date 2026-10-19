@@ -40,9 +40,8 @@ class ErrorView extends StatelessWidget {
                 child: SingleChildScrollView(
                   child: Text(
                     message,
-                    style: Theme.of(
-                      context,
-                    ).textTheme.bodyMedium?.copyWith(color: colors.textMuted),
+                    style: Theme.of(context).textTheme.bodyMedium
+                        ?.copyWith(color: colors.textMuted),
                     textAlign: TextAlign.center,
                   ),
                 ),

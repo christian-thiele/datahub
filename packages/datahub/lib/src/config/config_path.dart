@@ -3,13 +3,12 @@ import 'dart:collection';
 import 'config_exception.dart';
 
 /// Represents a config value path.
-class ConfigPath {
-  final List<String> parts;
+class ConfigPath.fromParts(List<String> parts) {
+  final List<String> parts = UnmodifiableListView(parts);
 
-  ConfigPath(String path) : this.fromParts(path.split('.'));
+  new(String path) : this.fromParts(path.split('.'));
 
-  ConfigPath.fromParts(List<String> parts)
-    : parts = UnmodifiableListView(parts) {
+  this {
     for (final part in parts) {
       if (!_isValidPart(part)) {
         throw InvalidConfigPathException(parts.join('.'), part);
@@ -17,7 +16,7 @@ class ConfigPath {
     }
   }
 
-  ConfigPath.root() : this.fromParts(const []);
+  new root() : this.fromParts(const []);
 
   /// Checks if the path points to the config root.
   bool get isRoot => parts.isEmpty;

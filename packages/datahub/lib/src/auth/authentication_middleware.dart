@@ -1,17 +1,12 @@
 import 'package:datahub/api.dart';
 import 'package:datahub/scaffold.dart';
 
-abstract class AuthenticationMiddleware<T extends Session>
-    extends ApiMiddleware {
-  final bool requireSession;
-
-  const AuthenticationMiddleware({
-    super.matcher,
-    required super.routes,
-    super.catchRequests = false,
-    this.requireSession = true,
-  });
-
+abstract class const AuthenticationMiddleware<T extends Session>({
+  super.matcher,
+  required super.routes,
+  super.catchRequests = false,
+  final bool requireSession = true,
+}) extends ApiMiddleware {
   @override
   Future<dynamic> onRequest(
     ApiRequest request,

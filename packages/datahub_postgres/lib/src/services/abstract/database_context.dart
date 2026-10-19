@@ -1,3 +1,1 @@
-class DatabaseContext {
-  const DatabaseContext();
-}
+class const DatabaseContext();

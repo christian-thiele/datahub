@@ -1,15 +1,15 @@
 import 'base_id.dart';
 
-class SpanId extends BaseId {
+class const SpanId(super.id) extends BaseId {
   static const length = 8;
 
-  const SpanId(super.id)
+  this
     : assert(
         id.length == length,
         'Invalid SpanId length. Id must have a length of $length.',
       );
 
-  factory SpanId.generate() => SpanId(BaseId.generateBytes(length));
+  factory generate() => SpanId(BaseId.generateBytes(length));
 
   /// Parses the hex representation of a span id, see [hexId].
   ///

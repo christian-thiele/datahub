@@ -10,23 +10,20 @@ import '../logs/log_helper.dart';
 /// Recording for labels that were not declared logs a warning (once per
 /// metric) and drops the value, so telemetry never fails the code that
 /// records it.
-class MetricSeriesSet<S> {
-  final String metricName;
-  final Set<String>? labelNames;
-  final S Function(Map<String, String> labels) _create;
+class MetricSeriesSet<S>(
+  final String metricName, {
+  Map<String, List<String>>? labels,
+  final Set<String>? labelNames,
+  required final S Function(Map<String, String> labels) _create,
+}) {
   final _series = <String, S>{};
   bool _warned = false;
 
-  MetricSeriesSet(
-    this.metricName, {
-    Map<String, List<String>>? labels,
-    this.labelNames,
-    required S Function(Map<String, String> labels) create,
-  }) : assert(
-         labels == null || labelNames == null,
-         'Labels are declared either with their values or by name.',
-       ),
-       _create = create {
+  this
+    : assert(
+        labels == null || labelNames == null,
+        'Labels are declared either with their values or by name.',
+      ) {
     if (labelNames != null) {
       // series are created when used
     } else if (labels != null && labels.isNotEmpty) {
@@ -71,8 +68,7 @@ class MetricSeriesSet<S> {
 
   static String _key(Map<String, String> labels) {
     final names = labels.keys.toList()..sort();
-    return [
-      for (final name in names) '$name\u0000${labels[name]}',
-    ].join('\u0001');
+    return [for (final name in names) '$name\u0000${labels[name]}']
+        .join('\u0001');
   }
 }

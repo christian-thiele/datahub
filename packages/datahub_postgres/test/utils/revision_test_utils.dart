@@ -14,26 +14,21 @@ PostgresqlService testPostgresqlService({
   String timeZone = 'UTC',
   int poolSize = 3,
 }) => PostgresqlService(
-  host: Config('test.services.postgres.host'),
-  port: Config('test.services.postgres.5432'),
-  database: Config.value('datahub_postgres'),
-  username: Config.value('postgres'),
-  password: Config.value('postgres'),
-  useSsl: Config.value(false),
+  host: const Config('test.services.postgres.host'),
+  port: const Config('test.services.postgres.5432'),
+  database: const Config.value('datahub_postgres'),
+  username: const Config.value('postgres'),
+  password: const Config.value('postgres'),
+  useSsl: const Config.value(false),
   timeZone: Config.value(timeZone),
   targetPoolSize: Config.value(poolSize),
-  poolQueueLimit: Config.value(1000),
-  poolTimeout: Config.value(const Duration(seconds: 60)),
+  poolQueueLimit: const Config.value(1000),
+  poolTimeout: const Config.value(Duration(seconds: 60)),
 );
 
-class TestSession implements Session {
+class TestSession(@override final String identity) implements Session {
   @override
   String get debugName => 'test/$identity';
-
-  @override
-  final String identity;
-
-  TestSession(this.identity);
 }
 
 Future<T> asUser<T>(
@@ -62,14 +57,14 @@ Future<void> eventually(
 
 /// Executes [query] in its own transaction.
 Future<pg.Result> sql(String query) async {
-  return await Find<Postgresql>().find().runDetachedTransaction(
+  return await const Find<Postgresql>().find().runDetachedTransaction(
     (db) => db.execute(RawSql(query)),
   );
 }
 
 /// Executes [query] (which may contain multiple statements) in simple mode.
 Future<void> sqlScript(String query) async {
-  await Find<Postgresql>().find().runDetachedTransaction(
+  await const Find<Postgresql>().find().runDetachedTransaction(
     (db) => db.executeLiteral(RawSql(query)),
   );
 }

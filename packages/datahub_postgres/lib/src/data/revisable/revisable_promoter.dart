@@ -13,32 +13,24 @@ import 'revisable_statements.dart';
 /// `pg_notify`, so they re-arm immediately. Promotion runs in transactions of
 /// its own and never waits for element locks, so it cannot deadlock with
 /// writers; locked elements are retried shortly after.
-class RevisablePromoter {
+class RevisablePromoter({
+  required final Postgresql postgresql,
+  required final RevisableStatements statements,
+  required final Duration pollInterval,
+  required final int batchSize,
+
+  /// Runs callbacks in the context of the owning service.
+  required final R Function<R>(R Function() body) runInContext,
+}) {
   static const _busyDelay = Duration(milliseconds: 250);
   static const _errorDelay = Duration(seconds: 5);
   static const _slack = Duration(milliseconds: 5);
-
-  final Postgresql postgresql;
-  final RevisableStatements statements;
-  final Duration pollInterval;
-  final int batchSize;
-
-  /// Runs callbacks in the context of the owning service.
-  final R Function<R>(R Function() body) runInContext;
 
   Timer? _timer;
   Future<void>? _running;
   StreamSubscription<String>? _subscription;
   var _rerun = false;
   var _disposed = false;
-
-  RevisablePromoter({
-    required this.postgresql,
-    required this.statements,
-    required this.pollInterval,
-    required this.batchSize,
-    required this.runInContext,
-  });
 
   String get _key => statements.layout.key;
 
@@ -257,10 +249,10 @@ class _Batch {
   final DateTime? next;
   final DateTime? now;
 
-  const _Batch({required this.promoted, this.more = false, this.next, this.now})
+  const new({required this.promoted, this.more = false, this.next, this.now})
     : busy = false;
 
-  const _Batch.busy()
+  const new busy()
     : promoted = 0,
       busy = true,
       more = false,

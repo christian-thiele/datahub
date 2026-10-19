@@ -4,10 +4,10 @@ import 'package:datahub/utils.dart';
 import 'data_field.dart';
 import 'meta/data_field_constraint.dart';
 
-class ValidationException extends ApiRequestException {
-  final Map<DataField, List<DataFieldConstraint>> violatedConstraints;
-
-  ValidationException(this.violatedConstraints)
+class ValidationException(
+  final Map<DataField, List<DataFieldConstraint>> violatedConstraints,
+) extends ApiRequestException {
+  this
     : super(
         400,
         'Invalid values for fields: ${violatedConstraints.keys.map((e) => e.name).join(', ')}',

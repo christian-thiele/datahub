@@ -1,15 +1,16 @@
 import 'dart:math';
 import 'dart:typed_data';
+
 import 'package:boost/boost.dart';
 
 class Token {
   final Uint8List bytes;
 
   /// Generates a new unique token.
-  Token() : bytes = _generate();
+  new() : bytes = _generate();
 
   /// Instantiates a token object with given data.
-  Token.withBytes(this.bytes) : assert(bytes.length == 16);
+  new withBytes(this.bytes) : assert(bytes.length == 16);
 
   @override
   bool operator ==(Object other) {

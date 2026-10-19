@@ -1,7 +1,7 @@
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
 
-abstract interface class ApertureTileSource {
+abstract interface class ApertureTileSource() {
   Future<ApertureMapTiles?> resolve();
 }
 
@@ -9,25 +9,17 @@ abstract interface class ApertureTileSource {
 ///
 /// Note that the OSM tile usage policy does not allow heavy use, consider
 /// a different [ApertureTileSource] for production deployments.
-class OpenStreetMapTileSource implements ApertureTileSource {
-  const OpenStreetMapTileSource();
-
+class const OpenStreetMapTileSource() implements ApertureTileSource {
   @override
   Future<ApertureMapTiles?> resolve() async => ApertureMapTiles.openStreetMap;
 }
 
 /// Any tile server that serves `{z}/{x}/{y}` raster tiles.
-class CustomTileSource implements ApertureTileSource {
-  final Config<String> urlTemplate;
-  final Config<int?> maxZoom;
-  final Config<String?> attribution;
-
-  const CustomTileSource({
-    this.urlTemplate = const Config('aperture.map.urlTemplate'),
-    this.maxZoom = const Config('aperture.map.maxZoom'),
-    this.attribution = const Config('aperture.map.attribution'),
-  });
-
+class const CustomTileSource({
+  final Config<String> urlTemplate = const Config('aperture.map.urlTemplate'),
+  final Config<int?> maxZoom = const Config('aperture.map.maxZoom'),
+  final Config<String?> attribution = const Config('aperture.map.attribution'),
+}) implements ApertureTileSource {
   @override
   Future<ApertureMapTiles?> resolve() async => ApertureMapTiles(
     urlTemplate: urlTemplate.read(),
@@ -43,34 +35,26 @@ class CustomTileSource implements ApertureTileSource {
 /// frontend receives a tile URL containing the session token and the API key,
 /// so restrict the key to the Map Tiles API and to the origin Aperture is
 /// served from.
-class GoogleMapsTileSource implements ApertureTileSource {
+class const GoogleMapsTileSource({
+  final Config<String> apiKey = const Config('aperture.map.google.apiKey'),
+  final Config<String> mapType = const Config(
+    'aperture.map.google.mapType',
+    defaultValue: 'satellite',
+  ),
+  final Config<String> language = const Config(
+    'aperture.map.google.language',
+    defaultValue: 'en-US',
+  ),
+  final Config<String> region = const Config(
+    'aperture.map.google.region',
+    defaultValue: 'US',
+  ),
+  final String endpoint = 'https://tile.googleapis.com',
+}) implements ApertureTileSource {
   static const _renewMargin = Duration(hours: 1);
 
   static final _sessions = <String, _GoogleSession>{};
   static final _pending = <String, Future<_GoogleSession>>{};
-
-  final Config<String> apiKey;
-  final Config<String> mapType;
-  final Config<String> language;
-  final Config<String> region;
-  final String endpoint;
-
-  const GoogleMapsTileSource({
-    this.apiKey = const Config('aperture.map.google.apiKey'),
-    this.mapType = const Config(
-      'aperture.map.google.mapType',
-      defaultValue: 'satellite',
-    ),
-    this.language = const Config(
-      'aperture.map.google.language',
-      defaultValue: 'en-US',
-    ),
-    this.region = const Config(
-      'aperture.map.google.region',
-      defaultValue: 'US',
-    ),
-    this.endpoint = 'https://tile.googleapis.com',
-  });
 
   @override
   Future<ApertureMapTiles?> resolve() async {
@@ -151,11 +135,6 @@ class GoogleMapsTileSource implements ApertureTileSource {
   }
 }
 
-class _GoogleSession {
-  final String token;
-  final DateTime expiresAt;
-
-  const _GoogleSession(this.token, this.expiresAt);
-
+class const _GoogleSession(final String token, final DateTime expiresAt) {
   bool isValidAt(DateTime time) => expiresAt.isAfter(time);
 }

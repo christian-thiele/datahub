@@ -31,7 +31,7 @@ Future<(List<LogMessage>, List<int>)> _exchange(
 ) async {
   final logs = <LogMessage>[];
   final body = await LogListener(onPublish: logs.add).run(() async {
-    final response = await Find<Telemetry>().find().trace(
+    final response = await const Find<Telemetry>().find().trace(
       'HTTP',
       (_) => logger.handle(request, handler),
     );
@@ -354,9 +354,9 @@ void main() {
     'ApiService with request logging',
     [
       ApiService(
-        port: Config.value(0),
-        logRequests: Config.value(true),
-        logRequestsBodyLimit: Config.value(64),
+        port: const Config.value(0),
+        logRequests: const Config.value(true),
+        logRequestsBodyLimit: const Config.value(64),
         routes: [
           WebsocketEndpoint(
             matcher: RoutePattern('/ws'),
@@ -382,7 +382,7 @@ void main() {
       'telemetry': {'logLevel': 'trace', 'logStdoutFormat': 'logfmt'},
     },
     () async {
-      final api = Find<Api>().find();
+      final api = const Find<Api>().find();
       final payload = {'data': 'x' * 1000};
 
       for (final client in [api.connectHttp11(), api.connectHttp2()]) {

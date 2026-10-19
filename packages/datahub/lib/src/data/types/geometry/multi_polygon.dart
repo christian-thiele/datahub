@@ -5,18 +5,15 @@ import 'package:buffer/buffer.dart';
 
 import 'geometry.dart';
 
-class MultiPolygon extends Geometry {
-  final List<Polygon> polygons;
+class const MultiPolygon(
+  int? srid,
+  final List<Polygon> polygons,
+  bool hasZ,
+  bool hasM,
+) extends Geometry {
+  this : super(srid, GeometryType.multiPolygon, hasZ, hasM);
 
-  const MultiPolygon(int? srid, this.polygons, bool hasZ, bool hasM)
-    : super(srid, GeometryType.multiPolygon, hasZ, hasM);
-
-  factory MultiPolygon.read(
-    int? srid,
-    ByteDataReader reader,
-    bool hasZ,
-    bool hasM,
-  ) {
+  factory read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
     final length = reader.readUint32();
     return MultiPolygon(
       srid,

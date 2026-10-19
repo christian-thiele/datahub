@@ -8,7 +8,7 @@ import 'data/person.dart';
 import 'utils/revision_test_utils.dart';
 
 // polling must not be what makes these tests pass
-final _noPolling = Config.value(const Duration(minutes: 5));
+final _noPolling = const Config.value(Duration(minutes: 5));
 
 void main() {
   declareTest(
@@ -22,14 +22,14 @@ void main() {
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<Person>>().find();
+      final repo = const Find<RevisableDataRepository<Person>>().find();
 
       await asUser(() async {
         final peter = await repo.create(
-          Person(firstName: 'Peter', lastName: 'Lustig', birthday: null),
+          const Person(firstName: 'Peter', lastName: 'Lustig', birthday: null),
         );
         final paul = await repo.create(
-          Person(firstName: 'Paul', lastName: 'Panzer', birthday: null),
+          const Person(firstName: 'Paul', lastName: 'Panzer', birthday: null),
         );
 
         final due = DateTime.now().add(const Duration(seconds: 2));
@@ -38,7 +38,7 @@ void main() {
           isTrue,
         );
         final anna = await repo.create(
-          Person(firstName: 'Anna', lastName: 'Lustig', birthday: null),
+          const Person(firstName: 'Anna', lastName: 'Lustig', birthday: null),
           from: due,
         );
         expect(await repo.deleteById(paul.id, from: due), isTrue);
@@ -90,7 +90,7 @@ void main() {
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
 
       Future<String?> nameOf(String id) async =>
           (await repo.readById(id))?.name;
@@ -105,28 +105,28 @@ void main() {
 
         // a: scheduled, then superseded by an immediate revision
         await repo.updateById(
-          City(id: 'a', name: 'A1', zip: '1'),
+          const City(id: 'a', name: 'A1', zip: '1'),
           from: at(2),
         );
-        await repo.updateById(City(id: 'a', name: 'A2', zip: '1'));
+        await repo.updateById(const City(id: 'a', name: 'A2', zip: '1'));
 
         // b: later schedule superseded by an earlier one
         await repo.updateById(
-          City(id: 'b', name: 'B1', zip: '1'),
+          const City(id: 'b', name: 'B1', zip: '1'),
           from: at(4),
         );
         await repo.updateById(
-          City(id: 'b', name: 'B2', zip: '1'),
+          const City(id: 'b', name: 'B2', zip: '1'),
           from: at(2),
         );
 
         // c: chain
         await repo.updateById(
-          City(id: 'c', name: 'C1', zip: '1'),
+          const City(id: 'c', name: 'C1', zip: '1'),
           from: at(2),
         );
         await repo.updateById(
-          City(id: 'c', name: 'C2', zip: '1'),
+          const City(id: 'c', name: 'C2', zip: '1'),
           from: at(4),
         );
 
@@ -192,20 +192,22 @@ void main() {
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
 
       await asUser(() async {
-        await repo.create(City(id: 'berlin', name: 'Berlin', zip: '10115'));
+        await repo.create(
+          const City(id: 'berlin', name: 'Berlin', zip: '10115'),
+        );
         await repo.deleteById('berlin');
 
         final due = DateTime.now().add(const Duration(seconds: 1));
         await repo.create(
-          City(id: 'berlin', name: 'Berlin', zip: '10117'),
+          const City(id: 'berlin', name: 'Berlin', zip: '10117'),
           from: due,
         );
 
         await expectLater(
-          () => repo.create(City(id: 'berlin', name: 'Berlin', zip: '1')),
+          () => repo.create(const City(id: 'berlin', name: 'Berlin', zip: '1')),
           throwsA(isA<RevisableInconsistencyException>()),
         );
         expect(await repo.readById('berlin'), isNull);
@@ -232,7 +234,7 @@ void main() {
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
 
       /// Schedules a revision like another instance would.
       Future<DateTime> scheduleExternally(String name, int version) async {
@@ -249,7 +251,7 @@ void main() {
       }
 
       await asUser(() async {
-        await repo.create(City(id: 'x', name: 'X0', zip: '1'));
+        await repo.create(const City(id: 'x', name: 'X0', zip: '1'));
 
         var due = await scheduleExternally('X1', 1);
         await waitUntil(due);
@@ -290,14 +292,14 @@ void main() {
       testPostgresqlService(),
       PostgresqlRevisableRepositoryService(
         bean: $City.bean,
-        schedulePollInterval: Config.value(const Duration(seconds: 1)),
+        schedulePollInterval: const Config.value(Duration(seconds: 1)),
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
 
       await asUser(() async {
-        await repo.create(City(id: 'x', name: 'X0', zip: '1'));
+        await repo.create(const City(id: 'x', name: 'X0', zip: '1'));
 
         final due = DateTime.now().toUtc().add(const Duration(seconds: 1));
         await sqlScript('''
@@ -327,31 +329,31 @@ void main() {
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
 
       await asUser(() async {
-        await repo.create(City(id: 'a', name: 'A', zip: '1'));
-        await repo.create(City(id: 'b', name: 'B', zip: '2'));
-        await repo.create(City(id: 'c', name: 'C', zip: '3'));
+        await repo.create(const City(id: 'a', name: 'A', zip: '1'));
+        await repo.create(const City(id: 'b', name: 'B', zip: '2'));
+        await repo.create(const City(id: 'c', name: 'C', zip: '3'));
         await sql('CREATE UNIQUE INDEX city_zip_idx ON city (zip)');
 
         // immediate revisions violating the index fail like on any table
         await expectLater(
-          () => repo.updateById(City(id: 'a', name: 'A', zip: '2')),
+          () => repo.updateById(const City(id: 'a', name: 'A', zip: '2')),
           throwsA(isA<Exception>()),
         );
 
         final due = DateTime.now().add(const Duration(seconds: 1));
         await repo.updateById(
-          City(id: 'a', name: 'A', zip: '2'),
+          const City(id: 'a', name: 'A', zip: '2'),
           from: due,
         );
         await repo.updateById(
-          City(id: 'b', name: 'B1', zip: '2'),
+          const City(id: 'b', name: 'B1', zip: '2'),
           from: due,
         );
         await repo.updateById(
-          City(id: 'c', name: 'C1', zip: '3'),
+          const City(id: 'c', name: 'C1', zip: '3'),
           from: due,
         );
 
@@ -371,7 +373,7 @@ void main() {
         expect((await repo.revisableReadById('a'))!.to, isNull);
 
         // a later revision supersedes the failed one
-        await repo.updateById(City(id: 'a', name: 'A2', zip: '4'));
+        await repo.updateById(const City(id: 'a', name: 'A2', zip: '4'));
         expect((await repo.readById('a'))!.name, 'A2');
         expect((await sql('SELECT count(*) FROM city_schedule')).first[0], 0);
         await expectConsistent('city');
@@ -390,12 +392,12 @@ void main() {
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
 
       await asUser(() async {
         final before = DateTime.now();
         final created = await repo.createRevision(
-          City(id: 'x', name: 'X0', zip: '1'),
+          const City(id: 'x', name: 'X0', zip: '1'),
           type: 1,
         );
         expect(created.created.difference(before).inSeconds.abs(), lessThan(5));
@@ -403,7 +405,7 @@ void main() {
 
         final due = DateTime.now().add(const Duration(seconds: 1));
         await repo.updateById(
-          City(id: 'x', name: 'X1', zip: '1'),
+          const City(id: 'x', name: 'X1', zip: '1'),
           from: due,
         );
         expect((await repo.readById('x'))!.name, 'X0');
@@ -427,21 +429,21 @@ void main() {
       ),
     ],
     () async {
-      final repo = Find<RevisableDataRepository<City>>().find();
+      final repo = const Find<RevisableDataRepository<City>>().find();
 
       await asUser(() async {
-        await repo.create(City(id: 'x', name: 'X0', zip: '1'));
-        await repo.create(City(id: 'y', name: 'Y0', zip: '1'));
+        await repo.create(const City(id: 'x', name: 'X0', zip: '1'));
+        await repo.create(const City(id: 'y', name: 'Y0', zip: '1'));
 
         final yDue = DateTime.now().add(const Duration(seconds: 1));
         await repo.updateById(
-          City(id: 'y', name: 'Y1', zip: '1'),
+          const City(id: 'y', name: 'Y1', zip: '1'),
           from: yDue,
         );
 
         late DateTime xDue;
         await repo.atomic(() async {
-          await repo.updateById(City(id: 'x', name: 'X1', zip: '1'));
+          await repo.updateById(const City(id: 'x', name: 'X1', zip: '1'));
 
           // x stays locked by this transaction, y is promoted meanwhile
           await waitUntil(yDue);
@@ -452,7 +454,7 @@ void main() {
 
           xDue = DateTime.now().add(const Duration(milliseconds: 500));
           await repo.updateById(
-            City(id: 'x', name: 'X2', zip: '1'),
+            const City(id: 'x', name: 'X2', zip: '1'),
             from: xDue,
           );
           await Future<void>.delayed(const Duration(seconds: 1));

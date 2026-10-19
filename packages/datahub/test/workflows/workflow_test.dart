@@ -8,72 +8,41 @@ import 'package:test/test.dart';
 part 'workflow_test.g.dart';
 
 @Data()
-class Invoice extends $Invoice {
-  const Invoice({
-    this.id = '',
-    required this.recipient,
-    required this.invoiceFile,
-    required this.amount,
-    this.state = InvoiceWorkflowState.created,
-    this.paymentReference,
-  });
-
-  @Id(auto: true)
-  final String id;
-
-  final String recipient;
-  final String? invoiceFile;
-  final String? paymentReference;
-  final int amount;
-
-  final InvoiceWorkflowState state;
-}
+class const Invoice({
+  @Id(auto: true) final String id = '',
+  required final String recipient,
+  required final String? invoiceFile,
+  required final int amount,
+  final InvoiceWorkflowState state = InvoiceWorkflowState.created,
+  final String? paymentReference,
+}) extends $Invoice;
 
 @Data()
-class PaymentSuccessSignal extends $PaymentSuccessSignal
-    implements WorkflowSignal<Invoice> {
-  final String invoiceId;
-  final String reference;
-
-  const PaymentSuccessSignal({
-    required this.invoiceId,
-    required this.reference,
-  });
-}
+class const PaymentSuccessSignal({
+  required final String invoiceId,
+  required final String reference,
+}) extends $PaymentSuccessSignal implements WorkflowSignal<Invoice>;
 
 @Data()
-class PaymentFailedSignal extends $PaymentFailedSignal
-    implements WorkflowSignal<Invoice> {
-  final String invoiceId;
-  final String reference;
-  final String reason;
-
-  const PaymentFailedSignal({
-    required this.invoiceId,
-    required this.reference,
-    required this.reason,
-  });
-}
+class const PaymentFailedSignal({
+  required final String invoiceId,
+  required final String reference,
+  required final String reason,
+}) extends $PaymentFailedSignal implements WorkflowSignal<Invoice>;
 
 /// A signal that no step of the invoice workflow handles.
 @Data()
-class UnhandledSignal extends $UnhandledSignal
-    implements WorkflowSignal<Invoice> {
-  final String note;
-
-  const UnhandledSignal({this.note = ''});
-}
+class const UnhandledSignal({final String note = ''})
+    extends $UnhandledSignal
+    implements WorkflowSignal<Invoice>;
 
 /// A signal for the workflow of another element type.
 @Data()
-class ForeignSignal extends $ForeignSignal
-    implements WorkflowSignal<WorkflowEvent> {
-  final String note;
+class const ForeignSignal({final String note = ''})
+    extends $ForeignSignal
+    implements WorkflowSignal<WorkflowEvent>;
 
-  const ForeignSignal({this.note = ''});
-}
-
-enum InvoiceWorkflowState {
+enum InvoiceWorkflowState() {
   created,
   generated,
   paymentRequested,
@@ -83,10 +52,9 @@ enum InvoiceWorkflowState {
 
 typedef InvoiceStep = WorkflowStep<Invoice, InvoiceWorkflowState>;
 typedef InvoiceHandler = Future<Invoice> Function(StepContext<Invoice>);
-typedef PaymentHandler =
-    Future<Invoice> Function(
-      SignalStepContext<Invoice, PaymentSuccessSignal> context,
-    );
+typedef PaymentHandler = Future<Invoice> Function(
+  SignalStepContext<Invoice, PaymentSuccessSignal> context,
+);
 
 const _fastRetry = RetryPolicy(
   maxAttempts: 3,
@@ -188,20 +156,16 @@ List<Component> _components(
     ),
 ];
 
-DataRepository<Invoice> get _invoices => Find<DataRepository<Invoice>>().find();
+DataRepository<Invoice> get _invoices =>
+    const Find<DataRepository<Invoice>>().find();
 
 DataRepository<WorkflowEvent> get _events =>
-    Find<DataRepository<WorkflowEvent>>().find();
+    const Find<DataRepository<WorkflowEvent>>().find();
 
-Workflow<Invoice> get _workflow => Find<Workflow<Invoice>>().find();
+Workflow<Invoice> get _workflow => const Find<Workflow<Invoice>>().find();
 
 /// A session of the tests, [identity] tells who acts.
-class _Session implements Session {
-  @override
-  final String identity;
-
-  const _Session(this.identity);
-
+class const _Session(@override final String identity) implements Session {
   @override
   String get debugName => identity;
 }
@@ -226,14 +190,12 @@ const _forbidden = {
 
 /// A repository that notes who calls it, and refuses what is [_forbidden].
 /// It works on the other `DataRepository<T>`.
-class _Watched<T extends DataObject> implements Service {
-  const _Watched();
-
+class const _Watched<T extends DataObject>() implements Service {
   @override
   ServiceInstance<_Watched<T>> createInstance() => _WatchedInstance<T>();
 }
 
-class _WatchedInstance<T extends DataObject>
+class _WatchedInstance<T extends DataObject>()
     extends ServiceInstance<_Watched<T>>
     implements DataRepository<T> {
   late final DataRepository<T> _inner;
@@ -419,9 +381,8 @@ Future<void> _eventuallyEvent(WorkflowEventStatus status) => _eventually(
 void main() {
   group('WorkflowService.validate', () {
     void validate(List<InvoiceStep> steps) =>
-        WorkflowService<Invoice, InvoiceWorkflowState>(
-          steps: steps,
-        ).validate($Invoice.bean);
+        WorkflowService<Invoice, InvoiceWorkflowState>(steps: steps)
+            .validate($Invoice.bean);
 
     OnEnter<Invoice, InvoiceWorkflowState> onEnter(
       InvoiceWorkflowState state, {
@@ -612,7 +573,7 @@ void main() {
     _components(_steps()),
     () async {
       final invoice = await _invoices.create(
-        Invoice(recipient: 'Tester', invoiceFile: null, amount: 123),
+        const Invoice(recipient: 'Tester', invoiceFile: null, amount: 123),
       );
 
       await Future.delayed(const Duration(milliseconds: 200));
@@ -648,9 +609,8 @@ void main() {
       // Moved to another state outside of the workflow, the step of the state
       // it left is cancelled (paymentRequested has no steps of its own).
       await _invoices.updateById(
-        (await _read(
-          invoice.id,
-        )).copyWith(state: InvoiceWorkflowState.paymentRequested),
+        (await _read(invoice.id))
+            .copyWith(state: InvoiceWorkflowState.paymentRequested),
       );
       await _workflow.resume(invoice.id);
       expect(await pendingSteps(), isEmpty);
@@ -963,9 +923,9 @@ void main() {
       () async {
         final invoice = await _start(InvoiceWorkflowState.paymentRequested);
 
-        final lock = await Find<LockProvider<String>>().find().acquireLock(
-          'workflow:Invoice:${invoice.id}',
-        );
+        final lock = await const Find<LockProvider<String>>()
+            .find()
+            .acquireLock('workflow:Invoice:${invoice.id}');
         await _workflow.send(
           PaymentSuccessSignal(invoiceId: invoice.id, reference: 'ref'),
         );
@@ -1520,7 +1480,7 @@ void main() {
   });
 
   group('telemetry', () {
-    Telemetry telemetry() => Find<Telemetry>().find();
+    Telemetry telemetry() => const Find<Telemetry>().find();
 
     final stepTraces = <String, String?>{};
     final stepSpans = <String, String?>{};
@@ -1832,9 +1792,11 @@ void main() {
         );
         final heartbeat = running.heartbeatAt!;
         await _eventually(
-          () async => (await _workflow.events(
-            elementId: invoice.id,
-          )).single.heartbeatAt!.isAfter(heartbeat),
+          () async =>
+              (await _workflow.events(elementId: invoice.id))
+                  .single
+                  .heartbeatAt!
+                  .isAfter(heartbeat),
           reason: 'the heartbeat to be renewed',
         );
 
@@ -2089,7 +2051,7 @@ void main() {
       _watchedComponents(_steps()),
       () async {
         final invoice = await _invoices.create(
-          Invoice(
+          const Invoice(
             recipient: 'Tester',
             invoiceFile: null,
             amount: 123,

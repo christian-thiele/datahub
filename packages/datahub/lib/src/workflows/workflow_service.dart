@@ -77,13 +77,74 @@ import 'workflow_step_context.dart';
 /// `datahub.workflow.name`, `datahub.workflow.step`,
 /// `datahub.workflow.element.id`, `datahub.workflow.event.id` and
 /// `datahub.workflow.attempt`.
-class WorkflowService<T extends DataObject, TState extends Enum>
-    implements Service {
-  final List<WorkflowStep<T, TState>> steps;
+class const WorkflowService<T extends DataObject, TState extends Enum>({
+  required final List<WorkflowStep<T, TState>> steps,
 
   /// The field that holds the state. When null, the only field of type
   /// [TState] of the element is used.
-  final DataField<T, TState>? stateField;
+  final DataField<T, TState>? stateField,
+
+  /// The repository of the elements, defaults to the `DataRepository<T>`.
+  final Find<DataRepository<T>>? repository,
+  final Find<DataRepository<WorkflowEvent>> eventRepository = const Find(),
+
+  /// Lock provider for the elements. The lock of an element is named
+  /// `workflow:<element type>:<element id>`.
+  final Find<LockProvider<String>> lockProvider = const Find(),
+
+  /// Where the history is written. History is off if there is no such
+  /// repository.
+  final Find<DataRepository<WorkflowHistoryEntry>?> historyRepository =
+      const Find(),
+
+  /// Time between two checks for due events.
+  final Config<Duration> pollInterval = const Config(
+    'workflows.pollInterval',
+    defaultValue: Duration(seconds: 5),
+  ),
+
+  /// Number of events that are read from the repository at once.
+  final Config<int> batchSize = const Config(
+    'workflows.batchSize',
+    defaultValue: 100,
+  ),
+
+  /// Maximum number of elements this instance works on at the same time.
+  final Config<int> concurrency = const Config(
+    'workflows.concurrency',
+    defaultValue: 4,
+  ),
+
+  /// Whether this instance runs steps. Instances that are not workers only
+  /// store events (when starting elements or sending signals).
+  final Config<bool> worker = const Config(
+    'workflows.worker',
+    defaultValue: true,
+  ),
+
+  /// Identifies this instance in the events it handles. Defaults to
+  /// `<host name>:<process id>`.
+  final Config<String?> workerId = const Config('workflows.workerId'),
+
+  /// Interval in which a worker renews the heartbeat and the messages of the
+  /// event it handles.
+  final Config<Duration> heartbeatInterval = const Config(
+    'workflows.heartbeatInterval',
+    defaultValue: Duration(seconds: 10),
+  ),
+  final Find<Telemetry> telemetry = const Find(),
+  final Config<bool> enableMetrics = const Config(
+    'workflows.enableMetrics',
+    defaultValue: true,
+  ),
+  final Config<bool> enableTracing = const Config(
+    'workflows.enableTracing',
+    defaultValue: true,
+  ),
+  final Config<String> metricPrefix = const Config(
+    'workflows.metricPrefix',
+    defaultValue: 'workflow',
+  ),
 
   /// The session of the workflow engine, for the work it does on its own.
   ///
@@ -98,82 +159,8 @@ class WorkflowService<T extends DataObject, TState extends Enum>
   ///
   /// Without it, the engine works without a session, and the work done for
   /// a caller runs with the session of the caller.
-  final Session? workerSession;
-
-  /// The repository of the elements, defaults to the `DataRepository<T>`.
-  final Find<DataRepository<T>>? repository;
-
-  final Find<DataRepository<WorkflowEvent>> eventRepository;
-
-  /// Lock provider for the elements. The lock of an element is named
-  /// `workflow:<element type>:<element id>`.
-  final Find<LockProvider<String>> lockProvider;
-
-  /// Where the history is written. History is off if there is no such
-  /// repository.
-  final Find<DataRepository<WorkflowHistoryEntry>?> historyRepository;
-
-  /// Time between two checks for due events.
-  final Config<Duration> pollInterval;
-
-  /// Number of events that are read from the repository at once.
-  final Config<int> batchSize;
-
-  /// Maximum number of elements this instance works on at the same time.
-  final Config<int> concurrency;
-
-  /// Whether this instance runs steps. Instances that are not workers only
-  /// store events (when starting elements or sending signals).
-  final Config<bool> worker;
-
-  /// Identifies this instance in the events it handles. Defaults to
-  /// `<host name>:<process id>`.
-  final Config<String?> workerId;
-
-  /// Interval in which a worker renews the heartbeat and the messages of the
-  /// event it handles.
-  final Config<Duration> heartbeatInterval;
-
-  final Find<Telemetry> telemetry;
-  final Config<bool> enableMetrics;
-  final Config<bool> enableTracing;
-  final Config<String> metricPrefix;
-
-  const WorkflowService({
-    required this.steps,
-    this.stateField,
-    this.repository,
-    this.eventRepository = const Find(),
-    this.lockProvider = const Find(),
-    this.historyRepository = const Find(),
-    this.pollInterval = const Config(
-      'workflows.pollInterval',
-      defaultValue: Duration(seconds: 5),
-    ),
-    this.batchSize = const Config('workflows.batchSize', defaultValue: 100),
-    this.concurrency = const Config('workflows.concurrency', defaultValue: 4),
-    this.worker = const Config('workflows.worker', defaultValue: true),
-    this.workerId = const Config('workflows.workerId'),
-    this.heartbeatInterval = const Config(
-      'workflows.heartbeatInterval',
-      defaultValue: Duration(seconds: 10),
-    ),
-    this.telemetry = const Find(),
-    this.enableMetrics = const Config(
-      'workflows.enableMetrics',
-      defaultValue: true,
-    ),
-    this.enableTracing = const Config(
-      'workflows.enableTracing',
-      defaultValue: true,
-    ),
-    this.metricPrefix = const Config(
-      'workflows.metricPrefix',
-      defaultValue: 'workflow',
-    ),
-    this.workerSession,
-  });
-
+  final Session? workerSession,
+}) implements Service {
   /// Throws an [ApiError] when the steps are declared inconsistently.
   void validate(DataBean<T> bean) {
     final workflow = 'Workflow "${bean.name}"';
@@ -231,7 +218,7 @@ class WorkflowService<T extends DataObject, TState extends Enum>
       _WorkflowServiceInstance<T, TState>();
 }
 
-class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
+class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>()
     extends ServiceInstance<WorkflowService<T, TState>>
     implements Workflow<T> {
   late final DataRepository<T> _repository;
@@ -668,7 +655,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
 
   void _ensureNotDisposed() {
     if (_disposed) {
-      throw ApiException('The workflow service is shut down.');
+      throw const ApiException('The workflow service is shut down.');
     }
   }
 
@@ -711,9 +698,8 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
 
     _timer?.cancel();
     _timer = _zone.createTimer(delay, () {
-      _activeTick = _runAsWorker(
-        _runTick,
-      ).whenComplete(() => _activeTick = null);
+      _activeTick = _runAsWorker(_runTick)
+          .whenComplete(() => _activeTick = null);
     });
   }
 
@@ -1208,7 +1194,9 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
     T? next,
   }) async {
     if (!handle.isValid) {
-      throw ApiException('The lock of the element expired, result discarded.');
+      throw const ApiException(
+        'The lock of the element expired, result discarded.',
+      );
     }
 
     final id = _idOf(element);
@@ -1227,7 +1215,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
           values: changes,
         );
         if (affected == 0) {
-          throw ApiException(
+          throw const ApiException(
             'The element was changed or removed in the meantime, result '
             'discarded.',
           );
@@ -1549,62 +1537,55 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>
   };
 }
 
-class _WorkflowMetrics {
-  final CounterMetric steps;
-  final HistogramMetric duration;
-  final HistogramMetric delay;
-  final CounterMetric signals;
-  final CounterMetric parked;
-  final GaugeMetric due;
-
-  _WorkflowMetrics(
-    Telemetry telemetry,
-    String prefix, {
-    required List<String> steps,
-    required List<String> signals,
-  }) : steps = telemetry.counter(
-         '${prefix}_steps_total',
-         labels: {
-           'step': steps,
-           'outcome': ['succeeded', 'failed'],
-         },
-         help: 'Number of step attempts by outcome.',
-       ),
-       duration = telemetry.exponentialHistogram(
-         '${prefix}_step_duration_seconds',
-         start: 0.005,
-         factor: 2,
-         count: 16,
-         labels: {'step': steps},
-         help: 'Time a step took, including writing its result.',
-       ),
-       delay = telemetry.exponentialHistogram(
-         '${prefix}_step_delay_seconds',
-         start: 0.005,
-         factor: 2,
-         count: 16,
-         labels: {'step': steps},
-         help: 'Time between a step being due and it starting.',
-       ),
-       signals = telemetry.counter(
-         '${prefix}_signals_total',
-         labels: {
-           'signal': signals.isEmpty ? [''] : signals,
-         },
-         help: 'Number of signals sent.',
-       ),
-       parked = telemetry.counter(
-         '${prefix}_events_parked_total',
-         labels: {
-           'status': [
-             WorkflowEventStatus.failed.name,
-             WorkflowEventStatus.expired.name,
-           ],
-         },
-         help: 'Number of events that were given up.',
-       ),
-       due = telemetry.gauge(
-         '${prefix}_events_due',
-         help: 'Number of events that were due in the last poll.',
-       );
+class _WorkflowMetrics(
+  Telemetry telemetry,
+  String prefix, {
+  required List<String> steps,
+  required List<String> signals,
+}) {
+  final CounterMetric steps = telemetry.counter(
+    '${prefix}_steps_total',
+    labels: {
+      'step': steps,
+      'outcome': ['succeeded', 'failed'],
+    },
+    help: 'Number of step attempts by outcome.',
+  );
+  final HistogramMetric duration = telemetry.exponentialHistogram(
+    '${prefix}_step_duration_seconds',
+    start: 0.005,
+    factor: 2,
+    count: 16,
+    labels: {'step': steps},
+    help: 'Time a step took, including writing its result.',
+  );
+  final HistogramMetric delay = telemetry.exponentialHistogram(
+    '${prefix}_step_delay_seconds',
+    start: 0.005,
+    factor: 2,
+    count: 16,
+    labels: {'step': steps},
+    help: 'Time between a step being due and it starting.',
+  );
+  final CounterMetric signals = telemetry.counter(
+    '${prefix}_signals_total',
+    labels: {
+      'signal': signals.isEmpty ? [''] : signals,
+    },
+    help: 'Number of signals sent.',
+  );
+  final CounterMetric parked = telemetry.counter(
+    '${prefix}_events_parked_total',
+    labels: {
+      'status': [
+        WorkflowEventStatus.failed.name,
+        WorkflowEventStatus.expired.name,
+      ],
+    },
+    help: 'Number of events that were given up.',
+  );
+  final GaugeMetric due = telemetry.gauge(
+    '${prefix}_events_due',
+    help: 'Number of events that were due in the last poll.',
+  );
 }

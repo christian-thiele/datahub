@@ -1,10 +1,7 @@
 import 'sql.dart';
 
-class SqlCreateSchema with SqlBuilder {
-  final String schemaName;
-
-  SqlCreateSchema(this.schemaName);
-
+class SqlCreateSchema(final String schemaName) with SqlBuilder {
   @override
-  Sql toSql() => Sql.join([RawSql('CREATE SCHEMA '), Sql.name(schemaName)]);
+  Sql toSql() =>
+      Sql.join([const RawSql('CREATE SCHEMA '), Sql.name(schemaName)]);
 }

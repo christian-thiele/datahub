@@ -24,7 +24,7 @@ void main() {
   });
 
   declareTest('Logs carry the span of any tracer', [], () async {
-    final telemetry = Find<Telemetry>().find();
+    final telemetry = const Find<Telemetry>().find();
     final messages = <LogMessage>[];
 
     await LogListener(onPublish: messages.add).run(
@@ -42,7 +42,7 @@ void main() {
       'telemetry': {'logStdoutFormat': 'json', 'logLevel': 'debug'},
     },
     () async {
-      final telemetry = Find<Telemetry>().find();
+      final telemetry = const Find<Telemetry>().find();
       final buffer = StringBuffer();
       late LocalSpan span;
       await IOOverrides.runZoned(

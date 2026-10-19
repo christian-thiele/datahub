@@ -8,14 +8,9 @@ import 'package:datahub/utils.dart';
 
 import 'rest_response.dart';
 
-class RestClient {
-  final HttpClient _httpClient;
-  HttpAuth? auth;
-
+class RestClient(final HttpClient _httpClient, {var HttpAuth? auth}) {
   bool get isHttp2 => _httpClient.isHttp2;
   int get port => _httpClient.address.port;
-
-  RestClient(this._httpClient, {this.auth});
 
   /// Create a [RestClient] that automatically negotiates HTTP versions.
   static Future<RestClient> connect(
@@ -207,7 +202,7 @@ class RestClient {
         ];
         return Stream.value(utf8.encode(jsonEncode(body)));
       } else {
-        return Stream<List<int>>.empty();
+        return const Stream<List<int>>.empty();
       }
     }();
 

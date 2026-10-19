@@ -6,34 +6,24 @@ import 'expression.dart';
 import 'meta/data_field_constraint.dart';
 import 'meta/meta_data.dart';
 
-class DataField<Data, FieldType> implements Expression {
-  final String name;
-  final FieldType Function(Data) _valueOf;
-  final List<MetaData> meta;
-  final List<DataFieldConstraint> constraints;
-  final Encoder<FieldType> _toJson;
-  final Decoder<FieldType> _fromJson;
-
+class DataField<Data, FieldType>({
+  required final String name,
+  required FieldType Function(Data) valueOf,
+  required final Encoder<FieldType> _toJson,
+  required final Decoder<FieldType> _fromJson,
+  DataBean Function()? dataBean,
+  final List<MetaData> meta = const [],
+  final List<DataFieldConstraint> constraints = const [],
+}) implements Expression {
+  final FieldType Function(Data) _valueOf = ((dynamic value) =>
+      valueOf(value as Data));
   // this pattern allows for cyclic references
-  final DataBean Function()? _resolveDataBean;
+  final DataBean Function()? _resolveDataBean = dataBean;
   late final DataBean? dataBean = _resolveDataBean?.call();
 
   TypeCheck<Data> get dataType => TypeCheck<Data>();
 
   TypeCheck<FieldType> get type => TypeCheck<FieldType>();
-
-  DataField({
-    required this.name,
-    required FieldType Function(Data) valueOf,
-    required Encoder<FieldType> toJson,
-    required Decoder<FieldType> fromJson,
-    DataBean Function()? dataBean,
-    this.meta = const [],
-    this.constraints = const [],
-  }) : _valueOf = ((dynamic value) => valueOf(value as Data)),
-       _toJson = toJson,
-       _fromJson = fromJson,
-       _resolveDataBean = dataBean;
 
   FieldType valueOf(Data object) => _valueOf(object);
 

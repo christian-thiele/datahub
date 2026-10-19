@@ -21,4 +21,4 @@ import 'package:datahub/data.dart';
 ///   final String invoiceId;
 /// }
 /// ```
-abstract interface class WorkflowSignal<T extends DataObject>;
+abstract interface class WorkflowSignal<T extends DataObject>();

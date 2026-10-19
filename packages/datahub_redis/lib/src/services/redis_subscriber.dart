@@ -14,21 +14,20 @@ import '../redis_telemetry.dart';
 /// The connection is opened when the first channel is subscribed, health
 /// checked with `PING` and re-established with exponential backoff when
 /// lost, re-subscribing all channels and patterns.
-class RedisSubscriber {
-  static const _initialBackoff = Duration(milliseconds: 250);
-  static const _maxBackoff = Duration(seconds: 30);
-
-  final Future<RedisSocketConnection> Function() _connect;
-  final Duration healthCheckInterval;
+class RedisSubscriber(
+  final Future<RedisSocketConnection> Function() _connect, {
+  required final Duration healthCheckInterval,
 
   /// Zone the connection loop and timers run in, so that they are not
   /// bound to the zone of whoever subscribed first.
-  final Zone _zone;
-
-  final RedisTelemetry _telemetry;
+  required final Zone _zone,
+  final RedisTelemetry _telemetry = RedisTelemetry.disabled,
 
   /// Labels identifying the Redis server in logs.
-  final Map<String, String> _targetLabels;
+  final Map<String, String> _targetLabels = const {},
+}) {
+  static const _initialBackoff = Duration(milliseconds: 250);
+  static const _maxBackoff = Duration(seconds: 30);
 
   final _channels = <String, _Subscription>{};
   final _patterns = <String, _Subscription>{};
@@ -41,16 +40,6 @@ class RedisSubscriber {
   Completer<void>? _backoff;
   var _awaitingReply = false;
   var _disposed = false;
-
-  RedisSubscriber(
-    this._connect, {
-    required this.healthCheckInterval,
-    required Zone zone,
-    RedisTelemetry telemetry = RedisTelemetry.disabled,
-    Map<String, String> targetLabels = const {},
-  }) : _zone = zone,
-       _telemetry = telemetry,
-       _targetLabels = targetLabels;
 
   Stream<RedisMessage> subscribe(String channel) => _stream(channel, false);
 
@@ -340,17 +329,15 @@ class RedisSubscriber {
 }
 
 /// Registration of a listener, see [RedisSubscriber.listen].
-class SubscriptionHandle {
+class SubscriptionHandle._(
   /// Completes when the server confirmed the subscription.
-  final Future<void> ready;
-  final void Function() _cancel;
-
-  SubscriptionHandle._(this.ready, this._cancel);
-
+  final Future<void> ready,
+  final void Function() _cancel,
+) {
   void cancel() => _cancel();
 }
 
-class _Subscription {
+class _Subscription() {
   final listeners = <_Listener>{};
   var ready = Completer<void>();
 
@@ -367,9 +354,7 @@ class _Subscription {
   }
 }
 
-class _Listener {
-  final void Function(RedisMessage message) onMessage;
-  final void Function()? onDone;
-
-  _Listener(this.onMessage, this.onDone);
-}
+class _Listener(
+  final void Function(RedisMessage message) onMessage,
+  final void Function()? onDone,
+);

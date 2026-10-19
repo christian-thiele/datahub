@@ -1,8 +1,4 @@
-class CliException implements Exception {
-  final String message;
-
-  CliException(this.message);
-
+class CliException(final String message) implements Exception {
   @override
   String toString() => message;
 }

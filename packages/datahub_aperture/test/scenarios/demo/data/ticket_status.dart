@@ -1,1 +1,7 @@
-enum TicketStatus { open, inProgress, waitingForCustomer, resolved, closed }
+enum TicketStatus() {
+  open,
+  inProgress,
+  waitingForCustomer,
+  resolved,
+  closed,
+}

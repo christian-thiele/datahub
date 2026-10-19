@@ -7,7 +7,7 @@ void main() {
     'Simple REST Api',
     [
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           ResourceEndpoint(
             matcher: RoutePattern('/test/special'),
@@ -27,7 +27,7 @@ void main() {
       ),
     ],
     () async {
-      final client = Find<Api>().find().connectHttp11();
+      final client = const Find<Api>().find().connectHttp11();
 
       expect(
         await client.post('/test/something', {'hi': 123}).thenGetJsonBody(),

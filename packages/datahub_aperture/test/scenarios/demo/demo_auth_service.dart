@@ -14,35 +14,23 @@ import 'package:pointycastle/export.dart';
 /// Supports the authorization code flow with PKCE (S256), refresh tokens,
 /// discovery, JWKS and userinfo. Signing keys are generated on startup, so
 /// tokens do not survive a restart.
-class DemoAuthService implements Service {
+class const DemoAuthService({
   /// Issuer url. The service listens on the port of this url and serves
   /// all endpoints below its path.
-  final Config<String> issuer;
+  final Config<String> issuer = const Config.value(
+    'http://localhost:8081/realms/local-oidc',
+  ),
 
   /// Client id the app has to use. Accepts any client id when null.
-  final Config<String?> clientId;
-
-  final String subject;
-  final String username;
-  final String email;
-  final String givenName;
-  final String familyName;
-
-  final Duration accessTokenLifetime;
-  final Duration refreshTokenLifetime;
-
-  const DemoAuthService({
-    this.issuer = const Config.value('http://localhost:8081/realms/local-oidc'),
-    this.clientId = const Config.value(null),
-    this.subject = 'b2f4c8a6-1d3e-4f5a-9b7c-0e2d4f6a8c01',
-    this.username = 'demo',
-    this.email = 'demo@example.com',
-    this.givenName = 'Demo',
-    this.familyName = 'User',
-    this.accessTokenLifetime = const Duration(minutes: 5),
-    this.refreshTokenLifetime = const Duration(hours: 8),
-  });
-
+  final Config<String?> clientId = const Config.value(null),
+  final String subject = 'b2f4c8a6-1d3e-4f5a-9b7c-0e2d4f6a8c01',
+  final String username = 'demo',
+  final String email = 'demo@example.com',
+  final String givenName = 'Demo',
+  final String familyName = 'User',
+  final Duration accessTokenLifetime = const Duration(minutes: 5),
+  final Duration refreshTokenLifetime = const Duration(hours: 8),
+}) implements Service {
   @override
   ServiceInstance<DemoAuthService> createInstance() =>
       _DemoAuthServiceInstance();
@@ -57,7 +45,7 @@ typedef _AuthorizationCode = ({
   DateTime expires,
 });
 
-class _DemoAuthServiceInstance extends ServiceInstance<DemoAuthService> {
+class _DemoAuthServiceInstance() extends ServiceInstance<DemoAuthService> {
   static const _codeLifetime = Duration(minutes: 1);
 
   late final Uri _issuer;
@@ -170,16 +158,13 @@ class _DemoAuthServiceInstance extends ServiceInstance<DemoAuthService> {
 
   ApiResponse _discovery() => JsonResponse({
     'issuer': _issuerString,
-    'authorization_endpoint': _endpoint(
-      'protocol/openid-connect/auth',
-    ).toString(),
+    'authorization_endpoint': _endpoint('protocol/openid-connect/auth')
+        .toString(),
     'token_endpoint': _endpoint('protocol/openid-connect/token').toString(),
-    'userinfo_endpoint': _endpoint(
-      'protocol/openid-connect/userinfo',
-    ).toString(),
-    'end_session_endpoint': _endpoint(
-      'protocol/openid-connect/logout',
-    ).toString(),
+    'userinfo_endpoint': _endpoint('protocol/openid-connect/userinfo')
+        .toString(),
+    'end_session_endpoint': _endpoint('protocol/openid-connect/logout')
+        .toString(),
     'jwks_uri': _endpoint('protocol/openid-connect/certs').toString(),
     'grant_types_supported': ['authorization_code', 'refresh_token'],
     'response_types_supported': ['code'],
@@ -471,10 +456,8 @@ class _DemoAuthServiceInstance extends ServiceInstance<DemoAuthService> {
   }
 }
 
-class _OAuthError implements Exception {
-  final String error;
-  final String description;
-  final int statusCode;
-
-  _OAuthError(this.error, this.description, [this.statusCode = 400]);
-}
+class _OAuthError(
+  final String error,
+  final String description, [
+  final int statusCode = 400,
+]) implements Exception;

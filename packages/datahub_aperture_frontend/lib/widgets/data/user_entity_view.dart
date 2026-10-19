@@ -30,10 +30,8 @@ class UserEntityView extends StatelessWidget {
             foregroundColor: colors.link,
             child: Text(
               _initials,
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: colors.link,
-                fontWeight: FontWeight.w600,
-              ),
+              style: Theme.of(context).textTheme.labelMedium
+                  ?.copyWith(color: colors.link, fontWeight: FontWeight.w600),
             ),
           ),
           Column(

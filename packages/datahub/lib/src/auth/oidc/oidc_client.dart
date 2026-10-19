@@ -1,24 +1,14 @@
 import 'package:datahub/datahub.dart';
 
-class OidcClient {
-  final Uri issuer;
-  final Uri authorizationEndpoint;
-  final Uri tokenEndpoint;
-  final String? audience;
-  final String? clientId;
-  final String? clientSecret;
-  final List<String>? scopes;
-
-  OidcClient({
-    required this.issuer,
-    required this.authorizationEndpoint,
-    required this.tokenEndpoint,
-    this.audience,
-    this.scopes,
-    this.clientId,
-    this.clientSecret,
-  });
-
+class OidcClient({
+  required final Uri issuer,
+  required final Uri authorizationEndpoint,
+  required final Uri tokenEndpoint,
+  final String? audience,
+  final List<String>? scopes,
+  final String? clientId,
+  final String? clientSecret,
+}) {
   static Future<OidcClient> discover(
     Uri issuer, {
     String? audience,

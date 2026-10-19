@@ -8,18 +8,12 @@ import 'abstract/database_connection.dart';
 import 'postgresql_context.dart';
 import 'postgresql_telemetry.dart';
 
-class PostgresqlConnection extends DatabaseConnection {
-  final Connection _connection;
-  final bool logStatements;
-  final PostgresqlTelemetry telemetry;
-
-  PostgresqlConnection(
-    super.adapter,
-    this._connection, {
-    this.logStatements = false,
-    this.telemetry = PostgresqlTelemetry.disabled,
-  });
-
+class PostgresqlConnection(
+  super.adapter,
+  final Connection _connection, {
+  final bool logStatements = false,
+  final PostgresqlTelemetry telemetry = PostgresqlTelemetry.disabled,
+}) extends DatabaseConnection {
   @override
   Future<void> close() async {
     await _connection.close();

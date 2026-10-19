@@ -5,22 +5,16 @@ import 'package:datahub/src/test/test_host.dart';
 import 'package:test/test.dart';
 
 /// A service that records the config values it resolved during initialization.
-class ProbeService implements Service {
-  final String label;
-  final Config<String> host;
-  final Config<int?> port;
-
-  const ProbeService({
-    required this.label,
-    this.host = const Config('host'),
-    this.port = const Config('port'),
-  });
-
+class const ProbeService({
+  required final String label,
+  final Config<String> host = const Config('host'),
+  final Config<int?> port = const Config('port'),
+}) implements Service {
   @override
   ServiceInstance createInstance() => ProbeServiceInstance();
 }
 
-class ProbeServiceInstance extends ServiceInstance<ProbeService> {
+class ProbeServiceInstance() extends ServiceInstance<ProbeService> {
   late final String host;
   late final int? port;
 
@@ -44,7 +38,7 @@ void main() {
     [
       Scope(
         name: 'db',
-        components: [ProbeService(label: 'db')],
+        components: [const ProbeService(label: 'db')],
       ),
     ],
     () {
@@ -66,7 +60,7 @@ void main() {
         components: [
           Scope(
             name: 'inner',
-            components: [ProbeService(label: 'nested')],
+            components: [const ProbeService(label: 'nested')],
           ),
         ],
       ),
@@ -91,7 +85,7 @@ void main() {
           Scope(
             name: 'db',
             components: [
-              Scope(components: [ProbeService(label: 'db')]),
+              Scope(components: [const ProbeService(label: 'db')]),
             ],
           ),
         ],
@@ -111,7 +105,7 @@ void main() {
     [
       Scope(
         name: 'services.db',
-        components: [ProbeService(label: 'db')],
+        components: [const ProbeService(label: 'db')],
       ),
     ],
     () {
@@ -129,11 +123,11 @@ void main() {
     [
       Scope(
         name: 'primary',
-        components: [ProbeService(label: 'primary')],
+        components: [const ProbeService(label: 'primary')],
       ),
       Scope(
         name: 'replica',
-        components: [ProbeService(label: 'replica')],
+        components: [const ProbeService(label: 'replica')],
       ),
     ],
     () {
@@ -148,7 +142,7 @@ void main() {
 
   declareTest(
     'Scope: services outside any config scope read from the root',
-    [ProbeService(label: 'root')],
+    [const ProbeService(label: 'root')],
     () {
       expect(probe('root').find().host, 'root.example.com');
     },

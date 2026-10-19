@@ -1,4 +1,4 @@
-enum ContactType {
+enum ContactType() {
   employee,
   financial,
   executive,

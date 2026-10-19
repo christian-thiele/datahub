@@ -5,15 +5,10 @@ import 'package:datahub/data.dart';
 import 'package:datahub/src/test/test_host.dart';
 import 'package:test/test.dart';
 
-enum TestEnumConfig implements DataEnum {
+enum TestEnumConfig(@override final String jsonValue) implements DataEnum {
   a('optionA'),
   b('optionB'),
-  c('optionC');
-
-  const TestEnumConfig(this.jsonValue);
-
-  @override
-  final String jsonValue;
+  c('optionC'),
 }
 
 // Values used for both code-based and file-based assertions.
@@ -34,26 +29,32 @@ const _fullConfig = {
 };
 
 void assertAllConfigValues() {
-  expect(Config<String>('stringValue').read(), 'hello');
+  expect(const Config<String>('stringValue').read(), 'hello');
   expect(
-    Config<List<String>>('strList').read(),
+    const Config<List<String>>('strList').read(),
     orderedEquals(['a', 'list', 'of', 'strings']),
   );
-  expect(Config<List<int>>('intList').read(), orderedEquals([1, 2, 3, 4, 5]));
   expect(
-    Config<List<dynamic>>('dynList').read(),
+    const Config<List<int>>('intList').read(),
+    orderedEquals([1, 2, 3, 4, 5]),
+  );
+  expect(
+    const Config<List<dynamic>>('dynList').read(),
     orderedEquals([1, 2, 'three', true]),
   );
-  expect(Config<bool>('isBool').read(), isTrue);
-  expect(Config<bool>('isNotBool').read(), isFalse);
-  expect(Config<int>('intValue').read(), 1);
-  expect(Config<double>('doubleValue').read(), 1.123);
+  expect(const Config<bool>('isBool').read(), isTrue);
+  expect(const Config<bool>('isNotBool').read(), isFalse);
+  expect(const Config<int>('intValue').read(), 1);
+  expect(const Config<double>('doubleValue').read(), 1.123);
   expect(
-    Config<TestEnumConfig>('enumValue', values: TestEnumConfig.values).read(),
+    const Config<TestEnumConfig>(
+      'enumValue',
+      values: TestEnumConfig.values,
+    ).read(),
     TestEnumConfig.b,
   );
-  expect(Config<String>('nested.key').read(), 'value');
-  expect(Config<String>('nested.deep.level').read(), 'deep_value');
+  expect(const Config<String>('nested.key').read(), 'value');
+  expect(const Config<String>('nested.deep.level').read(), 'deep_value');
 }
 
 void main() {
@@ -70,13 +71,13 @@ void main() {
 
   declareTest('Code-based: default value used when key is absent', [], () {
     expect(
-      Config<String>('missing', defaultValue: 'fallback').read(),
+      const Config<String>('missing', defaultValue: 'fallback').read(),
       'fallback',
     );
-    expect(Config<int>('missing', defaultValue: 42).read(), 42);
-    expect(Config<bool>('missing', defaultValue: false).read(), isFalse);
+    expect(const Config<int>('missing', defaultValue: 42).read(), 42);
+    expect(const Config<bool>('missing', defaultValue: false).read(), isFalse);
     expect(
-      Config<TestEnumConfig>(
+      const Config<TestEnumConfig>(
         'missing',
         defaultValue: TestEnumConfig.c,
         values: TestEnumConfig.values,
@@ -89,8 +90,8 @@ void main() {
     'Code-based: Config.value() always returns its fixed value',
     [],
     () {
-      expect(Config<String>.value('fixed').read(), 'fixed');
-      expect(Config<int>.value(99).read(), 99);
+      expect(const Config<String>.value('fixed').read(), 'fixed');
+      expect(const Config<int>.value(99).read(), 99);
     },
     config: const {},
   );
@@ -103,15 +104,15 @@ void main() {
     [],
     () {
       expect(
-        Config<List<String>>('strList', defaultValue: const []).read(),
+        const Config<List<String>>('strList', defaultValue: []).read(),
         orderedEquals(['a', 'list', 'of', 'strings']),
       );
       expect(
-        Config<List<int>>('intList', defaultValue: const []).read(),
+        const Config<List<int>>('intList', defaultValue: []).read(),
         orderedEquals([1, 2, 3, 4, 5]),
       );
       expect(
-        Config<List<dynamic>>('dynList', defaultValue: const []).read(),
+        const Config<List<dynamic>>('dynList', defaultValue: []).read(),
         orderedEquals([1, 2, 'three', true]),
       );
     },
@@ -123,11 +124,11 @@ void main() {
     [],
     () {
       expect(
-        Config<List<String>>('missing', defaultValue: const ['x']).read(),
+        const Config<List<String>>('missing', defaultValue: ['x']).read(),
         orderedEquals(['x']),
       );
       expect(
-        Config<List<int>>('missing', defaultValue: const [7]).read(),
+        const Config<List<int>>('missing', defaultValue: [7]).read(),
         orderedEquals([7]),
       );
     },
@@ -148,7 +149,7 @@ void main() {
     () {
       expect(
         // ignore: datahub_lints/enum_config_requires_values
-        () => Config<TestEnumConfig>('enumValue').read(),
+        () => const Config<TestEnumConfig>('enumValue').read(),
         throwsA(isA<ConfigDeclarationException>()),
       );
     },
@@ -163,7 +164,7 @@ void main() {
       // until someone actually configured the value.
       expect(
         // ignore: datahub_lints/enum_config_requires_values
-        () => Config<TestEnumConfig>(
+        () => const Config<TestEnumConfig>(
           'enumValue',
           defaultValue: TestEnumConfig.a,
         ).read(),
@@ -179,7 +180,7 @@ void main() {
     () {
       expect(
         // ignore: datahub_lints/enum_config_requires_values
-        () => Config<TestEnumConfig>('enumValue', values: const []).read(),
+        () => const Config<TestEnumConfig>('enumValue', values: []).read(),
         throwsA(isA<ConfigDeclarationException>()),
       );
     },
@@ -189,21 +190,21 @@ void main() {
   declareTest('Enum: nullable enum config without values: throws', [], () {
     expect(
       // ignore: datahub_lints/enum_config_requires_values
-      () => Config<TestEnumConfig?>('enumValue').read(),
+      () => const Config<TestEnumConfig?>('enumValue').read(),
       throwsA(isA<ConfigDeclarationException>()),
     );
   }, config: _fullConfig);
 
   declareTest('Enum: Config.value() needs no values: parameter', [], () {
     expect(
-      Config<TestEnumConfig>.value(TestEnumConfig.c).read(),
+      const Config<TestEnumConfig>.value(TestEnumConfig.c).read(),
       TestEnumConfig.c,
     );
   }, config: const {});
 
   declareTest('Enum: an unknown value reports the accepted values', [], () {
     expect(
-      () => Config<TestEnumConfig>(
+      () => const Config<TestEnumConfig>(
         'enumValue',
         values: TestEnumConfig.values,
       ).read(),
@@ -228,14 +229,14 @@ void main() {
 
   declareTest('Values: an accepted value is returned', [], () {
     expect(
-      Config<String>('mode', values: const ['fast', 'slow']).read(),
+      const Config<String>('mode', values: ['fast', 'slow']).read(),
       'fast',
     );
   }, config: const {'mode': 'fast'});
 
   declareTest('Values: a value outside values: is rejected', [], () {
     expect(
-      () => Config<String>('mode', values: const ['fast', 'slow']).read(),
+      () => const Config<String>('mode', values: ['fast', 'slow']).read(),
       throwsA(
         isA<ConfigValueException>()
             .having((e) => e.path, 'path', 'mode')
@@ -250,9 +251,9 @@ void main() {
   }, config: const {'mode': 'turbo'});
 
   declareTest('Values: works for non-String types', [], () {
-    expect(Config<int>('retries', values: const [1, 3, 5]).read(), 3);
+    expect(const Config<int>('retries', values: [1, 3, 5]).read(), 3);
     expect(
-      () => Config<int>('timeout', values: const [1, 3, 5]).read(),
+      () => const Config<int>('timeout', values: [1, 3, 5]).read(),
       throwsA(isA<ConfigValueException>()),
     );
   }, config: const {'retries': 3, 'timeout': 4});
@@ -260,10 +261,10 @@ void main() {
   declareTest('Values: the defaultValue is not subject to values:', [], () {
     // The default is the declaring code's own choice, not user input.
     expect(
-      Config<String>(
+      const Config<String>(
         'missing',
         defaultValue: 'anything',
-        values: const ['fast', 'slow'],
+        values: ['fast', 'slow'],
       ).read(),
       'anything',
     );
@@ -274,10 +275,10 @@ void main() {
     [],
     () {
       expect(
-        () => Config<String>(
+        () => const Config<String>(
           'mode',
           defaultValue: 'fast',
-          values: const ['fast', 'slow'],
+          values: ['fast', 'slow'],
         ).read(),
         throwsA(isA<ConfigValueException>()),
       );
@@ -286,11 +287,11 @@ void main() {
   );
 
   declareTest('Values: no values: means no restriction', [], () {
-    expect(Config<String>('mode').read(), 'turbo');
+    expect(const Config<String>('mode').read(), 'turbo');
   }, config: const {'mode': 'turbo'});
 
   declareTest('Values: Config.value() is not restricted', [], () {
-    expect(Config<String>.value('turbo').read(), 'turbo');
+    expect(const Config<String>.value('turbo').read(), 'turbo');
   }, config: const {});
 
   // -------------------------------------------------------------------------

@@ -9,10 +9,10 @@ import 'package:grpc/grpc.dart';
 import 'package:test/test.dart';
 
 /// Captures the spans it would send to a collector.
-class _CapturingExporter extends OpenTelemetryTraceExporter {
+class _CapturingExporter() extends OpenTelemetryTraceExporter {
   final sent = <otel.Span>[];
 
-  _CapturingExporter()
+  this
     : super(
         channel: ClientChannel('localhost'),
         exportInterval: const Duration(hours: 1),
@@ -246,7 +246,7 @@ void main() {
   });
 
   declareTest('Telemetry publishes ended spans', [], () async {
-    final telemetry = Find<Telemetry>().find();
+    final telemetry = const Find<Telemetry>().find();
     final ended = <LocalSpan>[];
     final subscription = telemetry.endedSpans.listen(ended.add);
 

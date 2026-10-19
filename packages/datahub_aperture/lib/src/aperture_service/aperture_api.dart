@@ -9,49 +9,41 @@ import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/services.dart';
 import 'package:datahub_aperture/src/utils/data_description_builders.dart';
 
-class ApertureApi extends ApiNode {
-  final Config<String> title;
-  final ApertureTheme theme;
-  final ApertureTileSource tileSource;
-  final List<ApertureResource> resources;
-  final List<ApertureAction> actions;
-  final Config<String> basePath;
-  final Config<String> oidcIssuer;
-  final Config<String?> oidcAudience;
-  final Config<List<String>> oidcScopes;
-  final Config<String?> oidcClientId;
-  final Config<String?> oidcClientSecret;
-  final Config<String> oidcIdentityField;
-  final Config<String> oidcUsernameField;
-
-  const ApertureApi({
-    this.title = const Config('aperture.title', defaultValue: 'Aperture'),
-    this.theme = const ApertureTheme(),
-    this.tileSource = const OpenStreetMapTileSource(),
-    this.resources = const [],
-    this.actions = const [],
-    this.basePath = const Config(
-      'aperture.basePath',
-      defaultValue: '/aperture',
-    ),
-    this.oidcIssuer = const Config('aperture.oidcIssuer'),
-    this.oidcAudience = const Config('aperture.oidcAudience'),
-    this.oidcScopes = const Config('aperture.oidcScopes', defaultValue: []),
-    this.oidcClientId = const Config(
-      'aperture.oidcClientId',
-      defaultValue: 'aperture',
-    ),
-    this.oidcClientSecret = const Config('aperture.oidcClientSecret'),
-    this.oidcIdentityField = const Config(
-      'aperture.oidcIdentityField',
-      defaultValue: 'sub',
-    ),
-    this.oidcUsernameField = const Config(
-      'aperture.oidcUsernameField',
-      defaultValue: 'email',
-    ),
-  });
-
+class const ApertureApi({
+  final Config<String> title = const Config(
+    'aperture.title',
+    defaultValue: 'Aperture',
+  ),
+  final ApertureTheme theme = const ApertureTheme(),
+  final ApertureTileSource tileSource = const OpenStreetMapTileSource(),
+  final List<ApertureResource> resources = const [],
+  final List<ApertureAction> actions = const [],
+  final Config<String> basePath = const Config(
+    'aperture.basePath',
+    defaultValue: '/aperture',
+  ),
+  final Config<String> oidcIssuer = const Config('aperture.oidcIssuer'),
+  final Config<String?> oidcAudience = const Config('aperture.oidcAudience'),
+  final Config<List<String>> oidcScopes = const Config(
+    'aperture.oidcScopes',
+    defaultValue: [],
+  ),
+  final Config<String?> oidcClientId = const Config(
+    'aperture.oidcClientId',
+    defaultValue: 'aperture',
+  ),
+  final Config<String?> oidcClientSecret = const Config(
+    'aperture.oidcClientSecret',
+  ),
+  final Config<String> oidcIdentityField = const Config(
+    'aperture.oidcIdentityField',
+    defaultValue: 'sub',
+  ),
+  final Config<String> oidcUsernameField = const Config(
+    'aperture.oidcUsernameField',
+    defaultValue: 'email',
+  ),
+}) extends ApiNode {
   @override
   List<ApiRoute> buildRoutes() {
     final base = basePath.read();
@@ -413,9 +405,8 @@ class ApertureApi extends ApiNode {
               '$base/api/resources/{resourceId}/workflow/events/{eventId}',
             ),
             delete: (request) async {
-              await _workflowOf(
-                request,
-              ).cancel(request.getRouteParam<String>('eventId'));
+              await _workflowOf(request)
+                  .cancel(request.getRouteParam<String>('eventId'));
             },
           ),
           ResourceEndpoint(
@@ -423,9 +414,8 @@ class ApertureApi extends ApiNode {
               '$base/api/resources/{resourceId}/workflow/events/{eventId}/retry',
             ),
             post: (request) async {
-              await _workflowOf(
-                request,
-              ).retry(request.getRouteParam<String>('eventId'));
+              await _workflowOf(request)
+                  .retry(request.getRouteParam<String>('eventId'));
               return {};
             },
           ),
@@ -467,9 +457,8 @@ class ApertureApi extends ApiNode {
               '$base/api/resources/{resourceId}/elements/{elementId}/workflow/resume',
             ),
             post: (request) async {
-              await _workflowOf(
-                request,
-              ).resume(request.getRouteParam<String>('elementId'));
+              await _workflowOf(request)
+                  .resume(request.getRouteParam<String>('elementId'));
               return {};
             },
           ),

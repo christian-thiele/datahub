@@ -6,14 +6,12 @@ import 'package:datahub/datahub.dart';
 ///
 /// Prints marker lines so the test can observe the lifecycle of the host
 /// from outside the process.
-class MarkerService implements Service {
-  const MarkerService();
-
+class const MarkerService() implements Service {
   @override
   ServiceInstance<MarkerService> createInstance() => MarkerServiceInstance();
 }
 
-class MarkerServiceInstance extends ServiceInstance<MarkerService> {
+class MarkerServiceInstance() extends ServiceInstance<MarkerService> {
   @override
   Future<void> initialize() async {
     await super.initialize();
@@ -28,6 +26,6 @@ class MarkerServiceInstance extends ServiceInstance<MarkerService> {
 }
 
 void main() async {
-  await runApp([MarkerService()]);
+  await runApp([const MarkerService()]);
   print('MARKER_EXITED');
 }

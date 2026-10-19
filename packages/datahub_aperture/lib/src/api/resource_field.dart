@@ -6,36 +6,19 @@ import 'resource_field_type.dart';
 part 'resource_field.g.dart';
 
 @Data()
-class ResourceField extends $ResourceField {
-  final String id;
-  final String name;
-  final ResourceFieldType type;
-  final bool nullable;
-  final String? description;
-  final bool readOnly;
-  final bool auto;
-  final int? length;
-  final String? validation;
-  final List<ResourceField>? objectDescription;
-  final List<String>? enumValues;
-  final ResourceFieldLookup? lookup;
-  final bool allowFilter;
-  final bool allowSort;
-
-  const ResourceField({
-    required this.id,
-    required this.name,
-    required this.type,
-    this.nullable = false,
-    this.description,
-    this.readOnly = false,
-    this.auto = false,
-    this.length,
-    this.validation,
-    this.objectDescription,
-    this.enumValues,
-    this.lookup,
-    this.allowFilter = true,
-    this.allowSort = true,
-  });
-}
+class const ResourceField({
+  required final String id,
+  required final String name,
+  required final ResourceFieldType type,
+  final bool nullable = false,
+  final String? description,
+  final bool readOnly = false,
+  final bool auto = false,
+  final int? length,
+  final String? validation,
+  final List<ResourceField>? objectDescription,
+  final List<String>? enumValues,
+  final ResourceFieldLookup? lookup,
+  final bool allowFilter = true,
+  final bool allowSort = true,
+}) extends $ResourceField;

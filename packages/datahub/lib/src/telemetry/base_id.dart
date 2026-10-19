@@ -5,12 +5,8 @@ import 'dart:typed_data';
 
 import 'package:boost/boost.dart';
 
-abstract class BaseId {
+abstract class const BaseId(final Uint8List _id) {
   static final _random = Random();
-
-  final Uint8List _id;
-
-  const BaseId(this._id);
 
   String get hexId => _id.toHexString();
 

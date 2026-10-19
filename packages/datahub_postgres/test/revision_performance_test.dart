@@ -17,7 +17,7 @@ void main() {
       PostgresqlRevisableRepositoryService(bean: $Person.bean),
     ],
     () async {
-      final repo = Find<PostgresqlRevisableRepository<Service, Person>>()
+      final repo = const Find<PostgresqlRevisableRepository<Service, Person>>()
           .find();
 
       // 5000 elements with 10 revisions each
@@ -40,9 +40,9 @@ void main() {
       final filter = $Person.$lastName.equals('L42');
       expect(await repo.readAll(filter: filter), hasLength(10));
 
-      final plan = await Find<Postgresql>().find().runDetachedTransaction(
+      final plan = await const Find<Postgresql>().find().runDetachedTransaction(
         (db) => db.execute(
-          RawSql('EXPLAIN (FORMAT JSON) ') +
+          const RawSql('EXPLAIN (FORMAT JSON) ') +
               repo.statements.selectCurrent(filter: filter, limit: 20),
         ),
       );

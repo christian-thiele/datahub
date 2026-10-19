@@ -26,9 +26,8 @@ class EmptyListView extends StatelessWidget {
             ),
             Text(
               S.of(context).noElements,
-              style: Theme.of(
-                context,
-              ).textTheme.labelLarge?.copyWith(color: colors.textMuted),
+              style: Theme.of(context).textTheme.labelLarge
+                  ?.copyWith(color: colors.textMuted),
             ),
           ],
         ),

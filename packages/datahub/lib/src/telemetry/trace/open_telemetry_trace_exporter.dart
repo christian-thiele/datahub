@@ -9,7 +9,11 @@ import '../otlp/otlp_mapping.dart';
 import 'span.dart';
 import 'trace_exporter.dart';
 
-enum _SpanState { queued, sentRunning, sent }
+enum _SpanState() {
+  queued,
+  sentRunning,
+  sent,
+}
 
 /// Exports spans to an OpenTelemetry collector via OTLP/gRPC.
 ///
@@ -17,22 +21,19 @@ enum _SpanState { queued, sentRunning, sent }
 /// the service crashes) is still visible. A span that was exported while it
 /// was running is queued again when it ends, so the collector also receives
 /// its final state.
-class OpenTelemetryTraceExporter extends OtlpBatchExporter<LocalSpan>
-    implements TraceExporter {
-  final Map<String, Object?> resourceAttributes;
-  final otel.TraceServiceClient _client;
+class OpenTelemetryTraceExporter({
+  required ClientChannel channel,
+  required super.exportInterval,
+  required super.exportIntervalJitter,
+  super.exportTimeout,
+  super.maxBatchSize,
+  super.maxBufferSize,
+  final Map<String, Object?> resourceAttributes = const {},
+}) extends OtlpBatchExporter<LocalSpan> implements TraceExporter {
+  final otel.TraceServiceClient _client = otel.TraceServiceClient(channel);
   final _states = Expando<_SpanState>();
 
-  OpenTelemetryTraceExporter({
-    required ClientChannel channel,
-    required super.exportInterval,
-    required super.exportIntervalJitter,
-    super.exportTimeout,
-    super.maxBatchSize,
-    super.maxBufferSize,
-    this.resourceAttributes = const {},
-  }) : _client = otel.TraceServiceClient(channel),
-       super(signal: 'traces');
+  this : super(signal: 'traces');
 
   @override
   Future<void> initialize() async => start();

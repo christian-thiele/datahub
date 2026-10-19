@@ -117,22 +117,15 @@ final RegExp _vrExp = RegExp(
 ///
 /// The segments matched by the wildcard-suffix is also stored in the [Route]
 /// object. See [Route.wildcard]
-class RoutePattern implements RouteMatcher {
-  final String pattern;
-  final List<_Segment> _segments;
-  final String routeMatchExp;
-  final bool isWildcardPattern;
-
+class const RoutePattern._(
+  final String pattern,
+  final List<_Segment> _segments,
+  final String routeMatchExp,
+  final bool isWildcardPattern,
+) implements RouteMatcher {
   static const any = RoutePattern._('*', [_WildcardSegment()], r'.*', true);
 
-  const RoutePattern._(
-    this.pattern,
-    this._segments,
-    this.routeMatchExp,
-    this.isWildcardPattern,
-  );
-
-  factory RoutePattern(String pattern) {
+  factory(String pattern) {
     if (!_vrExp.hasMatch(pattern)) {
       throw ApiError('Invalid route pattern: $pattern');
     }
@@ -155,7 +148,7 @@ class RoutePattern implements RouteMatcher {
       }
 
       if (segment == '*') {
-        segments.add(_WildcardSegment());
+        segments.add(const _WildcardSegment());
         hasWildcard = true;
         break;
       }
@@ -222,14 +215,12 @@ class RoutePattern implements RouteMatcher {
   ///
   /// Throws ApiError when the key is not present in the pattern.
   bool isOptionalParam(String key) {
-    final segment =
-        _segments.firstWhere(
-              (element) => element is _PLSegment && element.key == key,
-              orElse: () => throw ApiError(
-                'Placeholder param "$key" not present in pattern: $pattern',
-              ),
-            )
-            as _PLSegment;
+    final segment = _segments.firstWhere(
+      (element) => element is _PLSegment && element.key == key,
+      orElse: () => throw ApiError(
+        'Placeholder param "$key" not present in pattern: $pattern',
+      ),
+    ) as _PLSegment;
     return segment.optional;
   }
 
@@ -265,23 +256,18 @@ class RoutePattern implements RouteMatcher {
   }
 }
 
-class _Segment {
-  final String source;
-
-  const _Segment(this.source);
-
+class const _Segment(final String source) {
   String toMatchExp() => '\\/${_regexEscape(source)}';
 
   String encode(Map<String, String> params) => '/$source';
 }
 
-class _PLSegment extends _Segment {
-  final String prefix;
-  final String key;
-  final bool optional;
-
-  const _PLSegment(super.source, this.prefix, this.key, this.optional);
-
+class const _PLSegment(
+  super.source,
+  final String prefix,
+  final String key,
+  final bool optional,
+) extends _Segment {
   @override
   String toMatchExp() {
     final keyRegex = '(?<$key>$_segmentChars+)';
@@ -308,8 +294,8 @@ class _PLSegment extends _Segment {
   }
 }
 
-class _WildcardSegment extends _Segment {
-  const _WildcardSegment() : super('*');
+class const _WildcardSegment() extends _Segment {
+  this : super('*');
 
   @override
   String toMatchExp() => '(?<$_wildcardGroup>(\\/($_segmentChars*))*)';
@@ -328,19 +314,12 @@ String _regexEscape(String source) {
 /// and all route parameters defined by the [RoutePattern].
 /// If the pattern uses a wildcard suffix, the wildcard-part of the path
 /// is stored in [Route.wildcard].
-class RoutePatternMatch {
-  final RoutePattern pattern;
-  final String path;
-  final Map<String, String> routeParams;
-  final String? wildcard;
-
-  const RoutePatternMatch(
-    this.pattern,
-    this.path,
-    this.routeParams,
-    this.wildcard,
-  );
-
+class const RoutePatternMatch(
+  final RoutePattern pattern,
+  final String path,
+  final Map<String, String> routeParams,
+  final String? wildcard,
+) {
   /// Returns the named route parameter.
   ///
   /// Throws [ApiRequestException.badRequest] if value does not exist or could

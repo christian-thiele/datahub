@@ -4,14 +4,8 @@ import 'package:datahub_aperture/api.dart';
 part 'resource_field_lookup.g.dart';
 
 @Data()
-class ResourceFieldLookup extends $ResourceFieldLookup {
-  final String resourceId;
-  final String resourceFieldId;
-  final ResourceRelationFilter filter;
-
-  const ResourceFieldLookup({
-    required this.resourceId,
-    required this.resourceFieldId,
-    required this.filter,
-  });
-}
+class const ResourceFieldLookup({
+  required final String resourceId,
+  required final String resourceFieldId,
+  required final ResourceRelationFilter filter,
+}) extends $ResourceFieldLookup;

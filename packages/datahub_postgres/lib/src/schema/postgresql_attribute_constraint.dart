@@ -8,33 +8,22 @@ import 'package:meta/meta_meta.dart';
 /// Constraints can be used as annotations on fields of a [DataObject]
 /// class.
 @Target({TargetKind.field})
-sealed class PostgresqlAttributeConstraint extends MetaData {
-  const PostgresqlAttributeConstraint();
-}
+sealed class const PostgresqlAttributeConstraint() extends MetaData;
 
-final class NotNullConstraint extends PostgresqlAttributeConstraint {
-  const NotNullConstraint();
-}
+final class const NotNullConstraint() extends PostgresqlAttributeConstraint;
 
-final class PrimaryKeyConstraint extends PostgresqlAttributeConstraint {
-  final bool auto;
+final class const PrimaryKeyConstraint({final bool auto = true})
+    extends PostgresqlAttributeConstraint;
 
-  const PrimaryKeyConstraint({this.auto = true});
-}
-
-final class UniqueConstraint extends PostgresqlAttributeConstraint {
-  const UniqueConstraint();
-}
+final class const UniqueConstraint() extends PostgresqlAttributeConstraint;
 
 /// A default attribute constraint.
 ///
 /// A [DefaultConstraint] on a field annotated with `Id(auto: true)` replaces
 /// the built-in id generation (identity column, sequence or random uuid),
 /// e.g. to derive ids from a custom sequence or function.
-final class DefaultConstraint extends PostgresqlAttributeConstraint {
-  final Sql value;
-
-  const DefaultConstraint(this.value);
-  DefaultConstraint.value(dynamic value, PostgresqlDataType type)
+final class const DefaultConstraint(final Sql value)
+    extends PostgresqlAttributeConstraint {
+  new value(dynamic value, PostgresqlDataType type)
     : this(ParameterSql(value, type));
 }

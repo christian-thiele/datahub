@@ -12,9 +12,8 @@ String typeImportPrefix(DartType type, LibraryElement library) {
       ];
 
       for (final exported in exportedLibraries) {
-        if (exported case LibraryElement(
-          uri: final importLibraryUri,
-        ) when importLibraryUri == typeLibraryUri) {
+        if (exported case LibraryElement(uri: final importLibraryUri)
+            when importLibraryUri == typeLibraryUri) {
           if (import.prefix case PrefixFragment(
             element: PrefixElement(:final displayName),
           )) {

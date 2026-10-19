@@ -15,7 +15,7 @@ import '../sort.dart';
 /// other transactions are skipped instead of waited for, so concurrent
 /// workers each pick different elements; it has no effect without `locked`.
 /// Implementations without row locking may ignore both flags.
-abstract class DataRepository<T extends DataObject> {
+abstract class DataRepository<T extends DataObject>() {
   DataBean<T> get bean;
 
   /// Creates a new element.

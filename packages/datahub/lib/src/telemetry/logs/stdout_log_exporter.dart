@@ -11,17 +11,18 @@ import 'log_exporter.dart';
 import 'log_message.dart';
 import 'severity_level.dart';
 
-enum LogBodyFormat { logfmt, json, message, pretty }
+enum LogBodyFormat() {
+  logfmt,
+  json,
+  message,
+  pretty,
+}
 
 /// Writes log messages to stdout.
 ///
 /// The `logfmt` and `json` formats write the labels of a message and the
 /// fields `severity`, `msg`, `error`, `stack`, `trace_id` and `span_id`.
-class StdoutLogExporter extends LogExporter {
-  final LogBodyFormat format;
-
-  StdoutLogExporter(this.format);
-
+class StdoutLogExporter(final LogBodyFormat format) extends LogExporter {
   @override
   void add(LogMessage message) {
     final body = {
@@ -47,7 +48,7 @@ class StdoutLogExporter extends LogExporter {
   }
 }
 
-class _PrettyLog {
+class const _PrettyLog() {
   static const _colorReset = '\u001b[0m';
   static const _colorRed = '\u001b[31m';
   static const _colorBrightRed = '\u001b[31;1m';
@@ -55,8 +56,6 @@ class _PrettyLog {
   static const _colorYellow = '\u001b[33m';
   static const _colorBlue = '\u001b[34m';
   static const _colorCyan = '\u001b[36m';
-
-  const _PrettyLog();
 
   static void write(LogMessage message) {
     final maxLength = stdout.hasTerminal ? stdout.terminalColumns : 128;

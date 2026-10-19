@@ -8,18 +8,18 @@ import 'package:pointycastle/pointycastle.dart';
 
 import 'abstract/key_cache.dart';
 
-class KeyService implements Service {
-  final Config<bool> enable;
-
-  const KeyService({
-    this.enable = const Config('enableKeyCache', defaultValue: true),
-  });
-
+class const KeyService({
+  final Config<bool> enable = const Config(
+    'enableKeyCache',
+    defaultValue: true,
+  ),
+}) implements Service {
   @override
   ServiceInstance<KeyService> createInstance() => _KeyServiceInstance();
 }
 
-class _KeyServiceInstance extends ServiceInstance<KeyService>
+class _KeyServiceInstance()
+    extends ServiceInstance<KeyService>
     implements KeyCache {
   final _jwkCache = <_CacheKey, RSAPublicKey>{};
   final _openIdCache = <Uri, Uri>{};
@@ -80,7 +80,7 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
       final jwksRequest = await jwksClient.get('').thenGetJsonBody();
 
       if (jwksRequest['keys'] is! List) {
-        throw ApiException('Invalid JWKS.');
+        throw const ApiException('Invalid JWKS.');
       }
 
       for (final key in jwksRequest['keys']) {
@@ -95,7 +95,7 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
               return pub;
             }
           } else {
-            throw ApiException('Could not find e/n properties on key.');
+            throw const ApiException('Could not find e/n properties on key.');
           }
         }
       }
@@ -113,13 +113,7 @@ class _KeyServiceInstance extends ServiceInstance<KeyService>
   }
 }
 
-class _CacheKey {
-  final Uri jwks;
-  final String alg;
-  final String kid;
-
-  const _CacheKey(this.jwks, this.alg, this.kid);
-
+class const _CacheKey(final Uri jwks, final String alg, final String kid) {
   @override
   bool operator ==(Object other) {
     if (other is _CacheKey) {

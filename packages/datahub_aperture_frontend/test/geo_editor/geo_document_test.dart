@@ -277,9 +277,10 @@ void main() {
         GeoVertex(LatLng(1, 1)),
       ]);
 
-      final moved =
-          line.moveVertex(const GeoVertexRef(0, 0, 0), LatLng(2, 2))
-              as GeoLineFeature;
+      final moved = line.moveVertex(
+        const GeoVertexRef(0, 0, 0),
+        LatLng(2, 2),
+      ) as GeoLineFeature;
 
       expect(moved.points.first.position, LatLng(2, 2));
       expect(moved.points.first.z, 7);

@@ -7,21 +7,19 @@ import 'package:http2/http2.dart' as http2;
 import 'http_request_method.dart';
 import 'utils.dart';
 
-class HttpRequest {
-  final HttpRequestMethod method;
-  final Uri requestUri;
-  final Map<String, List<String>> headers;
-  final Stream<List<int>> bodyData;
-
+class HttpRequest(
+  final HttpRequestMethod method,
+  final Uri requestUri,
+  final Map<String, List<String>> headers,
+  final Stream<List<int>> bodyData,
+) {
   String get path => nullOrWhitespace(requestUri.path) ? '/' : requestUri.path;
 
   Map<String, List<String>> get queryParams => requestUri.queryParametersAll;
 
   Encoding? get charset => getEncodingFromHeaders(headers);
 
-  HttpRequest(this.method, this.requestUri, this.headers, this.bodyData);
-
-  factory HttpRequest.http1(io.HttpRequest request) {
+  factory http1(io.HttpRequest request) {
     return HttpRequest(
       HttpRequestMethod.parse(request.method),
       request.uri,
@@ -30,7 +28,7 @@ class HttpRequest {
     );
   }
 
-  factory HttpRequest.http2(
+  factory http2(
     http2.HeadersStreamMessage headerMessage,
     Stream<List<int>> data,
   ) {

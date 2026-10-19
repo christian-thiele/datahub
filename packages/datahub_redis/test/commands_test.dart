@@ -9,8 +9,8 @@ import 'utils/redis_test_utils.dart';
 void main() {
   redisGroup('Redis commands', (env) {
     env.test('resolves as Redis and LockProvider<String>', (redis) async {
-      expect(Find<Redis>().find(), same(redis));
-      expect(Find<LockProvider<String>>().find(), same(redis));
+      expect(const Find<Redis>().find(), same(redis));
+      expect(const Find<LockProvider<String>>().find(), same(redis));
       expect(await redis.ping(), equals('PONG'));
     });
 

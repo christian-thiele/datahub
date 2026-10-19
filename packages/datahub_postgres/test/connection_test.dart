@@ -10,7 +10,7 @@ void main() {
       'test/single-postgres.docker-compose.yml',
     ),
     [
-      PostgresqlService(
+      const PostgresqlService(
         host: Config('test.services.postgres.host'),
         port: Config('test.services.postgres.5432'),
         database: Config.value('datahub_postgres'),
@@ -20,10 +20,10 @@ void main() {
       ),
     ],
     () async {
-      final postgres = Find<Postgresql>().find();
+      final postgres = const Find<Postgresql>().find();
       final result = await postgres.useConnection((connection) async {
         return await connection.runTransaction((context) async {
-          return await context.execute(RawSql('SELECT 1337;'));
+          return await context.execute(const RawSql('SELECT 1337;'));
         });
       });
 

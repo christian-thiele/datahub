@@ -4,7 +4,7 @@ import 'package:datahub/data.dart';
 import 'package:source_gen/source_gen.dart';
 
 ConstantReader? getMeta(FieldElement field) {
-  final annotation = TypeChecker.typeNamed(Meta).firstAnnotationOf(field);
+  final annotation = const TypeChecker.typeNamed(Meta).firstAnnotationOf(field);
   if (annotation != null) {
     return ConstantReader(annotation);
   } else {

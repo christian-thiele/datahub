@@ -5,14 +5,12 @@ import 'expression.dart';
 import 'sort.dart';
 
 /// Representing filter arguments in a uniform, abstract way.
-sealed class Filter {
+sealed class const Filter() {
   /// A filter that matches everything.
   static const Filter empty = EmptyFilter();
 
   /// A filter that matches nothing.
   static const Filter nothing = NothingFilter();
-
-  const Filter();
 
   bool get isEmpty;
 
@@ -92,12 +90,10 @@ sealed class Filter {
 ///
 /// Best practice: Use the convenience methods [Filter.and] / [Filter.or]
 /// instead of instantiating [FilterGroup] directly.
-final class FilterGroup extends Filter {
-  final List<Filter> filters;
-  final bool isConjunction;
-
-  const FilterGroup(this.filters, this.isConjunction);
-
+final class const FilterGroup(
+  final List<Filter> filters,
+  final bool isConjunction,
+) extends Filter {
   @override
   bool matches(DataObject object) => isConjunction
       ? filters.every((f) => f.matches(object))
@@ -155,7 +151,7 @@ final class FilterGroup extends Filter {
   }
 }
 
-enum CompareType {
+enum CompareType() {
   equals,
   notEquals,
   contains,
@@ -166,19 +162,12 @@ enum CompareType {
   isIn,
 }
 
-final class CompareFilter extends Filter {
-  final Expression left;
-  final CompareType type;
-  final Expression right;
-  final bool caseSensitive;
-
-  const CompareFilter(
-    this.left,
-    this.type,
-    this.right, {
-    this.caseSensitive = true,
-  });
-
+final class const CompareFilter(
+  final Expression left,
+  final CompareType type,
+  final Expression right, {
+  final bool caseSensitive = true,
+}) extends Filter {
   @override
   bool matches(DataObject object) {
     final leftVal = _evaluateExpression(object, left);
@@ -196,9 +185,7 @@ final class CompareFilter extends Filter {
   Filter reduce() => this;
 }
 
-final class EmptyFilter extends Filter {
-  const EmptyFilter();
-
+final class const EmptyFilter() extends Filter {
   @override
   bool matches(DataObject object) => true;
 
@@ -216,9 +203,7 @@ final class EmptyFilter extends Filter {
 ///
 /// Best practice: Use [Filter.nothing] instead of instantiating
 /// [NothingFilter] directly.
-final class NothingFilter extends Filter {
-  const NothingFilter();
-
+final class const NothingFilter() extends Filter {
   @override
   bool matches(DataObject object) => false;
 
@@ -302,11 +287,11 @@ bool _compare(dynamic left, CompareType type, dynamic right) {
   }
 
   if (left is Enum && right is String) {
-    return _compareStrings(JsonDataCodec().encodeEnum(left), type, right);
+    return _compareStrings(const JsonDataCodec().encodeEnum(left), type, right);
   }
 
   if (left is String && right is Enum) {
-    return _compareStrings(left, type, JsonDataCodec().encodeEnum(right));
+    return _compareStrings(left, type, const JsonDataCodec().encodeEnum(right));
   }
 
   // Default comparisons

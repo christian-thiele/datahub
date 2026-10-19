@@ -4,16 +4,16 @@ import 'package:buffer/buffer.dart';
 
 import 'geometry.dart';
 
-class Point extends Geometry {
-  final double x;
-  final double y;
-  final double? z;
-  final double? m;
+class const Point(
+  int? srid,
+  final double x,
+  final double y, [
+  final double? z,
+  final double? m,
+]) extends Geometry {
+  this : super(srid, GeometryType.point, z != null, m != null);
 
-  const Point(int? srid, this.x, this.y, [this.z, this.m])
-    : super(srid, GeometryType.point, z != null, m != null);
-
-  factory Point.read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
+  factory read(int? srid, ByteDataReader reader, bool hasZ, bool hasM) {
     return Point(
       srid,
       reader.readFloat64(),

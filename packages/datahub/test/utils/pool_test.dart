@@ -49,7 +49,7 @@ void main() {
       }
 
       expect(
-        () async => await pool.take(timeout: Duration(seconds: 3)),
+        () async => await pool.take(timeout: const Duration(seconds: 3)),
         throwsA(isA<TimeoutException>()),
       );
     });
@@ -78,7 +78,7 @@ void main() {
         2,
         createItem,
         checkIsLive: checkLiveWhereId(liveItem.id),
-        checkIsLiveTimeout: Duration(milliseconds: 500),
+        checkIsLiveTimeout: const Duration(milliseconds: 500),
       );
       pool.adopt(liveItem);
       pool.adopt(deadItem);
@@ -102,7 +102,7 @@ void main() {
         2,
         createItem,
         checkIsLive: checkLiveAlwaysOn,
-        maxLifetime: Duration(milliseconds: 400),
+        maxLifetime: const Duration(milliseconds: 400),
       );
       pool.adopt(deadItem);
       await Future.delayed(const Duration(milliseconds: 500));
@@ -119,57 +119,51 @@ void main() {
       expect(item2.id, isNot(equals(deadItem.id)));
     });
 
-    test(
-      'Should consider "not live" when live check does not finish within timeout',
-      () async {
-        final pool = Pool(
-          1,
-          createItem,
-          checkIsLive: checkLiveNever,
-          checkIsLiveTimeout: Duration(seconds: 3),
-        );
-        // creates new item, doesn't check
-        final item1 = await pool.take();
-        expect(pool, poolState(1, 1, 0));
+    test('Should consider "not live" when live check does not finish within timeout', () async {
+      final pool = Pool(
+        1,
+        createItem,
+        checkIsLive: checkLiveNever,
+        checkIsLiveTimeout: const Duration(seconds: 3),
+      );
+      // creates new item, doesn't check
+      final item1 = await pool.take();
+      expect(pool, poolState(1, 1, 0));
 
-        // returning "dead" item
-        pool.give(item1);
-        expect(pool, poolState(1, 1, 1));
+      // returning "dead" item
+      pool.give(item1);
+      expect(pool, poolState(1, 1, 1));
 
-        final item2 = await pool.take();
-        expect(item1.id, isNot(equals(item2.id)));
-        expect(pool, poolState(1, 1, 0));
-      },
-    );
+      final item2 = await pool.take();
+      expect(item1.id, isNot(equals(item2.id)));
+      expect(pool, poolState(1, 1, 0));
+    });
 
-    test(
-      'Should queue request when at capacity and complete when item comes available in order',
-      () async {
-        final pool = Pool(2, createItem);
-        final item1 = await pool.take();
-        final item2 = await pool.take();
+    test('Should queue request when at capacity and complete when item comes available in order', () async {
+      final pool = Pool(2, createItem);
+      final item1 = await pool.take();
+      final item2 = await pool.take();
 
-        expect(pool, poolState(2, 2, 0));
-        final comp1 = Completer<Item>();
-        final comp2 = Completer<Item>();
+      expect(pool, poolState(2, 2, 0));
+      final comp1 = Completer<Item>();
+      final comp2 = Completer<Item>();
 
-        pool.take().then(comp2.complete);
-        pool.take().then(comp1.complete);
-        await Future.delayed(const Duration(milliseconds: 100));
+      pool.take().then(comp2.complete);
+      pool.take().then(comp1.complete);
+      await Future.delayed(const Duration(milliseconds: 100));
 
-        pool.give(item2);
-        pool.give(item1);
+      pool.give(item2);
+      pool.give(item1);
 
-        expect(
-          comp1.future,
-          completion(isA<Item>().having((i) => i.id, 'id', equals(item1.id))),
-        );
-        expect(
-          comp2.future,
-          completion(isA<Item>().having((i) => i.id, 'id', equals(item2.id))),
-        );
-      },
-    );
+      expect(
+        comp1.future,
+        completion(isA<Item>().having((i) => i.id, 'id', equals(item1.id))),
+      );
+      expect(
+        comp2.future,
+        completion(isA<Item>().having((i) => i.id, 'id', equals(item2.id))),
+      );
+    });
 
     test('Should call onRemoveItem when removing an item from pool', () async {
       final item = Item();
@@ -195,7 +189,7 @@ void main() {
         final item = await pool.take();
 
         await expectLater(
-          () => pool.take(timeout: Duration(milliseconds: 100)),
+          () => pool.take(timeout: const Duration(milliseconds: 100)),
           throwsA(isA<TimeoutException>()),
         );
 
@@ -205,7 +199,9 @@ void main() {
         pool.give(item);
         expect(pool, poolState(1, 1, 1));
 
-        final item2 = await pool.take(timeout: Duration(milliseconds: 100));
+        final item2 = await pool.take(
+          timeout: const Duration(milliseconds: 100),
+        );
         expect(item2.id, equals(item.id));
       },
     );
@@ -216,11 +212,11 @@ void main() {
       final item = await pool.take();
 
       // schedule give() to race with the waiter's timeout
-      Timer(Duration(milliseconds: 100), () => pool.give(item));
+      Timer(const Duration(milliseconds: 100), () => pool.give(item));
 
       Item? received;
       try {
-        received = await pool.take(timeout: Duration(milliseconds: 100));
+        received = await pool.take(timeout: const Duration(milliseconds: 100));
       } on TimeoutException catch (_) {
         // acceptable outcome of the race
       }
@@ -245,7 +241,7 @@ void main() {
       final results = await Future.wait([
         for (var i = 0; i < 3; i++)
           pool
-              .take(timeout: Duration(milliseconds: 200))
+              .take(timeout: const Duration(milliseconds: 200))
               .then((_) => 'item', onError: (_) => 'timeout'),
       ]);
       watch.stop();
@@ -267,7 +263,7 @@ void main() {
 
         // must time out on its own instead of waiting behind infiniteTake
         await expectLater(
-          () => pool.take(timeout: Duration(milliseconds: 100)),
+          () => pool.take(timeout: const Duration(milliseconds: 100)),
           throwsA(isA<TimeoutException>()),
         );
 
@@ -284,7 +280,7 @@ void main() {
       final items = await Future.wait([
         for (var i = 0; i < 5; i++)
           () async {
-            final item = await pool.take(timeout: Duration(seconds: 5));
+            final item = await pool.take(timeout: const Duration(seconds: 5));
             expect(pool.total, lessThanOrEqualTo(2));
             await Future.delayed(const Duration(milliseconds: 20));
             pool.give(item);
@@ -326,8 +322,8 @@ void main() {
 
       // first take reserves the only slot and will fail creation,
       // second take queues up behind it
-      final take1 = pool.take(timeout: Duration(seconds: 5));
-      final take2 = pool.take(timeout: Duration(seconds: 5));
+      final take1 = pool.take(timeout: const Duration(seconds: 5));
+      final take2 = pool.take(timeout: const Duration(seconds: 5));
 
       await expectLater(take1, throwsException);
 
@@ -455,7 +451,7 @@ void main() {
       // while onReturn runs, the item is still accounted as taken
       expect(pool, poolState(1, 1, 0));
 
-      final item2 = await pool.take(timeout: Duration(seconds: 5));
+      final item2 = await pool.take(timeout: const Duration(seconds: 5));
       expect(returned.single.id, equals(item.id));
       expect(item2.id, equals(item.id));
     });
@@ -477,7 +473,7 @@ void main() {
       expect(pool, poolState(1, 0, 0));
 
       // pool recovers by creating a fresh item
-      final item2 = await pool.take(timeout: Duration(seconds: 5));
+      final item2 = await pool.take(timeout: const Duration(seconds: 5));
       expect(item2.id, isNot(equals(item.id)));
     });
 
@@ -506,7 +502,7 @@ void main() {
         onReturn: (i) async => throw Exception('reset failed'),
       );
       final item = await pool.take();
-      final waiter = pool.take(timeout: Duration(seconds: 5));
+      final waiter = pool.take(timeout: const Duration(seconds: 5));
 
       // returning the item fails the reset, so the waiter must be woken
       // to create a replacement instead of waiting for the full timeout
@@ -526,8 +522,8 @@ void main() {
       final pool = Pool(
         2,
         createItem,
-        maxLifetime: Duration(milliseconds: 100),
-        maintenanceInterval: Duration(milliseconds: 50),
+        maxLifetime: const Duration(milliseconds: 100),
+        maintenanceInterval: const Duration(milliseconds: 50),
         onRemoveItem: (i) async => removed.add(i),
       );
       await pool.fill();
@@ -546,8 +542,8 @@ void main() {
       final pool = Pool(
         2,
         createItem,
-        maxLifetime: Duration(milliseconds: 100),
-        maintenanceInterval: Duration(milliseconds: 50),
+        maxLifetime: const Duration(milliseconds: 100),
+        maintenanceInterval: const Duration(milliseconds: 50),
         autoRefill: true,
       );
       await pool.fill();
@@ -561,7 +557,7 @@ void main() {
 
       // expired items were replaced with fresh ones
       expect(pool.total, equals(2));
-      final fresh = await pool.take(timeout: Duration(seconds: 5));
+      final fresh = await pool.take(timeout: const Duration(seconds: 5));
       expect(originalIds, isNot(contains(fresh.id)));
       await pool.dispose();
     });
@@ -571,8 +567,8 @@ void main() {
       final pool = Pool(
         1,
         createItem,
-        maxLifetime: Duration(milliseconds: 100),
-        maintenanceInterval: Duration(milliseconds: 50),
+        maxLifetime: const Duration(milliseconds: 100),
+        maintenanceInterval: const Duration(milliseconds: 50),
         onRemoveItem: (i) async => removed.add(i),
       );
       final item = await pool.take();
@@ -690,7 +686,7 @@ void main() {
           1,
           createItem,
           checkIsLive: checkLiveAlwaysOn,
-          maxLifetime: Duration(milliseconds: 100),
+          maxLifetime: const Duration(milliseconds: 100),
           onRemoveItem: (i) async => completer.complete(i),
         );
         await pool.fill();
@@ -704,14 +700,15 @@ void main() {
 
 Future<bool> Function(Item) checkLiveWhereId(int id) {
   return (Item item) =>
-      Future.delayed(Duration(milliseconds: 50)).then((_) => item.id == id);
+      Future.delayed(const Duration(milliseconds: 50))
+          .then((_) => item.id == id);
 }
 
-class Item {
+class Item() {
   static int idSeq = 0;
   final int id;
 
-  Item() : id = idSeq++;
+  this : id = idSeq++;
 }
 
 Future<Item> createItem() async {

@@ -4,20 +4,15 @@ import 'dart:io';
 import 'package:datahub/api.dart';
 import 'package:datahub/src/http/http_response.dart';
 
-class WebsocketResponse extends ApiResponse {
-  final String acceptKey;
-  final String? protocol;
-
-  final void Function(Socket) onSocket;
-
-  WebsocketResponse({
-    required this.onSocket,
-    required this.acceptKey,
-    this.protocol,
-  }) : super(101);
+class WebsocketResponse({
+  required final void Function(Socket) onSocket,
+  required final String acceptKey,
+  final String? protocol,
+}) extends ApiResponse {
+  this : super(101);
 
   @override
-  Stream<List<int>> getData() => Stream.empty();
+  Stream<List<int>> getData() => const Stream.empty();
 
   @override
   Map<String, List<String>> getHeaders() => {

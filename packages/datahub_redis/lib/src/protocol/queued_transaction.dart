@@ -10,7 +10,7 @@ import 'resp_encoder.dart';
 
 /// [RedisTransaction] that collects encoded commands until the transaction
 /// is executed by a connection.
-class QueuedTransaction with RedisCommands implements RedisTransaction {
+class QueuedTransaction() with RedisCommands implements RedisTransaction {
   final commands = <QueuedCommand<Object?>>[];
   var _sealed = false;
 
@@ -62,22 +62,19 @@ class QueuedTransaction with RedisCommands implements RedisTransaction {
 }
 
 /// A command queued in a [QueuedTransaction].
-class QueuedCommand<T> {
-  final Uint8List encoded;
-  final T Function(RedisReply reply) _decode;
-  final Completer<T> _completer;
+class QueuedCommand<T>._(
+  final Uint8List encoded,
+  final T Function(RedisReply reply) _decode,
+  final Completer<T> _completer,
 
   /// The result of the command.
   ///
   /// Marked as ignored, so that failed transactions do not report errors of
   /// result futures nobody is interested in as unhandled. Listeners still
   /// receive the error.
-  final Future<T> future;
-
-  factory QueuedCommand(
-    Uint8List encoded,
-    T Function(RedisReply reply) decode,
-  ) {
+  final Future<T> future,
+) {
+  factory(Uint8List encoded, T Function(RedisReply reply) decode) {
     final completer = Completer<T>();
     return QueuedCommand._(
       encoded,
@@ -86,8 +83,6 @@ class QueuedCommand<T> {
       completer.future..ignore(),
     );
   }
-
-  QueuedCommand._(this.encoded, this._decode, this._completer, this.future);
 
   void complete(RedisReply reply) {
     if (_completer.isCompleted) {

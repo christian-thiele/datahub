@@ -1,1 +1,5 @@
-enum EnumExample { something, somethingElse, somethingElseEntirely }
+enum EnumExample() {
+  something,
+  somethingElse,
+  somethingElseEntirely,
+}

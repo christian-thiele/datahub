@@ -8,9 +8,8 @@ import '../rest_client/placeholder_user.dart';
 void main() {
   group('getData', () {
     test('valid body', () async {
-      final user = await _request(
-        '{"id": "1", "name": "John"}',
-      ).getData($PlaceholderUser.bean);
+      final user = await _request('{"id": "1", "name": "John"}')
+          .getData($PlaceholderUser.bean);
       expect(user.id, '1');
       expect(user.name, 'John');
     });
@@ -46,16 +45,14 @@ void main() {
 
   group('getList', () {
     test('valid body', () async {
-      final users = await _request(
-        '[{"id": "1", "name": "John"}]',
-      ).getList($PlaceholderUser.bean);
+      final users = await _request('[{"id": "1", "name": "John"}]')
+          .getList($PlaceholderUser.bean);
       expect(users.single.name, 'John');
     });
 
     test('single flat object', () async {
-      final users = await _request(
-        '{"id": "1", "name": "John"}',
-      ).getList($PlaceholderUser.bean, allowSingleFlat: true);
+      final users = await _request('{"id": "1", "name": "John"}')
+          .getList($PlaceholderUser.bean, allowSingleFlat: true);
       expect(users.single.name, 'John');
     });
 

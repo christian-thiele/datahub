@@ -1,5 +1,5 @@
 /// Redaction of credentials in logs and span attributes.
-abstract final class Redaction {
+abstract final class Redaction() {
   static const redacted = 'REDACTED';
 
   /// Lowercase names of headers whose values are always redacted.

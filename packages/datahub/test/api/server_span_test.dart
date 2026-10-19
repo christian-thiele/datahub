@@ -5,11 +5,11 @@ import 'package:datahub/test.dart';
 import 'package:test/test.dart';
 
 /// Collects the spans that end while the test runs.
-class _Spans {
+class _Spans() {
   final spans = <LocalSpan>[];
 
-  _Spans() {
-    Find<Telemetry>().find().endedSpans.listen(spans.add);
+  this {
+    const Find<Telemetry>().find().endedSpans.listen(spans.add);
   }
 
   Iterable<LocalSpan> get servers =>
@@ -62,7 +62,7 @@ void main() {
     'Server span attributes',
     [
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           ApiEndpointDelegate(
             matcher: RoutePattern('/orders/{id}'),
@@ -81,7 +81,7 @@ void main() {
     ],
     () async {
       final spans = _Spans();
-      final port = Find<Api>().find().port;
+      final port = const Find<Api>().find().port;
 
       Future<LocalSpan> request(String path) async {
         final before = spans.servers.length;
@@ -147,7 +147,7 @@ void main() {
     'Server spans continue the trace of the caller',
     [
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           ApiEndpointDelegate(
             matcher: RoutePattern('/ping'),
@@ -158,7 +158,7 @@ void main() {
     ],
     () async {
       final spans = _Spans();
-      final api = Find<Api>().find();
+      final api = const Find<Api>().find();
 
       // incoming traceparent header
       const traceparent =

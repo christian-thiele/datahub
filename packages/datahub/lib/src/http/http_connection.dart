@@ -1,14 +1,18 @@
 import 'dart:async';
 import 'dart:io' as io;
 import 'dart:typed_data';
+
 import 'package:boost/boost.dart';
 import 'package:datahub/src/http/socket_adapter.dart';
 // ignore: implementation_imports
 import 'package:http2/src/connection_preface.dart';
 
-enum HttpVersion { http11, http2 }
+enum HttpVersion() {
+  http11,
+  http2,
+}
 
-class HttpConnection {
+class HttpConnection() {
   static void detectProtocol(
     io.Socket socket,
     void Function(io.Socket) http1,

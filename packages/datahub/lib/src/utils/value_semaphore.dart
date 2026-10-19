@@ -2,13 +2,8 @@ import 'dart:async';
 
 import 'package:boost/boost.dart';
 
-class ValueSemaphore<T> {
+class ValueSemaphore<T>(final T _value, {final void Function()? onRelease}) {
   final _semaphore = Semaphore();
-  final T _value;
-  final void Function()? onRelease;
-
-  ValueSemaphore(this._value, {this.onRelease});
-
   bool get isLocked => _semaphore.isLocked;
 
   Future<Lockable<T>> get() async {
@@ -30,9 +25,4 @@ class ValueSemaphore<T> {
   }
 }
 
-class Lockable<T> {
-  final T value;
-  final void Function() release;
-
-  Lockable(this.value, this.release);
-}
+class Lockable<T>(final T value, final void Function() release);

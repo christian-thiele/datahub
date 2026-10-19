@@ -8,9 +8,9 @@ import 'package:test/test.dart';
 import 'package:yaml/yaml.dart';
 
 void main() {
-  final recommended =
-      loadYaml(File('../datahub/lib/recommended.yaml').readAsStringSync())
-          as YamlMap;
+  final recommended = loadYaml(
+    File('../datahub/lib/recommended.yaml').readAsStringSync(),
+  ) as YamlMap;
   final plugin = recommended['plugins']['datahub_lints'] as YamlMap;
 
   test('enables every opt-in lint', () {

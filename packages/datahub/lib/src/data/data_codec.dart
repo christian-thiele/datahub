@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:typed_data';
+
 import 'package:boost/boost.dart';
 
 import 'codec_exception.dart';
@@ -10,12 +11,13 @@ import 'types/geometry/geometry.dart';
 typedef Encoder<T> = dynamic Function(T value);
 typedef Decoder<T> = T Function(dynamic value, {String? name});
 typedef CompoundEncoder<C, T> = dynamic Function(C value, Encoder<T> encoder);
-typedef CompoundDecoder<C, T> =
-    C Function(dynamic value, Decoder<T> encoder, {String? name});
+typedef CompoundDecoder<C, T> = C Function(
+  dynamic value,
+  Decoder<T> encoder, {
+  String? name,
+});
 
-abstract class DataCodec {
-  const DataCodec();
-
+abstract class const DataCodec() {
   dynamic encodeString(String value);
 
   dynamic encodeInt(int value);
@@ -202,9 +204,7 @@ abstract class DataCodec {
   }
 }
 
-class JsonDataCodec extends DataCodec {
-  const JsonDataCodec();
-
+class const JsonDataCodec() extends DataCodec {
   @override
   String encodeString(String value) => value;
 

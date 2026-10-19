@@ -5,29 +5,24 @@ import 'package:datahub/scaffold.dart';
 import 'authentication_middleware.dart';
 import 'jwt/jwt.dart';
 
-abstract interface class JwtAuthProvider {
+abstract interface class JwtAuthProvider() {
   Future<Session> authenticateJwt(Jwt auth);
 }
 
-class JwtAuthMiddleware extends AuthenticationMiddleware {
-  final Find<JwtAuthProvider> provider;
-  final Config<String> prefix;
-  final Config<String?> issuer;
-  final Config<String?> audience;
-  final bool verify;
-
-  const JwtAuthMiddleware({
-    super.matcher,
-    this.provider = const Find<JwtAuthProvider>(),
-    this.prefix = const Config('jwtAuth.prefix', defaultValue: 'Bearer '),
-    this.issuer = const Config('jwtAuth.issuer'),
-    this.audience = const Config('jwtAuth.audience'),
-    required super.routes,
-    this.verify = true,
-    super.catchRequests = false,
-    super.requireSession = true,
-  });
-
+class const JwtAuthMiddleware({
+  super.matcher,
+  final Find<JwtAuthProvider> provider = const Find<JwtAuthProvider>(),
+  final Config<String> prefix = const Config(
+    'jwtAuth.prefix',
+    defaultValue: 'Bearer ',
+  ),
+  final Config<String?> issuer = const Config('jwtAuth.issuer'),
+  final Config<String?> audience = const Config('jwtAuth.audience'),
+  required super.routes,
+  final bool verify = true,
+  super.catchRequests = false,
+  super.requireSession = true,
+}) extends AuthenticationMiddleware {
   @override
   Future<Session?> authenticate(ApiRequest request) async {
     final auth = Jwt.fromRequest(request.headers, prefix: prefix.read());

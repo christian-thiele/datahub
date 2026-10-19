@@ -8,9 +8,9 @@ void main() {
   declareTest(
     'BasicAuth Simple',
     [
-      AuthService(),
+      const AuthService(),
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           ResourceEndpoint(
             matcher: RoutePattern('/public'),
@@ -30,7 +30,7 @@ void main() {
       ),
     ],
     () async {
-      final client = Find<Api>().find().connectHttp11();
+      final client = const Find<Api>().find().connectHttp11();
       client.auth = null;
       expect(await client.get('/public'), isSuccess);
       expect(
@@ -56,9 +56,9 @@ void main() {
   declareTest(
     'BasicAuth requireSession: false',
     [
-      AuthService(),
+      const AuthService(),
       ApiService(
-        port: Config.value(0),
+        port: const Config.value(0),
         routes: [
           BasicAuthMiddleware(
             requireSession: false,
@@ -82,7 +82,7 @@ void main() {
       ),
     ],
     () async {
-      final client = Find<Api>().find().connectHttp11();
+      final client = const Find<Api>().find().connectHttp11();
       client.auth = null;
       expect(
         await client.get('/public').thenGetJsonBody(),

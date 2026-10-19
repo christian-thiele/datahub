@@ -46,24 +46,22 @@ import '../telemetry/redaction.dart';
 ///
 /// Credentials in headers and query parameters are replaced by `REDACTED`,
 /// bodies are logged as they are.
-class RequestLogger {
+class RequestLogger({
   /// Maximum number of bytes logged per body.
   ///
   /// If 0, no body content is logged, only body sizes.
-  final int bodyLimit;
-
+  required final int bodyLimit,
+  Iterable<String> redactedHeaders = const [],
+}) {
   /// Lowercase names of the headers that are redacted.
-  final Set<String> _redactedHeaders;
+  final Set<String> _redactedHeaders = {
+    ...Redaction.sensitiveHeaders,
+    ...redactedHeaders.map((e) => e.toLowerCase()),
+  };
 
   /// Creates a request logger that redacts [redactedHeaders] (matched
   /// case-insensitively) in addition to common credential headers.
-  RequestLogger({
-    required this.bodyLimit,
-    Iterable<String> redactedHeaders = const [],
-  }) : _redactedHeaders = {
-         ...Redaction.sensitiveHeaders,
-         ...redactedHeaders.map((e) => e.toLowerCase()),
-       };
+  this;
 
   Future<HttpResponse> handle(
     HttpRequest request,
@@ -178,17 +176,19 @@ class RequestLogger {
   }
 }
 
-enum _BodyState { pending, complete, aborted, failed }
+enum _BodyState() {
+  pending,
+  complete,
+  aborted,
+  failed,
+}
 
 /// Counts the bytes of a body and keeps the first [limit] bytes for logging.
-class _BodyCapture {
-  final int limit;
+class _BodyCapture(final int limit) {
   final _bytes = BytesBuilder();
   int _length = 0;
   _BodyState state = _BodyState.pending;
   Object? error;
-
-  _BodyCapture(this.limit);
 
   /// Returns [source], capturing its data while it is consumed.
   ///
