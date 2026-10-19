@@ -83,6 +83,36 @@ class Person {
 ''');
   }
 
+  test_withRelationIdOnDeclaringParameter_isNotReported() async {
+    await assertNoDiagnostics('''
+import 'package:datahub/datahub.dart';
+import 'package:datahub_aperture/datahub_aperture.dart';
+
+class const Todo(@RelationId<Person>() final int ownerId);
+
+@ApertureRelation<Todo>()
+class const Person();
+''');
+  }
+
+  test_withRelationIdInOtherLibrary_isNotReported() async {
+    newFile('$testPackageLibPath/todo.dart', '''
+import 'package:datahub/datahub.dart';
+
+import 'test.dart';
+
+class const Todo(@Meta() @RelationId<Person>() final int ownerId);
+''');
+    await assertNoDiagnostics('''
+import 'package:datahub_aperture/datahub_aperture.dart';
+
+import 'todo.dart';
+
+@ApertureRelation<Todo>()
+class const Person();
+''');
+  }
+
   test_withoutRelation_isNotReported() async {
     await assertNoDiagnostics('''
 import 'package:datahub_aperture/datahub_aperture.dart';
