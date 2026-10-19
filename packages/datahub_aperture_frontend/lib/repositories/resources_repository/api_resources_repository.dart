@@ -2,7 +2,10 @@ import 'dart:convert';
 
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/models/action_response.dart';
+import 'package:datahub_aperture_frontend/models/file_value.dart';
 import 'package:datahub_aperture_frontend/repositories/api_repository.dart';
+import 'package:datahub_aperture_frontend/utils/file_saver.dart';
 
 import 'resources_repository.dart';
 
@@ -133,7 +136,7 @@ class ApiResourcesRepository extends ApiRepository
   }
 
   @override
-  Future<ResourceActionResult> startElementAction(
+  Future<ActionResponse> startElementAction(
     String resourceId,
     String elementId,
     String actionId,
@@ -151,11 +154,11 @@ class ApiResourcesRepository extends ApiRepository
             'actionId': actionId,
           },
         )
-        .thenGetData($ResourceActionResult.bean);
+        .then(_actionResponse);
   }
 
   @override
-  Future<ResourceActionResult> startAction(
+  Future<ActionResponse> startAction(
     String actionId,
     Map<String, dynamic> parameters,
   ) async {
@@ -167,6 +170,25 @@ class ApiResourcesRepository extends ApiRepository
           codec.encodeMap(parameters, codec.encodeDynamic),
           urlParams: {'actionId': actionId},
         )
-        .thenGetData($ResourceActionResult.bean);
+        .then(_actionResponse);
+  }
+
+  /// Actions respond with a file to save as attachment.
+  static Future<ActionResponse> _actionResponse(RestResponse response) async {
+    final disposition =
+        response.headers[HttpHeaders.contentDisposition]?.firstOrNull;
+    if (disposition == null ||
+        !disposition.trimLeft().toLowerCase().startsWith('attachment')) {
+      return ActionResultResponse(
+        await response.getData($ResourceActionResult.bean),
+      );
+    }
+
+    return ActionFileResponse(
+      FileValue(
+        name: dispositionFileName(disposition) ?? 'download',
+        data: await response.getByteBody(),
+      ),
+    );
   }
 }

@@ -1,8 +1,11 @@
+import 'dart:convert';
+
 import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 
 import '../../_utils/test_auth_provider.dart';
+import 'data/actions/export_invoices.dart';
 import 'data/actions/mark_invoice_paid.dart';
 import 'data/actions/renew_price_agreement.dart';
 import 'data/actions/resolve_ticket.dart';
@@ -95,6 +98,10 @@ void main(List<String> args) => runApp([
               ApertureAction<SendPaymentReminders>(
                 bean: $SendPaymentReminders.bean,
                 handler: _sendPaymentReminders,
+              ),
+              ApertureAction<ExportInvoices>(
+                bean: $ExportInvoices.bean,
+                handler: _exportInvoices,
               ),
             ],
           ),
@@ -225,6 +232,37 @@ Future<BaseActionResult> _sendPaymentReminders(
             invoice.invoiceNumber,
         ],
     },
+  );
+}
+
+/// Exports the invoices as CSV file.
+Future<BaseActionResult> _exportInvoices(
+  String? _,
+  ExportInvoices params,
+) async {
+  final invoices = await const Find<DataRepository<Invoice>>().find().readAll(
+    filter: params.onlyOverdue
+        ? $Invoice.$status.equals(InvoiceStatus.overdue)
+        : Filter.empty,
+  );
+
+  final csv = StringBuffer('Invoice;Status;Due;Gross total;Currency\n');
+  for (final invoice in invoices) {
+    csv.writeln(
+      [
+        invoice.invoiceNumber,
+        invoice.status.name,
+        invoice.dueAt.toIso8601String(),
+        invoice.grossTotal.toStringAsFixed(2),
+        invoice.currency,
+      ].join(';'),
+    );
+  }
+
+  return DownloadActionResult.bytes(
+    utf8.encode(csv.toString()),
+    fileName: params.onlyOverdue ? 'overdue-invoices.csv' : 'invoices.csv',
+    contentType: 'text/csv',
   );
 }
 

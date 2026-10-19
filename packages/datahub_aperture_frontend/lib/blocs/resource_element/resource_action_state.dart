@@ -18,8 +18,9 @@ class ResourceActionLoading extends ResourceActionState {
 class ResourceActionDone extends ResourceActionState {
   /// What the action responded with, null for signals.
   final ResourceActionResult? result;
+  final String? savedFile;
 
-  const ResourceActionDone({this.result});
+  const ResourceActionDone({this.result, this.savedFile});
 }
 
 class ResourceActionError extends ResourceActionState implements ErrorState {

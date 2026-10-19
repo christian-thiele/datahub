@@ -146,15 +146,19 @@ class ElementActionDialog extends StatelessWidget {
               // Redirects close the dialog, the spinner shows until then.
               ResourceActionDone(result: ResourceActionResult(redirect: _?)) =>
                 IntrinsicHeight(child: Center(child: ApertureSpinner())),
-              ResourceActionDone(:final result) => _ResultView(
-                success: result?.success ?? true,
-                message:
-                    result?.message ??
-                    (_signal
-                        ? S.of(context).signalSent
-                        : S.of(context).actionCompleted),
-                data: result?.data,
-              ),
+              ResourceActionDone(:final result, :final savedFile) =>
+                _ResultView(
+                  success: result?.success ?? true,
+                  message:
+                      result?.message ??
+                      (savedFile != null
+                          ? S.of(context).fileSaved(savedFile)
+                          : null) ??
+                      (_signal
+                          ? S.of(context).signalSent
+                          : S.of(context).actionCompleted),
+                  data: result?.data,
+                ),
             },
           );
         },

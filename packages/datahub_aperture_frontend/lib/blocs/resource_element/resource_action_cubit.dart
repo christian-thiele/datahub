@@ -1,6 +1,8 @@
 import 'package:datahub/api.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/blocs/error_state.dart';
+import 'package:datahub_aperture_frontend/models/action_response.dart';
+import 'package:datahub_aperture_frontend/utils/file_saver.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -8,7 +10,7 @@ part 'resource_action_state.dart';
 
 /// Runs an action (or sends a signal) with its parameters. Returns what the
 /// action responded with, null for signals.
-typedef ActionRunner = Future<ResourceActionResult?> Function(
+typedef ActionRunner = Future<ActionResponse?> Function(
   Map<String, dynamic> parameters,
 );
 
@@ -16,12 +18,14 @@ typedef ActionRunner = Future<ResourceActionResult?> Function(
 class ResourceActionCubit extends Cubit<ResourceActionState> {
   final ResourceAction action;
   final ActionRunner _run;
+  final FileSaver _save;
 
   /// [initialValues] fill in parameters, for example the element a signal is
-  /// meant for.
+  /// meant for. Files the action responds with are saved with [save].
   ResourceActionCubit({
     required this.action,
     required this._run,
+    this._save = saveFile,
     Map<String, dynamic> initialValues = const {},
   }) : super(
          action.parameterFields.isEmpty
@@ -85,9 +89,18 @@ class ResourceActionCubit extends Cubit<ResourceActionState> {
 
   Future<void> _startAction(Map<String, dynamic> parameters) async {
     try {
-      final result = await _run(parameters);
+      final state = switch (await _run(parameters)) {
+        null => const ResourceActionDone(),
+        ActionResultResponse(:final result) => ResourceActionDone(
+          result: result,
+        ),
+        ActionFileResponse(:final file) =>
+          await _save(file)
+              ? ResourceActionDone(savedFile: file.name)
+              : const ResourceActionDone(),
+      };
       if (!isClosed) {
-        emit(ResourceActionDone(result: result));
+        emit(state);
       }
     } catch (e) {
       if (isClosed) {

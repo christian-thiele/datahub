@@ -75,6 +75,7 @@
   "sortedBy": "Sortiert nach {sort}",
   "total": "Gesamt",
   "actionCompleted": "Aktion ausgeführt.",
+  "fileSaved": "{fileName} gespeichert.",
   "signalSent": "Signal gesendet. Der Workflow verarbeitet es im Hintergrund.",
   "sendSignal": "Senden",
   "sendSignalMenu": "Signal senden",

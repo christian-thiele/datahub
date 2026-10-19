@@ -1,3 +1,5 @@
+import 'dart:typed_data';
+
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/utils.dart';
@@ -5,8 +7,9 @@ import 'package:datahub_aperture/utils.dart';
 /// Runs an action. [elementId] is null for global actions.
 ///
 /// Returns what the user sees once the action is done: null for a plain
-/// confirmation, an [ActionResult] for a message (and data) or a
-/// [RedirectActionResult] to open an element instead.
+/// confirmation, an [ActionResult] for a message (and data), a
+/// [RedirectActionResult] to open an element instead or a
+/// [DownloadActionResult] to let the user save a file.
 typedef ApertureActionHandler<TParameters> = Future<BaseActionResult?> Function(
   String? elementId,
   TParameters parameters,
@@ -51,3 +54,23 @@ class const RedirectActionResult({
   required final DataBean bean,
   required final String id,
 }) extends BaseActionResult;
+
+/// Lets the user save a file.
+class const DownloadActionResult({
+  required final Stream<List<int>> data,
+  required final String fileName,
+  final String contentType = Mime.octetStream,
+  final int? length,
+}) extends BaseActionResult {
+  /// Lets the user save [bytes].
+  new bytes(
+    Uint8List bytes, {
+    required String fileName,
+    String contentType = Mime.octetStream,
+  }) : this(
+         data: Stream.value(bytes),
+         fileName: fileName,
+         contentType: contentType,
+         length: bytes.length,
+       );
+}

@@ -38,61 +38,63 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m7(worker) => "Läuft auf ${worker}";
 
-  static String m8(step) => "„${step}“ verworfen";
+  static String m8(fileName) => "${fileName} gespeichert.";
 
-  static String m9(step) => "„${step}“ aufgegeben";
+  static String m9(step) => "„${step}“ verworfen";
 
-  static String m10(state) => "Fortgesetzt in „${state}“";
+  static String m10(step) => "„${step}“ aufgegeben";
 
-  static String m11(step) => "„${step}“ wiederholt";
+  static String m11(state) => "Fortgesetzt in „${state}“";
 
-  static String m12(step) => "Signal „${step}“ empfangen";
+  static String m12(step) => "„${step}“ wiederholt";
 
-  static String m13(state) => "Gestartet in „${state}“";
+  static String m13(step) => "Signal „${step}“ empfangen";
 
-  static String m14(step) => "„${step}“ fehlgeschlagen";
+  static String m14(state) => "Gestartet in „${state}“";
 
-  static String m15(step) => "„${step}“ ausgeführt";
+  static String m15(step) => "„${step}“ fehlgeschlagen";
 
-  static String m16(resourceName) => "${resourceName} hinzufügen";
+  static String m16(step) => "„${step}“ ausgeführt";
 
-  static String m17(from, to) => "${from}–${to}";
+  static String m17(resourceName) => "${resourceName} hinzufügen";
 
-  static String m18(from, to, total) => "${from}–${to} von ${total}";
+  static String m18(from, to) => "${from}–${to}";
 
-  static String m19(elementName) =>
+  static String m19(from, to, total) => "${from}–${to} von ${total}";
+
+  static String m20(elementName) =>
       "Sind Sie sicher, dass Sie Element \"${elementName}\" löschen möchten?";
 
-  static String m20(step) => "„${step}“ verwerfen? Es wird nicht ausgeführt.";
+  static String m21(step) => "„${step}“ verwerfen? Es wird nicht ausgeführt.";
 
-  static String m21(state) =>
+  static String m22(state) =>
       "Die Schritte des Zustands „${state}“ erneut ausführen?";
 
-  static String m22(action) => "„${action}“ ausführen?";
+  static String m23(action) => "„${action}“ ausführen?";
 
-  static String m23(sort) => "Sortiert nach ${sort}";
+  static String m24(sort) => "Sortiert nach ${sort}";
 
-  static String m24(duration) => "nach ${duration}";
+  static String m25(duration) => "nach ${duration}";
 
-  static String m25(state) => "Bei Fehler: ${state}";
+  static String m26(state) => "Bei Fehler: ${state}";
 
-  static String m26(state) => "Beim Eintritt in „${state}“";
+  static String m27(state) => "Beim Eintritt in „${state}“";
 
-  static String m27(states) => "Signal, angenommen in ${states}";
+  static String m28(states) => "Signal, angenommen in ${states}";
 
-  static String m28(line, column) =>
+  static String m29(line, column) =>
       "Ungültiges JSON (Zeile ${line}, Spalte ${column}).";
 
-  static String m29(length) => "Wert zu lang. (> ${length})";
+  static String m30(length) => "Wert zu lang. (> ${length})";
 
-  static String m30(expression) =>
+  static String m31(expression) =>
       "Wert muss dem Muster entsprechen: ${expression}";
 
-  static String m31(count) => "Alle ${count} anzeigen";
+  static String m32(count) => "Alle ${count} anzeigen";
 
-  static String m32(states) => "Wartet auf ${states}";
+  static String m33(states) => "Wartet auf ${states}";
 
-  static String m33(resource) => "Workflow: ${resource}";
+  static String m34(resource) => "Workflow: ${resource}";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -146,6 +148,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "eventRunningOn": m7,
     "events": MessageLookupByLibrary.simpleMessage("Ereignisse"),
     "expires": MessageLookupByLibrary.simpleMessage("Läuft ab"),
+    "fileSaved": m8,
     "fileSelected": MessageLookupByLibrary.simpleMessage("Datei ausgewählt"),
     "filter": MessageLookupByLibrary.simpleMessage("Filter"),
     "formatJson": MessageLookupByLibrary.simpleMessage(
@@ -153,17 +156,17 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "heartbeat": MessageLookupByLibrary.simpleMessage("Lebenszeichen"),
     "history": MessageLookupByLibrary.simpleMessage("Verlauf"),
-    "historyCancelled": m8,
+    "historyCancelled": m9,
     "historyNotWritten": MessageLookupByLibrary.simpleMessage(
       "Der Verlauf wird nicht aufgezeichnet.",
     ),
-    "historyParked": m9,
-    "historyResumed": m10,
-    "historyRetried": m11,
-    "historySignalReceived": m12,
-    "historyStarted": m13,
-    "historyStepFailed": m14,
-    "historyStepSucceeded": m15,
+    "historyParked": m10,
+    "historyResumed": m11,
+    "historyRetried": m12,
+    "historySignalReceived": m13,
+    "historyStarted": m14,
+    "historyStepFailed": m15,
+    "historyStepSucceeded": m16,
     "linkedElementNotFound": MessageLookupByLibrary.simpleMessage(
       "Verknüpftes Element nicht gefunden",
     ),
@@ -176,7 +179,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "loginAuthcode": MessageLookupByLibrary.simpleMessage("Anmelden via IDP"),
     "logout": MessageLookupByLibrary.simpleMessage("Abmelden"),
     "newElement": MessageLookupByLibrary.simpleMessage("Neues Element"),
-    "newResource": m16,
+    "newResource": m17,
     "nextAttempt": MessageLookupByLibrary.simpleMessage("Nächster Versuch"),
     "noElements": MessageLookupByLibrary.simpleMessage("Keine Elemente"),
     "noEvents": MessageLookupByLibrary.simpleMessage("Keine Ereignisse."),
@@ -187,12 +190,12 @@ class MessageLookup extends MessageLookupByLibrary {
     "openElement": MessageLookupByLibrary.simpleMessage("Element öffnen"),
     "openEvents": MessageLookupByLibrary.simpleMessage("Offen"),
     "outdated": MessageLookupByLibrary.simpleMessage("Veraltet"),
-    "pageFrom": m17,
-    "pageOf": m18,
+    "pageFrom": m18,
+    "pageOf": m19,
     "password": MessageLookupByLibrary.simpleMessage("Passwort"),
-    "reallyDeleteElement": m19,
-    "reallyDiscardEvent": m20,
-    "reallyResumeWorkflow": m21,
+    "reallyDeleteElement": m20,
+    "reallyDiscardEvent": m21,
+    "reallyResumeWorkflow": m22,
     "refresh": MessageLookupByLibrary.simpleMessage("Aktualisieren"),
     "reloadConfiguration": MessageLookupByLibrary.simpleMessage(
       "Konfiguration neu laden",
@@ -216,7 +219,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "revisionVersion": MessageLookupByLibrary.simpleMessage("Version #"),
     "revisions": MessageLookupByLibrary.simpleMessage("Revisionen"),
     "runAction": MessageLookupByLibrary.simpleMessage("Ausführen"),
-    "runActionTitle": m22,
+    "runActionTitle": m23,
     "save": MessageLookupByLibrary.simpleMessage("Speichern"),
     "saveAndSchedule": MessageLookupByLibrary.simpleMessage(
       "Speichern und planen",
@@ -237,17 +240,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "signalSent": MessageLookupByLibrary.simpleMessage(
       "Signal gesendet. Der Workflow verarbeitet es im Hintergrund.",
     ),
-    "sortedBy": m23,
+    "sortedBy": m24,
     "started": MessageLookupByLibrary.simpleMessage("Gestartet"),
     "state": MessageLookupByLibrary.simpleMessage("Zustand"),
     "status": MessageLookupByLibrary.simpleMessage("Status"),
-    "stepAfter": m24,
+    "stepAfter": m25,
     "stepAtElementTime": MessageLookupByLibrary.simpleMessage(
       "zum Zeitpunkt des Elements",
     ),
-    "stepFailureState": m25,
-    "stepOnEnter": m26,
-    "stepOnSignal": m27,
+    "stepFailureState": m26,
+    "stepOnEnter": m27,
+    "stepOnSignal": m28,
     "steps": MessageLookupByLibrary.simpleMessage("Schritte"),
     "time": MessageLookupByLibrary.simpleMessage("Uhrzeit"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Zeitstempel"),
@@ -261,17 +264,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "validationJsonObject": MessageLookupByLibrary.simpleMessage(
       "Wert muss ein JSON-Objekt sein.",
     ),
-    "validationJsonSyntax": m28,
-    "validationMaxLength": m29,
-    "validationPattern": m30,
+    "validationJsonSyntax": m29,
+    "validationMaxLength": m30,
+    "validationPattern": m31,
     "validationRequired": MessageLookupByLibrary.simpleMessage(
       "Wert ist erforderlich.",
     ),
     "viewAll": MessageLookupByLibrary.simpleMessage("Alle anzeigen"),
-    "viewAllCount": m31,
-    "waitsFor": m32,
+    "viewAllCount": m32,
+    "waitsFor": m33,
     "worker": MessageLookupByLibrary.simpleMessage("Worker"),
     "workflow": MessageLookupByLibrary.simpleMessage("Workflow"),
-    "workflowOf": m33,
+    "workflowOf": m34,
   };
 }

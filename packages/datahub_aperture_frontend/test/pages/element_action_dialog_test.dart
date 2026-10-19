@@ -1,5 +1,6 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
+import 'package:datahub_aperture_frontend/models/action_response.dart';
 import 'package:datahub_aperture_frontend/pages/resource_element_edit/element_action_dialog.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/repositories/workflow_repository/workflow_repository.dart';
@@ -40,14 +41,14 @@ class _Repository implements ResourcesRepository {
   _Repository([this.result = const ResourceActionResult()]);
 
   @override
-  Future<ResourceActionResult> startElementAction(
+  Future<ActionResponse> startElementAction(
     String resourceId,
     String elementId,
     String actionId,
     Map<String, dynamic> parameters,
   ) async {
     started.add(parameters);
-    return result;
+    return ActionResultResponse(result);
   }
 
   @override

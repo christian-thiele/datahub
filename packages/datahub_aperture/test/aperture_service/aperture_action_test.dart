@@ -163,6 +163,36 @@ void main() {
     );
 
     declareTest(
+      'responds with the file to download as attachment',
+      components(
+        (_, _) async => DownloadActionResult(
+          data: Stream.fromIterable([
+            [1, 2],
+            [3],
+          ]),
+          fileName: 'Übersicht "Q3".csv',
+          contentType: 'text/csv',
+        ),
+      ),
+      () async {
+        final client = await signInToAperture(
+          issuer: _issuer,
+          apiPort: _apiPort,
+        );
+        final response = await client.post('/api/actions/ResolveTicket', {
+          'resolution': 'Replaced the router.',
+        });
+
+        expect(response.headers[HttpHeaders.contentType], ['text/csv']);
+        expect(response.headers[HttpHeaders.contentDisposition], [
+          'attachment; filename="_bersicht _Q3_.csv"; '
+              "filename*=UTF-8''%C3%9Cbersicht%20%22Q3%22.csv",
+        ]);
+        expect(await response.getByteBody(), [1, 2, 3]);
+      },
+    );
+
+    declareTest(
       'fails to redirect to something that is not a resource',
       components(
         (_, _) async => RedirectActionResult(bean: $Order.bean, id: '42'),

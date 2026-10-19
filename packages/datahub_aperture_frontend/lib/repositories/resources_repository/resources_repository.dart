@@ -1,4 +1,5 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
+import 'package:datahub_aperture_frontend/models/action_response.dart';
 
 abstract interface class ResourcesRepository {
   Future<List<ResourceDescription>> getDescriptions();
@@ -41,14 +42,14 @@ abstract interface class ResourcesRepository {
     DateTime? from,
   );
 
-  Future<ResourceActionResult> startElementAction(
+  Future<ActionResponse> startElementAction(
     String resourceId,
     String elementId,
     String actionId,
     Map<String, dynamic> parameters,
   );
 
-  Future<ResourceActionResult> startAction(
+  Future<ActionResponse> startAction(
     String actionId,
     Map<String, dynamic> parameters,
   );

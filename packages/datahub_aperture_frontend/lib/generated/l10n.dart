@@ -625,6 +625,16 @@ class S {
     );
   }
 
+  /// `Saved {fileName}.`
+  String fileSaved(Object fileName) {
+    return Intl.message(
+      'Saved $fileName.',
+      name: 'fileSaved',
+      desc: '',
+      args: [fileName],
+    );
+  }
+
   /// `Signal sent. The workflow handles it in the background.`
   String get signalSent {
     return Intl.message(

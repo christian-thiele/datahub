@@ -637,7 +637,7 @@ class const ApertureApi({
     return const JsonDataCodec().decodeType(field.type, value);
   }
 
-  ResourceActionResult _buildActionResult(BaseActionResult? result) {
+  Object _buildActionResult(BaseActionResult? result) {
     switch (result) {
       case null:
         return const ResourceActionResult();
@@ -662,7 +662,35 @@ class const ApertureApi({
             elementId: id,
           ),
         );
+      case DownloadActionResult(
+        :final data,
+        :final fileName,
+        :final contentType,
+        :final length,
+      ):
+        return ByteStreamResponse(
+          data,
+          length,
+          contentType: contentType,
+          disposition: ContentDisposition.attachment,
+          headers: {
+            HttpHeaders.contentDisposition: [_attachmentDisposition(fileName)],
+            // Lets web frontends served from another origin read the name.
+            'access-control-expose-headers': [HttpHeaders.contentDisposition],
+          },
+        );
     }
+  }
+
+  /// A content-disposition header for an attachment named [fileName], with
+  /// an ASCII fallback for names that are not (RFC 6266).
+  static String _attachmentDisposition(String fileName) {
+    final fallback = fileName.replaceAll(RegExp(r'[^\x20-\x7e]|["\\]'), '_');
+    final encoded = Uri.encodeComponent(fileName).replaceAllMapped(
+      RegExp(r"[!'()*]"),
+      (match) => '%${match[0]!.codeUnitAt(0).toRadixString(16).toUpperCase()}',
+    );
+    return 'attachment; filename="$fallback"; filename*=UTF-8\'\'$encoded';
   }
 
   static DataObject _decodeActionParameters(
