@@ -14,9 +14,6 @@ class LogMessage({
   final dynamic error,
   final StackTrace? stack,
 }) {
-  /// The message as one line of JSON, the format of stored log lines (like the
-  /// messages of a workflow step or a scheduled run): the labels, `timestamp`,
-  /// `severity`, `msg` and, if present, `error`, `trace_id` and `span_id`.
   String toJsonLine() => jsonEncode({
     ...labels,
     'timestamp': timestamp.toIso8601String(),

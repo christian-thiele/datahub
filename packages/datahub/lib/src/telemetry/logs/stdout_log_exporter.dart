@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:boost/boost.dart';
 import 'package:datahub/utils.dart';
 import 'package:intl/intl.dart';
 import 'package:stack_trace/stack_trace.dart';
@@ -26,11 +25,12 @@ class StdoutLogExporter(final LogBodyFormat format) extends LogExporter {
   @override
   void add(LogMessage message) {
     final body = {
-      for (final (key, value) in message.labels.tuples) key: value,
+      for (final MapEntry(:key, :value) in message.labels.entries) key: value,
       'severity': message.level.severityText,
       'msg': message.line,
-      if (message.error != null) 'error': message.error.toString(),
-      if (message.stack != null) 'stack': message.stack.toString(),
+      if (message.error case final error?) 'error': error.toString(),
+      if (message.stack case final stack?)
+        'stack': foldStackTrace(stack).toString(),
       if (message.span?.traceId case final traceId?) 'trace_id': traceId.hexId,
       if (message.span?.spanId case final spanId?) 'span_id': spanId.hexId,
     };
@@ -45,6 +45,17 @@ class StdoutLogExporter(final LogBodyFormat format) extends LogExporter {
       case LogBodyFormat.pretty:
         _PrettyLog.write(message);
     }
+  }
+
+  static Trace foldStackTrace(StackTrace stack) {
+    final trace = Trace.from(stack);
+    final origin = trace.frames.firstOrNull;
+    return trace.foldFrames(
+      (frame) =>
+          !identical(frame, origin) &&
+          (frame.package?.startsWith('datahub') ?? false),
+      terse: true,
+    );
   }
 }
 
@@ -85,16 +96,19 @@ class const _PrettyLog() {
 
     buffer.write(lines.replaceAll('\n', '\n$indent'));
 
-    if (message.error != null) {
+    if (message.error case final error?) {
       buffer.write('\n');
       buffer.write(indent);
-      buffer.write(message.error);
+      buffer.write(error);
     }
 
-    if (message.stack != null) {
+    if (message.stack case final stack?) {
       buffer.write('\n');
       buffer.write(indent);
-      buffer.write(Trace.format(message.stack!).replaceAll('\n', '\n$indent'));
+      buffer.write(
+        Trace.format(StdoutLogExporter.foldStackTrace(stack))
+            .replaceAll('\n', '\n$indent'),
+      );
     }
 
     if (color != null) {
