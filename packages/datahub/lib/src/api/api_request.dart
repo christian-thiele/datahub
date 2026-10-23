@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:boost/boost.dart';
 import 'package:datahub/data.dart';
 import 'package:datahub/http.dart';
+import 'package:datahub/scaffold.dart';
 import 'package:datahub/utils.dart';
 
 class ApiRequest(
@@ -13,6 +14,9 @@ class ApiRequest(
   final Map<String, String> routeParams,
   final Stream<List<int>> bodyData,
 ) {
+  /// The callers session provided by [AuthenticationMiddleware].
+  Session? session;
+
   Map<String, List<String>> get queryParams => uri.queryParametersAll;
 
   /// Returns a [Uint8List] of the body data.

@@ -14,6 +14,7 @@ abstract class const AuthenticationMiddleware<T extends Session>({
   ) async {
     final session = await authenticate(request);
     if (session != null) {
+      request.session = session;
       return await Context.ofZone().withSession(
         session,
         () async => await next(request),

@@ -4,6 +4,8 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:test/test.dart';
 
+import 'lib/auth_service.dart';
+
 /// Collects the spans that end while the test runs.
 class _Spans() {
   final spans = <LocalSpan>[];
@@ -179,6 +181,61 @@ void main() {
       expect(clientSpan.attributes['url.full'], endsWith('/ping'));
       final server = await spans.serverOf(clientSpan.traceId);
       expect(server.parentSpanId, equals(clientSpan.spanId));
+    },
+    tags: ['api'],
+  );
+
+  declareTest(
+    'Server spans of internal errors have the identity of the session',
+    [
+      const AuthService(),
+      ApiService(
+        port: const Config.value(0),
+        routes: [
+          BasicAuthMiddleware(
+            requireSession: false,
+            routes: [
+              ApiEndpointDelegate(
+                matcher: RoutePattern('/fail/{kind}'),
+                delegate: (request) async {
+                  return switch (request.getRouteParam<String>('kind')) {
+                    'invalid' => throw ApiRequestException.badRequest(),
+                    'unavailable' =>
+                      throw ApiRequestException.serviceUnavailable(),
+                    _ => throw StateError('crash'),
+                  };
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+    ],
+    () async {
+      final spans = _Spans();
+      final client = const Find<Api>().find().connectHttp11();
+
+      Future<LocalSpan> request(String path, {BasicAuth? auth}) async {
+        final before = spans.servers.length;
+        client.auth = auth;
+        await client.get(path, throwOnError: false);
+        return await spans.nextServer(before);
+      }
+
+      final auth = BasicAuth('user1', '1resu');
+
+      final crash = await request('/fail/crash', auth: auth);
+      expect(crash.attributes['session.identity'], equals('user1'));
+
+      final unavailable = await request('/fail/unavailable', auth: auth);
+      expect(unavailable.attributes['session.identity'], equals('user1'));
+
+      // client errors are not logged, so the identity is not added
+      final invalid = await request('/fail/invalid', auth: auth);
+      expect(invalid.attributes, isNot(contains('session.identity')));
+
+      final anonymous = await request('/fail/crash');
+      expect(anonymous.attributes, isNot(contains('session.identity')));
     },
     tags: ['api'],
   );

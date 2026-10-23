@@ -278,15 +278,15 @@ class _ApiServiceInstance() extends ServiceInstance<ApiService> implements Api {
       _ => null,
     };
 
-    try {
-      final request = ApiRequest(
-        httpRequest.requestUri,
-        httpRequest.method,
-        httpRequest.headers,
-        <String, String>{},
-        httpRequest.bodyData,
-      );
+    final request = ApiRequest(
+      httpRequest.requestUri,
+      httpRequest.method,
+      httpRequest.headers,
+      <String, String>{},
+      httpRequest.bodyData,
+    );
 
+    try {
       final (handler, routeParams) = findEndpoint(_routes, request);
       request.routeParams.addAll(routeParams);
 
@@ -301,12 +301,16 @@ class _ApiServiceInstance() extends ServiceInstance<ApiService> implements Api {
       return response.toHttpResponse(httpRequest.requestUri);
     } on ApiRequestException catch (e, stack) {
       if (e.statusCode >= 500 && e.statusCode < 600) {
+        final identity = _identityOf(request);
         span?.recordException(e, stack: stack);
+        if (identity != null) {
+          span?.setAttribute('session.identity', identity);
+        }
         log.error(
           'Request failed with internal error.',
           error: e,
           stack: stack,
-          labels: _logLabels(httpRequest, e.statusCode),
+          labels: _logLabels(httpRequest, e.statusCode, identity),
         );
       } else {
         // client errors do not fail server spans
@@ -315,13 +319,17 @@ class _ApiServiceInstance() extends ServiceInstance<ApiService> implements Api {
       return e.toResponse().toHttpResponse(httpRequest.requestUri);
     } catch (e, stack) {
       metricLabels['error_type'] = e.runtimeType.toString();
+      final identity = _identityOf(request);
       span?.recordException(e, stack: stack);
       span?.setAttribute('error.type', e.runtimeType.toString());
+      if (identity != null) {
+        span?.setAttribute('session.identity', identity);
+      }
       log.error(
         'Request failed with internal error.',
         error: e,
         stack: stack,
-        labels: _logLabels(httpRequest, 500),
+        labels: _logLabels(httpRequest, 500, identity),
       );
       // ignore: datahub_lints/avoid_zone_context_in_service
       if (Context.ofZone().environment == Environment.dev) {
@@ -341,11 +349,22 @@ class _ApiServiceInstance() extends ServiceInstance<ApiService> implements Api {
   static Map<String, String> _logLabels(
     HttpRequest httpRequest,
     int statusCode,
+    String? identity,
   ) => {
     'http.request.method': httpRequest.method.name.toUpperCase(),
     'url.path': httpRequest.path,
     'http.response.status_code': statusCode.toString(),
+    'session.identity': ?identity,
   };
+
+  /// Identity of the session [request] was authenticated with, if any.
+  static String? _identityOf(ApiRequest request) {
+    try {
+      return request.session?.identity;
+    } catch (_) {
+      return null;
+    }
+  }
 
   static (RequestHandler, Map<String, String>) findEndpoint(
     List<ApiRoute> routes,
