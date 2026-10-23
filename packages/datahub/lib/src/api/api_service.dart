@@ -142,6 +142,7 @@ class _ApiServiceInstance() extends ServiceInstance<ApiService> implements Api {
       final prefix = read(service.metricPrefix);
       _activeRequestsMetric = telemetry.gauge(
         '${prefix}_active_requests',
+        labelNames: {'http_request_method', 'http_route', 'url_scheme'},
         help: 'Number of requests currently being served.',
       );
       _rejectedRequestsMetric = telemetry.counter(
@@ -241,12 +242,10 @@ class _ApiServiceInstance() extends ServiceInstance<ApiService> implements Api {
           .toHttpResponse(httpRequest.requestUri);
     } else {
       _activeRequests++;
-      _activeRequestsMetric?.set(_activeRequests);
       try {
         response = await _handleRequest(httpRequest, metricLabels);
       } finally {
         _activeRequests--;
-        _activeRequestsMetric?.set(_activeRequests);
       }
     }
 
@@ -297,8 +296,15 @@ class _ApiServiceInstance() extends ServiceInstance<ApiService> implements Api {
         span?.updateName('${httpRequest.method.name.toUpperCase()} $route');
       }
 
-      final response = await handler(request);
-      return response.toHttpResponse(httpRequest.requestUri);
+      // the type of unhandled exceptions is added to the metric labels later
+      final activeLabels = {...metricLabels};
+      _activeRequestsMetric?.inc(activeLabels);
+      try {
+        final response = await handler(request);
+        return response.toHttpResponse(httpRequest.requestUri);
+      } finally {
+        _activeRequestsMetric?.dec(activeLabels);
+      }
     } on ApiRequestException catch (e, stack) {
       if (e.statusCode >= 500 && e.statusCode < 600) {
         final identity = _identityOf(request);

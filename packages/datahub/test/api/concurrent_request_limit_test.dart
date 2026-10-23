@@ -33,12 +33,29 @@ void main() {
         return groups.firstWhere((g) => g.name == name).samples.single.value;
       }
 
+      Future<Map<String, String>> activeLabels() async {
+        final groups = await telemetry.scrapeMetrics();
+        return groups
+            .firstWhere((g) => g.name == 'api_active_requests')
+            .samples
+            .single
+            .labels;
+      }
+
       // occupy the service up to the limit
       final first = client.get('/blocking').thenGetJsonBody();
       final second = client.get('/blocking').thenGetJsonBody();
       await Future.delayed(const Duration(milliseconds: 200));
 
       expect(await scrapeMetric('api_active_requests'), equals(2));
+      expect(
+        await activeLabels(),
+        equals({
+          'http_request_method': 'GET',
+          'http_route': '/blocking',
+          'url_scheme': 'http',
+        }),
+      );
       expect(await scrapeMetric('api_requests_rejected_total'), equals(0));
 
       // over the limit: must be rejected with 503 instead of being served
