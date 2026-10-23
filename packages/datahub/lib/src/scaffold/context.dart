@@ -18,18 +18,18 @@ final class Context._({
   final Context? parent;
   this : parent = maybeOfZone();
 
-  static Context? maybeOfZone() {
-    if (Zone.current[_symbol] case final Context context) {
+  static Context? maybeOfZone([Zone? zone]) {
+    if ((zone ?? Zone.current)[_symbol] case final Context context) {
       return context;
     } else {
       return null;
     }
   }
 
-  static Context ofZone() {
-    return maybeOfZone() ??
+  static Context ofZone([Zone? zone]) {
+    return maybeOfZone(zone) ??
         (throw const ApiException(
-          'Context.ofZone called outside of context zone.',
+          'Context.ofZone called for zone without context.',
         ));
   }
 

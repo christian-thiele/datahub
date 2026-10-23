@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:datahub/api.dart';
+import 'package:datahub/scaffold.dart';
 import 'package:datahub/telemetry.dart';
 
 // TODO docs
@@ -36,6 +37,15 @@ class Pool<T>(
   final bool autoRefill = false,
   final void Function()? onChange,
 }) {
+  /// The zone the pool was created in (without its active span), in which
+  /// items are created.
+  ///
+  /// Items usually outlive the code that triggers their creation (e.g. a
+  /// connection listening to its socket), so they must not run in the zone
+  /// of a caller of [take]. Services create their pools in their
+  /// [ServiceInstance.instanceZone].
+  final Zone _zone = Tracer.detachedZone(Zone.current);
+
   final _items = <_PoolItem<T>>[];
   final _taken = <_PoolItem<T>>{};
   final _queue = <Completer<_PoolItem<T>>>[];
@@ -66,6 +76,8 @@ class Pool<T>(
       );
     }
   }
+
+  Future<T> _createInPoolZone() => _zone.run(() async => await _createItem());
 
   Future<void> _runMaintenance() async {
     final expired = _items.where(_isExpired).toList();
@@ -119,7 +131,7 @@ class Pool<T>(
 
   Future<void> _fillOne() async {
     try {
-      final item = await _createItem();
+      final item = await _createInPoolZone();
       if (_disposed) {
         _finalizeItem(item);
       } else {
@@ -311,7 +323,7 @@ class Pool<T>(
         _creating++;
         onChange?.call();
         try {
-          final poolItem = _PoolItem(await _createItem());
+          final poolItem = _PoolItem(await _createInPoolZone());
           _taken.add(poolItem);
           return poolItem.item;
         } catch (_) {

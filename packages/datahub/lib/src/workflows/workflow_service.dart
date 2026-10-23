@@ -246,9 +246,6 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>()
   late final bool _tracing;
   late final _WorkflowMetrics? _metrics;
 
-  /// The zone [initialize] ran in, background work is attributed to it.
-  late final Zone _zone;
-
   Timer? _timer;
   Future<void>? _activeTick;
   bool _wakeRequested = false;
@@ -258,7 +255,6 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>()
   @override
   Future<void> initialize() async {
     await super.initialize();
-    _zone = Zone.current;
 
     _repository = find(service.repository ?? Find<DataRepository<T>>());
     _events = find(service.eventRepository);
@@ -697,7 +693,7 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>()
     }
 
     _timer?.cancel();
-    _timer = _zone.createTimer(delay, () {
+    _timer = instanceZone.createTimer(delay, () {
       _activeTick = _runAsWorker(_runTick)
           .whenComplete(() => _activeTick = null);
     });
@@ -1440,7 +1436,9 @@ class _WorkflowServiceInstance<T extends DataObject, TState extends Enum>()
     });
 
     var writing = false;
-    final timer = _zone.createPeriodicTimer(_heartbeatInterval, (_) async {
+    final timer = instanceZone.createPeriodicTimer(_heartbeatInterval, (
+      _,
+    ) async {
       if (writing) {
         return;
       }

@@ -17,21 +17,23 @@ mixin DatabaseConnectionManager<
     on ServiceInstance<TService> {
   final _adapterId = randomHexId(5);
 
-  late final Pool<TConnection> _pool = Pool<TConnection>(
-    read(targetPoolSize),
-    _create,
-    maxLifetime: read(maxConnectionLifetime),
-    checkIsLive: (c) => c.isOpen,
-    maxQueueLength: read(poolQueueLimit),
-    onReturn: read(resetConnectionOnReturn) ? (c) => c.reset() : null,
-    maintenanceInterval: read(poolMaintenanceInterval),
-    autoRefill: true,
-    onChange: () => onPoolChanged(
-      target: _pool.targetSize,
-      total: _pool.total,
-      available: _pool.available,
+  late final Pool<TConnection> _pool = inInstanceZone(
+    () => Pool<TConnection>(
+      read(targetPoolSize),
+      _create,
+      maxLifetime: read(maxConnectionLifetime),
+      checkIsLive: (c) => c.isOpen,
+      maxQueueLength: read(poolQueueLimit),
+      onReturn: read(resetConnectionOnReturn) ? (c) => c.reset() : null,
+      maintenanceInterval: read(poolMaintenanceInterval),
+      autoRefill: true,
+      onChange: () => onPoolChanged(
+        target: _pool.targetSize,
+        total: _pool.total,
+        available: _pool.available,
+      ),
+      onRemoveItem: (c) => c.close(),
     ),
-    onRemoveItem: (c) => c.close(),
   );
 
   Config<int> get targetPoolSize;

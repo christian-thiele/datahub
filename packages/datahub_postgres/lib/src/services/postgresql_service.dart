@@ -240,7 +240,7 @@ class _PostgresqlServiceInstance()
     if (_listenerConnection case final connection? when connection.isOpen) {
       unawaited(_subscribeChannel(connection, channel));
     } else {
-      _ensureListener();
+      inInstanceZone(_ensureListener);
     }
 
     return controller.stream;

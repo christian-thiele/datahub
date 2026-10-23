@@ -73,7 +73,6 @@ abstract class ServiceHost({Map<String, String>? environmentVariables})
             final instance = service.createInstance();
             instance.service = service;
             instance.registry = this;
-            instance.context = context;
 
             await context.run(() async {
               await instance.initialize();

@@ -173,26 +173,23 @@ class _RedisServiceInstance()
   final _clock = Stopwatch()..start();
   final _random = Random.secure();
 
-  /// The zone [initialize] ran in. Background work (Pub/Sub connection,
-  /// lock renewal) runs here, so it is neither bound to a caller's
-  /// connection nor attributed to a caller's context.
-  late final Zone _zone;
-
   late final Duration _poolTimeout;
   late final Duration _healthCheckInterval;
   late final Duration _timeout;
 
-  late final _pool = Pool<RedisSocketConnection>(
-    read(service.targetPoolSize),
-    _openConnection,
-    maxLifetime: read(service.maxConnectionLifetime),
-    checkIsLive: _checkIsLive,
-    maxQueueLength: read(service.poolQueueLimit),
-    onReturn: (connection) => connection.reset(),
-    maintenanceInterval: read(service.poolMaintenanceInterval),
-    autoRefill: true,
-    onChange: _updateMetrics,
-    onRemoveItem: (connection) => connection.close(),
+  late final _pool = inInstanceZone(
+    () => Pool<RedisSocketConnection>(
+      read(service.targetPoolSize),
+      _openConnection,
+      maxLifetime: read(service.maxConnectionLifetime),
+      checkIsLive: _checkIsLive,
+      maxQueueLength: read(service.poolQueueLimit),
+      onReturn: (connection) => connection.reset(),
+      maintenanceInterval: read(service.poolMaintenanceInterval),
+      autoRefill: true,
+      onChange: _updateMetrics,
+      onRemoveItem: (connection) => connection.close(),
+    ),
   );
 
   RedisSubscriber? _subscriber;
@@ -211,7 +208,6 @@ class _RedisServiceInstance()
   @override
   Future<void> initialize() async {
     await super.initialize();
-    _zone = Zone.current;
     _poolTimeout = read(service.poolTimeout);
     _healthCheckInterval = read(service.healthCheckInterval);
     _timeout = read(service.timeout);
@@ -375,7 +371,7 @@ class _RedisServiceInstance()
     return _subscriber ??= RedisSubscriber(
       _openConnection,
       healthCheckInterval: _healthCheckInterval,
-      zone: _zone,
+      zone: instanceZone,
       telemetry: _telemetry,
       targetLabels: _targetLabels,
     );
@@ -501,7 +497,7 @@ class _RedisServiceInstance()
       validUntil: sentAt + leaseDuration,
       commands: _unbound,
       clock: _clock,
-      zone: _zone,
+      zone: instanceZone,
       telemetry: _telemetry,
       onFinished: (handle) {
         _locks.remove(handle);

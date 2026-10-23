@@ -32,6 +32,15 @@ class Tracer({
     _ => null,
   };
 
+  /// A zone forked from [zone] without an active span.
+  ///
+  /// For work that outlives the code that starts it (e.g. timers or
+  /// connections of a service), which must not be attributed to the span
+  /// active at that time, like the span of a request or of initializing the
+  /// service. Spans started in the zone are roots of new traces.
+  static Zone detachedZone(Zone zone) =>
+      zone.fork(zoneValues: {_activeSpanKey: null});
+
   /// Runs [delegate] in a new span, which is ended when [delegate] returns.
   ///
   /// The span is a child of [parent], or of [currentSpan] if [parent] is

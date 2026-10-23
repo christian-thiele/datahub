@@ -36,7 +36,7 @@ class _SlowServiceInstance() extends ServiceInstance<_SlowService> {
 }
 
 /// Registers a [_ChildService] and keeps the active span of its
-/// initialization.
+/// initialization, of its instance zone and of creating pool items.
 class const _ParentService() implements Service {
   @override
   ServiceInstance createInstance() => _ParentServiceInstance();
@@ -44,11 +44,20 @@ class const _ParentService() implements Service {
 
 class _ParentServiceInstance() extends ServiceInstance<_ParentService> {
   Span? span;
+  Span? instanceZoneSpan;
+  Context? instanceZoneContext;
+  Span? poolItemSpan;
 
   @override
   Future<void> initialize() async {
     await super.initialize();
     span = Tracer.currentSpan;
+    inInstanceZone(() {
+      instanceZoneSpan = Tracer.currentSpan;
+      // ignore: datahub_lints/avoid_zone_context_in_service
+      instanceZoneContext = Context.maybeOfZone();
+    });
+    await Pool(1, () => poolItemSpan = Tracer.currentSpan).fill();
     registry.register(const _ChildService());
   }
 }
@@ -99,9 +108,11 @@ Future<void> main() async {
     });
 
     await host.initialize();
-    final parentSpan = host
-        .findComponent(const Find<_ParentServiceInstance>(), null)
-        .span;
+    final parentInstance = host.findComponent(
+      const Find<_ParentServiceInstance>(),
+      null,
+    );
+    final parentSpan = parentInstance.span;
     // flushes the exporter
     await host.shutdown();
 
@@ -169,6 +180,12 @@ Future<void> main() async {
 
     // the span is active while the service initializes
     expect(parentSpan?.spanId.bytes, equals(parent.spanId));
+
+    // but not for work that outlives the initialization, which would
+    // otherwise share the trace of the initialization
+    expect(parentInstance.instanceZoneSpan, isNull);
+    expect(parentInstance.instanceZoneContext, same(parentInstance.context));
+    expect(parentInstance.poolItemSpan, isNull);
   });
 
   test('fails the spans of a service that cannot initialize', () async {

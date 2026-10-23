@@ -91,7 +91,6 @@ class _SchedulerServiceInstance()
   /// Schedules running on this instance, and their runs.
   final _running = <String, Future<void>>{};
 
-  late final Zone _zone;
   late final bool _worker;
   late final Duration _pollInterval;
   late final _SchedulerTelemetry _telemetry;
@@ -108,7 +107,6 @@ class _SchedulerServiceInstance()
   @override
   Future<void> initialize() async {
     await super.initialize();
-    _zone = Zone.current;
     _worker = read(service.worker);
     _pollInterval = read(service.pollInterval);
     _telemetry = _SchedulerTelemetry(
@@ -198,7 +196,7 @@ class _SchedulerServiceInstance()
     }
 
     _timer?.cancel();
-    _timer = _zone.createTimer(delay, () {
+    _timer = instanceZone.createTimer(delay, () {
       _activeTick = _tick().whenComplete(() => _activeTick = null);
     });
   }

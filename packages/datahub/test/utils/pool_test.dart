@@ -71,6 +71,23 @@ void main() {
       expect(pool, poolState(3, 3, 3));
     });
 
+    test('Should create items in the zone of the pool', () async {
+      final zones = <Object?>[];
+      final pool = runZoned(
+        () => Pool(2, () async {
+          zones.add(Zone.current[#zone]);
+          return Item();
+        }),
+        zoneValues: {#zone: 'pool'},
+      );
+
+      // items created by take() outlive the caller, so they must not be
+      // created in its zone
+      await runZoned(pool.take, zoneValues: {#zone: 'caller'});
+      await runZoned(pool.fill, zoneValues: {#zone: 'caller'});
+      expect(zones, equals(['pool', 'pool']));
+    });
+
     test('Should remove "not live" items from pool', () async {
       final liveItem = Item();
       final deadItem = Item();
