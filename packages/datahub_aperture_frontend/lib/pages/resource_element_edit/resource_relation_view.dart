@@ -1,11 +1,13 @@
 import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/models/filtered_resource.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
+import 'package:datahub_aperture_frontend/utils/route_utils.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
 import 'package:datahub_aperture_frontend/widgets/resources/resource_list.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 
 class ResourceRelationView extends StatelessWidget {
   final FilteredResource filteredResource;
@@ -21,9 +23,24 @@ class ResourceRelationView extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         spacing: 8,
         children: [
-          Text(
-            filteredResource.name,
-            style: Theme.of(context).textTheme.titleMedium,
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                filteredResource.name,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              IconButton(
+                onPressed: () => context.push(
+                  RouteUtils.viewResource(
+                    filteredResource.resourceId,
+                    filter: filteredResource.filter,
+                  ),
+                ),
+                icon: Icon(Icons.open_in_new),
+              ),
+            ],
           ),
           Flexible(
             child: BlocProvider(

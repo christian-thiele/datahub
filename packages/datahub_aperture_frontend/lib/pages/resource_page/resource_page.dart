@@ -1,3 +1,6 @@
+import 'dart:convert';
+
+import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
@@ -21,12 +24,17 @@ class ResourcePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final resourceId = routerState.pathParameters['resourceId']!;
+    final initialFilter = switch (routerState.uri.queryParameters['filter']) {
+      String encoded => $ResourceFilter.fromJson(jsonDecode(encoded)),
+      _ => null,
+    };
     return BasePage(
       child: BlocProvider(
         key: ValueKey(resourceId),
         create: (context) => ResourceCubit(
           context.read<ResourcesRepository>(),
           resourceId: resourceId,
+          initialFilter: initialFilter,
         ),
         child: BlocBuilder<ResourceCubit, ResourceState>(
           builder: (context, state) {
@@ -46,6 +54,9 @@ class ResourcePage extends StatelessWidget {
                       PageHeader(
                         title: resource.namePlural ?? resource.name,
                         leading: IconTile(getIcon(resource.icon), size: 40),
+                        breadcrumbs: [
+
+                        ],
                         actions: [
                           IconButton.outlined(
                             onPressed: () =>

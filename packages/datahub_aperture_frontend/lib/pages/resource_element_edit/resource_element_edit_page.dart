@@ -5,6 +5,7 @@ import 'package:datahub_aperture_frontend/models/view_models/action_model.dart';
 import 'package:datahub_aperture_frontend/pages/resource_element_edit/element_action_dialog.dart';
 import 'package:datahub_aperture_frontend/pages/resource_element_edit/resource_element_edit_view.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
+import 'package:datahub_aperture_frontend/utils/route_utils.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/dialogs/confirmation_dialog.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
@@ -76,7 +77,7 @@ class ResourceElementEditPage extends StatelessWidget {
                     breadcrumbs: [
                       Breadcrumb(
                         resource.namePlural ?? resource.name,
-                        '/resources/${Uri.encodeComponent(resourceId)}',
+                        RouteUtils.viewResource(resourceId),
                       ),
                     ],
                     fields: resource.fields,

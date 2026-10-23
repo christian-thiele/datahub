@@ -3,6 +3,7 @@ import 'package:datahub_aperture_frontend/blocs/workflow/resource_workflow_cubit
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/repositories/workflow_repository/workflow_repository.dart';
+import 'package:datahub_aperture_frontend/utils/route_utils.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/data/entity_list_view.dart';
@@ -57,7 +58,7 @@ class ResourceWorkflowPage extends StatelessWidget {
                     breadcrumbs: [
                       Breadcrumb(
                         resource.namePlural ?? resource.name,
-                        '/resources/${Uri.encodeComponent(resourceId)}',
+                        RouteUtils.viewResource(resourceId),
                       ),
                       Breadcrumb(S.of(context).workflow),
                     ],

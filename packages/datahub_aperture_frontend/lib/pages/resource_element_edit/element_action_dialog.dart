@@ -3,6 +3,7 @@ import 'package:datahub_aperture_frontend/blocs/resource_element/resource_action
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/repositories/workflow_repository/workflow_repository.dart';
+import 'package:datahub_aperture_frontend/utils/route_utils.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/aperture_animation.dart';
@@ -76,7 +77,7 @@ class ElementActionDialog extends StatelessWidget {
     final router = GoRouter.of(context);
     Navigator.pop(context);
     router.go(
-      '/resources/${Uri.encodeComponent(redirect.resourceId)}/view/${Uri.encodeComponent(redirect.elementId)}',
+      RouteUtils.viewElement(redirect.resourceId, redirect.elementId)
     );
   }
 

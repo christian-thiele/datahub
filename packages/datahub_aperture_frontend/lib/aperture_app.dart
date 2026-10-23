@@ -105,6 +105,15 @@ class _ApertureAppState extends State<ApertureApp>
                       key: ValueKey(state.matchedLocation),
                       child: ResourceElementEditPage(state),
                     ),
+                    routes: [
+                      GoRoute(
+                        path: '/rel/:relationId',
+                        pageBuilder: (context, state) => MaterialPage(
+                          key: ValueKey(state.matchedLocation),
+                          child: ResourcePage(state),
+                        ),
+                      ),
+                    ],
                   ),
                   GoRoute(
                     path: 'workflow',

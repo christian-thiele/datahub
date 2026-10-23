@@ -3,6 +3,7 @@ import 'package:datahub_aperture_frontend/blocs/configuration_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/pages/resource_element_edit/element_action_dialog.dart';
 import 'package:datahub_aperture_frontend/utils/bootstrap.dart';
+import 'package:datahub_aperture_frontend/utils/route_utils.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
@@ -51,9 +52,8 @@ class DashboardPage extends StatelessWidget {
                       _ShortcutTile(
                         icon: getIcon(resource.icon),
                         title: resource.namePlural ?? resource.name,
-                        onTap: () => context.go(
-                          '/resources/${Uri.encodeComponent(resource.id)}',
-                        ),
+                        onTap: () =>
+                            context.go(RouteUtils.viewResource(resource.id)),
                       ),
                   ],
                 ),

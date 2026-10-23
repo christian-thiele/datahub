@@ -2,6 +2,7 @@ import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/blocs/resource_element/resource_element_create_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
+import 'package:datahub_aperture_frontend/utils/route_utils.dart';
 import 'package:datahub_aperture_frontend/widgets/base_page.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_overlay.dart';
@@ -37,7 +38,7 @@ class ResourceElementCreatePage extends StatelessWidget {
                 context.go(
                   Uri(
                     path:
-                        '/resources/${Uri.encodeComponent(resourceId)}/view/${Uri.encodeComponent(id)}',
+                        RouteUtils.viewElement(resourceId, id),
                     queryParameters: {'version': ?version},
                   ).toString(),
                 );
@@ -67,7 +68,7 @@ class ResourceElementCreatePage extends StatelessWidget {
                         breadcrumbs: [
                           Breadcrumb(
                             description.namePlural ?? description.name,
-                            '/resources/${Uri.encodeComponent(resourceId)}',
+                            RouteUtils.viewResource(resourceId),
                           ),
                           Breadcrumb(S.of(context).newElement),
                         ],

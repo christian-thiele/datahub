@@ -3,6 +3,7 @@ import 'package:datahub_aperture_frontend/blocs/resource/resource_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/resources_repository/resources_repository.dart';
 import 'package:datahub_aperture_frontend/utils/helper.dart';
+import 'package:datahub_aperture_frontend/utils/route_utils.dart';
 import 'package:datahub_aperture_frontend/widgets/error_view.dart';
 import 'package:datahub_aperture_frontend/widgets/loading_view.dart';
 import 'package:datahub_aperture_frontend/widgets/resources/resource_list.dart';
@@ -163,7 +164,12 @@ class _LookupMenuState extends State<LookupMenu> {
               padding: const EdgeInsets.only(right: 4.0),
               child: InkWell(
                 onTap: (_linkedId != null)
-                    ? () => _navigateTo(_linkedId!)
+                    ? () => context.push(
+                        RouteUtils.viewElement(
+                          widget.lookup.resourceId,
+                          _linkedId!,
+                        ),
+                      )
                     : null,
                 customBorder: const CircleBorder(),
                 child: Icon(Icons.link, color: colors.primary),
@@ -255,15 +261,6 @@ class _LookupMenuState extends State<LookupMenu> {
           child: _buildField(context),
         );
       },
-    );
-  }
-
-  void _navigateTo(String s) {
-    context.push(
-      Uri(
-        path:
-            '/resources/${Uri.encodeComponent(widget.lookup.resourceId)}/view/${Uri.encodeComponent(_linkedId!)}',
-      ).toString(),
     );
   }
 }

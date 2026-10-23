@@ -2,6 +2,7 @@ import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/blocs/workflow/workflow_event_cubit.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
 import 'package:datahub_aperture_frontend/repositories/workflow_repository/workflow_repository.dart';
+import 'package:datahub_aperture_frontend/utils/route_utils.dart';
 import 'package:datahub_aperture_frontend/utils/theme.dart';
 import 'package:datahub_aperture_frontend/utils/utils.dart';
 import 'package:datahub_aperture_frontend/widgets/data/value_view.dart';
@@ -89,8 +90,10 @@ class WorkflowEventDialog extends StatelessWidget {
                         final router = GoRouter.of(context);
                         close();
                         router.go(
-                          '/resources/${Uri.encodeComponent(resourceId)}'
-                          '/view/${Uri.encodeComponent(event.event.elementId)}',
+                          RouteUtils.viewElement(
+                            resourceId,
+                            event.event.elementId,
+                          ),
                         );
                       },
                       child: Text(S.of(context).openElement),

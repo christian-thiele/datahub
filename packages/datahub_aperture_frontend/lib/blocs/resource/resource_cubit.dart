@@ -17,11 +17,13 @@ class ResourceCubit extends Cubit<ResourceState> {
   final ResourcesRepository _resourceRepository;
   final String resourceId;
   final ResourceFilter? defaultFilter;
+  final ResourceFilter? initialFilter;
 
   ResourceCubit(
     this._resourceRepository, {
     required this.resourceId,
     this.defaultFilter,
+    this.initialFilter,
     String initialSearch = '',
     int defaultPageSize = 25,
   }) : super(
@@ -38,6 +40,26 @@ class ResourceCubit extends Cubit<ResourceState> {
          ),
        ) {
     update();
+  }
+
+  static List<FilterModel> _tryBuildFilterModels(
+    ResourceFilter? filter,
+    ResourceDescription resource,
+  ) {
+    return [
+      if (filter case ResourceFilter(
+        :final type?,
+        :final fieldId,
+        :final value,
+      ))
+        FilterModel(
+          resource.fields.firstWhere((e) => e.id == fieldId),
+          type,
+          value,
+        ),
+      if (filter case ResourceFilter(and: final and?))
+        for (final element in and) ..._tryBuildFilterModels(element, resource),
+    ];
   }
 
   ResourceFilter? _buildFilter(
@@ -77,7 +99,7 @@ class ResourceCubit extends Cubit<ResourceState> {
             InitialFilterState(:final search) => FilterState(
               filterFields: _getFilterFields(resource),
               sortFields: _getSortFields(resource),
-              filters: [],
+              filters: _tryBuildFilterModels(initialFilter, resource),
               search: search,
               sortField: _getSortFields(resource).firstOrNull,
               sortAscending: true,
