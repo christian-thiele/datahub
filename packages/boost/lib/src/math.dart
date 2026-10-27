@@ -10,13 +10,64 @@ import 'package:boost/boost.dart';
 /// Rounds away from zero on n.5:
 ///  `round(35, -1) == 40` and `round(-35, -1) == -40`
 ///  `round(1.25, 1) == 1.3` and `round(-1.25, 1) == -1.3`
+///
+/// Rounding is applied to the decimal representation of [value] (the one
+/// printed by `toString()`), so the result never carries floating point noise.
 double round<T extends num>(T value, [int digits = 0]) {
   if (value is double && (value.isNaN || value.isInfinite)) {
     return value;
   }
 
-  final p = math.pow(10, 0 - digits);
-  return ((value / p).round() * p).toDouble();
+  // Scaling by 10^digits is inexact for one sign of digits (0.01 has no exact
+  // binary form) and misjudges ties, so the decimal digits are rounded instead.
+  var text = value.toString();
+  final negative = text.startsWith('-');
+  if (negative) {
+    text = text.substring(1);
+  }
+
+  // value == int.parse(text) * 10^exponent
+  var exponent = 0;
+  final e = text.indexOf('e');
+  if (e >= 0) {
+    exponent = int.parse(text.substring(e + 1));
+    text = text.substring(0, e);
+  }
+  final dot = text.indexOf('.');
+  if (dot >= 0) {
+    exponent -= text.length - dot - 1;
+    text = text.substring(0, dot) + text.substring(dot + 1);
+  }
+
+  // toString() pads large values with zeros ("9500000000000000000.0"), which
+  // would overflow int.parse; without them a double has at most 17 digits.
+  var end = text.length;
+  while (end > 0 && text.codeUnitAt(end - 1) == 0x30) {
+    end--;
+  }
+  exponent += text.length - end;
+  text = text.substring(0, end);
+  if (text.isEmpty) {
+    return 0;
+  }
+
+  final drop = -exponent - digits;
+  if (drop <= 0) {
+    return value.toDouble();
+  }
+  final keep = text.length - drop;
+  if (keep < 0) {
+    return 0;
+  }
+
+  var kept = keep == 0 ? 0 : int.parse(text.substring(0, keep));
+  if (text.codeUnitAt(keep) >= 0x35) {
+    kept++;
+  }
+  if (kept == 0) {
+    return 0;
+  }
+  return double.parse('${negative ? '-' : ''}${kept}e${exponent + drop}');
 }
 
 /// Clamps a value between a inclusive minimum and inclusive maximum.
