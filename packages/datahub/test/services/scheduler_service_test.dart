@@ -13,6 +13,10 @@ Future<void> _record(ScheduleContext run) async =>
 
 List<ScheduleContext> _runsOf(String name) => _runs[name] ?? const [];
 
+/// Whether [_YieldingRecordRepository] fails storing the start of runs, like
+/// a database whose connection pool is overloaded.
+var _overloaded = false;
+
 DataRepository<ScheduleRecord> get _records =>
     const Find<DataRepository<ScheduleRecord>>().find();
 
@@ -54,7 +58,10 @@ Future<void> _eventually(
 }
 
 void main() {
-  setUp(_runs.clear);
+  setUp(() {
+    _runs.clear();
+    _overloaded = false;
+  });
 
   group('Schedule.nextAfter', () {
     Future<void> noop(ScheduleContext run) async {}
@@ -332,6 +339,27 @@ void main() {
   );
 
   declareTest(
+    'keeps running when the start of a run cannot be stored',
+    [
+      const _YieldingRecordRepository(),
+      _instance(0, [
+        const Schedule.every(
+          'overloaded',
+          _record,
+          interval: Duration(milliseconds: 100),
+        ),
+      ]),
+    ],
+    () async {
+      _overloaded = true;
+      await _eventually(
+        () => _runsOf('overloaded').length >= 2,
+        reason: '2 runs',
+      );
+    },
+  );
+
+  declareTest(
     'runs a schedule now on request',
     [const Schedule.monthly('billing', _record)],
     () async {
@@ -435,6 +463,9 @@ class _YieldingRecordRepositoryInstance()
     required Map<DataField<ScheduleRecord, dynamic>, dynamic> values,
   }) async {
     await _yield();
+    if (_overloaded && values.containsKey($ScheduleRecord.$lastStartedAt)) {
+      throw PoolQueueLimitException(1);
+    }
     var count = 0;
     for (final record in _records.values.where(filter.matches).toList()) {
       _records[record.id] = bean.fromValues({

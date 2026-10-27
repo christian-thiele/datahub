@@ -267,11 +267,17 @@ class _SchedulerServiceInstance()
 
     // Only one instance can move the next run time, that one runs it.
     final scheduledFor = record.nextRunAt;
-    final claimed = await store.moveNextRun(
-      schedule.name,
-      from: scheduledFor,
-      to: earliest,
-    );
+    final bool claimed;
+    try {
+      claimed = await store.moveNextRun(
+        schedule.name,
+        from: scheduledFor,
+        to: earliest,
+      );
+    } catch (_) {
+      await lock?.release();
+      rethrow;
+    }
     if (!claimed) {
       await lock?.release();
       return null;
@@ -330,10 +336,20 @@ class _SchedulerServiceInstance()
     final messages = <String>[];
     Object? failure;
 
-    await store.update(schedule.name, {
-      $ScheduleRecord.$lastScheduledFor: scheduledFor,
-      $ScheduleRecord.$lastStartedAt: startedAt,
-    });
+    try {
+      await store.update(schedule.name, {
+        $ScheduleRecord.$lastScheduledFor: scheduledFor,
+        $ScheduleRecord.$lastStartedAt: startedAt,
+      });
+    } catch (error, stack) {
+      // run anyway, the lock is claimed
+      log.warn(
+        'Could not store the start of a scheduled run.',
+        error: error,
+        stack: stack,
+        labels: labels,
+      );
+    }
 
     try {
       await _telemetry.trace(schedule.name, scheduledFor, () async {
