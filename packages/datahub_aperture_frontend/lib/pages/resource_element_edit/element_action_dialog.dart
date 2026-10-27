@@ -76,9 +76,7 @@ class ElementActionDialog extends StatelessWidget {
   void _redirect(BuildContext context, ResourceActionRedirect redirect) {
     final router = GoRouter.of(context);
     Navigator.pop(context);
-    router.go(
-      RouteUtils.viewElement(redirect.resourceId, redirect.elementId)
-    );
+    router.go(RouteUtils.viewElement(redirect.resourceId, redirect.elementId));
   }
 
   @override

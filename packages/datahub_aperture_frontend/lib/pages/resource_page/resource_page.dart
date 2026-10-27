@@ -54,9 +54,7 @@ class ResourcePage extends StatelessWidget {
                       PageHeader(
                         title: resource.namePlural ?? resource.name,
                         leading: IconTile(getIcon(resource.icon), size: 40),
-                        breadcrumbs: [
-
-                        ],
+                        breadcrumbs: [],
                         actions: [
                           IconButton.outlined(
                             onPressed: () =>

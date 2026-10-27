@@ -28,77 +28,82 @@ class ResourceElementCreatePage extends StatelessWidget {
           context.read<ResourcesRepository>(),
           resourceId: resourceId,
         ),
-        child: BlocConsumer<ResourceElementCreateCubit, ResourceElementCreateState>(
-          listener: (context, state) {
-            switch (state) {
-              case ResourceElementCreateSaved(:final id, :final version):
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(S.of(context).resourceSaved)),
-                );
-                context.go(
-                  Uri(
-                    path:
-                        RouteUtils.viewElement(resourceId, id),
-                    queryParameters: {'version': ?version},
-                  ).toString(),
-                );
-              default:
-                break;
-            }
-          },
-          builder: (context, state) {
-            return switch (state) {
-              ResourceElementCreateLoading() => LoadingView(),
-              ResourceElementCreateError(:final message) => ErrorView(
-                message: message,
-              ),
-              ResourceElementCreateValue(
-                :final description,
-                :final fields,
-                :final changes,
-              ) =>
-                LoadingOverlay(
-                  loading: state is ResourceElementCreateSaving,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    spacing: 20,
-                    children: [
-                      PageHeader(
-                        title: S.of(context).newResource(description.name),
-                        breadcrumbs: [
-                          Breadcrumb(
-                            description.namePlural ?? description.name,
-                            RouteUtils.viewResource(resourceId),
+        child:
+            BlocConsumer<
+              ResourceElementCreateCubit,
+              ResourceElementCreateState
+            >(
+              listener: (context, state) {
+                switch (state) {
+                  case ResourceElementCreateSaved(:final id, :final version):
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(S.of(context).resourceSaved)),
+                    );
+                    context.go(
+                      Uri(
+                        path: RouteUtils.viewElement(resourceId, id),
+                        queryParameters: {'version': ?version},
+                      ).toString(),
+                    );
+                  default:
+                    break;
+                }
+              },
+              builder: (context, state) {
+                return switch (state) {
+                  ResourceElementCreateLoading() => LoadingView(),
+                  ResourceElementCreateError(:final message) => ErrorView(
+                    message: message,
+                  ),
+                  ResourceElementCreateValue(
+                    :final description,
+                    :final fields,
+                    :final changes,
+                  ) =>
+                    LoadingOverlay(
+                      loading: state is ResourceElementCreateSaving,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        spacing: 20,
+                        children: [
+                          PageHeader(
+                            title: S.of(context).newResource(description.name),
+                            breadcrumbs: [
+                              Breadcrumb(
+                                description.namePlural ?? description.name,
+                                RouteUtils.viewResource(resourceId),
+                              ),
+                              Breadcrumb(S.of(context).newElement),
+                            ],
                           ),
-                          Breadcrumb(S.of(context).newElement),
+                          Expanded(
+                            child: SingleChildScrollView(
+                              child: ResourceElementCreateView(
+                                fields: fields,
+                                data: ResourceData(id: '', fieldData: {}),
+                                changes: changes,
+                                validations: switch (state) {
+                                  ResourceElementCreateEditing(
+                                    :final validation,
+                                  ) =>
+                                    validation,
+                                  _ => {},
+                                },
+                                onFieldValueChanged: (field, value) => context
+                                    .read<ResourceElementCreateCubit>()
+                                    .setFieldValue(field.id, value),
+                                onSavePressed: (live) => context
+                                    .read<ResourceElementCreateCubit>()
+                                    .saveChanges(from: live),
+                              ),
+                            ),
+                          ),
                         ],
                       ),
-                      Expanded(
-                        child: SingleChildScrollView(
-                          child: ResourceElementCreateView(
-                            fields: fields,
-                            data: ResourceData(id: '', fieldData: {}),
-                            changes: changes,
-                            validations: switch (state) {
-                              ResourceElementCreateEditing(:final validation) =>
-                                validation,
-                              _ => {},
-                            },
-                            onFieldValueChanged: (field, value) => context
-                                .read<ResourceElementCreateCubit>()
-                                .setFieldValue(field.id, value),
-                            onSavePressed: (live) => context
-                                .read<ResourceElementCreateCubit>()
-                                .saveChanges(from: live),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-            };
-          },
-        ),
+                    ),
+                };
+              },
+            ),
       ),
     );
   }
