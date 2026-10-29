@@ -173,6 +173,10 @@ ResourceField fieldDescription(
     length: length?.length,
     type: type,
     nullable: field.type.isNullable,
+    defaultValue: switch (field.defaultValue) {
+      final value? => field.toJson(value),
+      null => null,
+    },
     objectDescription: _objectDescription(field, type, relatedBeans),
     enumValues: field
         .constraintOfType<EnumConstraint>()

@@ -225,6 +225,10 @@ void decodeFieldData(ResourceDescription resource, ResourceData data) {
   data.fieldData.addAll(decoded);
 }
 
+/// Decodes the JSON value [raw] of [field] into the value the form fields edit.
+dynamic decodeFieldValue(ResourceField field, dynamic raw) =>
+    _decodeField(field, raw, name: field.id);
+
 dynamic _decodeField(ResourceField? field, dynamic raw, {String? name}) {
   if (raw == null) {
     return null;

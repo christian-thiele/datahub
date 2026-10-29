@@ -49,9 +49,6 @@ abstract interface class $PointOfInterest with DataObject<PointOfInterest> {
     ),
     toJson: (value) => $$codec.encodeGeometry(value),
     defaultValue: const GeometryCollection.empty(),
-    constraints: [
-      const GeometryTypeConstraint<Geometry?>(type: GeometryType.point),
-    ],
   );
 
   static final DataBean<PointOfInterest> bean = DataBean<PointOfInterest>(

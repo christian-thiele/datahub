@@ -26,14 +26,18 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
         for (final field in resource.fields)
           if (!field.readOnly)
             field
-          else if (!field.auto && !field.nullable)
+          else if (!field.auto && !field.nullable && field.defaultValue == null)
             field.copyWith(readOnly: false),
       ];
-      final changes = <ResourceField, dynamic>{};
+      final changes = <ResourceField, dynamic>{
+        for (final field in fields)
+          if (!field.readOnly && field.defaultValue != null)
+            field: decodeFieldValue(field, field.defaultValue),
+      };
       for (final field in fields.where(
         (e) => e.type == ResourceFieldType.list,
       )) {
-        changes[field] = [];
+        changes.putIfAbsent(field, () => []);
       }
 
       if (!isClosed) {

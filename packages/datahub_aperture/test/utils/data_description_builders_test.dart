@@ -13,6 +13,7 @@ final _bean = DataBean<DataObject>(
 ResourceField _describe<T>(
   String name, {
   List<DataFieldConstraint> constraints = const [],
+  T? defaultValue,
 }) => fieldDescription(
   _bean,
   DataField<DataObject, T>(
@@ -21,6 +22,7 @@ ResourceField _describe<T>(
     toJson: (value) => value,
     fromJson: (value, {name}) => value as T,
     constraints: constraints,
+    defaultValue: defaultValue,
   ),
   const [],
 );
@@ -83,6 +85,14 @@ void main() {
             .having((e) => e.id, 'id', 'element')
             .having((e) => e.type, 'type', ResourceFieldType.string),
       ]);
+    });
+
+    test('describes the default value of the field', () {
+      expect(_describe<String>('plain').defaultValue, isNull);
+      expect(
+        _describe<String>('fallback', defaultValue: 'none').defaultValue,
+        'none',
+      );
     });
 
     test('describes constraints of the field', () {
