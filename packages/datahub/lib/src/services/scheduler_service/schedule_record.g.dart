@@ -67,6 +67,7 @@ abstract interface class $ScheduleRecord with DataObject<ScheduleRecord> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
   );
 
   static final DataBean<ScheduleRecord> bean = DataBean<ScheduleRecord>(

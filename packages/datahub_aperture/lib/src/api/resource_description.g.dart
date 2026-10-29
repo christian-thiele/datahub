@@ -86,6 +86,7 @@ abstract interface class $ResourceDescription
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
   );
 
   static final $titleTemplate = DataField<ResourceDescription, String?>(
@@ -102,6 +103,7 @@ abstract interface class $ResourceDescription
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final $allowUpdate = DataField<ResourceDescription, bool>(
@@ -110,6 +112,7 @@ abstract interface class $ResourceDescription
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final $allowDelete = DataField<ResourceDescription, bool>(
@@ -118,6 +121,7 @@ abstract interface class $ResourceDescription
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final $revisable = DataField<ResourceDescription, bool>(
@@ -154,6 +158,7 @@ abstract interface class $ResourceDescription
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final $workflow = DataField<ResourceDescription, ResourceWorkflow?>(

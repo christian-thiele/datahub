@@ -15,6 +15,7 @@ abstract interface class $Position with DataObject<Position> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? ''), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: '',
     meta: [const Id(auto: true)],
   );
 
@@ -168,6 +169,7 @@ abstract interface class $BillingPeriod with DataObject<BillingPeriod> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: PeriodState.open,
     constraints: [EnumConstraint(values: PeriodState.values)],
   );
 
@@ -275,6 +277,7 @@ abstract interface class $BillingInvoice with DataObject<BillingInvoice> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
   );
 
   static final $state = DataField<BillingInvoice, BillingInvoiceState>(
@@ -286,6 +289,7 @@ abstract interface class $BillingInvoice with DataObject<BillingInvoice> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: BillingInvoiceState.created,
     constraints: [EnumConstraint(values: BillingInvoiceState.values)],
   );
 

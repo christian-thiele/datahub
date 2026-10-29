@@ -15,6 +15,7 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? ''), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: '',
     meta: [const Id(auto: true)],
   );
 
@@ -90,6 +91,7 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: WorkflowEventStatus.pending,
     constraints: [EnumConstraint(values: WorkflowEventStatus.values)],
   );
 
@@ -99,6 +101,7 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
   );
 
   static final $lastError = DataField<WorkflowEvent, String?>(
@@ -158,6 +161,7 @@ abstract interface class $WorkflowEvent with DataObject<WorkflowEvent> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
   );
 
   static final DataBean<WorkflowEvent> bean = DataBean<WorkflowEvent>(

@@ -15,6 +15,7 @@ abstract interface class $Contact with DataObject<Contact> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 
@@ -122,6 +123,7 @@ abstract interface class $Contact with DataObject<Contact> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: ContactType.employee,
     meta: [const Meta(name: 'Role')],
     constraints: [EnumConstraint(values: ContactType.values)],
   );
@@ -132,6 +134,7 @@ abstract interface class $Contact with DataObject<Contact> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
     meta: [
       const Meta(
         name: 'Primary contact',
@@ -146,6 +149,7 @@ abstract interface class $Contact with DataObject<Contact> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? 'en'), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: 'en',
     meta: [const Meta(description: 'Preferred language (ISO 639-1).')],
     constraints: [const RegExpConstraint<String?>(expression: '^[a-z]{2}\$')],
   );
@@ -173,6 +177,7 @@ abstract interface class $Contact with DataObject<Contact> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
     meta: [const Meta(name: 'Newsletter opt-in')],
   );
 

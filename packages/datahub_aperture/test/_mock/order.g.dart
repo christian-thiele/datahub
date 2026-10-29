@@ -35,6 +35,7 @@ abstract interface class $Order with DataObject<Order> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: OrderState.placed,
     constraints: [EnumConstraint(values: OrderState.values)],
   );
 

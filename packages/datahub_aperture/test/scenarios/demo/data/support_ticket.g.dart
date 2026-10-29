@@ -15,6 +15,7 @@ abstract interface class $SupportTicket with DataObject<SupportTicket> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 
@@ -109,6 +110,7 @@ abstract interface class $SupportTicket with DataObject<SupportTicket> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: TicketStatus.open,
     meta: [const ApertureField(isDisplayField: true)],
     constraints: [EnumConstraint(values: TicketStatus.values)],
   );
@@ -122,6 +124,7 @@ abstract interface class $SupportTicket with DataObject<SupportTicket> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: Priority.normal,
     meta: [const ApertureField(isDisplayField: true)],
     constraints: [EnumConstraint(values: Priority.values)],
   );
@@ -135,6 +138,7 @@ abstract interface class $SupportTicket with DataObject<SupportTicket> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: TicketChannel.email,
     constraints: [EnumConstraint(values: TicketChannel.values)],
   );
 
@@ -183,6 +187,7 @@ abstract interface class $SupportTicket with DataObject<SupportTicket> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
     constraints: [
       const ElementConstraint<String?>(
         constraint: const RegExpConstraint<String?>(
@@ -198,6 +203,7 @@ abstract interface class $SupportTicket with DataObject<SupportTicket> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
     meta: [const Meta(name: 'SLA breached')],
   );
 

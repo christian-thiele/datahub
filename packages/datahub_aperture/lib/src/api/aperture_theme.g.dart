@@ -15,6 +15,7 @@ abstract interface class $ApertureTheme with DataObject<ApertureTheme> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 4280900592), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 4280900592,
   );
 
   static final $logo = DataField<ApertureTheme, Uint8List?>(

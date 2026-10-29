@@ -15,6 +15,7 @@ abstract interface class $Person with DataObject<Person> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 
@@ -48,6 +49,7 @@ abstract interface class $Person with DataObject<Person> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
   );
 
   static final DataBean<Person> bean = DataBean<Person>(

@@ -15,6 +15,7 @@ abstract interface class $Employee with DataObject<Employee> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 
@@ -116,6 +117,7 @@ abstract interface class $Employee with DataObject<Employee> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 40), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 40,
     meta: [const Meta(name: 'Weekly hours')],
     constraints: [const RangeConstraint<num?>(min: 0, max: 48)],
   );
@@ -129,6 +131,7 @@ abstract interface class $Employee with DataObject<Employee> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
   );
 
   static final $languages = DataField<Employee, List<String>>(
@@ -140,6 +143,7 @@ abstract interface class $Employee with DataObject<Employee> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const ['en'],
     meta: [const Meta(description: 'Spoken languages (ISO 639-1).')],
     constraints: [
       const ElementConstraint<String?>(
@@ -166,6 +170,7 @@ abstract interface class $Employee with DataObject<Employee> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
     meta: [const Meta(name: 'Fully remote')],
   );
 
@@ -175,6 +180,7 @@ abstract interface class $Employee with DataObject<Employee> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final DataBean<Employee> bean = DataBean<Employee>(

@@ -15,6 +15,7 @@ abstract interface class $ExportInvoices with DataObject<ExportInvoices> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
     meta: [
       const Meta(
         name: 'Only overdue',

@@ -66,6 +66,7 @@ abstract interface class $InvoiceLine with DataObject<InvoiceLine> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeDouble((value ?? 0.0), name: name),
     toJson: (value) => $$codec.encodeDouble(value),
+    defaultValue: 0.0,
     constraints: [const RangeConstraint<num?>(min: 0, max: 1)],
   );
 

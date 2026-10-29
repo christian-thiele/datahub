@@ -15,6 +15,7 @@ abstract interface class $Large with DataObject<Large> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 

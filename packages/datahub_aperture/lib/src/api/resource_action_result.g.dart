@@ -16,6 +16,7 @@ abstract interface class $ResourceActionResult
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final $message = DataField<ResourceActionResult, String?>(

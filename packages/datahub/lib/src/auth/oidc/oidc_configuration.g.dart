@@ -114,6 +114,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
   );
 
   static final $requestParameterSupported = DataField<OidcConfiguration, bool>(
@@ -122,6 +123,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
   );
 
   static final $requestUriParameterSupported =
@@ -131,6 +133,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         fromJson: (value, {String? name}) =>
             $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
+        defaultValue: false,
       );
 
   static final $requireRequestUriRegistration =
@@ -140,6 +143,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         fromJson: (value, {String? name}) =>
             $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
+        defaultValue: false,
       );
 
   static final $tlsClientCertificateBoundAccessTokens =
@@ -149,6 +153,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         fromJson: (value, {String? name}) =>
             $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
+        defaultValue: false,
       );
 
   static final $frontchannelLogoutSupported =
@@ -158,6 +163,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         fromJson: (value, {String? name}) =>
             $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
+        defaultValue: false,
       );
 
   static final $frontchannelLogoutSessionSupported =
@@ -167,6 +173,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         fromJson: (value, {String? name}) =>
             $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
+        defaultValue: false,
       );
 
   static final $backchannelLogoutSupported = DataField<OidcConfiguration, bool>(
@@ -175,6 +182,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
   );
 
   static final $backchannelLogoutSessionSupported =
@@ -184,6 +192,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         fromJson: (value, {String? name}) =>
             $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
+        defaultValue: false,
       );
 
   static final $authorizationResponseIssParameterSupported =
@@ -193,6 +202,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         fromJson: (value, {String? name}) =>
             $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
+        defaultValue: false,
       );
 
   static final $requirePushedAuthorizationRequests =
@@ -202,6 +212,7 @@ abstract interface class $OidcConfiguration with DataObject<OidcConfiguration> {
         fromJson: (value, {String? name}) =>
             $$codec.decodeBool((value ?? false), name: name),
         toJson: (value) => $$codec.encodeBool(value),
+        defaultValue: false,
       );
 
   static final $grantTypesSupported =

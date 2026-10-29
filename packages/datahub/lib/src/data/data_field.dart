@@ -14,6 +14,7 @@ class DataField<Data, FieldType>({
   DataBean Function()? dataBean,
   final List<MetaData> meta = const [],
   final List<DataFieldConstraint> constraints = const [],
+  final FieldType? defaultValue,
 }) implements Expression {
   final FieldType Function(Data) _valueOf = ((dynamic value) =>
       valueOf(value as Data));

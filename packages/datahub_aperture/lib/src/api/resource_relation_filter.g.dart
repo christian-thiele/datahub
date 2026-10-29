@@ -29,6 +29,7 @@ abstract interface class $ResourceRelationFilter
           (v) =>
               $$codec.encodeList<ResourceRelationFilter>(v, (v) => v.toJson()),
         ),
+        defaultValue: const [],
       );
 
   static final $and =
@@ -50,6 +51,7 @@ abstract interface class $ResourceRelationFilter
           (v) =>
               $$codec.encodeList<ResourceRelationFilter>(v, (v) => v.toJson()),
         ),
+        defaultValue: const [],
       );
 
   static final $fieldId = DataField<ResourceRelationFilter, String?>(

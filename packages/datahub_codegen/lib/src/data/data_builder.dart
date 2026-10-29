@@ -186,6 +186,10 @@ class DataBuilder() extends Generator {
     ln('fromJson: (value, {String? name}) => $decodingStatement,');
     ln('toJson: (value) => $encodingStatement,');
 
+    if (field.defaultValueExpression case final defaultValue?) {
+      ln('defaultValue: $defaultValue,');
+    }
+
     if (field.meta.isNotEmpty) {
       ln('meta: [${field.meta.map(annotationInvocation).join(', ')},],');
     }

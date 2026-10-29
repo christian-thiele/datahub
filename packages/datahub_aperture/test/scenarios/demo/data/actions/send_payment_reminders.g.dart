@@ -16,6 +16,7 @@ abstract interface class $SendPaymentReminders
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 7), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 7,
     meta: [
       const Meta(
         name: 'Minimum days overdue',

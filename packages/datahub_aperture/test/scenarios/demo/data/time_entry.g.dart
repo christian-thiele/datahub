@@ -15,6 +15,7 @@ abstract interface class $TimeEntry with DataObject<TimeEntry> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 
@@ -93,6 +94,7 @@ abstract interface class $TimeEntry with DataObject<TimeEntry> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final $invoiced = DataField<TimeEntry, bool>(
@@ -101,6 +103,7 @@ abstract interface class $TimeEntry with DataObject<TimeEntry> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
     meta: [const Meta(description: 'Already included in an invoice.')],
   );
 

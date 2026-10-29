@@ -15,6 +15,7 @@ abstract interface class $Invoice with DataObject<Invoice> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? ''), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: '',
     meta: [const Id(auto: true)],
   );
 
@@ -50,6 +51,7 @@ abstract interface class $Invoice with DataObject<Invoice> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: InvoiceWorkflowState.created,
     constraints: [EnumConstraint(values: InvoiceWorkflowState.values)],
   );
 
@@ -345,6 +347,7 @@ abstract interface class $UnhandledSignal with DataObject<UnhandledSignal> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? ''), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: '',
   );
 
   static final DataBean<UnhandledSignal> bean = DataBean<UnhandledSignal>(
@@ -400,6 +403,7 @@ abstract interface class $ForeignSignal with DataObject<ForeignSignal> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? ''), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: '',
   );
 
   static final DataBean<ForeignSignal> bean = DataBean<ForeignSignal>(

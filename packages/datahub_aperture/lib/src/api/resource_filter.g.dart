@@ -26,6 +26,7 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
       value,
       (v) => $$codec.encodeList<ResourceFilter>(v, (v) => v.toJson()),
     ),
+    defaultValue: const [],
   );
 
   static final $and = DataField<ResourceFilter, List<ResourceFilter>?>(
@@ -45,6 +46,7 @@ abstract interface class $ResourceFilter with DataObject<ResourceFilter> {
       value,
       (v) => $$codec.encodeList<ResourceFilter>(v, (v) => v.toJson()),
     ),
+    defaultValue: const [],
   );
 
   static final $fieldId = DataField<ResourceFilter, String?>(

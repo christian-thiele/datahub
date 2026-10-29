@@ -16,6 +16,7 @@ abstract interface class $WorkflowHistoryEntry
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? ''), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: '',
     meta: [const Id(auto: true)],
   );
 
@@ -148,6 +149,7 @@ abstract interface class $WorkflowHistoryEntry
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
   );
 
   static final DataBean<WorkflowHistoryEntry> bean =

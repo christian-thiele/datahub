@@ -45,6 +45,7 @@ abstract interface class $ResourceData with DataObject<ResourceData> {
         ),
     toJson: (value) =>
         $$codec.encodeList<ResourceRevisionInfo>(value, (v) => v.toJson()),
+    defaultValue: const [],
   );
 
   static final DataBean<ResourceData> bean = DataBean<ResourceData>(

@@ -199,6 +199,7 @@ abstract interface class $ResourceWorkflowStep
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
   );
 
   static final $accept = DataField<ResourceWorkflowStep, List<String>>(
@@ -210,6 +211,7 @@ abstract interface class $ResourceWorkflowStep
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
   );
 
   static final $signal = DataField<ResourceWorkflowStep, String?>(

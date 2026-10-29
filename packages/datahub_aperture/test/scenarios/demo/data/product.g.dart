@@ -15,6 +15,7 @@ abstract interface class $Product with DataObject<Product> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? ''), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: '',
     meta: [const Id(auto: true)],
   );
 
@@ -92,6 +93,7 @@ abstract interface class $Product with DataObject<Product> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeDouble((value ?? 0.19), name: name),
     toJson: (value) => $$codec.encodeDouble(value),
+    defaultValue: 0.19,
     meta: [
       const Meta(
         name: 'Tax rate',
@@ -107,6 +109,7 @@ abstract interface class $Product with DataObject<Product> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeDouble((value ?? 0.0), name: name),
     toJson: (value) => $$codec.encodeDouble(value),
+    defaultValue: 0.0,
     meta: [
       const Meta(
         description: 'Negotiated discount as fraction, e.g. 0.1 for 10 %.',
@@ -150,6 +153,7 @@ abstract interface class $Product with DataObject<Product> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final DataBean<Product> bean = DataBean<Product>(

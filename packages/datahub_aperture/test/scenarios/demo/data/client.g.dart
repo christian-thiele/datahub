@@ -15,6 +15,7 @@ abstract interface class $Client with DataObject<Client> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 
@@ -78,6 +79,7 @@ abstract interface class $Client with DataObject<Client> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: ClientTier.bronze,
     meta: [
       const Meta(
         description: 'Commercial tier. Drives discounts and support SLAs.',
@@ -243,6 +245,7 @@ abstract interface class $Client with DataObject<Client> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 30), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 30,
     meta: [const Meta(name: 'Payment terms (days)')],
     constraints: [const RangeConstraint<num?>(min: 0, max: 120)],
   );
@@ -253,6 +256,7 @@ abstract interface class $Client with DataObject<Client> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? 'EUR'), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: 'EUR',
     constraints: [const RegExpConstraint<String?>(expression: '^[A-Z]{3}\$')],
   );
 
@@ -265,6 +269,7 @@ abstract interface class $Client with DataObject<Client> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
     constraints: [
       const ElementConstraint<String?>(
         constraint: const RegExpConstraint<String?>(
@@ -302,6 +307,7 @@ abstract interface class $Client with DataObject<Client> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final DataBean<Client> bean = DataBean<Client>(

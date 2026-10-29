@@ -15,6 +15,7 @@ abstract interface class $Invoice with DataObject<Invoice> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 
@@ -66,6 +67,7 @@ abstract interface class $Invoice with DataObject<Invoice> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: InvoiceStatus.draft,
     meta: [const ApertureField(isDisplayField: true)],
     constraints: [EnumConstraint(values: InvoiceStatus.values)],
   );
@@ -184,6 +186,7 @@ abstract interface class $Invoice with DataObject<Invoice> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeString((value ?? 'EUR'), name: name),
     toJson: (value) => $$codec.encodeString(value),
+    defaultValue: 'EUR',
     constraints: [const RegExpConstraint<String?>(expression: '^[A-Z]{3}\$')],
   );
 
@@ -202,6 +205,7 @@ abstract interface class $Invoice with DataObject<Invoice> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Meta(name: 'Reminders sent')],
     constraints: [const RangeConstraint<num?>(min: 0, max: 3)],
   );

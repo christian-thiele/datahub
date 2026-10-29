@@ -15,6 +15,7 @@ abstract interface class $PointOfInterest with DataObject<PointOfInterest> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 
@@ -35,6 +36,7 @@ abstract interface class $PointOfInterest with DataObject<PointOfInterest> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: PointOfInterestType.generic,
     constraints: [EnumConstraint(values: PointOfInterestType.values)],
   );
 
@@ -46,6 +48,7 @@ abstract interface class $PointOfInterest with DataObject<PointOfInterest> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeGeometry(value),
+    defaultValue: const GeometryCollection.empty(),
     constraints: [
       const GeometryTypeConstraint<Geometry?>(type: GeometryType.point),
     ],

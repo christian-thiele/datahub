@@ -15,6 +15,7 @@ abstract interface class $Project with DataObject<Project> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeInt((value ?? 0), name: name),
     toJson: (value) => $$codec.encodeInt(value),
+    defaultValue: 0,
     meta: [const Id(auto: true)],
   );
 
@@ -82,6 +83,7 @@ abstract interface class $Project with DataObject<Project> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: ProjectStatus.planned,
     meta: [const ApertureField(isDisplayField: true)],
     constraints: [EnumConstraint(values: ProjectStatus.values)],
   );
@@ -95,6 +97,7 @@ abstract interface class $Project with DataObject<Project> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeEnum(value),
+    defaultValue: Priority.normal,
     constraints: [EnumConstraint(values: Priority.values)],
   );
 
@@ -155,6 +158,7 @@ abstract interface class $Project with DataObject<Project> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
     meta: [const Meta(name: 'Tech stack')],
   );
 
@@ -167,6 +171,7 @@ abstract interface class $Project with DataObject<Project> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeMap<dynamic>(value, $$codec.encodeDynamic),
+    defaultValue: const {},
     meta: [
       const ApertureField(
         allowFilter: false,

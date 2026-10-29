@@ -11,6 +11,9 @@ class const ResourceField({
   required final String name,
   required final ResourceFieldType type,
   final bool nullable = false,
+
+  /// The JSON encoded value the server falls back to when no value is given.
+  final dynamic defaultValue,
   final String? description,
   final bool readOnly = false,
   final bool auto = false,

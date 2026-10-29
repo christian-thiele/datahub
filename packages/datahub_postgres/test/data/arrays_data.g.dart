@@ -18,6 +18,7 @@ abstract interface class $ArraysData with DataObject<ArraysData> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<String>(value, $$codec.encodeString),
+    defaultValue: const [],
   );
 
   static final $intArray = DataField<ArraysData, List<int>>(
@@ -29,6 +30,7 @@ abstract interface class $ArraysData with DataObject<ArraysData> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<int>(value, $$codec.encodeInt),
+    defaultValue: const [],
   );
 
   static final $doubleArray = DataField<ArraysData, List<double>>(
@@ -40,6 +42,7 @@ abstract interface class $ArraysData with DataObject<ArraysData> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<double>(value, $$codec.encodeDouble),
+    defaultValue: const [],
   );
 
   static final $boolArray = DataField<ArraysData, List<bool>>(
@@ -51,6 +54,7 @@ abstract interface class $ArraysData with DataObject<ArraysData> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeList<bool>(value, $$codec.encodeBool),
+    defaultValue: const [],
   );
 
   static final $enumArray = DataField<ArraysData, List<ExampleEnum>>(
@@ -64,6 +68,7 @@ abstract interface class $ArraysData with DataObject<ArraysData> {
     ),
     toJson: (value) =>
         $$codec.encodeList<ExampleEnum>(value, $$codec.encodeEnum),
+    defaultValue: const [],
     constraints: [
       ElementConstraint(constraint: EnumConstraint(values: ExampleEnum.values)),
     ],
@@ -79,6 +84,7 @@ abstract interface class $ArraysData with DataObject<ArraysData> {
     ),
     toJson: (value) =>
         $$codec.encodeList<dynamic>(value, $$codec.encodeDynamic),
+    defaultValue: const [],
   );
 
   static final $jsonMap = DataField<ArraysData, Map<String, dynamic>>(
@@ -90,6 +96,7 @@ abstract interface class $ArraysData with DataObject<ArraysData> {
       name: name,
     ),
     toJson: (value) => $$codec.encodeMap<dynamic>(value, $$codec.encodeDynamic),
+    defaultValue: const {},
   );
 
   static final DataBean<ArraysData> bean = DataBean<ArraysData>(

@@ -40,6 +40,15 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
+  );
+
+  static final $defaultValue = DataField<ResourceField, dynamic>(
+    name: 'defaultValue',
+    valueOf: (p) => p.defaultValue,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeDynamic(value, name: name),
+    toJson: (value) => $$codec.encodeDynamic(value),
   );
 
   static final $description = DataField<ResourceField, String?>(
@@ -56,6 +65,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
   );
 
   static final $auto = DataField<ResourceField, bool>(
@@ -64,6 +74,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? false), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: false,
   );
 
   static final $length = DataField<ResourceField, int?>(
@@ -135,6 +146,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final $allowSort = DataField<ResourceField, bool>(
@@ -143,6 +155,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     fromJson: (value, {String? name}) =>
         $$codec.decodeBool((value ?? true), name: name),
     toJson: (value) => $$codec.encodeBool(value),
+    defaultValue: true,
   );
 
   static final DataBean<ResourceField> bean = DataBean<ResourceField>(
@@ -152,6 +165,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       $name,
       $type,
       $nullable,
+      $defaultValue,
       $description,
       $readOnly,
       $auto,
@@ -176,6 +190,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
     String? name,
     ResourceFieldType? type,
     bool? nullable,
+    dynamic? defaultValue,
     String? description,
     bool nullDescription = false,
     bool? readOnly,
@@ -199,6 +214,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       name: name ?? $data.name,
       type: type ?? $data.type,
       nullable: nullable ?? $data.nullable,
+      defaultValue: defaultValue ?? $data.defaultValue,
       description: nullDescription ? null : (description ?? $data.description),
       readOnly: readOnly ?? $data.readOnly,
       auto: auto ?? $data.auto,
@@ -220,6 +236,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       name: data['name'],
       type: data['type'],
       nullable: data['nullable'] ?? false,
+      defaultValue: data['defaultValue'],
       description: data['description'],
       readOnly: data['readOnly'] ?? false,
       auto: data['auto'] ?? false,
@@ -252,6 +269,10 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       nullable: $nullable.fromJson(
         data['nullable'],
         name: DataCodec.childName(name, 'nullable'),
+      ),
+      defaultValue: $defaultValue.fromJson(
+        data['defaultValue'],
+        name: DataCodec.childName(name, 'defaultValue'),
       ),
       description: $description.fromJson(
         data['description'],
@@ -304,6 +325,7 @@ abstract interface class $ResourceField with DataObject<ResourceField> {
       'name': $name.toJson($$data.name),
       'type': $type.toJson($$data.type),
       'nullable': $nullable.toJson($$data.nullable),
+      'defaultValue': $defaultValue.toJson($$data.defaultValue),
       'description': $description.toJson($$data.description),
       'readOnly': $readOnly.toJson($$data.readOnly),
       'auto': $auto.toJson($$data.auto),
