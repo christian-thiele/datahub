@@ -1,6 +1,6 @@
 name: datahub_redis
 description: DataHub Redis Extension
-version: 0.18.0-dev.6
+version: 0.18.0-dev.7
 homepage: https://datahubproject.net
 repository: https://github.com/christian-thiele/datahub
 resolution: workspace
@@ -10,7 +10,7 @@ environment:
 
 dependencies:
   crypto: ^3.0.6
-  datahub: ^0.18.0-dev.34
+  datahub: ^0.18.0-dev.35
   meta: ^1.16.0
 
 dev_dependencies:

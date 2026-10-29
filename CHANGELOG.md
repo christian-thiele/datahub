@@ -3,6 +3,63 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## 2026-10-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
+ - [`boost` - `v2.0.2`](#boost---v202)
+ - [`datahub` - `v0.18.0-dev.35`](#datahub---v0180-dev35)
+ - [`datahub_aperture` - `v0.1.0-dev.29`](#datahub_aperture---v010-dev29)
+ - [`datahub_codegen` - `v0.18.0-dev.26`](#datahub_codegen---v0180-dev26)
+ - [`datahub_postgres` - `v0.18.0-dev.33`](#datahub_postgres---v0180-dev33)
+ - [`datahub_redis` - `v0.18.0-dev.7`](#datahub_redis---v0180-dev7)
+
+---
+
+#### `boost` - `v2.0.2`
+
+ - **FIX**(boost): fixed floating point noise for round.
+
+#### `datahub` - `v0.18.0-dev.35`
+
+ - **FIX**(scheduler): fixed scheduler crash when ScheduleRecord repository throws.
+ - **FEAT**(data): added defaultValue property to DataField.
+ - **FEAT**(aperture): added default sort configuration for ApertureResource.
+ - **FEAT**(api): added http labels to active request metric.
+ - **FEAT**: added instanceZone to ServiceInstance.
+ - **FEAT**(telemetry): logged stack traces are folded for brevity.
+ - **FEAT**(api): added session identity span attribute.
+
+#### `datahub_aperture` - `v0.1.0-dev.29`
+
+ - **FEAT**(aperture): added field action menu.
+ - **FEAT**(aperture): defaultValue prefill for create element view.
+ - **FEAT**(data): added defaultValue property to DataField.
+ - **FEAT**(aperture): search filter builder for ApertureResource.
+ - **FEAT**(aperture): added default sort configuration for ApertureResource.
+
+#### `datahub_codegen` - `v0.18.0-dev.26`
+
+ - **FEAT**(data): added defaultValue property to DataField.
+
+#### `datahub_postgres` - `v0.18.0-dev.33`
+
+ - **FEAT**(data): added defaultValue property to DataField.
+ - **FEAT**: added instanceZone to ServiceInstance.
+
+#### `datahub_redis` - `v0.18.0-dev.7`
+
+ - **FEAT**: added instanceZone to ServiceInstance.
+
+
 ## 2026-10-19
 
 ### Changes

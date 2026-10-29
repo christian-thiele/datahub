@@ -1,3 +1,7 @@
+## 0.18.0-dev.7
+
+ - **FEAT**: added instanceZone to ServiceInstance.
+
 ## 0.18.0-dev.6
 
  - Update a dependency to the latest release.

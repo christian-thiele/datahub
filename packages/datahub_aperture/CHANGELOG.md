@@ -1,3 +1,11 @@
+## 0.1.0-dev.29
+
+ - **FEAT**(aperture): added field action menu.
+ - **FEAT**(aperture): defaultValue prefill for create element view.
+ - **FEAT**(data): added defaultValue property to DataField.
+ - **FEAT**(aperture): search filter builder for ApertureResource.
+ - **FEAT**(aperture): added default sort configuration for ApertureResource.
+
 ## 0.1.0-dev.28
 
  - **FEAT**(aperture): file download for actions.

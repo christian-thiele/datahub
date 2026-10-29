@@ -1,3 +1,13 @@
+## 0.18.0-dev.35
+
+ - **FIX**(scheduler): fixed scheduler crash when ScheduleRecord repository throws.
+ - **FEAT**(data): added defaultValue property to DataField.
+ - **FEAT**(aperture): added default sort configuration for ApertureResource.
+ - **FEAT**(api): added http labels to active request metric.
+ - **FEAT**: added instanceZone to ServiceInstance.
+ - **FEAT**(telemetry): logged stack traces are folded for brevity.
+ - **FEAT**(api): added session identity span attribute.
+
 ## 0.18.0-dev.34
 
  - **FIX**: request decoding methods throw ApiRequestException.badRequest when body data is invalid.

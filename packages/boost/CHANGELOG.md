@@ -1,3 +1,7 @@
+## 2.0.2
+
+ - **FIX**(boost): fixed floating point noise for round.
+
 ## 2.0.1
 
  - **FIX**(boost): fixed semaphore ensuring FIFO order.

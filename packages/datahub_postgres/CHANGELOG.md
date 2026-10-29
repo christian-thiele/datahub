@@ -1,3 +1,8 @@
+## 0.18.0-dev.33
+
+ - **FEAT**(data): added defaultValue property to DataField.
+ - **FEAT**: added instanceZone to ServiceInstance.
+
 ## 0.18.0-dev.32
 
  - **FIX**: "Creating new connection..." as trace log.

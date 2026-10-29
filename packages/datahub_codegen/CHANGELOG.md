@@ -1,3 +1,7 @@
+## 0.18.0-dev.26
+
+ - **FEAT**(data): added defaultValue property to DataField.
+
 ## 0.18.0-dev.25
 
  - **FEAT**: adapt codegen and lints to dart 3.13 primary constructor.
