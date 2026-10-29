@@ -1,3 +1,12 @@
+## 0.1.0-dev.24
+
+ - **FIX**(aperture): fixed ios build.
+ - **FEAT**(aperture): added field action menu.
+ - **FEAT**(aperture): i18n preferences.
+ - **FEAT**(aperture): defaultValue prefill for create element view.
+ - **FEAT**(aperture): added default sort configuration for ApertureResource.
+ - **FEAT**(aperture): added expand for resource relation views.
+
 ## 0.1.0-dev.23
 
  - **FEAT**(aperture): file download for actions.

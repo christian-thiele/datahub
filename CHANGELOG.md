@@ -15,6 +15,32 @@ Packages with breaking changes:
 
 Packages with other changes:
 
+ - [`datahub_aperture_frontend` - `v0.1.0-dev.24`](#datahub_aperture_frontend---v010-dev24)
+
+---
+
+#### `datahub_aperture_frontend` - `v0.1.0-dev.24`
+
+ - **FIX**(aperture): fixed ios build.
+ - **FEAT**(aperture): added field action menu.
+ - **FEAT**(aperture): i18n preferences.
+ - **FEAT**(aperture): defaultValue prefill for create element view.
+ - **FEAT**(aperture): added default sort configuration for ApertureResource.
+ - **FEAT**(aperture): added expand for resource relation views.
+
+
+## 2026-10-29
+
+### Changes
+
+---
+
+Packages with breaking changes:
+
+ - There are no breaking changes in this release.
+
+Packages with other changes:
+
  - [`boost` - `v2.0.2`](#boost---v202)
  - [`datahub` - `v0.18.0-dev.35`](#datahub---v0180-dev35)
  - [`datahub_aperture` - `v0.1.0-dev.29`](#datahub_aperture---v010-dev29)
