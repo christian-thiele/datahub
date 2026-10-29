@@ -5,9 +5,10 @@ import 'dart:math' as math;
 
 import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
-import 'package:datahub_aperture/data.dart';
 import 'package:datahub_aperture/services.dart';
 import 'package:datahub_aperture/src/utils/data_description_builders.dart';
+
+import 'resource_utils.dart';
 
 class const ApertureApi({
   final Config<String> title = const Config(
@@ -123,8 +124,8 @@ class const ApertureApi({
                   : resource.defaultSortAscending;
 
               final elements = await repo.readAll(
-                filter: _buildFilter(repo, filter),
-                sort: _buildSort(repo, sortFieldId, sortAscending),
+                filter: ResourceUtils.buildFilter(repo, filter),
+                sort: ResourceUtils.buildSort(repo, sortFieldId, sortAscending),
                 offset: offset,
                 limit: limit + 1,
               );
@@ -134,7 +135,7 @@ class const ApertureApi({
                 hasNextPage: elements.length > limit,
                 data: elements
                     .take(limit)
-                    .map((e) => _toResourceData(repo, e))
+                    .map((e) => ResourceUtils.toResourceData(repo, e))
                     .toList(),
               );
             },
@@ -182,7 +183,7 @@ class const ApertureApi({
                 created = await repo.create(object);
               }
 
-              return _toResourceData(repo, created);
+              return ResourceUtils.toResourceData(repo, created);
             },
           ),
           ResourceEndpoint(
@@ -209,13 +210,13 @@ class const ApertureApi({
                   throw ApiRequestException.notFound();
                 }
                 final revisions = await repo.readRevisionsById(elementId);
-                return _toResourceData(repo, object, revisions);
+                return ResourceUtils.toResourceData(repo, object, revisions);
               } else {
                 final object = await repo.readById(elementId);
                 if (object == null) {
                   throw ApiRequestException.notFound();
                 }
-                return _toResourceData(repo, object);
+                return ResourceUtils.toResourceData(repo, object);
               }
             },
             patch: (request) async {
@@ -272,10 +273,14 @@ class const ApertureApi({
                 }
                 if (repo case RevisableDataRepository repo) {
                   final revisions = await repo.readRevisionsById(elementId);
-                  return _toResourceData(repo, revisions.first, revisions);
+                  return ResourceUtils.toResourceData(
+                    repo,
+                    revisions.first,
+                    revisions,
+                  );
                 } else {
                   final updated = await repo.readById(elementId);
-                  return _toResourceData(repo, updated);
+                  return ResourceUtils.toResourceData(repo, updated);
                 }
               });
 
@@ -480,165 +485,6 @@ class const ApertureApi({
     );
     return findResourceWorkflow(resource) ??
         (throw ApiRequestException.notFound('The resource has no workflow.'));
-  }
-
-  static ResourceData _toResourceData(
-    DataRepository repo,
-    dynamic object, [
-    List<RevisionData>? revisions,
-  ]) {
-    if (object case RevisionData(:final data, :final version)) {
-      return ResourceData(
-        id: repo.bean.requireIdField.valueOf(data).toString(),
-        fieldData: data.toJson(),
-        version: version,
-        revisions: [
-          for (final revision in revisions ?? <RevisionData>[])
-            ResourceRevisionInfo(
-              version: revision.version,
-              type: switch (revision) {
-                RevisionData(isDeleted: true) => ResourceRevisionType.delete,
-                RevisionData(version: 0) => ResourceRevisionType.create,
-                _ => ResourceRevisionType.update,
-              },
-              timestamp: revision.created,
-              live: revision.from,
-              userId: revision.creator,
-              userName: revision.creator,
-            ),
-        ],
-      );
-    }
-
-    return ResourceData(
-      id: repo.bean.requireIdField.valueOf(object).toString(),
-      fieldData: object.toJson(),
-    );
-  }
-
-  static Filter _buildFilter(DataRepository repo, ResourceFilter? filter) {
-    try {
-      final bean = repo.bean;
-      if (filter == null) {
-        return Filter.empty;
-      }
-
-      final Filter elementFilter;
-      if (filter case ResourceFilter(:final search?)) {
-        elementFilter = _buildSearchFilter(repo, search);
-      } else if (filter case ResourceFilter(
-        :final type?,
-        :final fieldId?,
-        :final value,
-      )) {
-        elementFilter =
-            _tryBuildFilter(
-              bean.fields.firstWhere((e) => e.name == fieldId),
-              switch (type) {
-                ResourceFilterType.equals => CompareType.equals,
-                ResourceFilterType.notEquals => CompareType.notEquals,
-                ResourceFilterType.greaterThan => CompareType.greaterThan,
-                ResourceFilterType.lessThan => CompareType.lessThan,
-                ResourceFilterType.contains => CompareType.contains,
-              },
-              value,
-            ) ??
-            Filter.empty;
-      } else {
-        elementFilter = Filter.empty;
-      }
-
-      return Filter.andGroup([
-        Filter.andGroup(
-          (filter.and ?? <ResourceFilter>[]).map((e) => _buildFilter(repo, e)),
-        ),
-        Filter.orGroup(
-          (filter.or ?? <ResourceFilter>[]).map((e) => _buildFilter(repo, e)),
-        ),
-        elementFilter,
-      ]);
-    } catch (e) {
-      log.warn('Filter error: ${e.toString()}');
-      return Filter.empty;
-    }
-  }
-
-  static Filter _buildSearchFilter(DataRepository repo, String search) {
-    final words = search.split(RegExp('\\W+'));
-
-    final searchFields = <DataField>[];
-    for (final field in repo.bean.fields) {
-      final apertureField = field.metaOfType<ApertureField>();
-      if (apertureField?.allowSearch == false) {
-        continue;
-      }
-
-      bool isSearchField = switch (field) {
-        DataField<dynamic, String?>() => true,
-        DataField<dynamic, Enum?>() => true,
-        DataField<dynamic, int?>() => true,
-        DataField<dynamic, double?>() => true,
-        DataField<dynamic, List<String?>?>() => true,
-        _ => false,
-      };
-
-      if (isSearchField) {
-        searchFields.add(field);
-      }
-    }
-
-    return Filter.andGroup([
-      for (final word in words)
-        Filter.orGroup([
-          for (final field in searchFields)
-            ?_tryBuildFilter(field, CompareType.contains, word),
-        ]),
-    ]);
-  }
-
-  static Sort _buildSort(DataRepository repo, String? fieldId, bool ascending) {
-    if (fieldId == null) {
-      return Sort.empty;
-    }
-    final field = repo.bean.fields.firstWhere((e) => e.name == fieldId);
-    return field.sort(ascending);
-  }
-
-  static Filter? _tryBuildFilter(
-    DataField<dynamic, dynamic> field,
-    CompareType type,
-    String? value,
-  ) {
-    try {
-      return CompareFilter(
-        field,
-        type,
-        ValueExpression(_alignFieldValue(field, value)),
-      );
-    } on CodecException catch (e) {
-      log.trace('Filter error. Discarding filter element.', error: e);
-      return null;
-    }
-  }
-
-  // TODO find a way not to need this?
-  static dynamic _alignFieldValue(
-    DataField<dynamic, dynamic> field,
-    String? value,
-  ) {
-    if (field.type.accepts(value)) {
-      return value;
-    }
-
-    if (field.type.isSubtypeOf<List?>()) {
-      return value;
-    }
-
-    if (field.type.isSubtypeOf<Enum?>()) {
-      return value;
-    }
-
-    return const JsonDataCodec().decodeType(field.type, value);
   }
 
   Object _buildActionResult(BaseActionResult? result) {
