@@ -90,7 +90,13 @@ class _MemoryRepositoryServiceInstance<T extends DataObject<T>>()
       expression: final DataField sortField,
       :final ascending,
     )) {
-      sorted.sortBy((e) => sortField.valueOf(e) as Comparable, ascending);
+      sorted.sortBy((e) {
+        return switch (sortField.valueOf(e)) {
+          final Comparable c => c,
+          final Enum e => e.name,
+          _ => 0,
+        };
+      }, ascending);
     }
 
     return sorted

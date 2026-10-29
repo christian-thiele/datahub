@@ -6,10 +6,9 @@ import 'package:test/test.dart';
 import '../_mock/order.dart';
 import '../_mock/todo.dart';
 import '../_utils/aperture_sign_in.dart';
-import '../_utils/test_auth_provider.dart';
+import '../scenarios/_utils/test_auth_service.dart';
 import '../scenarios/demo/data/actions/resolve_ticket.dart';
 import '../scenarios/demo/data/actions/send_payment_reminders.dart';
-import '../scenarios/demo/demo_auth_service.dart';
 
 const _apiPort = 18170;
 const _authPort = 18171;
@@ -67,8 +66,7 @@ void main() {
     List<Component> components(ApertureActionHandler<ResolveTicket> handler) =>
         [
           const KeyService(),
-          const DemoAuthService(issuer: Config.value(_issuer)),
-          const TestAuthProvider(),
+          const TestAuthService(issuer: Config.value(_issuer)),
           MemoryRepositoryService(bean: $Order.bean),
           MemoryRepositoryService(bean: $Todo.bean),
           ApiService(

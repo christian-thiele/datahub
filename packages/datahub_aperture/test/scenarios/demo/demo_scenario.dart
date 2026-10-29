@@ -4,7 +4,7 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub/test.dart';
 import 'package:datahub_aperture/datahub_aperture.dart';
 
-import '../../_utils/test_auth_provider.dart';
+import '../_utils/test_auth_service.dart';
 import 'data/actions/export_invoices.dart';
 import 'data/actions/mark_invoice_paid.dart';
 import 'data/actions/renew_price_agreement.dart';
@@ -20,7 +20,6 @@ import 'data/project.dart';
 import 'data/support_ticket.dart';
 import 'data/ticket_status.dart';
 import 'data/time_entry.dart';
-import 'demo_auth_service.dart';
 import 'demo_seed.dart';
 
 /// A realistic backoffice for "ACME Digital", a fictional software
@@ -42,8 +41,7 @@ void main(List<String> args) => runApp([
   MemoryRepositoryService(bean: $WorkflowHistoryEntry.bean),
   const MemoryLockService<String>(),
   WorkflowService<Invoice, InvoiceStatus>(steps: _invoiceSteps),
-  const DemoAuthService(),
-  const TestAuthProvider(),
+  const TestAuthService(),
   ApiService(
     routes: [
       // The frontend is served from another origin during development.

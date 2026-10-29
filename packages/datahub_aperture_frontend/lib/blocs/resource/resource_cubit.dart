@@ -101,8 +101,8 @@ class ResourceCubit extends Cubit<ResourceState> {
               sortFields: _getSortFields(resource),
               filters: _tryBuildFilterModels(initialFilter, resource),
               search: search,
-              sortField: _getSortFields(resource).firstOrNull,
-              sortAscending: true,
+              sortField: _getDefaultSortField(resource),
+              sortAscending: resource.defaultSortAscending,
             ),
             _ => state.filter,
           };
@@ -280,6 +280,14 @@ class ResourceCubit extends Cubit<ResourceState> {
                     ResourceFieldType.string);
       }),
     ];
+  }
+
+  ResourceField? _getDefaultSortField(ResourceDescription resource) {
+    final sortFields = _getSortFields(resource);
+    return sortFields
+            .where((e) => e.id == resource.defaultSortField)
+            .firstOrNull ??
+        sortFields.firstOrNull;
   }
 
   List<ResourceField> _getSortFields(ResourceDescription resource) {

@@ -23,6 +23,8 @@ class const ResourceDescription({
   final bool allowDelete = true,
   required final bool revisable,
   required final List<ResourceAction> actions,
+  final String? defaultSortField,
+  final bool defaultSortAscending = true,
 
   /// The workflow the elements move through, if the application has one for
   /// the element type.

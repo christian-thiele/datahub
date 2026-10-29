@@ -4,6 +4,7 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:datahub/datahub.dart';
+import 'package:datahub_aperture/services.dart';
 import 'package:pointycastle/export.dart';
 
 /// A minimal OpenID Connect provider for local testing.
@@ -14,7 +15,7 @@ import 'package:pointycastle/export.dart';
 /// Supports the authorization code flow with PKCE (S256), refresh tokens,
 /// discovery, JWKS and userinfo. Signing keys are generated on startup, so
 /// tokens do not survive a restart.
-class const DemoAuthService({
+class const TestAuthService({
   /// Issuer url. The service listens on the port of this url and serves
   /// all endpoints below its path.
   final Config<String> issuer = const Config.value(
@@ -32,7 +33,7 @@ class const DemoAuthService({
   final Duration refreshTokenLifetime = const Duration(hours: 8),
 }) implements Service {
   @override
-  ServiceInstance<DemoAuthService> createInstance() =>
+  ServiceInstance<TestAuthService> createInstance() =>
       _DemoAuthServiceInstance();
 }
 
@@ -45,7 +46,9 @@ typedef _AuthorizationCode = ({
   DateTime expires,
 });
 
-class _DemoAuthServiceInstance() extends ServiceInstance<DemoAuthService> {
+class _DemoAuthServiceInstance()
+    extends ServiceInstance<TestAuthService>
+    implements JwtAuthProvider {
   static const _codeLifetime = Duration(minutes: 1);
 
   late final Uri _issuer;
@@ -95,6 +98,15 @@ class _DemoAuthServiceInstance() extends ServiceInstance<DemoAuthService> {
   Future<void> dispose() async {
     await _server.close(force: true);
     await super.dispose();
+  }
+
+  @override
+  Future<Session> authenticateJwt(Jwt auth) async {
+    return ApertureSession(
+      token: auth,
+      identity: auth.payload['email'],
+      username: auth.payload['name'] ?? auth.payload['email'],
+    );
   }
 
   Future<HttpResponse> _handleRequest(HttpRequest request) async {

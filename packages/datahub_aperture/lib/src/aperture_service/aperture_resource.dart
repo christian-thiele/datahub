@@ -4,9 +4,11 @@ import 'package:datahub_aperture/utils.dart';
 
 import 'aperture_action.dart';
 
-class const ApertureResource({
-  required final Find<DataRepository> repository,
+class const ApertureResource<T extends DataObject>({
+  required final Find<DataRepository<T>> repository,
   final List<ApertureAction> actions = const [],
+  final DataField<T, dynamic>? defaultSortField,
+  final bool defaultSortAscending = true,
   final bool allowCreate = true,
   final bool allowUpdate = true,
   final bool allowDelete = true,

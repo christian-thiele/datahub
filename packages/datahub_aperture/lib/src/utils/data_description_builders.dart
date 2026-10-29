@@ -44,6 +44,13 @@ ResourceDescription buildResourceDescription(
   final apertureMeta = bean.metaOfType<ApertureMeta>();
   final workflow = findResourceWorkflow(res);
 
+  if (res.defaultSortField case final sortField?
+      when bean.fields.every((f) => f.name != sortField.name)) {
+    throw ApiError(
+      'Default sort field ${sortField.name} does not exist on ${bean.name}.',
+    );
+  }
+
   return ResourceDescription(
     id: buildResourceId(res),
     name: meta?.name ?? niceName(bean.name),
@@ -72,6 +79,8 @@ ResourceDescription buildResourceDescription(
         .map((e) => e.name)
         .toList(),
     titleTemplate: apertureMeta?.titleTemplate,
+    defaultSortField: res.defaultSortField?.name,
+    defaultSortAscending: res.defaultSortAscending,
     workflow: workflow != null
         ? buildResourceWorkflowDescription(workflow, relatedBeans)
         : null,

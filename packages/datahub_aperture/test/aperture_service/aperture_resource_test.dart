@@ -6,8 +6,7 @@ import 'package:test/test.dart';
 
 import '../_mock/todo.dart';
 import '../_utils/aperture_sign_in.dart';
-import '../_utils/test_auth_provider.dart';
-import '../scenarios/demo/demo_auth_service.dart';
+import '../scenarios/_utils/test_auth_service.dart';
 
 const _apiPort = 18190;
 const _authPort = 18191;
@@ -17,10 +16,11 @@ List<Component> _components({
   bool allowCreate = true,
   bool allowUpdate = true,
   bool allowDelete = true,
+  DataField<DataObject, dynamic>? defaultSortField,
+  bool defaultSortAscending = true,
 }) => [
   const KeyService(),
-  const DemoAuthService(issuer: Config.value(_issuer)),
-  const TestAuthProvider(),
+  const TestAuthService(issuer: Config.value(_issuer)),
   MemoryRepositoryService(bean: $Todo.bean),
   ApiService(
     port: const Config.value(_apiPort),
@@ -33,6 +33,8 @@ List<Component> _components({
             allowCreate: allowCreate,
             allowUpdate: allowUpdate,
             allowDelete: allowDelete,
+            defaultSortField: defaultSortField,
+            defaultSortAscending: defaultSortAscending,
           ),
         ],
       ),
@@ -127,6 +129,45 @@ void main() {
       expect((await _describe(client)).allowDelete, isFalse);
       await expectLater(_delete(client, id), _throwsStatus(405));
       expect(await _todos.readById(id), isNotNull);
+    },
+  );
+
+  declareTest(
+    'sorts elements by the default sort field',
+    _components(defaultSortField: $Todo.$title, defaultSortAscending: false),
+    () async {
+      final client = await _signIn();
+      for (final title in ['b', 'c', 'a']) {
+        await _todos.create(Todo(title: title, description: '', dueDate: null));
+      }
+
+      final description = await _describe(client);
+      expect(description.defaultSortField, 'title');
+      expect(description.defaultSortAscending, isFalse);
+
+      final defaultSorted = await client
+          .get('/api/resources/Todo/elements')
+          .thenGetData($ResourceElementsResponse.bean);
+      expect(defaultSorted.data.map((e) => e.fieldData['title']), [
+        'c',
+        'b',
+        'a',
+      ]);
+
+      final requestSorted = await client
+          .get(
+            '/api/resources/Todo/elements',
+            query: {
+              'sort': ['title'],
+              'asc': ['true'],
+            },
+          )
+          .thenGetData($ResourceElementsResponse.bean);
+      expect(requestSorted.data.map((e) => e.fieldData['title']), [
+        'a',
+        'b',
+        'c',
+      ]);
     },
   );
 }

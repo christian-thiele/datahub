@@ -140,6 +140,22 @@ abstract interface class $ResourceDescription
         $$codec.encodeList<ResourceAction>(value, (v) => v.toJson()),
   );
 
+  static final $defaultSortField = DataField<ResourceDescription, String?>(
+    name: 'defaultSortField',
+    valueOf: (p) => p.defaultSortField,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeNullable(value, $$codec.decodeString, name: name),
+    toJson: (value) => $$codec.encodeNullable(value, $$codec.encodeString),
+  );
+
+  static final $defaultSortAscending = DataField<ResourceDescription, bool>(
+    name: 'defaultSortAscending',
+    valueOf: (p) => p.defaultSortAscending,
+    fromJson: (value, {String? name}) =>
+        $$codec.decodeBool((value ?? true), name: name),
+    toJson: (value) => $$codec.encodeBool(value),
+  );
+
   static final $workflow = DataField<ResourceDescription, ResourceWorkflow?>(
     name: 'workflow',
     valueOf: (p) => p.workflow,
@@ -170,6 +186,8 @@ abstract interface class $ResourceDescription
           $allowDelete,
           $revisable,
           $actions,
+          $defaultSortField,
+          $defaultSortAscending,
           $workflow,
         ]),
         fromValues: fromValues,
@@ -197,6 +215,9 @@ abstract interface class $ResourceDescription
     bool? allowDelete,
     bool? revisable,
     List<ResourceAction>? actions,
+    String? defaultSortField,
+    bool nullDefaultSortField = false,
+    bool? defaultSortAscending,
     ResourceWorkflow? workflow,
     bool nullWorkflow = false,
   }) {
@@ -218,6 +239,10 @@ abstract interface class $ResourceDescription
       allowDelete: allowDelete ?? $data.allowDelete,
       revisable: revisable ?? $data.revisable,
       actions: actions ?? $data.actions,
+      defaultSortField: nullDefaultSortField
+          ? null
+          : (defaultSortField ?? $data.defaultSortField),
+      defaultSortAscending: defaultSortAscending ?? $data.defaultSortAscending,
       workflow: nullWorkflow ? null : (workflow ?? $data.workflow),
     );
   }
@@ -242,6 +267,8 @@ abstract interface class $ResourceDescription
       allowDelete: data['allowDelete'] ?? true,
       revisable: data['revisable'],
       actions: data['actions']?.cast<ResourceAction>().toList(growable: false),
+      defaultSortField: data['defaultSortField'],
+      defaultSortAscending: data['defaultSortAscending'] ?? true,
       workflow: data['workflow'],
     );
   }
@@ -308,6 +335,14 @@ abstract interface class $ResourceDescription
         data['actions'],
         name: DataCodec.childName(name, 'actions'),
       ),
+      defaultSortField: $defaultSortField.fromJson(
+        data['defaultSortField'],
+        name: DataCodec.childName(name, 'defaultSortField'),
+      ),
+      defaultSortAscending: $defaultSortAscending.fromJson(
+        data['defaultSortAscending'],
+        name: DataCodec.childName(name, 'defaultSortAscending'),
+      ),
       workflow: $workflow.fromJson(
         data['workflow'],
         name: DataCodec.childName(name, 'workflow'),
@@ -333,6 +368,10 @@ abstract interface class $ResourceDescription
       'allowDelete': $allowDelete.toJson($$data.allowDelete),
       'revisable': $revisable.toJson($$data.revisable),
       'actions': $actions.toJson($$data.actions),
+      'defaultSortField': $defaultSortField.toJson($$data.defaultSortField),
+      'defaultSortAscending': $defaultSortAscending.toJson(
+        $$data.defaultSortAscending,
+      ),
       'workflow': $workflow.toJson($$data.workflow),
     }..removeWhere((k, v) => v == null);
   }

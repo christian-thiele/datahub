@@ -115,8 +115,12 @@ class const ApertureApi({
                   ? $ResourceFilter.fromJson(jsonDecode(encodedFilter))
                   : null;
 
-              final sortFieldId = request.getParam<String?>('sort');
-              final sortAscending = request.getParam<bool?>('asc') ?? true;
+              final requestedSort = request.getParam<String?>('sort');
+              final sortFieldId =
+                  requestedSort ?? resource.defaultSortField?.name;
+              final sortAscending = requestedSort != null
+                  ? request.getParam<bool?>('asc') ?? true
+                  : resource.defaultSortAscending;
 
               final elements = await repo.readAll(
                 filter: _buildFilter(repo, filter),
