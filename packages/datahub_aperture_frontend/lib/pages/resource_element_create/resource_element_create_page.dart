@@ -59,6 +59,7 @@ class ResourceElementCreatePage extends StatelessWidget {
                     :final description,
                     :final fields,
                     :final changes,
+                    :final defaults,
                   ) =>
                     LoadingOverlay(
                       loading: state is ResourceElementCreateSaving,
@@ -80,7 +81,14 @@ class ResourceElementCreatePage extends StatelessWidget {
                             child: SingleChildScrollView(
                               child: ResourceElementCreateView(
                                 fields: fields,
-                                data: ResourceData(id: '', fieldData: {}),
+                                data: ResourceData(
+                                  id: '',
+                                  fieldData: {
+                                    for (final MapEntry(:key, :value)
+                                        in defaults.entries)
+                                      key.id: value,
+                                  },
+                                ),
                                 changes: changes,
                                 validations: switch (state) {
                                   ResourceElementCreateEditing(
@@ -92,6 +100,9 @@ class ResourceElementCreatePage extends StatelessWidget {
                                 onFieldValueChanged: (field, value) => context
                                     .read<ResourceElementCreateCubit>()
                                     .setFieldValue(field.id, value),
+                                onFieldReset: (field) => context
+                                    .read<ResourceElementCreateCubit>()
+                                    .resetFieldValue(field.id),
                                 onSavePressed: (live) => context
                                     .read<ResourceElementCreateCubit>()
                                     .saveChanges(from: live),

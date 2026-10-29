@@ -1179,6 +1179,46 @@ class S {
       args: [],
     );
   }
+
+  /// `Field actions`
+  String get fieldActions {
+    return Intl.message(
+      'Field actions',
+      name: 'fieldActions',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Reset to original value`
+  String get resetFieldValue {
+    return Intl.message(
+      'Reset to original value',
+      name: 'resetFieldValue',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set to now`
+  String get setFieldToNow {
+    return Intl.message(
+      'Set to now',
+      name: 'setFieldToNow',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Set to null`
+  String get setFieldToNull {
+    return Intl.message(
+      'Set to null',
+      name: 'setFieldToNull',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

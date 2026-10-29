@@ -22,6 +22,7 @@ class ResourceElementEditView extends StatelessWidget {
   final Map<ResourceField, dynamic> changes;
   final Map<String, String> validations;
   final void Function(ResourceField field, dynamic value) onFieldValueChanged;
+  final void Function(ResourceField field)? onFieldReset;
 
   final List<FilteredResource> relations;
 
@@ -52,6 +53,7 @@ class ResourceElementEditView extends StatelessWidget {
     this.validations = const {},
     this.relations = const [],
     required this.onFieldValueChanged,
+    this.onFieldReset,
     required this.onSavePressed,
     this.onDeletePressed,
     required this.actions,
@@ -176,6 +178,7 @@ class ResourceElementEditView extends StatelessWidget {
                         changes: changes,
                         validations: validations,
                         onFieldValueChanged: onFieldValueChanged,
+                        onFieldReset: onFieldReset,
                         onSavePressed: onSavePressed,
                         revisable: revisable,
                         readOnly: readOnly,

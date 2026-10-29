@@ -184,6 +184,12 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
     }
   }
 
+  void resetFieldValue(String fieldId) {
+    if (state case ResourceElementEditValue(:final data)) {
+      setFieldValue(fieldId, data.fieldData[fieldId]);
+    }
+  }
+
   Future<void> saveChanges({DateTime? from}) async {
     if (state case final ResourceElementEditValue state
         when state is! ResourceElementEditSaving && state.changes.isNotEmpty) {
@@ -192,7 +198,10 @@ class ResourceElementEditCubit extends Cubit<ResourceElementEditState> {
           for (final field in state.resource.fields)
             field.id: ?validateFieldValue(
               field,
-              state.changes[field] ?? state.data.fieldData[field.id],
+              // A field changed to null is not the stored value.
+              state.changes.containsKey(field)
+                  ? state.changes[field]
+                  : state.data.fieldData[field.id],
             ),
         };
 

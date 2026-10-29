@@ -99,6 +99,9 @@ class ResourceElementEditPage extends StatelessWidget {
                     onFieldValueChanged: (field, value) => context
                         .read<ResourceElementEditCubit>()
                         .setFieldValue(field.id, value),
+                    onFieldReset: (field) => context
+                        .read<ResourceElementEditCubit>()
+                        .resetFieldValue(field.id),
                     onSavePressed: changes.isNotEmpty
                         ? (from) => context
                               .read<ResourceElementEditCubit>()

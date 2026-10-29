@@ -156,6 +156,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "eventRunningOn": m7,
     "events": MessageLookupByLibrary.simpleMessage("Events"),
     "expires": MessageLookupByLibrary.simpleMessage("Expires"),
+    "fieldActions": MessageLookupByLibrary.simpleMessage("Field actions"),
     "fileSaved": m8,
     "fileSelected": MessageLookupByLibrary.simpleMessage("File selected"),
     "filter": MessageLookupByLibrary.simpleMessage("Filter"),
@@ -214,6 +215,9 @@ class MessageLookup extends MessageLookupByLibrary {
       "Reload configuration",
     ),
     "reset": MessageLookupByLibrary.simpleMessage("Reset"),
+    "resetFieldValue": MessageLookupByLibrary.simpleMessage(
+      "Reset to original value",
+    ),
     "resourceDeleted": MessageLookupByLibrary.simpleMessage(
       "Resource Deleted.",
     ),
@@ -241,6 +245,8 @@ class MessageLookup extends MessageLookupByLibrary {
     "search": MessageLookupByLibrary.simpleMessage("Search"),
     "sendSignal": MessageLookupByLibrary.simpleMessage("Send"),
     "sendSignalMenu": MessageLookupByLibrary.simpleMessage("Send signal"),
+    "setFieldToNow": MessageLookupByLibrary.simpleMessage("Set to now"),
+    "setFieldToNull": MessageLookupByLibrary.simpleMessage("Set to null"),
     "signInSubtitle": MessageLookupByLibrary.simpleMessage(
       "Sign in with your organization account to continue.",
     ),

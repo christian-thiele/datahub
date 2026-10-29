@@ -26,6 +26,12 @@ const _note = ResourceField(
   nullable: true,
   readOnly: true,
 );
+const _status = ResourceField(
+  id: 'status',
+  name: 'Status',
+  type: ResourceFieldType.string,
+  defaultValue: 'open',
+);
 const _numbers = ResourceField(
   id: 'numbers',
   name: 'Numbers',
@@ -135,5 +141,56 @@ void main() {
 
     cubit.setFieldValue('code', 'A-1');
     expect((cubit.state as ResourceElementCreateEditing).validation, isEmpty);
+  });
+
+  group('resetting a field', () {
+    Future<ResourceElementCreateCubit> open() async {
+      final cubit = ResourceElementCreateCubit(
+        _Repository(Object(), fields: const [_status, _numbers]),
+        resourceId: 'Example',
+      );
+      addTearDown(cubit.close);
+      await cubit.stream.firstWhere(
+        (state) => state is ResourceElementCreateEditing,
+      );
+      return cubit;
+    }
+
+    test('sets it back to its default', () async {
+      final cubit = await open();
+      cubit.setFieldValue('status', 'closed');
+
+      cubit.resetFieldValue('status');
+
+      final state = cubit.state as ResourceElementCreateEditing;
+      expect(state.changes, {_status: 'open', _numbers: []});
+      expect(state.defaults, {_status: 'open', _numbers: []});
+    });
+
+    test('leaves a field without a default out', () async {
+      final cubit = await open();
+      cubit.setFieldValue('status', null);
+      cubit.resetFieldValue('status');
+      expect((cubit.state as ResourceElementCreateEditing).changes, {
+        _status: 'open',
+        _numbers: [],
+      });
+
+      final withoutDefault = ResourceElementCreateCubit(
+        _Repository(Object(), fields: const [_code]),
+        resourceId: 'Example',
+      );
+      addTearDown(withoutDefault.close);
+      await withoutDefault.stream.firstWhere(
+        (state) => state is ResourceElementCreateEditing,
+      );
+      withoutDefault.setFieldValue('code', 'A-1');
+
+      withoutDefault.resetFieldValue('code');
+
+      final state = withoutDefault.state as ResourceElementCreateEditing;
+      expect(state.changes, isEmpty);
+      expect(state.validation, isEmpty);
+    });
   });
 }

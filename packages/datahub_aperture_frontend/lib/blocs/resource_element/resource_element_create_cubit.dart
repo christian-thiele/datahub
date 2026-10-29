@@ -29,7 +29,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
           else if (!field.auto && !field.nullable && field.defaultValue == null)
             field.copyWith(readOnly: false),
       ];
-      final changes = <ResourceField, dynamic>{
+      final defaults = <ResourceField, dynamic>{
         for (final field in fields)
           if (!field.readOnly && field.defaultValue != null)
             field: decodeFieldValue(field, field.defaultValue),
@@ -37,14 +37,15 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
       for (final field in fields.where(
         (e) => e.type == ResourceFieldType.list,
       )) {
-        changes.putIfAbsent(field, () => []);
+        defaults.putIfAbsent(field, () => []);
       }
 
       if (!isClosed) {
         emit(
           ResourceElementCreateEditing(
             fields: fields,
-            changes: changes,
+            changes: Map.of(defaults),
+            defaults: defaults,
             validation: {},
             description: resource,
           ),
@@ -61,6 +62,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
     if (state case ResourceElementCreateValue(
       :final fields,
       :final changes,
+      :final defaults,
       :final description,
     )) {
       final field = fields.firstWhere((f) => f.id == fieldId);
@@ -79,7 +81,38 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
         ResourceElementCreateEditing(
           fields: fields,
           changes: {...changes, field: value},
+          defaults: defaults,
           validation: validation,
+          description: description,
+        ),
+      );
+    }
+  }
+
+  /// Sets the value of a field back to the one it started with, see
+  /// [ResourceElementCreateValue.defaults].
+  void resetFieldValue(String fieldId) {
+    if (state case ResourceElementCreateValue(
+      :final fields,
+      :final changes,
+      :final defaults,
+      :final description,
+    )) {
+      final field = fields.firstWhere((f) => f.id == fieldId);
+      if (defaults.containsKey(field)) {
+        return setFieldValue(fieldId, defaults[field]);
+      }
+
+      // Without a default the field is left out, not set to null.
+      emit(
+        ResourceElementCreateEditing(
+          fields: fields,
+          changes: Map.of(changes)..remove(field),
+          defaults: defaults,
+          validation: {
+            if (state case ResourceElementCreateEditing(:final validation))
+              ...validation,
+          }..removeWhere((path, _) => isPathWithin(path, field.id)),
           description: description,
         ),
       );
@@ -100,6 +133,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
             ResourceElementCreateEditing(
               fields: state.fields,
               changes: state.changes,
+              defaults: state.defaults,
               validation: validation,
               description: state.description,
             ),
@@ -123,6 +157,7 @@ class ResourceElementCreateCubit extends Cubit<ResourceElementCreateState> {
               description: state.description,
               fields: state.fields,
               changes: state.changes,
+              defaults: state.defaults,
               validation: errors,
             ),
           );

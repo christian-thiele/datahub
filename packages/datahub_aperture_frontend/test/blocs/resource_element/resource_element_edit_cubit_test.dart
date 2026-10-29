@@ -254,4 +254,59 @@ void main() {
       expect(state.changes, {_name: 'Typed'});
     });
   });
+
+  group('resetting a field', () {
+    setUpAll(() => S.load(const Locale('en')));
+
+    final current = {
+      'name': 'Stored',
+      'updated': '2026-01-02T03:04:05Z',
+      'file': 'AQID',
+    };
+
+    test('sets it back to the stored value', () async {
+      final cubit = await _open(_Repository(current: current));
+      cubit.setFieldValue('name', 'Changed');
+      cubit.setFieldValue('updated', null);
+
+      cubit.resetFieldValue('name');
+
+      final state = cubit.state as ResourceElementEditValue;
+      expect(state.changes, {_updated: null});
+    });
+
+    test('drops the errors of the changed value', () async {
+      final cubit = await _open(_Repository(current: current));
+      cubit.setFieldValue('name', null);
+      expect(
+        (cubit.state as ResourceElementEditValue).validations,
+        contains('name'),
+      );
+
+      cubit.resetFieldValue('name');
+
+      expect((cubit.state as ResourceElementEditValue).validations, isEmpty);
+    });
+  });
+
+  test('does not save a required field changed to null', () async {
+    await S.load(const Locale('en'));
+    final cubit = await _open(
+      _Repository(
+        current: {
+          'name': 'Stored',
+          'updated': '2026-01-02T03:04:05Z',
+          'file': 'AQID',
+        },
+      ),
+    );
+    cubit.setFieldValue('name', null);
+
+    await cubit.saveChanges();
+
+    final state = cubit.state as ResourceElementEditValue;
+    expect(state, isNot(isA<ResourceElementEditSaving>()));
+    expect(state.validations, {'name': S.current.validationRequired});
+    expect(state.changes, {_name: null});
+  });
 }

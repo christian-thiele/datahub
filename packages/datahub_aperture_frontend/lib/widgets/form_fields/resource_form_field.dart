@@ -54,10 +54,22 @@ class ResourceFormField extends StatelessWidget {
       label = null;
     }
 
+    // Empty text is an empty string, null has to be told apart.
+    final showsNull =
+        field.type == ResourceFieldType.string &&
+        field.nullable &&
+        value == null;
+
     return InputDecoration(
       errorText: error,
       label: label,
       labelStyle: TextStyle(fontWeight: isChanged ? FontWeight.bold : null),
+      hintText: showsNull ? 'null' : null,
+      hintStyle: showsNull
+          ? const TextStyle(fontStyle: FontStyle.italic)
+          : null,
+      // The hint only shows above the label otherwise, so when focused.
+      floatingLabelBehavior: showsNull ? FloatingLabelBehavior.always : null,
       enabledBorder: switch ((field.readOnly, isChanged)) {
         (true, _) => OutlineInputBorder(
           borderRadius: BorderRadius.circular(ApertureThemeData.radius),

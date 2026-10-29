@@ -8,6 +8,7 @@ class ResourceElementCreateView extends StatelessWidget {
   final ResourceData data;
   final Map<ResourceField, dynamic> changes;
   final void Function(ResourceField field, dynamic value) onFieldValueChanged;
+  final void Function(ResourceField field) onFieldReset;
   final void Function(DateTime?)? onSavePressed;
 
   const ResourceElementCreateView({
@@ -17,6 +18,7 @@ class ResourceElementCreateView extends StatelessWidget {
     required this.changes,
     this.validations = const {},
     required this.onFieldValueChanged,
+    required this.onFieldReset,
     required this.onSavePressed,
   });
 
@@ -31,6 +33,7 @@ class ResourceElementCreateView extends StatelessWidget {
           changes: changes,
           validations: validations,
           onFieldValueChanged: onFieldValueChanged,
+          onFieldReset: onFieldReset,
           onSavePressed: onSavePressed,
         ),
       ),

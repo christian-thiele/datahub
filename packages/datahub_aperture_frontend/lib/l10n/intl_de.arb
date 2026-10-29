@@ -148,5 +148,9 @@
   "timeZone": "Zeitzone",
   "timeZoneLocal": "Lokal ({offset})",
   "timeZoneUtc": "UTC",
-  "timeZoneHint": "Datum und Uhrzeit werden in dieser Zeitzone angezeigt und eingegeben."
+  "timeZoneHint": "Datum und Uhrzeit werden in dieser Zeitzone angezeigt und eingegeben.",
+  "fieldActions": "Feldaktionen",
+  "resetFieldValue": "Auf ursprünglichen Wert zurücksetzen",
+  "setFieldToNow": "Auf jetzt setzen",
+  "setFieldToNull": "Auf null setzen"
 }

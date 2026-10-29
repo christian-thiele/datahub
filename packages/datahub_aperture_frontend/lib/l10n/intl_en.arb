@@ -148,5 +148,9 @@
   "timeZone": "Time zone",
   "timeZoneLocal": "Local ({offset})",
   "timeZoneUtc": "UTC",
-  "timeZoneHint": "Dates and times are shown and entered in this time zone."
+  "timeZoneHint": "Dates and times are shown and entered in this time zone.",
+  "fieldActions": "Field actions",
+  "resetFieldValue": "Reset to original value",
+  "setFieldToNow": "Set to now",
+  "setFieldToNull": "Set to null"
 }

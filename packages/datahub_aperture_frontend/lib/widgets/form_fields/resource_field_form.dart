@@ -1,18 +1,25 @@
 import 'package:datahub_aperture/datahub_aperture.dart';
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
+import 'package:datahub_aperture_frontend/utils/date_time_formatter.dart';
+import 'package:datahub_aperture_frontend/utils/helper.dart';
 import 'package:datahub_aperture_frontend/widgets/dialogs/schedule_dialog.dart';
 import 'package:datahub_aperture_frontend/widgets/icon_text.dart';
 import 'package:datahub_aperture_frontend/widgets/options_button.dart';
 import 'package:flutter/material.dart';
 
+import 'field_menu.dart';
 import 'resource_form_field.dart';
 
 class ResourceFieldForm extends StatelessWidget {
   final List<ResourceField> fields;
+
+  /// The values the fields have without [changes], which a field can be
+  /// reset to with [onFieldReset].
   final ResourceData data;
   final Map<ResourceField, dynamic> changes;
   final Map<String, String> validations;
   final void Function(ResourceField field, dynamic value) onFieldValueChanged;
+  final void Function(ResourceField field)? onFieldReset;
   final void Function(DateTime? from)? onSavePressed;
   final bool revisable;
   final bool readOnly;
@@ -24,6 +31,7 @@ class ResourceFieldForm extends StatelessWidget {
     required this.changes,
     required this.validations,
     required this.onFieldValueChanged,
+    this.onFieldReset,
     required this.onSavePressed,
     this.revisable = true,
     this.readOnly = false,
@@ -49,18 +57,7 @@ class ResourceFieldForm extends StatelessWidget {
                   ResourceFieldType.jsonList => true,
                   _ => false,
                 },
-                child: ResourceFormField(
-                  field: field,
-                  path: field.id,
-                  errors: validations,
-                  value: changes.containsKey(field)
-                      ? changes[field]
-                      : data.fieldData[field.id],
-                  isChanged: changes.containsKey(field),
-                  onChanged: (field.readOnly || readOnly)
-                      ? null
-                      : (value) => onFieldValueChanged(field, value),
-                ),
+                child: _buildField(context, field),
               ),
           ],
         ),
@@ -104,6 +101,57 @@ class ResourceFieldForm extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+
+  Widget _buildField(BuildContext context, ResourceField field) {
+    final s = S.of(context);
+    final value = changes.containsKey(field)
+        ? changes[field]
+        : data.fieldData[field.id];
+    final isChanged =
+        changes.containsKey(field) &&
+        !fieldValueEquals(changes[field], data.fieldData[field.id]);
+    final editable = !field.readOnly && !readOnly;
+
+    return FieldMenu(
+      menuChildren: readOnly
+          ? null
+          : [
+              if (editable && onFieldReset != null)
+                MenuItemButton(
+                  leadingIcon: const Icon(Icons.undo),
+                  onPressed: isChanged ? () => onFieldReset!(field) : null,
+                  child: Text(s.resetFieldValue),
+                ),
+              if (editable && field.type == ResourceFieldType.timestamp)
+                MenuItemButton(
+                  leadingIcon: const Icon(Icons.schedule),
+                  onPressed: () => onFieldValueChanged(
+                    field,
+                    DateTimeFormatter.current.now(),
+                  ),
+                  child: Text(s.setFieldToNow),
+                ),
+              if (editable && field.nullable)
+                MenuItemButton(
+                  leadingIcon: const Icon(Icons.block),
+                  onPressed: value != null
+                      ? () => onFieldValueChanged(field, null)
+                      : null,
+                  child: Text(s.setFieldToNull),
+                ),
+            ],
+      child: ResourceFormField(
+        field: field,
+        path: field.id,
+        errors: validations,
+        value: value,
+        isChanged: isChanged,
+        onChanged: editable
+            ? (value) => onFieldValueChanged(field, value)
+            : null,
+      ),
     );
   }
 }

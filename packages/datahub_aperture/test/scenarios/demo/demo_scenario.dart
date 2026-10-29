@@ -66,6 +66,8 @@ void main(List<String> args) => runApp([
               ),
               const ApertureResource(
                 repository: Find<DataRepository<TimeEntry>>(),
+                allowUpdate: false,
+                allowDelete: false,
               ),
               const ApertureResource(
                 repository: Find<DataRepository<Invoice>>(),
