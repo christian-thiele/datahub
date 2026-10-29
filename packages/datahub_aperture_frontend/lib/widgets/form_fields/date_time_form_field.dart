@@ -1,4 +1,5 @@
 import 'package:datahub_aperture_frontend/generated/l10n.dart';
+import 'package:datahub_aperture_frontend/utils/date_time_formatter.dart';
 import 'package:datahub_aperture_frontend/widgets/animation/error_wiggle.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -25,12 +26,11 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
   late final FocusNode _timeFocus;
   late final TextEditingController _dateController;
   late final TextEditingController _timeController;
-  final DateFormat _dateDisplayFormat = DateFormat.yMMMMd();
-  final DateFormat _timeDisplayFormat = DateFormat.Hm();
   late final AnimationController _dateErrorController;
   late final AnimationController _timeErrorController;
 
   final _dateParseFormats = [
+    DateFormat.yMMMMd(),
     DateFormat('yyyy-MM-dd'),
     DateFormat('yyyy/MM/dd'),
     DateFormat('yyyy/dd/MM'),
@@ -40,22 +40,23 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
     DateFormat('dd.MMMM'),
   ];
 
+  final _timeParseFormats = [DateFormat.Hms(), DateFormat.Hm()];
+
+  DateTimeFormatter get _formatter => DateTimeFormatter.current;
+
+  DateTime? get _value => switch (widget.value) {
+    final value? => _formatter.convert(value),
+    null => null,
+  };
+
   @override
   void initState() {
     super.initState();
     _dateFocus = FocusNode();
     _timeFocus = FocusNode();
 
-    _dateController = TextEditingController(
-      text: widget.value != null
-          ? _dateDisplayFormat.format(widget.value!)
-          : null,
-    );
-    _timeController = TextEditingController(
-      text: widget.value != null
-          ? _timeDisplayFormat.format(widget.value!)
-          : null,
-    );
+    _dateController = TextEditingController(text: _formatDate(widget.value));
+    _timeController = TextEditingController(text: _formatTime(widget.value));
 
     _dateFocus.addListener(() {
       if (!_dateFocus.hasFocus && widget.onChanged != null) {
@@ -94,13 +95,8 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
   void didUpdateWidget(covariant DateTimeFormField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.value != widget.value) {
-      if (widget.value != null) {
-        _dateController.text = _dateDisplayFormat.format(widget.value!);
-        _timeController.text = _timeDisplayFormat.format(widget.value!);
-      } else {
-        _dateController.text = '';
-        _timeController.text = '';
-      }
+      _dateController.text = _formatDate(widget.value);
+      _timeController.text = _formatTime(widget.value);
     }
   }
 
@@ -187,14 +183,20 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
   /// Fills an empty value with the current time when the user starts editing.
   void _fillEmptyWithNow() {
     if (widget.value == null) {
-      widget.onChanged?.call(DateTime.now());
+      widget.onChanged?.call(_formatter.now());
     }
   }
 
-  void _processDate(String text) {
-    DateTime? result = _dateDisplayFormat.tryParseLoose(text);
+  String _formatDate(DateTime? value) =>
+      value != null ? _formatter.formatDate(value) : '';
 
-    for (final format in _dateParseFormats) {
+  String _formatTime(DateTime? value) =>
+      value != null ? _formatter.formatTime(value) : '';
+
+  void _processDate(String text) {
+    DateTime? result;
+
+    for (final format in [_formatter.dateFormat, ..._dateParseFormats]) {
       if (result != null) {
         break;
       }
@@ -203,23 +205,29 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
     }
 
     if (result case final date?) {
-      final value = (widget.value ?? DateTime.now()).copyWith(
+      final value = (_value ?? _formatter.now()).copyWith(
         year: date.year,
         month: date.month,
         day: date.day,
       );
-      _dateController.text = _dateDisplayFormat.format(value);
+      _dateController.text = _formatDate(value);
       widget.onChanged?.call(value);
     } else {
       _dateErrorController.forward(from: 0);
-      _dateController.text = widget.value != null
-          ? _dateDisplayFormat.format(widget.value!)
-          : '';
+      _dateController.text = _formatDate(widget.value);
     }
   }
 
   void _processTime(String text) {
-    DateTime? result = _timeDisplayFormat.tryParseLoose(text);
+    DateTime? result;
+
+    for (final format in [_formatter.timeFormat, ..._timeParseFormats]) {
+      if (result != null) {
+        break;
+      }
+
+      result = format.tryParseLoose(text);
+    }
 
     if (result == null) {
       if (int.tryParse(text) case final hour? when hour >= 0 && hour < 24) {
@@ -228,20 +236,18 @@ class _DateTimeFormFieldState extends State<DateTimeFormField>
     }
 
     if (result case final date?) {
-      final value = (widget.value ?? DateTime.now()).copyWith(
+      final value = (_value ?? _formatter.now()).copyWith(
         hour: date.hour,
         minute: date.minute,
         second: date.second,
         millisecond: date.millisecond,
         microsecond: date.microsecond,
       );
-      _timeController.text = _timeDisplayFormat.format(value);
+      _timeController.text = _formatTime(value);
       widget.onChanged?.call(value);
     } else {
       _timeErrorController.forward(from: 0);
-      _timeController.text = widget.value != null
-          ? _timeDisplayFormat.format(widget.value!)
-          : '';
+      _timeController.text = _formatTime(widget.value);
     }
   }
 }

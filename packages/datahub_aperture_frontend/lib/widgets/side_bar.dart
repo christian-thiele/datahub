@@ -116,15 +116,36 @@ class SideBar extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.all(12),
             child: BlocBuilder<AuthCubit, AuthState>(
-              builder: (context, state) => _SideBarItem(
-                icon: Icons.logout,
-                label: S.of(context).logout,
-                compact: compact,
-                selected: false,
-                onPressed: state is AuthStateAuthorized
-                    ? () => context.read<AuthCubit>().logout()
-                    : null,
-              ),
+              builder: (context, state) {
+                final logout = _SideBarItem(
+                  icon: Icons.logout,
+                  label: S.of(context).logout,
+                  compact: compact,
+                  selected: false,
+                  onPressed: state is AuthStateAuthorized
+                      ? () => context.read<AuthCubit>().logout()
+                      : null,
+                );
+                final preferences = _SideBarItem(
+                  icon: Icons.settings,
+                  label: S.of(context).preferences,
+                  compact: true,
+                  selected: location == '/preferences',
+                  onPressed: () => context.go('/preferences'),
+                );
+
+                if (compact) {
+                  return Column(children: [preferences, logout]);
+                }
+
+                return Row(
+                  spacing: 4,
+                  children: [
+                    Expanded(child: logout),
+                    preferences,
+                  ],
+                );
+              },
             ),
           ),
         ],

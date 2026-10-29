@@ -66,7 +66,7 @@ class _LogLineState extends State<LogLine> {
                 if (timestamp != null)
                   Text.rich(
                     TextSpan(
-                      text: '${timestamp.toLocal().formatDateTime()} ',
+                      text: '${timestamp.formatDateTime()} ',
                       style: TextStyle(
                         color: ApertureColors.of(context).textMuted,
                       ),

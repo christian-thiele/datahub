@@ -1079,6 +1079,106 @@ class S {
       args: [],
     );
   }
+
+  /// `Preferences`
+  String get preferences {
+    return Intl.message('Preferences', name: 'preferences', desc: '', args: []);
+  }
+
+  /// `Your preferences are saved on this device.`
+  String get preferencesHint {
+    return Intl.message(
+      'Your preferences are saved on this device.',
+      name: 'preferencesHint',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Language`
+  String get language {
+    return Intl.message('Language', name: 'language', desc: '', args: []);
+  }
+
+  /// `System language`
+  String get systemLanguage {
+    return Intl.message(
+      'System language',
+      name: 'systemLanguage',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Date & time`
+  String get dateAndTime {
+    return Intl.message('Date & time', name: 'dateAndTime', desc: '', args: []);
+  }
+
+  /// `Format`
+  String get dateTimeFormat {
+    return Intl.message('Format', name: 'dateTimeFormat', desc: '', args: []);
+  }
+
+  /// `Localized`
+  String get dateTimeFormatLocalized {
+    return Intl.message(
+      'Localized',
+      name: 'dateTimeFormatLocalized',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Numeric`
+  String get dateTimeFormatNumeric {
+    return Intl.message(
+      'Numeric',
+      name: 'dateTimeFormatNumeric',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `ISO 8601`
+  String get dateTimeFormatIso {
+    return Intl.message(
+      'ISO 8601',
+      name: 'dateTimeFormatIso',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Time zone`
+  String get timeZone {
+    return Intl.message('Time zone', name: 'timeZone', desc: '', args: []);
+  }
+
+  /// `Local ({offset})`
+  String timeZoneLocal(Object offset) {
+    return Intl.message(
+      'Local ($offset)',
+      name: 'timeZoneLocal',
+      desc: '',
+      args: [offset],
+    );
+  }
+
+  /// `UTC`
+  String get timeZoneUtc {
+    return Intl.message('UTC', name: 'timeZoneUtc', desc: '', args: []);
+  }
+
+  /// `Dates and times are shown and entered in this time zone.`
+  String get timeZoneHint {
+    return Intl.message(
+      'Dates and times are shown and entered in this time zone.',
+      name: 'timeZoneHint',
+      desc: '',
+      args: [],
+    );
+  }
 }
 
 class AppLocalizationDelegate extends LocalizationsDelegate<S> {

@@ -36,13 +36,13 @@ extension WorkflowEventDisplay on ResourceWorkflowEvent {
         event.worker ?? '?',
       ),
       WorkflowEventDisplayStatus.pending when event.attempts > 0 =>
-        s.eventNextAttempt(event.dueAt.toLocal().formatDateTime()),
+        s.eventNextAttempt(event.dueAt.formatDateTime()),
       WorkflowEventDisplayStatus.pending => s.eventDue(
-        event.dueAt.toLocal().formatDateTime(),
+        event.dueAt.formatDateTime(),
       ),
       WorkflowEventDisplayStatus.failed => event.lastError ?? s.eventFailed,
       WorkflowEventDisplayStatus.expired => s.eventExpiredAt(
-        (event.expiresAt ?? event.dueAt).toLocal().formatDateTime(),
+        (event.expiresAt ?? event.dueAt).formatDateTime(),
       ),
     };
   }

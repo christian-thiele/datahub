@@ -135,5 +135,18 @@
   "stepAfter": "nach {duration}",
   "stepAtElementTime": "zum Zeitpunkt des Elements",
   "stepFailureState": "Bei Fehler: {state}",
-  "eventHandled": "Das Ereignis wurde verarbeitet."
+  "eventHandled": "Das Ereignis wurde verarbeitet.",
+  "preferences": "Einstellungen",
+  "preferencesHint": "Ihre Einstellungen werden auf diesem Gerät gespeichert.",
+  "language": "Sprache",
+  "systemLanguage": "Systemsprache",
+  "dateAndTime": "Datum & Uhrzeit",
+  "dateTimeFormat": "Format",
+  "dateTimeFormatLocalized": "Lokalisiert",
+  "dateTimeFormatNumeric": "Numerisch",
+  "dateTimeFormatIso": "ISO 8601",
+  "timeZone": "Zeitzone",
+  "timeZoneLocal": "Lokal ({offset})",
+  "timeZoneUtc": "UTC",
+  "timeZoneHint": "Datum und Uhrzeit werden in dieser Zeitzone angezeigt und eingegeben."
 }

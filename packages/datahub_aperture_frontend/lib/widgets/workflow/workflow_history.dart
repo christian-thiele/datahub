@@ -88,7 +88,7 @@ class WorkflowHistoryTile extends StatelessWidget {
                   ),
                   Text(
                     [
-                      entry.timestamp.toLocal().formatDateTime(),
+                      entry.timestamp.formatDateTime(),
                       ?entry.transition,
                     ].join(' · '),
                     style: Theme.of(context).textTheme.labelMedium,
@@ -146,7 +146,7 @@ class WorkflowHistoryDialog extends StatelessWidget {
               children: [
                 ValueView(
                   label: s.timestamp,
-                  value: Text(entry.timestamp.toLocal().formatDateTime()),
+                  value: Text(entry.timestamp.formatDateTime()),
                 ),
                 if (entry.state case final state?)
                   ValueView(
@@ -158,7 +158,7 @@ class WorkflowHistoryDialog extends StatelessWidget {
                 if (entry.nextAttemptAt case final nextAttemptAt?)
                   ValueView(
                     label: s.nextAttempt,
-                    value: Text(nextAttemptAt.toLocal().formatDateTime()),
+                    value: Text(nextAttemptAt.formatDateTime()),
                   ),
               ],
             ),

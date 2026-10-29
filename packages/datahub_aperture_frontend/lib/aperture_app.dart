@@ -6,9 +6,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:go_router/go_router.dart';
 
 import 'blocs/auth_cubit/auth_cubit.dart';
+import 'blocs/preferences_cubit.dart';
 import 'generated/l10n.dart';
+import 'models/preferences.dart';
 import 'pages/auth_page/auth_page.dart';
 import 'pages/dashboard_page.dart';
+import 'pages/preferences_page.dart';
 import 'pages/resource_element_create/resource_element_create_page.dart';
 import 'pages/resource_element_edit/resource_element_edit_page.dart';
 import 'pages/resource_page/resource_page.dart';
@@ -86,6 +89,10 @@ class _ApertureAppState extends State<ApertureApp>
             routes: [
               GoRoute(path: '/', builder: (context, state) => DashboardPage()),
               GoRoute(
+                path: '/preferences',
+                builder: (context, state) => const PreferencesPage(),
+              ),
+              GoRoute(
                 path: '/resources/:resourceId',
                 pageBuilder: (context, state) => MaterialPage(
                   key: ValueKey(state.matchedLocation),
@@ -139,8 +146,8 @@ class _ApertureAppState extends State<ApertureApp>
         bootstrap: Bootstrap.of(context),
         authService: RepositoryProvider.of<AuthService>(context, listen: false),
       ),
-      child: Builder(
-        builder: (context) => MaterialApp.router(
+      child: BlocBuilder<PreferencesCubit, Preferences>(
+        builder: (context, preferences) => MaterialApp.router(
           title: switch (Bootstrap.of(context).environment) {
             Environment.prod => Bootstrap.of(context).title,
             final env =>
@@ -160,6 +167,10 @@ class _ApertureAppState extends State<ApertureApp>
             GlobalCupertinoLocalizations.delegate,
           ],
           supportedLocales: S.delegate.supportedLocales,
+          locale: switch (preferences.language) {
+            final language? => Locale(language),
+            null => null,
+          },
           routerConfig: router ??= buildRouter(context),
         ),
       ),

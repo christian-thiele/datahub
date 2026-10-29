@@ -2,8 +2,8 @@ import 'dart:convert';
 import 'dart:math' as math;
 import 'dart:typed_data';
 
+import 'package:datahub_aperture_frontend/utils/date_time_formatter.dart';
 import 'package:flutter/widgets.dart';
-import 'package:intl/intl.dart';
 
 IconData getIcon(int codePoint) =>
     // ignore: non_const_argument_for_const_parameter
@@ -19,12 +19,13 @@ extension StringUtils on String {
   double? tryToDouble() => double.tryParse(this);
 }
 
+/// Formats date times with [DateTimeFormatter.current], as the user prefers.
 extension DateTimeUtils on DateTime {
-  String formatDateTime() => DateFormat.yMMMd().add_Hm().format(this);
+  String formatDateTime() => DateTimeFormatter.current.formatDateTime(this);
 
-  String formatDate() => DateFormat.yMMMd().format(this);
+  String formatDate() => DateTimeFormatter.current.formatDate(this);
 
-  String formatTime() => DateFormat.Hm().format(this);
+  String formatTime() => DateTimeFormatter.current.formatTime(this);
 }
 
 String formatFileSize(int bytes) {

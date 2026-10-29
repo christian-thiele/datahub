@@ -145,7 +145,7 @@ class _EventDetails extends StatelessWidget {
     final s = S.of(context);
     final colors = ApertureColors.of(context);
     final e = event.event;
-    String time(DateTime time) => time.toLocal().formatDateTime();
+    String time(DateTime time) => time.formatDateTime();
 
     return SingleChildScrollView(
       child: Column(

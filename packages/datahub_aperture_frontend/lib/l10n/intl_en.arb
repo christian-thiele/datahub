@@ -135,5 +135,18 @@
   "stepAfter": "after {duration}",
   "stepAtElementTime": "at the time of the element",
   "stepFailureState": "On failure: {state}",
-  "eventHandled": "The event was handled."
+  "eventHandled": "The event was handled.",
+  "preferences": "Preferences",
+  "preferencesHint": "Your preferences are saved on this device.",
+  "language": "Language",
+  "systemLanguage": "System language",
+  "dateAndTime": "Date & time",
+  "dateTimeFormat": "Format",
+  "dateTimeFormatLocalized": "Localized",
+  "dateTimeFormatNumeric": "Numeric",
+  "dateTimeFormatIso": "ISO 8601",
+  "timeZone": "Time zone",
+  "timeZoneLocal": "Local ({offset})",
+  "timeZoneUtc": "UTC",
+  "timeZoneHint": "Dates and times are shown and entered in this time zone."
 }

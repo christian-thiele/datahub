@@ -81,19 +81,21 @@ class MessageLookup extends MessageLookupByLibrary {
 
   static String m28(states) => "Signal, accepted in ${states}";
 
-  static String m29(line, column) =>
+  static String m29(offset) => "Local (${offset})";
+
+  static String m30(line, column) =>
       "Invalid JSON (line ${line}, column ${column}).";
 
-  static String m30(length) => "Value too long. (> ${length})";
+  static String m31(length) => "Value too long. (> ${length})";
 
-  static String m31(expression) =>
+  static String m32(expression) =>
       "Value must match the pattern: ${expression}";
 
-  static String m32(count) => "View all ${count}";
+  static String m33(count) => "View all ${count}";
 
-  static String m33(states) => "Waits for ${states}";
+  static String m34(states) => "Waits for ${states}";
 
-  static String m34(resource) => "${resource} workflow";
+  static String m35(resource) => "${resource} workflow";
 
   final messages = _notInlinedMessages(_notInlinedMessages);
   static Map<String, Function> _notInlinedMessages(_) => <String, Function>{
@@ -122,6 +124,13 @@ class MessageLookup extends MessageLookupByLibrary {
     ),
     "dashboardTitle": m3,
     "date": MessageLookupByLibrary.simpleMessage("Date"),
+    "dateAndTime": MessageLookupByLibrary.simpleMessage("Date & time"),
+    "dateTimeFormat": MessageLookupByLibrary.simpleMessage("Format"),
+    "dateTimeFormatIso": MessageLookupByLibrary.simpleMessage("ISO 8601"),
+    "dateTimeFormatLocalized": MessageLookupByLibrary.simpleMessage(
+      "Localized",
+    ),
+    "dateTimeFormatNumeric": MessageLookupByLibrary.simpleMessage("Numeric"),
     "delete": MessageLookupByLibrary.simpleMessage("Delete"),
     "deleteScheduled": MessageLookupByLibrary.simpleMessage("Delete scheduled"),
     "discard": MessageLookupByLibrary.simpleMessage("Discard"),
@@ -166,6 +175,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "historyStarted": m14,
     "historyStepFailed": m15,
     "historyStepSucceeded": m16,
+    "language": MessageLookupByLibrary.simpleMessage("Language"),
     "linkedElementNotFound": MessageLookupByLibrary.simpleMessage(
       "Linked element not found",
     ),
@@ -192,6 +202,10 @@ class MessageLookup extends MessageLookupByLibrary {
     "pageFrom": m18,
     "pageOf": m19,
     "password": MessageLookupByLibrary.simpleMessage("Password"),
+    "preferences": MessageLookupByLibrary.simpleMessage("Preferences"),
+    "preferencesHint": MessageLookupByLibrary.simpleMessage(
+      "Your preferences are saved on this device.",
+    ),
     "reallyDeleteElement": m20,
     "reallyDiscardEvent": m21,
     "reallyResumeWorkflow": m22,
@@ -247,7 +261,14 @@ class MessageLookup extends MessageLookupByLibrary {
     "stepOnEnter": m27,
     "stepOnSignal": m28,
     "steps": MessageLookupByLibrary.simpleMessage("Steps"),
+    "systemLanguage": MessageLookupByLibrary.simpleMessage("System language"),
     "time": MessageLookupByLibrary.simpleMessage("Time"),
+    "timeZone": MessageLookupByLibrary.simpleMessage("Time zone"),
+    "timeZoneHint": MessageLookupByLibrary.simpleMessage(
+      "Dates and times are shown and entered in this time zone.",
+    ),
+    "timeZoneLocal": m29,
+    "timeZoneUtc": MessageLookupByLibrary.simpleMessage("UTC"),
     "timestamp": MessageLookupByLibrary.simpleMessage("Timestamp"),
     "total": MessageLookupByLibrary.simpleMessage("Total"),
     "tryAgain": MessageLookupByLibrary.simpleMessage("Try again"),
@@ -259,17 +280,17 @@ class MessageLookup extends MessageLookupByLibrary {
     "validationJsonObject": MessageLookupByLibrary.simpleMessage(
       "Value must be a JSON object.",
     ),
-    "validationJsonSyntax": m29,
-    "validationMaxLength": m30,
-    "validationPattern": m31,
+    "validationJsonSyntax": m30,
+    "validationMaxLength": m31,
+    "validationPattern": m32,
     "validationRequired": MessageLookupByLibrary.simpleMessage(
       "Value is required.",
     ),
     "viewAll": MessageLookupByLibrary.simpleMessage("View all"),
-    "viewAllCount": m32,
-    "waitsFor": m33,
+    "viewAllCount": m33,
+    "waitsFor": m34,
     "worker": MessageLookupByLibrary.simpleMessage("Worker"),
     "workflow": MessageLookupByLibrary.simpleMessage("Workflow"),
-    "workflowOf": m34,
+    "workflowOf": m35,
   };
 }
