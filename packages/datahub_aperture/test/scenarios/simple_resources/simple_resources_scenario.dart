@@ -20,7 +20,9 @@ void main(List<String> args) => runApp([
         routes: [
           ApertureApi(
             title: const Config.value('Simple Resources'),
-            oidcIssuer: const Config.value('http://localhost:8081/realms/local-oidc'),
+            oidcIssuer: const Config.value(
+              'http://localhost:8081/realms/local-oidc',
+            ),
             oidcClientId: const Config.value('aperture'),
             resources: [
               ApertureResource(

@@ -5,3 +5,5 @@ export 'src/aperture_service/aperture_api.dart';
 export 'src/aperture_service/aperture_resource.dart';
 export 'src/aperture_service/aperture_session.dart';
 export 'src/aperture_service/aperture_tile_source.dart';
+export 'src/aperture_service/resource_utils.dart'
+    show SearchFilterBuilder, defaultSearchFilterBuilder;

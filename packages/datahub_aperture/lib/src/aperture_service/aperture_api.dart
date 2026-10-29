@@ -124,7 +124,11 @@ class const ApertureApi({
                   : resource.defaultSortAscending;
 
               final elements = await repo.readAll(
-                filter: ResourceUtils.buildFilter(repo, filter),
+                filter: ResourceUtils.buildFilter(
+                  repo,
+                  filter,
+                  searchBuilder: resource.searchBuilder,
+                ),
                 sort: ResourceUtils.buildSort(repo, sortFieldId, sortAscending),
                 offset: offset,
                 limit: limit + 1,

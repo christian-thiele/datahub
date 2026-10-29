@@ -3,15 +3,14 @@ import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/utils.dart';
 
 import 'aperture_action.dart';
-
-typedef FilterBuilder = Filter Function();
+import 'resource_utils.dart';
 
 class const ApertureResource<T extends DataObject>({
   required final Find<DataRepository<T>> repository,
   final List<ApertureAction> actions = const [],
   final DataField<T, dynamic>? defaultSortField,
   final bool defaultSortAscending = true,
-  final FilterBuilder? buildSearchFilter,
+  final SearchFilterBuilder? searchBuilder,
   final bool allowCreate = true,
   final bool allowUpdate = true,
   final bool allowDelete = true,

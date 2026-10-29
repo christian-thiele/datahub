@@ -2,6 +2,27 @@ import 'package:datahub/datahub.dart';
 import 'package:datahub_aperture/api.dart';
 import 'package:datahub_aperture/data.dart';
 
+/// Builds the filter for a search in a resource, given the fields that allow
+/// search and the words of the search.
+typedef SearchFilterBuilder = Filter Function(
+  List<DataField> searchFields,
+  List<String> words,
+);
+
+/// Matches elements in which every word is contained in any search field.
+Filter defaultSearchFilterBuilder(
+  List<DataField> searchFields,
+  List<String> words,
+) {
+  return Filter.andGroup([
+    for (final word in words)
+      Filter.orGroup([
+        for (final field in searchFields)
+          ?ResourceUtils._tryCompareFilter(field, CompareType.contains, word),
+      ]),
+  ]);
+}
+
 class const ResourceUtils._() {
   static ResourceData toResourceData(
     DataRepository repo,
@@ -37,7 +58,11 @@ class const ResourceUtils._() {
     );
   }
 
-  static Filter buildFilter(DataRepository repo, ResourceFilter? filter) {
+  static Filter buildFilter(
+    DataRepository repo,
+    ResourceFilter? filter, {
+    SearchFilterBuilder? searchBuilder,
+  }) {
     try {
       final bean = repo.bean;
       if (filter == null) {
@@ -46,7 +71,7 @@ class const ResourceUtils._() {
 
       final Filter elementFilter;
       if (filter case ResourceFilter(:final search?)) {
-        elementFilter = buildSearchFilter(repo, search);
+        elementFilter = buildSearchFilter(repo, search, builder: searchBuilder);
       } else if (filter case ResourceFilter(
         :final type?,
         :final fieldId?,
@@ -71,10 +96,14 @@ class const ResourceUtils._() {
 
       return Filter.andGroup([
         Filter.andGroup(
-          (filter.and ?? <ResourceFilter>[]).map((e) => buildFilter(repo, e)),
+          (filter.and ?? <ResourceFilter>[]).map(
+            (e) => buildFilter(repo, e, searchBuilder: searchBuilder),
+          ),
         ),
         Filter.orGroup(
-          (filter.or ?? <ResourceFilter>[]).map((e) => buildFilter(repo, e)),
+          (filter.or ?? <ResourceFilter>[]).map(
+            (e) => buildFilter(repo, e, searchBuilder: searchBuilder),
+          ),
         ),
         elementFilter,
       ]);
@@ -84,7 +113,11 @@ class const ResourceUtils._() {
     }
   }
 
-  static Filter buildSearchFilter(DataRepository repo, String search) {
+  static Filter buildSearchFilter(
+    DataRepository repo,
+    String search, {
+    SearchFilterBuilder? builder,
+  }) {
     final words = search.split(RegExp('\\W+'));
 
     final searchFields = <DataField>[];
@@ -108,13 +141,8 @@ class const ResourceUtils._() {
       }
     }
 
-    return Filter.andGroup([
-      for (final word in words)
-        Filter.orGroup([
-          for (final field in searchFields)
-            ?_tryCompareFilter(field, CompareType.contains, word),
-        ]),
-    ]);
+    final effectiveBuilder = builder ?? defaultSearchFilterBuilder;
+    return effectiveBuilder(searchFields, words);
   }
 
   static Sort buildSort(DataRepository repo, String? fieldId, bool ascending) {
